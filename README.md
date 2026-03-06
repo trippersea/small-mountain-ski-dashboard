@@ -1,11 +1,15 @@
 # Small Mountain Ski Dashboard
 
 A GitHub Pages-ready ski resort dashboard with:
-- adjustable scoring sliders
-- resort rankings
-- clickable SVG map
-- webcam slot for each mountain
+- sticky section navigation
+- weekend planner cards
+- drive-time lookup from your location
+- quick search and filters
+- resort comparison and notes
+- pass value calculator
+- New England Leaflet map
 - trail map slot for each mountain
+- back-to-top button
 
 ## Files
 - `index.html`
@@ -21,22 +25,8 @@ A GitHub Pages-ready ski resort dashboard with:
    - Folder: `/ (root)`
 4. Save.
 
-## Add a webcam
-In `resorts.js`, each resort has:
-- `webcamImage`
-- `webcamPage`
-
-Example:
-```js
-webcamImage: 'https://example.com/webcam.jpg',
-webcamPage: 'https://example.com/webcams/'
-```
-
-Use `webcamImage` when you have a direct image URL.
-Use `webcamPage` when the resort has a webcam page but not a directly embeddable image.
-
 ## Add a trail map
-In `resorts.js`, each resort has:
+In `resorts.js`, each resort can use:
 - `trailMapImage`
 - `trailMapPage`
 
@@ -47,4 +37,6 @@ trailMapPage: 'https://example.com/trail-map/'
 ```
 
 ## Notes
-Some resorts block direct image embedding for webcams or trail maps. In those cases, leave `webcamImage` or `trailMapImage` blank and just use the page link.
+- Drive times use OSRM and appear after a location lookup.
+- Weather uses Open-Meteo.
+- User notes and favorites are stored locally in the browser.
