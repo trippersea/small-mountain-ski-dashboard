@@ -439,6 +439,7 @@ const S = {
   wishlist:   new Set(JSON.parse(localStorage.getItem('ski-wish')||'[]')),
   skiDays:5,
   activeTab:'dashboard',
+  drivesLoading:false,
 };
 
 // ─── DOM ──────────────────────────────────────────────────────────────────────
@@ -559,10 +560,25 @@ function fmtDrive(m) {
 }
 async function loadAllDrives() {
   if (!S.origin) return;
-  toast('⏱ Calculating drive times…',4000);
-  await Promise.all(RESORTS.map(r=>fetchDrive(r)));
+  S.drivesLoading = true;
+  render();
+  toast('⏱ Calculating drive times…', 4000);
+
+  const queue = [...RESORTS];
+  const workers = Array.from({ length: 4 }, async () => {
+    while (queue.length) {
+      const resort = queue.shift();
+      if (!resort) break;
+      await fetchDrive(resort);
+    }
+  });
+
+  await Promise.all(workers);
+  S.drivesLoading = false;
   persist();
   render();
+  await renderPlanner();
+  if (el.sbsPanel?.style.display !== 'none') renderSBS();
   toast('✓ Drive times updated');
 }
 
@@ -619,9 +635,11 @@ async function applyOriginQuery(query) {
   if (!q) {
     S.origin = null;
     S.driveCache = {};
+    S.drivesLoading = false;
     el.locStatus.textContent = '';
     persist();
     render();
+    await renderPlanner();
     return;
   }
 
@@ -722,7 +740,7 @@ function renderSummary(resorts) {
     ['Night Skiing',resorts.filter(r=>r.night).length, 'of '+n],
     ['From',        '$'+minP,       'lowest day ticket'],
     ['7-Day Snow',  avgSnow7+(avgSnow7!=='—'?'"':''), 'avg across filtered'],
-    ['Closest',     closest?.name||'Set location', closest?fmtDrive(S.driveCache[closest.id]):''],
+    ['Closest',     closest?.name || (S.origin ? (S.drivesLoading ? 'Calculating…' : 'No routes') : 'Set location'), closest ? fmtDrive(S.driveCache[closest.id]) : ''],
     ['Terrain Parks',resorts.filter(r=>r.terrainPark).length,'of '+n],
     ['On-Mountain Lodging',resorts.filter(r=>r.hasLodging).length,'with lodging'],
   ].map(([lbl,val,sub])=>`
@@ -826,7 +844,7 @@ function renderTable(resorts) {
       return `<td class="td-num ${isB?'best-cell':''}">${barCell(val,val,max,suf)}</td>`;
     };
     const driveCell=drive==null
-      ? `<td class="td-num"><span class="shimmer">—</span></td>`
+      ? `<td class="td-num"><span class="${S.drivesLoading ? 'shimmer' : ''}">${S.origin ? (S.drivesLoading ? '…' : '—') : 'Set'}</span></td>`
       : `<td class="td-num ${drive===best.drive?'best-cell':''}">${barCell(fmtDrive(drive),drive,best.drive||1)}</td>`;
     const snow7Cell=snow7==null
       ? `<td class="td-num" data-snow7="${r.id}"><span class="shimmer">…</span></td>`
@@ -1076,7 +1094,7 @@ async function renderPlanner() {
           <span class="plan-stat-lbl">7-day snow</span>
         </div>
         <div class="plan-stat">
-          <span class="plan-stat-val">${drive!=null?fmtDrive(drive):'—'}</span>
+          <span class="plan-stat-val">${drive!=null ? fmtDrive(drive) : (S.origin ? (S.drivesLoading ? '…' : '—') : 'Set')}</span>
           <span class="plan-stat-lbl">drive</span>
         </div>
       </div>
@@ -1401,6 +1419,9 @@ function init(){
   setTimeout(()=>{initMap();loadAllSnow();},150);
   // Weekend planner — load after snow data starts
   setTimeout(()=>renderPlanner(),500);
+  if (S.origin) {
+    setTimeout(()=>loadAllDrives(), 250);
+  }
 }
 
 init();

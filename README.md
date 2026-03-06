@@ -19,3 +19,9 @@ Upload `index.html`, `styles.css`, `resorts.js`, and `README.md` to the repo roo
 
 ## Notes
 This version hides the duplicate Best For bar and Resorts sidebar so the Compare table is the main browsing experience.
+
+
+## Latest fixes
+- More reliable ZIP/city drive-time lookup
+- Throttled drive-time loading to avoid public routing API failures
+- Drive times now refresh in Weekend Planner and Resort Compare after location is set
