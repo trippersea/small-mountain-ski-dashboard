@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Small Mountain Dashboard</title>
+  <meta name="description" content="A GitHub Pages-ready ski resort dashboard for small mountains, webcams, and resort stats." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div class="hero-main card">
+        <div class="eyebrow">GitHub Pages Ready</div>
+        <h1>Small Mountain Dashboard</h1>
+        <p>
+          A static ski-resort dashboard you can publish directly to GitHub Pages. Browse resorts,
+          compare mountain stats, highlight night skiing and pass access, and display a webcam
+          image for each resort.
+        </p>
+      </div>
+      <div class="hero-side card" id="summaryCards"></div>
+    </section>
+
+    <section class="toolbar card">
+      <div class="field field-search">
+        <label for="searchInput">Search resorts</label>
+        <input id="searchInput" placeholder="Search name, state, pass, vibe, or owner" />
+      </div>
+      <div class="field">
+        <label for="regionFilter">Region</label>
+        <select id="regionFilter"></select>
+      </div>
+      <div class="field">
+        <label for="passFilter">Pass</label>
+        <select id="passFilter"></select>
+      </div>
+      <div class="field">
+        <label for="sortBy">Sort by</label>
+        <select id="sortBy">
+          <option value="score">Small Mountain Score</option>
+          <option value="vertical">Vertical</option>
+          <option value="trails">Trails</option>
+          <option value="snowfall">Snowfall</option>
+          <option value="snowmaking">Snowmaking</option>
+        </select>
+      </div>
+      <button class="btn-secondary" id="toggleNight">Night Skiing Only</button>
+      <button class="btn-primary" id="randomResort">Surprise Me</button>
+    </section>
+
+    <section class="grid">
+      <div class="panel card">
+        <div class="panel-header">
+          <h2>Resorts</h2>
+          <div class="muted" id="resultCount">0 resorts</div>
+        </div>
+        <div id="resortList" class="resort-list"></div>
+      </div>
+
+      <div class="dashboard" id="dashboard"></div>
+    </section>
+  </div>
+
+  <script src="resorts.js"></script>
+</body>
+</html>
