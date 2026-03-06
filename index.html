@@ -7,16 +7,17 @@
   <meta name="description" content="Interactive ski resort dashboard with adjustable scoring, webcams, trail maps, rankings, and a New England resort map." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div id="toast" class="toast" aria-live="polite"></div>
   <div class="container">
     <section class="hero card">
       <div>
-        <div class="eyebrow">GitHub Pages Ready</div>
+        <div class="eyebrow">New England · Small Mountain Guide</div>
         <h1>Small Mountain Ski Dashboard</h1>
-        <p>Search, compare, rank, and explore New England ski areas. Tune the scoring model, add webcams and trail maps, and publish it directly to GitHub Pages.</p>
+        <p>Search, compare, rank, and explore New England ski areas. Tune the scoring model, add webcams and trail maps, and publish directly to GitHub Pages.</p>
       </div>
       <div id="summaryCards" class="summary-grid"></div>
     </section>
@@ -25,6 +26,10 @@
       <div class="field field-wide">
         <label for="searchInput">Search resorts</label>
         <input id="searchInput" type="text" placeholder="Search name, state, pass, tags, or notes" />
+      </div>
+      <div class="field">
+        <label for="stateFilter">State</label>
+        <select id="stateFilter"></select>
       </div>
       <div class="field">
         <label for="passFilter">Pass</label>
@@ -41,8 +46,15 @@
           <option value="snowmaking">Snowmaking</option>
         </select>
       </div>
-      <button id="toggleNight" class="btn btn-secondary">Night Skiing Only</button>
-      <button id="randomResort" class="btn btn-primary">Surprise Me</button>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">🌙 Night Skiing</button>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="randomResort" class="btn btn-primary">✦ Surprise Me</button>
+      </div>
+      <div id="activeFilters" class="active-filters"></div>
     </section>
 
     <section class="layout">
@@ -55,29 +67,17 @@
       </aside>
 
       <main class="main-content">
-        <section id="selectedResort"></section>
-
-        <section class="score-editor card">
-          <div class="section-header">
-            <div>
-              <h2>Adjust the Scoring Model</h2>
-              <p class="muted small">Move the sliders. Scores and rankings update instantly.</p>
-            </div>
-            <button id="resetWeights" class="btn btn-secondary">Reset Weights</button>
-          </div>
-          <div id="weightControls" class="weights-grid"></div>
-          <div class="weights-total">Current total: <strong id="weightsTotal">100%</strong></div>
-        </section>
 
         <section class="two-col-grid">
-          <section class="card panel">
+          <section class="card panel map-panel">
             <div class="section-header">
               <div>
                 <h2>New England Map</h2>
-                <p class="muted small">Click a marker to select a mountain.</p>
+                <p class="muted small">Click a marker to select · hover to preview.</p>
               </div>
             </div>
             <div id="resortMap" class="svg-map"></div>
+            <div id="mapTooltip" class="map-tooltip" role="tooltip" aria-hidden="true"></div>
           </section>
 
           <section class="card panel">
@@ -90,6 +90,24 @@
             <div id="rankings"></div>
           </section>
         </section>
+
+        <section id="selectedResort"></section>
+
+        <section class="score-editor card">
+          <div class="section-header">
+            <div>
+              <h2>Adjust the Scoring Model</h2>
+              <p class="muted small">Move the sliders. Scores and rankings update instantly.</p>
+            </div>
+            <button id="resetWeights" class="btn btn-secondary">Reset Weights</button>
+          </div>
+          <div id="weightControls" class="weights-grid"></div>
+          <div class="weights-total">
+            Weight total: <strong id="weightsTotal">100%</strong>
+            <span id="weightsWarning" class="weights-warning" aria-live="polite"></span>
+          </div>
+        </section>
+
       </main>
     </section>
   </div>

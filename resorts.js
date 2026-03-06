@@ -134,65 +134,83 @@ const RESORTS = [
   }
 ];
 
+// ─── State ───────────────────────────────────────────────────────────────────
 const state = {
   search: '',
   pass: 'All',
+  stateFilter: 'All',
   sortBy: 'score',
   nightOnly: false,
   selectedId: 'black-nh',
   weights: { ...DEFAULT_WEIGHTS }
 };
 
+// ─── DOM refs ─────────────────────────────────────────────────────────────────
 const els = {
-  summaryCards: document.getElementById('summaryCards'),
-  searchInput: document.getElementById('searchInput'),
-  passFilter: document.getElementById('passFilter'),
-  sortBy: document.getElementById('sortBy'),
-  toggleNight: document.getElementById('toggleNight'),
-  randomResort: document.getElementById('randomResort'),
-  resortList: document.getElementById('resortList'),
-  resultCount: document.getElementById('resultCount'),
+  summaryCards:   document.getElementById('summaryCards'),
+  searchInput:    document.getElementById('searchInput'),
+  stateFilter:    document.getElementById('stateFilter'),
+  passFilter:     document.getElementById('passFilter'),
+  sortBy:         document.getElementById('sortBy'),
+  toggleNight:    document.getElementById('toggleNight'),
+  randomResort:   document.getElementById('randomResort'),
+  activeFilters:  document.getElementById('activeFilters'),
+  resortList:     document.getElementById('resortList'),
+  resultCount:    document.getElementById('resultCount'),
   selectedResort: document.getElementById('selectedResort'),
-  rankings: document.getElementById('rankings'),
-  resortMap: document.getElementById('resortMap'),
+  rankings:       document.getElementById('rankings'),
+  resortMap:      document.getElementById('resortMap'),
+  mapTooltip:     document.getElementById('mapTooltip'),
   weightControls: document.getElementById('weightControls'),
-  weightsTotal: document.getElementById('weightsTotal'),
-  resetWeights: document.getElementById('resetWeights')
+  weightsTotal:   document.getElementById('weightsTotal'),
+  weightsWarning: document.getElementById('weightsWarning'),
+  resetWeights:   document.getElementById('resetWeights'),
+  toast:          document.getElementById('toast'),
 };
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function scoreDescriptor(score) {
+  if (score >= 90) return 'Exceptional';
+  if (score >= 80) return 'Excellent';
+  if (score >= 70) return 'Very Good';
+  if (score >= 60) return 'Good';
+  if (score >= 50) return 'Decent';
+  return 'Below Average';
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  els.toast.textContent = msg;
+  els.toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600);
+}
+
+// ─── Scoring ─────────────────────────────────────────────────────────────────
 function computeScore(resort) {
-  const verticalScore = clamp((Math.min(resort.vertical, 1800) / 1800) * 100, 0, 100);
-  const trailsScore = clamp((Math.min(resort.trails, 70) / 70) * 100, 0, 100);
-  const snowfallScore = clamp((Math.min(resort.snowfall, 250) / 250) * 100, 0, 100);
-  const snowmakingScore = resort.snowmaking;
-  const nightScore = resort.night ? 100 : 0;
-  const charmScore = resort.charm;
-  const vibeScore = resort.localVibe;
-
   const factors = {
-    vertical: verticalScore,
-    trails: trailsScore,
-    snowfall: snowfallScore,
-    snowmaking: snowmakingScore,
-    night: nightScore,
-    charm: charmScore,
-    vibe: vibeScore
+    vertical:    clamp((Math.min(resort.vertical, 1800) / 1800) * 100, 0, 100),
+    trails:      clamp((Math.min(resort.trails, 70) / 70) * 100, 0, 100),
+    snowfall:    clamp((Math.min(resort.snowfall, 250) / 250) * 100, 0, 100),
+    snowmaking:  resort.snowmaking,
+    night:       resort.night ? 100 : 0,
+    charm:       resort.charm,
+    vibe:        resort.localVibe,
   };
-
   const totalWeight = Object.values(state.weights).reduce((sum, v) => sum + v, 0) || 1;
-  const weightedSum = Object.entries(factors).reduce((sum, [key, value]) => sum + value * (state.weights[key] || 0), 0);
+  const weightedSum = Object.entries(factors).reduce((sum, [key, val]) => sum + val * (state.weights[key] || 0), 0);
   return Math.round(weightedSum / totalWeight);
 }
 
 function computeExperienceScore(resort) {
-  const vertical = clamp((Math.min(resort.vertical, 1800) / 1800) * 100, 0, 100);
-  const trails = clamp((Math.min(resort.trails, 70) / 70) * 100, 0, 100);
-  const snowfall = clamp((Math.min(resort.snowfall, 250) / 250) * 100, 0, 100);
-  const liftStrength = clamp((Math.min(resort.lifts, 12) / 12) * 100, 0, 100);
+  const vertical      = clamp((Math.min(resort.vertical, 1800) / 1800) * 100, 0, 100);
+  const trails        = clamp((Math.min(resort.trails, 70) / 70) * 100, 0, 100);
+  const snowfall      = clamp((Math.min(resort.snowfall, 250) / 250) * 100, 0, 100);
+  const liftStrength  = clamp((Math.min(resort.lifts, 12) / 12) * 100, 0, 100);
   const terrainVariety = 100 - Math.abs(resort.difficulty.beginner - resort.difficulty.intermediate) * 100;
   return Math.round(vertical * 0.28 + trails * 0.20 + snowfall * 0.18 + liftStrength * 0.18 + terrainVariety * 0.16);
 }
@@ -201,52 +219,78 @@ function decorate(resort) {
   return { ...resort, score: computeScore(resort), experienceScore: computeExperienceScore(resort) };
 }
 
-function uniquePasses() {
-  return ['All', ...new Set(RESORTS.map(r => r.pass))];
-}
+// ─── Filtering ───────────────────────────────────────────────────────────────
+function uniquePasses()  { return ['All', ...new Set(RESORTS.map(r => r.pass))]; }
+function uniqueStates()  { return ['All', ...new Set(RESORTS.map(r => r.state)).values()].sort((a,b) => a === 'All' ? -1 : a.localeCompare(b)); }
 
 function filteredResorts() {
   return RESORTS
     .map(decorate)
-    .filter((resort) => {
+    .filter(resort => {
       const q = state.search.trim().toLowerCase();
       const haystack = [resort.name, resort.state, resort.pass, resort.owner, resort.notes, ...(resort.tags || [])].join(' ').toLowerCase();
-      return (!q || haystack.includes(q)) && (state.pass === 'All' || resort.pass === state.pass) && (!state.nightOnly || resort.night);
+      const matchSearch  = !q || haystack.includes(q);
+      const matchPass    = state.pass === 'All' || resort.pass === state.pass;
+      const matchState   = state.stateFilter === 'All' || resort.state === state.stateFilter;
+      const matchNight   = !state.nightOnly || resort.night;
+      return matchSearch && matchPass && matchState && matchNight;
     })
     .sort((a, b) => (b[state.sortBy] || 0) - (a[state.sortBy] || 0) || a.name.localeCompare(b.name));
 }
 
-function percent(x) {
-  return `${Math.round(x * 100)}%`;
+// ─── Active filters display ───────────────────────────────────────────────────
+function renderActiveFilters() {
+  const tags = [];
+  if (state.search.trim())           tags.push({ label: `"${state.search.trim()}"`,    clear: () => { state.search = ''; els.searchInput.value = ''; } });
+  if (state.stateFilter !== 'All')   tags.push({ label: `State: ${state.stateFilter}`, clear: () => { state.stateFilter = 'All'; els.stateFilter.value = 'All'; } });
+  if (state.pass !== 'All')          tags.push({ label: `Pass: ${state.pass}`,         clear: () => { state.pass = 'All'; els.passFilter.value = 'All'; } });
+  if (state.nightOnly)               tags.push({ label: '🌙 Night only',              clear: () => { state.nightOnly = false; els.toggleNight.setAttribute('aria-pressed', 'false'); } });
+
+  els.activeFilters.innerHTML = tags.map((t, i) =>
+    `<span class="filter-tag">${t.label}<button data-idx="${i}" aria-label="Remove filter">✕</button></span>`
+  ).join('');
+
+  [...els.activeFilters.querySelectorAll('button')].forEach(btn => {
+    btn.addEventListener('click', () => {
+      tags[+btn.dataset.idx].clear();
+      render();
+    });
+  });
 }
 
+// ─── Summary cards ────────────────────────────────────────────────────────────
 function renderSummaryCards(resorts) {
-  const avgScore = resorts.length ? Math.round(resorts.reduce((sum, r) => sum + r.score, 0) / resorts.length) : 0;
-  const avgVertical = resorts.length ? Math.round(resorts.reduce((sum, r) => sum + r.vertical, 0) / resorts.length) : 0;
+  const avgScore   = resorts.length ? Math.round(resorts.reduce((s, r) => s + r.score, 0) / resorts.length) : 0;
+  const avgVertical= resorts.length ? Math.round(resorts.reduce((s, r) => s + r.vertical, 0) / resorts.length) : 0;
   const nightCount = resorts.filter(r => r.night).length;
-  const top = resorts[0]?.name || '—';
+  const top        = resorts[0]?.name || '—';
+  const weightTotal= Object.values(state.weights).reduce((a, b) => a + b, 0);
   els.summaryCards.innerHTML = [
-    ['Resorts', resorts.length],
-    ['Avg Score', avgScore],
-    ['Avg Vertical', `${avgVertical} ft`],
-    ['Night Skiing', nightCount],
-    ['Top Ranked', top],
-    ['Weight Total', `${Object.values(state.weights).reduce((a, b) => a + b, 0)}%`]
+    ['Resorts',     resorts.length],
+    ['Avg Score',   avgScore],
+    ['Avg Vertical',`${avgVertical} ft`],
+    ['Night Skiing',nightCount],
+    ['Top Ranked',  top],
+    ['Weight Total',`${weightTotal}%`],
   ].map(([label, value]) => `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`).join('');
 }
 
+// ─── Resort list ─────────────────────────────────────────────────────────────
 function renderResortList(resorts) {
   els.resultCount.textContent = `${resorts.length} resort${resorts.length === 1 ? '' : 's'}`;
+
   if (!resorts.length) {
-    els.resortList.innerHTML = '<div class="empty-state">No resorts match these filters.</div>';
+    els.resortList.innerHTML     = '<div class="empty-state">No resorts match these filters.</div>';
     els.selectedResort.innerHTML = '<div class="card panel empty-state">Try changing your search or filters.</div>';
-    els.rankings.innerHTML = '';
-    els.resortMap.innerHTML = '<div class="empty-state">No map points to show.</div>';
+    els.rankings.innerHTML       = '';
+    els.resortMap.innerHTML      = '<div class="empty-state">No map points to show.</div>';
     return;
   }
+
   if (!resorts.find(r => r.id === state.selectedId)) state.selectedId = resorts[0].id;
-  els.resortList.innerHTML = resorts.map((resort) => `
-    <div class="resort-item ${resort.id === state.selectedId ? 'active' : ''}" data-id="${resort.id}">
+
+  els.resortList.innerHTML = resorts.map(resort => `
+    <div class="resort-item ${resort.id === state.selectedId ? 'active' : ''}" data-id="${resort.id}" tabindex="0" role="button" aria-pressed="${resort.id === state.selectedId}">
       <div class="resort-top">
         <div><strong>${resort.name}</strong><div class="muted small">${resort.state} · ${resort.owner}</div></div>
         <span class="score-pill">${resort.score}</span>
@@ -255,16 +299,19 @@ function renderResortList(resorts) {
         <span class="chip">${resort.vertical} ft</span>
         <span class="chip">${resort.trails} trails</span>
         <span class="chip">${resort.pass}</span>
-        ${resort.night ? '<span class="chip good">Night</span>' : ''}
+        ${resort.night ? '<span class="chip good">🌙 Night</span>' : ''}
       </div>
     </div>`).join('');
 
-  [...els.resortList.querySelectorAll('.resort-item')].forEach((item) => {
-    item.addEventListener('click', () => {
+  [...els.resortList.querySelectorAll('.resort-item')].forEach(item => {
+    const select = () => {
       state.selectedId = item.dataset.id;
       render();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+      // Scroll to selected resort detail (works on mobile too)
+      document.getElementById('selectedResort').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    item.addEventListener('click', select);
+    item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') select(); });
   });
 
   const selected = resorts.find(r => r.id === state.selectedId);
@@ -273,28 +320,32 @@ function renderResortList(resorts) {
   renderMap(resorts);
 }
 
+// ─── Terrain bars with difficulty colors ─────────────────────────────────────
 function renderTerrainBars(difficulty) {
   return [
-    ['Beginner', difficulty.beginner],
-    ['Intermediate', difficulty.intermediate],
-    ['Advanced', difficulty.advanced],
-    ['Expert', difficulty.expert]
-  ].map(([label, value]) => `
+    ['Beginner',     'beginner',     difficulty.beginner],
+    ['Intermediate', 'intermediate', difficulty.intermediate],
+    ['Advanced',     'advanced',     difficulty.advanced],
+    ['Expert',       'expert',       difficulty.expert],
+  ].map(([label, cls, value]) => `
     <div class="bar-row">
-      <div>${label}</div>
-      <div class="bar"><div class="bar-fill" style="width:${value * 100}%"></div></div>
-      <div class="muted small">${percent(value)}</div>
+      <div class="bar-label"><span class="difficulty-dot ${cls}"></span>${label}</div>
+      <div class="bar"><div class="bar-fill ${cls}" style="width:${value * 100}%"></div></div>
+      <div class="bar-pct">${Math.round(value * 100)}%</div>
     </div>`).join('');
 }
 
+// ─── Media box ────────────────────────────────────────────────────────────────
 function renderMediaBox(title, imageUrl, pageUrl, buttonText) {
   const media = imageUrl
-    ? `<img src="${imageUrl}" alt="${title}" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='grid';" /><div class="placeholder" style="display:none;">Image could not be loaded.</div>`
+    ? `<img src="${imageUrl}" alt="${title}" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='grid';" />
+       <div class="placeholder" style="display:none;">Image could not be loaded.</div>`
     : `<div class="placeholder">No direct image URL yet.<br>Add one in <code>resorts.js</code>.</div>`;
-  const link = pageUrl ? `<div class="link-row"><a href="${pageUrl}" target="_blank" rel="noreferrer">${buttonText}</a></div>` : '';
+  const link = pageUrl ? `<div class="link-row"><a href="${pageUrl}" target="_blank" rel="noreferrer">${buttonText} ↗</a></div>` : '';
   return `<div class="media-box">${media}<div class="media-caption"><div class="stat-label">${title}</div>${link}</div></div>`;
 }
 
+// ─── Selected resort detail ───────────────────────────────────────────────────
 function renderSelectedResort(resort) {
   els.selectedResort.innerHTML = `
     <section class="card headline-card">
@@ -304,7 +355,9 @@ function renderSelectedResort(resort) {
           <h2>${resort.name}</h2>
           <p class="muted">${resort.state} · ${resort.pass} pass · ${resort.owner}</p>
         </div>
-        <div class="score-pill">Custom Score ${resort.score}</div>
+        <div>
+          <div class="score-pill">Score ${resort.score}</div>
+        </div>
       </div>
       <div class="metrics-grid">
         <div class="metric-card"><div class="metric-label">Vertical</div><div class="metric-value">${resort.vertical} ft</div></div>
@@ -325,12 +378,26 @@ function renderSelectedResort(resort) {
         <table class="mini-table" style="margin-top: 12px;">
           <tbody>
             ${resort.liftsBreakdown.map(([label, count]) => `<tr><td>${label}</td><td>${count}</td></tr>`).join('')}
-            <tr><td>Night Skiing</td><td>${resort.night ? 'Yes' : 'No'}</td></tr>
-            <tr><td>Charm</td><td>${resort.charm}</td></tr>
-            <tr><td>Local Vibe</td><td>${resort.localVibe}</td></tr>
+            <tr><td>Night Skiing</td><td>${resort.night ? '✓ Yes' : 'No'}</td></tr>
+            <tr>
+              <td>Charm</td>
+              <td>
+                <span style="font-family:'DM Mono',monospace;font-weight:700">${resort.charm}/100</span>
+                <span class="score-descriptor">${scoreDescriptor(resort.charm)}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Local Vibe</td>
+              <td>
+                <span style="font-family:'DM Mono',monospace;font-weight:700">${resort.localVibe}/100</span>
+                <span class="score-descriptor">${scoreDescriptor(resort.localVibe)}</span>
+              </td>
+            </tr>
           </tbody>
         </table>
         <div class="footer-note">${resort.notes}</div>
+        ${resort.tags && resort.tags.length ? `<div class="chip-row" style="margin-top:12px">${resort.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div>` : ''}
+        <div style="margin-top:16px"><a href="${resort.website}" target="_blank" rel="noreferrer" style="color:var(--accent);font-size:13px;text-decoration:none;">Visit website ↗</a></div>
       </div>
 
       <div class="media-grid">
@@ -341,122 +408,225 @@ function renderSelectedResort(resort) {
   `;
 }
 
+// ─── Rankings ────────────────────────────────────────────────────────────────
 function renderRankings(resorts) {
+  const badgeClass = i => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+  const total = resorts.length;
+
   els.rankings.innerHTML = `
     <table class="mini-table">
       <thead><tr><th>#</th><th>Resort</th><th>Score</th><th>Night</th></tr></thead>
       <tbody>
-        ${resorts.slice(0, 10).map((resort, index) => `
+        ${resorts.map((resort, i) => `
           <tr>
-            <td>${index + 1}</td>
+            <td><span class="rank-badge ${badgeClass(i)}">${i + 1}</span></td>
             <td><button class="ranking-button" data-id="${resort.id}">${resort.name}</button></td>
-            <td>${resort.score}</td>
-            <td>${resort.night ? 'Yes' : 'No'}</td>
+            <td style="font-family:'DM Mono',monospace;font-weight:700">${resort.score}</td>
+            <td>${resort.night ? '🌙' : '—'}</td>
           </tr>`).join('')}
       </tbody>
-    </table>`;
-  [...document.querySelectorAll('.ranking-button')].forEach((btn) => {
+    </table>
+    ${total > 10 ? `<p class="rankings-count-note">Showing all ${total} resorts</p>` : ''}`;
+
+  [...document.querySelectorAll('.ranking-button')].forEach(btn => {
     btn.addEventListener('click', () => {
       state.selectedId = btn.dataset.id;
       render();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('selectedResort').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 }
+
+// ─── Map ─────────────────────────────────────────────────────────────────────
+// State label positions (approx center of each state in our projection space)
+const STATE_LABELS = [
+  { name: 'ME',  lat: 45.2,  lon: -69.0 },
+  { name: 'NH',  lat: 43.9,  lon: -71.5 },
+  { name: 'VT',  lat: 44.0,  lon: -72.7 },
+  { name: 'MA',  lat: 42.35, lon: -71.8 },
+  { name: 'NY',  lat: 42.7,  lon: -74.5 },
+];
 
 function renderMap(resorts) {
   if (!resorts.length) return;
-  const latMin = Math.min(...resorts.map(r => r.lat));
-  const latMax = Math.max(...resorts.map(r => r.lat));
-  const lonMin = Math.min(...resorts.map(r => r.lon));
-  const lonMax = Math.max(...resorts.map(r => r.lon));
-  const width = 760;
-  const height = 470;
-  const pad = 40;
-  const projectX = (lon) => pad + ((lon - lonMin) / (lonMax - lonMin || 1)) * (width - pad * 2);
-  const projectY = (lat) => height - pad - ((lat - latMin) / (latMax - latMin || 1)) * (height - pad * 2);
+
+  // Use fixed bounds so the map doesn't jump around when filtering
+  const latMin = 41.8, latMax = 45.6;
+  const lonMin = -74.8, lonMax = -69.8;
+  const width = 760, height = 470, pad = 40;
+
+  const px = lon => pad + ((lon - lonMin) / (lonMax - lonMin)) * (width - pad * 2);
+  const py = lat => height - pad - ((lat - latMin) / (latMax - latMin)) * (height - pad * 2);
+
+  const decoratedMap = resorts.reduce((m, r) => { m[r.id] = r; return m; }, {});
 
   const svg = `
-    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="New England ski resort map">
-      <rect x="0" y="0" width="${width}" height="${height}" rx="18" fill="rgba(255,255,255,0.02)"></rect>
-      <text x="28" y="36" class="map-label">North</text>
-      <text x="28" y="${height - 18}" class="map-label">Approximate New England / Northeast view</text>
-      ${resorts.map((resort) => {
-        const x = projectX(resort.lon);
-        const y = projectY(resort.lat);
-        const r = resort.id === state.selectedId ? 9 : 6;
-        const fill = resort.id === state.selectedId ? '#84e1c6' : '#7fb6ff';
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="New England ski resort map" tabindex="-1">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="14" fill="rgba(255,255,255,0.015)"></rect>
+
+      <!-- Compass north indicator -->
+      <text x="${width - 28}" y="28" class="map-label" text-anchor="middle" style="font-size:12px;fill:rgba(159,176,211,0.6)">N ↑</text>
+
+      <!-- State labels -->
+      ${STATE_LABELS.map(s => `<text x="${px(s.lon)}" y="${py(s.lat)}" class="map-state-label" text-anchor="middle">${s.name}</text>`).join('')}
+
+      <!-- Resort dots -->
+      ${RESORTS.map(base => {
+        const resort = decoratedMap[base.id] || base;
+        const filtered = !!decoratedMap[base.id];
+        const x = px(base.lon);
+        const y = py(base.lat);
+        const isSelected = base.id === state.selectedId;
+        const r = isSelected ? 9 : 6;
+        const fill = !filtered ? 'rgba(159,176,211,0.2)' : isSelected ? '#84e1c6' : '#7fb6ff';
+        const stroke = isSelected ? 'rgba(132,225,198,0.5)' : 'rgba(11,18,32,0.9)';
+        const strokeW = isSelected ? 3 : 2;
+        const opacity = filtered ? 1 : 0.35;
         return `
-          <g class="map-point" data-id="${resort.id}">
-            <circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="#0b1220" stroke-width="2"></circle>
-            <text x="${x + 10}" y="${y - 10}" class="map-label">${resort.name}</text>
+          <g class="map-point" data-id="${base.id}" tabindex="${filtered ? 0 : -1}" role="button" aria-label="${base.name}" style="opacity:${opacity}">
+            ${isSelected ? `<circle cx="${x}" cy="${y}" r="14" fill="rgba(132,225,198,0.12)" />` : ''}
+            <circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}" />
+            ${isSelected ? `<text x="${x}" y="${y - 14}" class="map-label" text-anchor="middle" style="fill:#84e1c6;font-weight:700">${base.name}</text>` : ''}
           </g>`;
       }).join('')}
     </svg>`;
+
   els.resortMap.innerHTML = svg;
-  [...els.resortMap.querySelectorAll('.map-point')].forEach((point) => {
-    point.addEventListener('click', () => {
+
+  // Click handlers
+  [...els.resortMap.querySelectorAll('.map-point[tabindex="0"]')].forEach(point => {
+    const selectIt = () => {
       state.selectedId = point.dataset.id;
       render();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('selectedResort').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    point.addEventListener('click', selectIt);
+    point.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') selectIt(); });
+
+    // Hover tooltip
+    point.addEventListener('mouseenter', e => {
+      const id = point.dataset.id;
+      const resort = decoratedMap[id];
+      if (!resort) return;
+      els.mapTooltip.innerHTML = `
+        <div class="map-tooltip-name">${resort.name}</div>
+        <div class="map-tooltip-meta">${resort.state} · ${resort.vertical} ft · ${resort.trails} trails</div>
+        <div class="map-tooltip-score">Score: ${resort.score}</div>`;
+      els.mapTooltip.classList.add('visible');
+      els.mapTooltip.setAttribute('aria-hidden', 'false');
+      positionTooltip(e);
+    });
+    point.addEventListener('mousemove', positionTooltip);
+    point.addEventListener('mouseleave', () => {
+      els.mapTooltip.classList.remove('visible');
+      els.mapTooltip.setAttribute('aria-hidden', 'true');
     });
   });
 }
 
+function positionTooltip(e) {
+  const mapRect = els.resortMap.getBoundingClientRect();
+  let x = e.clientX - mapRect.left + 14;
+  let y = e.clientY - mapRect.top - 10;
+  // Prevent overflow right
+  if (x + 180 > mapRect.width) x = e.clientX - mapRect.left - 174;
+  els.mapTooltip.style.left = x + 'px';
+  els.mapTooltip.style.top  = y + 'px';
+}
+
+// ─── Weight controls ─────────────────────────────────────────────────────────
+let renderWeightsDebounceTimer = null;
+
 function renderWeightControls() {
   const labels = {
-    vertical: 'Vertical', trails: 'Trails', snowfall: 'Snowfall', snowmaking: 'Snowmaking', night: 'Night Skiing', charm: 'Charm', vibe: 'Local Vibe'
+    vertical: 'Vertical', trails: 'Trails', snowfall: 'Snowfall',
+    snowmaking: 'Snowmaking', night: 'Night Skiing', charm: 'Charm', vibe: 'Local Vibe'
   };
   els.weightControls.innerHTML = Object.entries(labels).map(([key, label]) => `
     <div class="sub-card weight-card">
-      <label for="weight-${key}"><span>${label}</span><span id="value-${key}" class="weight-value">${state.weights[key]}%</span></label>
+      <label for="weight-${key}">
+        <span>${label}</span>
+        <span id="value-${key}" class="weight-value">${state.weights[key]}%</span>
+      </label>
       <input id="weight-${key}" type="range" min="0" max="40" step="1" value="${state.weights[key]}" data-weight-key="${key}" />
     </div>`).join('');
-  els.weightsTotal.textContent = `${Object.values(state.weights).reduce((a, b) => a + b, 0)}%`;
 
-  [...document.querySelectorAll('[data-weight-key]')].forEach((slider) => {
+  updateWeightsTotal();
+
+  [...document.querySelectorAll('[data-weight-key]')].forEach(slider => {
     slider.addEventListener('input', () => {
       const key = slider.dataset.weightKey;
       state.weights[key] = Number(slider.value);
       document.getElementById(`value-${key}`).textContent = `${slider.value}%`;
-      els.weightsTotal.textContent = `${Object.values(state.weights).reduce((a, b) => a + b, 0)}%`;
-      render();
+      updateWeightsTotal();
+      // Debounce the full re-render while dragging
+      clearTimeout(renderWeightsDebounceTimer);
+      renderWeightsDebounceTimer = setTimeout(render, 80);
     });
   });
 }
 
+function updateWeightsTotal() {
+  const total = Object.values(state.weights).reduce((a, b) => a + b, 0);
+  els.weightsTotal.textContent = `${total}%`;
+  if (total !== 100) {
+    els.weightsWarning.textContent = `(scores are normalized — total doesn't need to be 100)`;
+  } else {
+    els.weightsWarning.textContent = '';
+  }
+}
+
+// ─── Event wiring ─────────────────────────────────────────────────────────────
 function wireEvents() {
-  els.searchInput.addEventListener('input', (e) => { state.search = e.target.value; render(); });
-  els.passFilter.addEventListener('change', (e) => { state.pass = e.target.value; render(); });
-  els.sortBy.addEventListener('change', (e) => { state.sortBy = e.target.value; render(); });
+  els.searchInput.addEventListener('input', e => { state.search = e.target.value; render(); });
+  els.stateFilter.addEventListener('change', e => { state.stateFilter = e.target.value; render(); });
+  els.passFilter.addEventListener('change',  e => { state.pass = e.target.value; render(); });
+  els.sortBy.addEventListener('change',      e => { state.sortBy = e.target.value; render(); });
+
   els.toggleNight.addEventListener('click', () => {
     state.nightOnly = !state.nightOnly;
-    els.toggleNight.textContent = state.nightOnly ? 'Showing Night Skiing Only' : 'Night Skiing Only';
+    els.toggleNight.setAttribute('aria-pressed', state.nightOnly ? 'true' : 'false');
     render();
   });
+
   els.randomResort.addEventListener('click', () => {
     const resorts = filteredResorts();
     if (!resorts.length) return;
-    state.selectedId = resorts[Math.floor(Math.random() * resorts.length)].id;
+    const pick = resorts[Math.floor(Math.random() * resorts.length)];
+    state.selectedId = pick.id;
     render();
+    showToast(`✦ Showing: ${pick.name}`);
+    document.getElementById('selectedResort').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
+
   els.resetWeights.addEventListener('click', () => {
     state.weights = { ...DEFAULT_WEIGHTS };
     render();
+    showToast('Weights reset to defaults');
   });
 }
 
-function initialize() {
-  els.passFilter.innerHTML = uniquePasses().map((pass) => `<option value="${pass}">${pass}</option>`).join('');
-  wireEvents();
-  render();
-}
-
+// ─── Main render ─────────────────────────────────────────────────────────────
 function render() {
   const resorts = filteredResorts();
   renderSummaryCards(resorts);
   renderWeightControls();
   renderResortList(resorts);
+  renderActiveFilters();
+
+  // Sync sidebar scroll to selected item
+  const activeItem = els.resortList.querySelector('.resort-item.active');
+  if (activeItem) {
+    activeItem.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// ─── Initialize ───────────────────────────────────────────────────────────────
+function initialize() {
+  els.stateFilter.innerHTML = uniqueStates().map(s => `<option value="${s}">${s}</option>`).join('');
+  els.passFilter.innerHTML  = uniquePasses().map(p => `<option value="${p}">${p}</option>`).join('');
+  wireEvents();
+  render();
 }
 
 initialize();
