@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Small Mountain Dashboard</title>
-  <meta name="description" content="A GitHub Pages-ready ski resort dashboard for small mountains, webcams, and resort stats." />
+  <meta name="description" content="A GitHub Pages-ready ski resort dashboard for small mountains, webcams, map views, rankings, and snow forecast tracking." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -17,9 +18,8 @@
         <div class="eyebrow">GitHub Pages Ready</div>
         <h1>Small Mountain Dashboard</h1>
         <p>
-          A static ski-resort dashboard you can publish directly to GitHub Pages. Browse resorts,
-          compare mountain stats, highlight night skiing and pass access, and display a webcam
-          image for each resort.
+          A static ski-resort dashboard for your small-mountain project. Search, filter, rank, map,
+          and compare resorts, then pull a live 3-day snow forecast into the selected resort panel.
         </p>
       </div>
       <div class="hero-side card" id="summaryCards"></div>
@@ -28,7 +28,7 @@
     <section class="toolbar card">
       <div class="field field-search">
         <label for="searchInput">Search resorts</label>
-        <input id="searchInput" placeholder="Search name, state, pass, vibe, or owner" />
+        <input id="searchInput" placeholder="Search name, state, pass, owner, tags, or notes" />
       </div>
       <div class="field">
         <label for="regionFilter">Region</label>
@@ -44,8 +44,9 @@
           <option value="score">Small Mountain Score</option>
           <option value="vertical">Vertical</option>
           <option value="trails">Trails</option>
-          <option value="snowfall">Snowfall</option>
+          <option value="snowfall">Avg Snowfall</option>
           <option value="snowmaking">Snowmaking</option>
+          <option value="experienceScore">Experience Score</option>
         </select>
       </div>
       <button class="btn-secondary" id="toggleNight">Night Skiing Only</button>
@@ -53,7 +54,7 @@
     </section>
 
     <section class="grid">
-      <div class="panel card">
+      <div class="panel card left-panel">
         <div class="panel-header">
           <h2>Resorts</h2>
           <div class="muted" id="resultCount">0 resorts</div>
@@ -61,10 +62,31 @@
         <div id="resortList" class="resort-list"></div>
       </div>
 
-      <div class="dashboard" id="dashboard"></div>
+      <div class="dashboard">
+        <div id="selectedResort"></div>
+
+        <div class="section-grid two-up">
+          <div class="card panel">
+            <div class="panel-header">
+              <h2>New England Map</h2>
+              <div class="muted">Click any marker to jump</div>
+            </div>
+            <div id="map"></div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-header">
+              <h2>Rankings</h2>
+              <div class="muted">Current filtered list</div>
+            </div>
+            <div id="rankings"></div>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="resorts.js"></script>
 </body>
 </html>
