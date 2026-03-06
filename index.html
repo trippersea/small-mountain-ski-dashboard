@@ -15,6 +15,13 @@
 
   <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
 
+  <nav class="primary-nav card" aria-label="Primary navigation">
+    <a class="pnav-link" href="#searchSection">Search</a>
+    <a class="pnav-link" href="#resortsSection">Resorts</a>
+    <a class="pnav-link" href="#passCalcSection">Pass Value Calculator</a>
+  </nav>
+
+
   <!-- ── MOBILE BOTTOM NAV ─────────────────────────────── -->
   <nav class="mobile-nav" id="mobileNav" aria-label="Main navigation">
     <button class="mnav-btn active" data-section="dashboard">
@@ -86,7 +93,7 @@
     </section>
 
     <!-- ── TOOLBAR ────────────────────────────────────────── -->
-    <section class="card toolbar" data-section="dashboard">
+    <section class="card toolbar" id="searchSection" data-section="dashboard">
       <div class="field field-search">
         <label for="searchInput">Search</label>
         <input id="searchInput" type="search" placeholder="Name, state, pass, tags…" autocomplete="off"/>
@@ -128,7 +135,7 @@
     <div class="layout" data-section="dashboard">
 
       <!-- Sidebar -->
-      <aside class="card sidebar" id="sidebar">
+      <aside class="card sidebar" id="resortsSection">
         <div class="sidebar-head">
           <div class="sidebar-title-row">
             <h2>Resorts <span id="resultCount" class="count-badge">0</span></h2>

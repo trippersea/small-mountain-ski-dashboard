@@ -566,11 +566,49 @@ async function loadAllDrives() {
 // ─── Geocode (Nominatim) ──────────────────────────────────────────────────────
 async function geocode(q) {
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,{headers:{'Accept-Language':'en'}});
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=us`,{headers:{'Accept-Language':'en'}});
     const d = await r.json();
     if (!d.length) return null;
     return {lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon),label:d[0].display_name.split(',')[0]};
   } catch { return null; }
+}
+
+async function resolveOrigin(query) {
+  const q = query.trim();
+  if (!q) return null;
+  const attempts = /^\d{5}$/.test(q)
+    ? [`${q}, USA`, q]
+    : [q, `${q}, USA`];
+
+  for (const candidate of attempts) {
+    const loc = await geocode(candidate);
+    if (loc) return loc;
+  }
+  return null;
+}
+
+async function applyOriginQuery(query) {
+  const q = query.trim();
+  if (!q) {
+    S.origin = null;
+    S.driveCache = {};
+    el.locStatus.textContent = '';
+    persist();
+    render();
+    return;
+  }
+
+  el.locStatus.textContent = '🔍 Finding location…';
+  const loc = await resolveOrigin(q);
+  if (loc) {
+    S.origin = loc;
+    S.driveCache = {};
+    el.locStatus.textContent = `📍 Set to ${loc.label}`;
+    persist();
+    await loadAllDrives();
+  } else {
+    el.locStatus.textContent = '⚠️ Location not found';
+  }
 }
 
 // ─── Weather (Open-Meteo) — with 30-min cache ─────────────────────────────────
@@ -1201,7 +1239,7 @@ function wireSortHeaders(){
     th.addEventListener('click',()=>{
       const col=th.dataset.col;
       S.sortDir=(S.sortCol===col&&S.sortDir==='desc')?'asc':'desc';
-      if(S.sortCol!==col){S.sortCol=col;S.sortDir=(col==='name'||col==='state')?'asc':'desc';}
+      if(S.sortCol!==col){S.sortCol=col;S.sortDir=(col==='name'||col==='state'||col==='price'||col==='drive')?'asc':'desc';}
       el.sortBy.value=col;
       render();
     });
@@ -1228,7 +1266,11 @@ function wire(){
   el.searchInput.addEventListener('input',e=>{S.search=e.target.value;render();});
   el.stateFilter.addEventListener('change',e=>{S.stateFilter=e.target.value;render();});
   el.passFilter .addEventListener('change',e=>{S.pass=e.target.value;render();});
-  el.sortBy     .addEventListener('change',e=>{S.sortCol=e.target.value;S.sortDir='desc';render();});
+  el.sortBy.addEventListener('change',e=>{
+    S.sortCol = e.target.value;
+    S.sortDir = (['drive','price','name','state'].includes(S.sortCol)) ? 'asc' : 'desc';
+    render();
+  });
   el.toggleNight.addEventListener('click',()=>{
     S.nightOnly=!S.nightOnly;
     el.toggleNight.setAttribute('aria-pressed',S.nightOnly?'true':'false');
@@ -1268,20 +1310,19 @@ function wire(){
   let locT;
   el.originInput.addEventListener('input',()=>{
     clearTimeout(locT);
-    locT=setTimeout(async()=>{
-      const q=el.originInput.value.trim();
-      if(!q){S.origin=null;S.driveCache={};el.locStatus.textContent='';render();return;}
-      el.locStatus.textContent='🔍 Finding location…';
-      const loc=await geocode(q);
-      if(loc){
-        S.origin=loc;S.driveCache={};
-        el.locStatus.textContent=`📍 Set to ${loc.label}`;
-        persist();
-        await loadAllDrives();
-      } else {
-        el.locStatus.textContent='⚠️ Location not found';
-      }
-    },900);
+    locT=setTimeout(()=>applyOriginQuery(el.originInput.value),500);
+  });
+  el.originInput.addEventListener('keydown',async e=>{
+    if(e.key!=='Enter') return;
+    e.preventDefault();
+    clearTimeout(locT);
+    await applyOriginQuery(el.originInput.value);
+  });
+  el.originInput.addEventListener('blur',()=>{
+    const q = el.originInput.value.trim();
+    if (!q) return;
+    clearTimeout(locT);
+    locT=setTimeout(()=>applyOriginQuery(q),150);
   });
   el.detectLoc.addEventListener('click',()=>{
     if(!navigator.geolocation){toast('Geolocation not supported');return;}

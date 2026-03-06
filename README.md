@@ -1,11 +1,10 @@
 # Small Mountain Ski Dashboard
 
 A GitHub Pages-ready ski resort dashboard with:
-- adjustable scoring sliders
-- resort rankings
-- clickable SVG map
-- webcam slot for each mountain
-- trail map slot for each mountain
+- zip-code and city drive-time lookup
+- primary top navigation for Search, Resorts, and Pass Value Calculator
+- live comparison tables and map
+- trail map links for each mountain
 
 ## Files
 - `index.html`

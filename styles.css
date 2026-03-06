@@ -50,6 +50,37 @@ p  { color:var(--muted); font-size:14px; line-height:1.6; }
 .mnav-btn .mnav-icon { font-size:18px; line-height:1; }
 .mnav-btn.active { color:var(--accent); border-top-color:var(--accent); }
 
+
+/* ── Primary Nav ────────────────────────────────────── */
+.primary-nav {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  position:sticky;
+  top:12px;
+  z-index:220;
+  background:rgba(10,19,34,.92);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.pnav-link {
+  text-decoration:none;
+  color:var(--text);
+  font-weight:700;
+  font-size:13px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  transition:background .15s,border-color .15s,color .15s;
+}
+.pnav-link:hover {
+  background:rgba(79,145,245,.12);
+  border-color:rgba(79,145,245,.28);
+  color:var(--accent);
+}
+
 /* ── Container ───────────────────────────────────────── */
 .container {
   width:min(1520px, calc(100vw - 24px));
@@ -452,4 +483,8 @@ button { font:inherit; cursor:pointer; border-radius:var(--r-sm); -webkit-tap-hi
   .comp-table { font-size:11px; }
   .comp-table thead th { padding:7px 7px; }
   .comp-table tbody td { padding:7px 7px; }
+}
+
+@media (max-width: 768px) {
+  .primary-nav { display:none; }
 }
