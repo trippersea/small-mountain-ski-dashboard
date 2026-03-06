@@ -1,13 +1,3 @@
-const DEFAULT_WEIGHTS = {
-  vertical: 20,
-  trails: 15,
-  snowfall: 15,
-  snowmaking: 15,
-  night: 15,
-  charm: 10,
-  vibe: 10
-};
-
 const RESORTS = [
   {
     id: 'black-nh', name: 'Black Mountain', state: 'NH', pass: 'Indy', owner: 'Independent',
@@ -139,49 +129,68 @@ const state = {
   search: '',
   pass: 'All',
   stateFilter: 'All',
-  sortBy: 'score',
   nightOnly: false,
-  selectedId: 'black-nh',
-  weights: { ...DEFAULT_WEIGHTS }
+  selectedId: null,
+  sortCol: 'vertical',
+  sortDir: 'desc',
+};
+
+// Column max values for inline bar scaling
+const COL_MAX = {
+  vertical:    2100,
+  trails:      75,
+  lifts:       12,
+  acres:       650,
+  longestRun:  3.2,
+  snowfall:    320,
+  snowmaking:  100,
 };
 
 // ─── DOM refs ─────────────────────────────────────────────────────────────────
 const els = {
-  summaryCards:   document.getElementById('summaryCards'),
-  searchInput:    document.getElementById('searchInput'),
-  stateFilter:    document.getElementById('stateFilter'),
-  passFilter:     document.getElementById('passFilter'),
-  sortBy:         document.getElementById('sortBy'),
-  toggleNight:    document.getElementById('toggleNight'),
-  randomResort:   document.getElementById('randomResort'),
-  activeFilters:  document.getElementById('activeFilters'),
-  resortList:     document.getElementById('resortList'),
-  resultCount:    document.getElementById('resultCount'),
-  selectedResort: document.getElementById('selectedResort'),
-  rankings:       document.getElementById('rankings'),
-  resortMap:      document.getElementById('resortMap'),
-  mapTooltip:     document.getElementById('mapTooltip'),
-  weightControls: document.getElementById('weightControls'),
-  weightsTotal:   document.getElementById('weightsTotal'),
-  weightsWarning: document.getElementById('weightsWarning'),
-  resetWeights:   document.getElementById('resetWeights'),
-  toast:          document.getElementById('toast'),
+  summaryCards:    document.getElementById('summaryCards'),
+  searchInput:     document.getElementById('searchInput'),
+  stateFilter:     document.getElementById('stateFilter'),
+  passFilter:      document.getElementById('passFilter'),
+  toggleNight:     document.getElementById('toggleNight'),
+  randomResort:    document.getElementById('randomResort'),
+  activeFilters:   document.getElementById('activeFilters'),
+  resortList:      document.getElementById('resortList'),
+  resultCount:     document.getElementById('resultCount'),
+  comparisonBody:  document.getElementById('comparisonBody'),
+  comparisonTable: document.getElementById('comparisonTable'),
+  selectedResort:  document.getElementById('selectedResort'),
+  resortMap:       document.getElementById('resortMap'),
+  mapTooltip:      document.getElementById('mapTooltip'),
+  toast:           document.getElementById('toast'),
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
+// ─── Filtering & sorting ──────────────────────────────────────────────────────
+function uniquePasses() { return ['All', ...new Set(RESORTS.map(r => r.pass))]; }
+function uniqueStates()  {
+  const raw = [...new Set(RESORTS.map(r => r.state))].sort();
+  return ['All', ...raw];
 }
 
-function scoreDescriptor(score) {
-  if (score >= 90) return 'Exceptional';
-  if (score >= 80) return 'Excellent';
-  if (score >= 70) return 'Very Good';
-  if (score >= 60) return 'Good';
-  if (score >= 50) return 'Decent';
-  return 'Below Average';
+function filteredResorts() {
+  return RESORTS.filter(resort => {
+    const q = state.search.trim().toLowerCase();
+    const haystack = [resort.name, resort.state, resort.pass, resort.owner, resort.notes, ...(resort.tags||[])].join(' ').toLowerCase();
+    return (!q || haystack.includes(q))
+      && (state.pass === 'All' || resort.pass === state.pass)
+      && (state.stateFilter === 'All' || resort.state === state.stateFilter)
+      && (!state.nightOnly || resort.night);
+  }).sort((a, b) => {
+    const col = state.sortCol;
+    let av = a[col], bv = b[col];
+    // night is boolean
+    if (typeof av === 'boolean') { av = av ? 1 : 0; bv = bv ? 1 : 0; }
+    if (typeof av === 'string')  return state.sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return state.sortDir === 'asc' ? av - bv : bv - av;
+  });
 }
 
+// ─── Toast ────────────────────────────────────────────────────────────────────
 let toastTimer = null;
 function showToast(msg) {
   els.toast.textContent = msg;
@@ -190,390 +199,276 @@ function showToast(msg) {
   toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600);
 }
 
-// ─── Scoring ─────────────────────────────────────────────────────────────────
-function computeScore(resort) {
-  const factors = {
-    vertical:    clamp((Math.min(resort.vertical, 1800) / 1800) * 100, 0, 100),
-    trails:      clamp((Math.min(resort.trails, 70) / 70) * 100, 0, 100),
-    snowfall:    clamp((Math.min(resort.snowfall, 250) / 250) * 100, 0, 100),
-    snowmaking:  resort.snowmaking,
-    night:       resort.night ? 100 : 0,
-    charm:       resort.charm,
-    vibe:        resort.localVibe,
-  };
-  const totalWeight = Object.values(state.weights).reduce((sum, v) => sum + v, 0) || 1;
-  const weightedSum = Object.entries(factors).reduce((sum, [key, val]) => sum + val * (state.weights[key] || 0), 0);
-  return Math.round(weightedSum / totalWeight);
+// ─── Summary cards ────────────────────────────────────────────────────────────
+function renderSummaryCards(resorts) {
+  const n = resorts.length;
+  const avg = key => n ? Math.round(resorts.reduce((s,r) => s + r[key], 0) / n) : 0;
+  els.summaryCards.innerHTML = [
+    ['Resorts',      n],
+    ['Avg Vertical', avg('vertical') + ' ft'],
+    ['Avg Trails',   avg('trails')],
+    ['Night Skiing', resorts.filter(r => r.night).length],
+    ['Avg Snowfall', avg('snowfall') + ' in'],
+    ['Avg Acres',    avg('acres')],
+  ].map(([label, val]) => `
+    <div class="stat-card">
+      <div class="stat-label">${label}</div>
+      <div class="stat-value">${val}</div>
+    </div>`).join('');
 }
 
-function computeExperienceScore(resort) {
-  const vertical      = clamp((Math.min(resort.vertical, 1800) / 1800) * 100, 0, 100);
-  const trails        = clamp((Math.min(resort.trails, 70) / 70) * 100, 0, 100);
-  const snowfall      = clamp((Math.min(resort.snowfall, 250) / 250) * 100, 0, 100);
-  const liftStrength  = clamp((Math.min(resort.lifts, 12) / 12) * 100, 0, 100);
-  const terrainVariety = 100 - Math.abs(resort.difficulty.beginner - resort.difficulty.intermediate) * 100;
-  return Math.round(vertical * 0.28 + trails * 0.20 + snowfall * 0.18 + liftStrength * 0.18 + terrainVariety * 0.16);
-}
-
-function decorate(resort) {
-  return { ...resort, score: computeScore(resort), experienceScore: computeExperienceScore(resort) };
-}
-
-// ─── Filtering ───────────────────────────────────────────────────────────────
-function uniquePasses()  { return ['All', ...new Set(RESORTS.map(r => r.pass))]; }
-function uniqueStates()  { return ['All', ...new Set(RESORTS.map(r => r.state)).values()].sort((a,b) => a === 'All' ? -1 : a.localeCompare(b)); }
-
-function filteredResorts() {
-  return RESORTS
-    .map(decorate)
-    .filter(resort => {
-      const q = state.search.trim().toLowerCase();
-      const haystack = [resort.name, resort.state, resort.pass, resort.owner, resort.notes, ...(resort.tags || [])].join(' ').toLowerCase();
-      const matchSearch  = !q || haystack.includes(q);
-      const matchPass    = state.pass === 'All' || resort.pass === state.pass;
-      const matchState   = state.stateFilter === 'All' || resort.state === state.stateFilter;
-      const matchNight   = !state.nightOnly || resort.night;
-      return matchSearch && matchPass && matchState && matchNight;
-    })
-    .sort((a, b) => (b[state.sortBy] || 0) - (a[state.sortBy] || 0) || a.name.localeCompare(b.name));
-}
-
-// ─── Active filters display ───────────────────────────────────────────────────
+// ─── Active filter pills ──────────────────────────────────────────────────────
 function renderActiveFilters() {
   const tags = [];
-  if (state.search.trim())           tags.push({ label: `"${state.search.trim()}"`,    clear: () => { state.search = ''; els.searchInput.value = ''; } });
-  if (state.stateFilter !== 'All')   tags.push({ label: `State: ${state.stateFilter}`, clear: () => { state.stateFilter = 'All'; els.stateFilter.value = 'All'; } });
-  if (state.pass !== 'All')          tags.push({ label: `Pass: ${state.pass}`,         clear: () => { state.pass = 'All'; els.passFilter.value = 'All'; } });
-  if (state.nightOnly)               tags.push({ label: '🌙 Night only',              clear: () => { state.nightOnly = false; els.toggleNight.setAttribute('aria-pressed', 'false'); } });
-
-  els.activeFilters.innerHTML = tags.map((t, i) =>
+  if (state.search.trim())         tags.push({ label: `"${state.search.trim()}"`,    clear: () => { state.search = ''; els.searchInput.value = ''; } });
+  if (state.stateFilter !== 'All') tags.push({ label: `State: ${state.stateFilter}`, clear: () => { state.stateFilter = 'All'; els.stateFilter.value = 'All'; } });
+  if (state.pass !== 'All')        tags.push({ label: `Pass: ${state.pass}`,         clear: () => { state.pass = 'All'; els.passFilter.value = 'All'; } });
+  if (state.nightOnly)             tags.push({ label: '🌙 Night only',               clear: () => { state.nightOnly = false; els.toggleNight.setAttribute('aria-pressed','false'); } });
+  els.activeFilters.innerHTML = tags.map((t,i) =>
     `<span class="filter-tag">${t.label}<button data-idx="${i}" aria-label="Remove filter">✕</button></span>`
   ).join('');
-
   [...els.activeFilters.querySelectorAll('button')].forEach(btn => {
-    btn.addEventListener('click', () => {
-      tags[+btn.dataset.idx].clear();
-      render();
-    });
+    btn.addEventListener('click', () => { tags[+btn.dataset.idx].clear(); render(); });
   });
 }
 
-// ─── Summary cards ────────────────────────────────────────────────────────────
-function renderSummaryCards(resorts) {
-  const avgScore   = resorts.length ? Math.round(resorts.reduce((s, r) => s + r.score, 0) / resorts.length) : 0;
-  const avgVertical= resorts.length ? Math.round(resorts.reduce((s, r) => s + r.vertical, 0) / resorts.length) : 0;
-  const nightCount = resorts.filter(r => r.night).length;
-  const top        = resorts[0]?.name || '—';
-  const weightTotal= Object.values(state.weights).reduce((a, b) => a + b, 0);
-  els.summaryCards.innerHTML = [
-    ['Resorts',     resorts.length],
-    ['Avg Score',   avgScore],
-    ['Avg Vertical',`${avgVertical} ft`],
-    ['Night Skiing',nightCount],
-    ['Top Ranked',  top],
-    ['Weight Total',`${weightTotal}%`],
-  ].map(([label, value]) => `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`).join('');
-}
-
-// ─── Resort list ─────────────────────────────────────────────────────────────
+// ─── Sidebar resort list ──────────────────────────────────────────────────────
 function renderResortList(resorts) {
   els.resultCount.textContent = `${resorts.length} resort${resorts.length === 1 ? '' : 's'}`;
-
   if (!resorts.length) {
-    els.resortList.innerHTML     = '<div class="empty-state">No resorts match these filters.</div>';
-    els.selectedResort.innerHTML = '<div class="card panel empty-state">Try changing your search or filters.</div>';
-    els.rankings.innerHTML       = '';
-    els.resortMap.innerHTML      = '<div class="empty-state">No map points to show.</div>';
+    els.resortList.innerHTML = '<div class="empty-state">No resorts match.</div>';
     return;
   }
-
-  if (!resorts.find(r => r.id === state.selectedId)) state.selectedId = resorts[0].id;
-
-  els.resortList.innerHTML = resorts.map(resort => `
-    <div class="resort-item ${resort.id === state.selectedId ? 'active' : ''}" data-id="${resort.id}" tabindex="0" role="button" aria-pressed="${resort.id === state.selectedId}">
+  els.resortList.innerHTML = resorts.map(r => `
+    <div class="resort-item ${r.id === state.selectedId ? 'active' : ''}" data-id="${r.id}" tabindex="0" role="button">
       <div class="resort-top">
-        <div><strong>${resort.name}</strong><div class="muted small">${resort.state} · ${resort.owner}</div></div>
-        <span class="score-pill">${resort.score}</span>
+        <div>
+          <strong style="font-size:14px">${r.name}</strong>
+          <div class="muted small">${r.state} · ${r.owner}</div>
+        </div>
       </div>
       <div class="chip-row">
-        <span class="chip">${resort.vertical} ft</span>
-        <span class="chip">${resort.trails} trails</span>
-        <span class="chip">${resort.pass}</span>
-        ${resort.night ? '<span class="chip good">🌙 Night</span>' : ''}
+        <span class="chip">${r.vertical} ft</span>
+        <span class="chip">${r.trails} trails</span>
+        <span class="chip">${r.pass}</span>
+        ${r.night ? '<span class="chip good">🌙 Night</span>' : ''}
       </div>
     </div>`).join('');
 
   [...els.resortList.querySelectorAll('.resort-item')].forEach(item => {
-    const select = () => {
-      state.selectedId = item.dataset.id;
-      render();
-      // Scroll to selected resort detail (works on mobile too)
-      document.getElementById('selectedResort').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
+    const select = () => { state.selectedId = item.dataset.id; render(); };
     item.addEventListener('click', select);
     item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') select(); });
   });
 
-  const selected = resorts.find(r => r.id === state.selectedId);
-  renderSelectedResort(selected);
-  renderRankings(resorts);
-  renderMap(resorts);
+  // Scroll active item into view
+  const active = els.resortList.querySelector('.resort-item.active');
+  if (active) active.scrollIntoView({ block: 'nearest' });
 }
 
-// ─── Terrain bars with difficulty colors ─────────────────────────────────────
-function renderTerrainBars(difficulty) {
-  return [
-    ['Beginner',     'beginner',     difficulty.beginner],
-    ['Intermediate', 'intermediate', difficulty.intermediate],
-    ['Advanced',     'advanced',     difficulty.advanced],
-    ['Expert',       'expert',       difficulty.expert],
-  ].map(([label, cls, value]) => `
-    <div class="bar-row">
-      <div class="bar-label"><span class="difficulty-dot ${cls}"></span>${label}</div>
-      <div class="bar"><div class="bar-fill ${cls}" style="width:${value * 100}%"></div></div>
-      <div class="bar-pct">${Math.round(value * 100)}%</div>
-    </div>`).join('');
-}
+// ─── Comparison table ─────────────────────────────────────────────────────────
+function renderComparisonTable(resorts) {
+  // Update sort indicators on headers
+  [...els.comparisonTable.querySelectorAll('th.sortable')].forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.col === state.sortCol) {
+      th.classList.add(state.sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+  });
 
-// ─── Media box ────────────────────────────────────────────────────────────────
-function renderMediaBox(title, imageUrl, pageUrl, buttonText) {
-  const media = imageUrl
-    ? `<img src="${imageUrl}" alt="${title}" onerror="this.style.display='none'; this.parentElement.querySelector('.placeholder').style.display='grid';" />
-       <div class="placeholder" style="display:none;">Image could not be loaded.</div>`
-    : `<div class="placeholder">No direct image URL yet.<br>Add one in <code>resorts.js</code>.</div>`;
-  const link = pageUrl ? `<div class="link-row"><a href="${pageUrl}" target="_blank" rel="noreferrer">${buttonText} ↗</a></div>` : '';
-  return `<div class="media-box">${media}<div class="media-caption"><div class="stat-label">${title}</div>${link}</div></div>`;
-}
+  if (!resorts.length) {
+    els.comparisonBody.innerHTML = `<tr><td colspan="10" class="empty-state">No resorts match.</td></tr>`;
+    return;
+  }
 
-// ─── Selected resort detail ───────────────────────────────────────────────────
-function renderSelectedResort(resort) {
-  els.selectedResort.innerHTML = `
-    <section class="card headline-card">
-      <div class="headline-top">
-        <div class="headline">
-          <div class="eyebrow">Selected Resort</div>
-          <h2>${resort.name}</h2>
-          <p class="muted">${resort.state} · ${resort.pass} pass · ${resort.owner}</p>
-        </div>
-        <div>
-          <div class="score-pill">Score ${resort.score}</div>
-        </div>
-      </div>
-      <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-label">Vertical</div><div class="metric-value">${resort.vertical} ft</div></div>
-        <div class="metric-card"><div class="metric-label">Trails</div><div class="metric-value">${resort.trails}</div></div>
-        <div class="metric-card"><div class="metric-label">Snowfall</div><div class="metric-value">${resort.snowfall} in</div></div>
-        <div class="metric-card"><div class="metric-label">Snowmaking</div><div class="metric-value">${resort.snowmaking}%</div></div>
-        <div class="metric-card"><div class="metric-label">Lifts</div><div class="metric-value">${resort.lifts}</div></div>
-        <div class="metric-card"><div class="metric-label">Acres</div><div class="metric-value">${resort.acres}</div></div>
-        <div class="metric-card"><div class="metric-label">Longest Run</div><div class="metric-value">${resort.longestRun} mi</div></div>
-        <div class="metric-card"><div class="metric-label">Experience</div><div class="metric-value">${resort.experienceScore}</div></div>
-      </div>
-    </section>
+  els.comparisonBody.innerHTML = resorts.map(r => {
+    const bar = (val, key) => {
+      const pct = Math.min(100, Math.round((val / (COL_MAX[key] || 1)) * 100));
+      return `<div class="bar-cell">
+        <span style="font-family:'DM Mono',monospace">${val}</span>
+        <div class="inline-bar"><div class="inline-bar-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    };
+    return `
+      <tr data-id="${r.id}" class="${r.id === state.selectedId ? 'active-row' : ''}">
+        <td class="col-name">
+          <div class="td-resort-name">${r.name}</div>
+        </td>
+        <td class="col-state td-resort-state">${r.state}</td>
+        <td class="col-num">${bar(r.vertical,    'vertical')}</td>
+        <td class="col-num">${bar(r.trails,      'trails')}</td>
+        <td class="col-num">${bar(r.lifts,       'lifts')}</td>
+        <td class="col-num">${bar(r.acres,       'acres')}</td>
+        <td class="col-num">${bar(r.longestRun,  'longestRun')}</td>
+        <td class="col-num">${bar(r.snowfall,    'snowfall')}</td>
+        <td class="col-num">${bar(r.snowmaking,  'snowmaking')}</td>
+        <td class="col-center">${r.night ? '<span class="night-yes" title="Night skiing available">🌙</span>' : '<span class="night-no">—</span>'}</td>
+      </tr>`;
+  }).join('');
 
-    <section class="detail-grid">
-      <div class="card panel">
-        <div class="section-header"><h2>Terrain + Lift Breakdown</h2></div>
-        ${renderTerrainBars(resort.difficulty)}
-        <table class="mini-table" style="margin-top: 12px;">
-          <tbody>
-            ${resort.liftsBreakdown.map(([label, count]) => `<tr><td>${label}</td><td>${count}</td></tr>`).join('')}
-            <tr><td>Night Skiing</td><td>${resort.night ? '✓ Yes' : 'No'}</td></tr>
-            <tr>
-              <td>Charm</td>
-              <td>
-                <span style="font-family:'DM Mono',monospace;font-weight:700">${resort.charm}/100</span>
-                <span class="score-descriptor">${scoreDescriptor(resort.charm)}</span>
-              </td>
-            </tr>
-            <tr>
-              <td>Local Vibe</td>
-              <td>
-                <span style="font-family:'DM Mono',monospace;font-weight:700">${resort.localVibe}/100</span>
-                <span class="score-descriptor">${scoreDescriptor(resort.localVibe)}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="footer-note">${resort.notes}</div>
-        ${resort.tags && resort.tags.length ? `<div class="chip-row" style="margin-top:12px">${resort.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div>` : ''}
-        <div style="margin-top:16px"><a href="${resort.website}" target="_blank" rel="noreferrer" style="color:var(--accent);font-size:13px;text-decoration:none;">Visit website ↗</a></div>
-      </div>
-
-      <div class="media-grid">
-        ${renderMediaBox(`${resort.name} Webcam`, resort.webcamImage, resort.webcamPage || resort.website, 'Open webcam page')}
-        ${renderMediaBox(`${resort.name} Trail Map`, resort.trailMapImage, resort.trailMapPage || resort.website, 'Open trail map page')}
-      </div>
-    </section>
-  `;
-}
-
-// ─── Rankings ────────────────────────────────────────────────────────────────
-function renderRankings(resorts) {
-  const badgeClass = i => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-  const total = resorts.length;
-
-  els.rankings.innerHTML = `
-    <table class="mini-table">
-      <thead><tr><th>#</th><th>Resort</th><th>Score</th><th>Night</th></tr></thead>
-      <tbody>
-        ${resorts.map((resort, i) => `
-          <tr>
-            <td><span class="rank-badge ${badgeClass(i)}">${i + 1}</span></td>
-            <td><button class="ranking-button" data-id="${resort.id}">${resort.name}</button></td>
-            <td style="font-family:'DM Mono',monospace;font-weight:700">${resort.score}</td>
-            <td>${resort.night ? '🌙' : '—'}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-    ${total > 10 ? `<p class="rankings-count-note">Showing all ${total} resorts</p>` : ''}`;
-
-  [...document.querySelectorAll('.ranking-button')].forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.selectedId = btn.dataset.id;
+  [...els.comparisonBody.querySelectorAll('tr[data-id]')].forEach(row => {
+    row.addEventListener('click', () => {
+      state.selectedId = row.dataset.id;
       render();
-      document.getElementById('selectedResort').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 }
 
+// ─── Selected resort detail ───────────────────────────────────────────────────
+function renderSelectedResort(resort) {
+  if (!resort) {
+    els.selectedResort.innerHTML = '<div class="empty-state muted">Select a resort to see details.</div>';
+    return;
+  }
+
+  const terrainBars = [
+    ['Beginner',     'beginner',     resort.difficulty.beginner],
+    ['Intermediate', 'intermediate', resort.difficulty.intermediate],
+    ['Advanced',     'advanced',     resort.difficulty.advanced],
+    ['Expert',       'expert',       resort.difficulty.expert],
+  ].map(([label, cls, val]) => `
+    <div class="bar-row">
+      <div class="bar-label"><span class="difficulty-dot ${cls}"></span>${label}</div>
+      <div class="bar"><div class="bar-fill ${cls}" style="width:${val*100}%"></div></div>
+      <div class="bar-pct">${Math.round(val*100)}%</div>
+    </div>`).join('');
+
+  const mediaBox = (title, imgUrl, pageUrl, btnText) => {
+    const media = imgUrl
+      ? `<img src="${imgUrl}" alt="${title}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+         <div class="placeholder" style="display:none">Image unavailable</div>`
+      : `<div class="placeholder">No image — <a href="${pageUrl||'#'}" target="_blank">view page ↗</a></div>`;
+    const link = pageUrl ? `<a href="${pageUrl}" target="_blank" rel="noreferrer">${btnText} ↗</a>` : '';
+    return `<div class="media-box">${media}<div class="media-caption">${link}</div></div>`;
+  };
+
+  els.selectedResort.innerHTML = `
+    <div class="section-header">
+      <div>
+        <div class="eyebrow" style="color:var(--accent-2);font-size:10px;letter-spacing:.14em;font-weight:700;text-transform:uppercase;margin-bottom:4px">Selected Resort</div>
+        <div class="resort-detail-name">${resort.name}</div>
+        <div class="resort-detail-meta">${resort.state} · ${resort.pass} pass · ${resort.owner}</div>
+      </div>
+      <a href="${resort.website}" target="_blank" rel="noreferrer" class="detail-link">Website ↗</a>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card"><div class="metric-label">Vertical</div><div class="metric-value">${resort.vertical} ft</div></div>
+      <div class="metric-card"><div class="metric-label">Trails</div><div class="metric-value">${resort.trails}</div></div>
+      <div class="metric-card"><div class="metric-label">Lifts</div><div class="metric-value">${resort.lifts}</div></div>
+      <div class="metric-card"><div class="metric-label">Acres</div><div class="metric-value">${resort.acres}</div></div>
+      <div class="metric-card"><div class="metric-label">Longest Run</div><div class="metric-value">${resort.longestRun} mi</div></div>
+      <div class="metric-card"><div class="metric-label">Snowfall</div><div class="metric-value">${resort.snowfall} in</div></div>
+      <div class="metric-card"><div class="metric-label">Snowmaking</div><div class="metric-value">${resort.snowmaking}%</div></div>
+      <div class="metric-card"><div class="metric-label">Night Skiing</div><div class="metric-value">${resort.night ? '🌙 Yes' : 'No'}</div></div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <div class="metric-label" style="margin-bottom:8px">Terrain Mix</div>
+      ${terrainBars}
+    </div>
+
+    <div style="margin-bottom:12px">
+      <div class="metric-label" style="margin-bottom:8px">Lifts</div>
+      ${resort.liftsBreakdown.map(([type, count]) =>
+        `<div class="lift-row"><span>${type}</span><span style="font-family:'DM Mono',monospace;font-weight:600">${count}</span></div>`
+      ).join('')}
+    </div>
+
+    ${resort.tags?.length ? `<div class="chip-row" style="margin-bottom:12px">${resort.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div>` : ''}
+    <div class="footer-note">${resort.notes}</div>
+
+    <div class="media-grid">
+      ${mediaBox(resort.name + ' Webcam',    resort.webcamImage,   resort.webcamPage   || resort.website, 'Open webcam')}
+      ${mediaBox(resort.name + ' Trail Map', resort.trailMapImage, resort.trailMapPage || resort.website, 'Open trail map')}
+    </div>
+  `;
+}
+
 // ─── Map ─────────────────────────────────────────────────────────────────────
-// State label positions (approx center of each state in our projection space)
 const STATE_LABELS = [
-  { name: 'ME',  lat: 45.2,  lon: -69.0 },
-  { name: 'NH',  lat: 43.9,  lon: -71.5 },
-  { name: 'VT',  lat: 44.0,  lon: -72.7 },
-  { name: 'MA',  lat: 42.35, lon: -71.8 },
-  { name: 'NY',  lat: 42.7,  lon: -74.5 },
+  { name: 'ME', lat: 45.1, lon: -69.2 },
+  { name: 'NH', lat: 43.9, lon: -71.5 },
+  { name: 'VT', lat: 44.1, lon: -72.7 },
+  { name: 'MA', lat: 42.35,lon: -71.9 },
+  { name: 'NY', lat: 42.7, lon: -74.5 },
 ];
 
 function renderMap(resorts) {
-  if (!resorts.length) return;
-
-  // Use fixed bounds so the map doesn't jump around when filtering
-  const latMin = 41.8, latMax = 45.6;
-  const lonMin = -74.8, lonMax = -69.8;
-  const width = 760, height = 470, pad = 40;
-
-  const px = lon => pad + ((lon - lonMin) / (lonMax - lonMin)) * (width - pad * 2);
-  const py = lat => height - pad - ((lat - latMin) / (latMax - latMin)) * (height - pad * 2);
-
-  const decoratedMap = resorts.reduce((m, r) => { m[r.id] = r; return m; }, {});
+  const latMin=41.8, latMax=45.6, lonMin=-74.8, lonMax=-69.8;
+  const W=700, H=430, pad=38;
+  const px = lon => pad + ((lon-lonMin)/(lonMax-lonMin))*(W-pad*2);
+  const py = lat => H - pad - ((lat-latMin)/(latMax-latMin))*(H-pad*2);
+  const filteredIds = new Set(resorts.map(r=>r.id));
 
   const svg = `
-    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="New England ski resort map" tabindex="-1">
-      <rect x="0" y="0" width="${width}" height="${height}" rx="14" fill="rgba(255,255,255,0.015)"></rect>
-
-      <!-- Compass north indicator -->
-      <text x="${width - 28}" y="28" class="map-label" text-anchor="middle" style="font-size:12px;fill:rgba(159,176,211,0.6)">N ↑</text>
-
-      <!-- State labels -->
-      ${STATE_LABELS.map(s => `<text x="${px(s.lon)}" y="${py(s.lat)}" class="map-state-label" text-anchor="middle">${s.name}</text>`).join('')}
-
-      <!-- Resort dots -->
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="New England ski resort map">
+      <rect x="0" y="0" width="${W}" height="${H}" rx="12" fill="rgba(255,255,255,0.01)"/>
+      <text x="${W-24}" y="24" class="map-label" text-anchor="end" style="font-size:11px;fill:rgba(159,176,211,0.5)">N ↑</text>
+      ${STATE_LABELS.map(s=>`<text x="${px(s.lon)}" y="${py(s.lat)}" class="map-state-label" text-anchor="middle">${s.name}</text>`).join('')}
       ${RESORTS.map(base => {
-        const resort = decoratedMap[base.id] || base;
-        const filtered = !!decoratedMap[base.id];
-        const x = px(base.lon);
-        const y = py(base.lat);
-        const isSelected = base.id === state.selectedId;
-        const r = isSelected ? 9 : 6;
-        const fill = !filtered ? 'rgba(159,176,211,0.2)' : isSelected ? '#84e1c6' : '#7fb6ff';
-        const stroke = isSelected ? 'rgba(132,225,198,0.5)' : 'rgba(11,18,32,0.9)';
-        const strokeW = isSelected ? 3 : 2;
-        const opacity = filtered ? 1 : 0.35;
+        const inFilter = filteredIds.has(base.id);
+        const isSel    = base.id === state.selectedId;
+        const x = px(base.lon), y = py(base.lat);
+        const r    = isSel ? 9 : 6;
+        const fill = !inFilter ? 'rgba(159,176,211,0.15)' : isSel ? '#84e1c6' : '#7fb6ff';
+        const sw   = isSel ? 3 : 2;
+        const sc   = isSel ? 'rgba(132,225,198,0.5)' : 'rgba(11,18,32,0.9)';
         return `
-          <g class="map-point" data-id="${base.id}" tabindex="${filtered ? 0 : -1}" role="button" aria-label="${base.name}" style="opacity:${opacity}">
-            ${isSelected ? `<circle cx="${x}" cy="${y}" r="14" fill="rgba(132,225,198,0.12)" />` : ''}
-            <circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}" />
-            ${isSelected ? `<text x="${x}" y="${y - 14}" class="map-label" text-anchor="middle" style="fill:#84e1c6;font-weight:700">${base.name}</text>` : ''}
+          <g class="map-point" data-id="${base.id}" tabindex="${inFilter?0:-1}" role="button" aria-label="${base.name}" style="opacity:${inFilter?1:0.3}">
+            ${isSel?`<circle cx="${x}" cy="${y}" r="15" fill="rgba(132,225,198,0.1)"/>`:''}
+            <circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${sc}" stroke-width="${sw}"/>
+            ${isSel?`<text x="${x}" y="${y-14}" class="map-label" text-anchor="middle" style="fill:#84e1c6;font-weight:700;font-size:11px">${base.name}</text>`:''}
           </g>`;
       }).join('')}
     </svg>`;
 
   els.resortMap.innerHTML = svg;
 
-  // Click handlers
   [...els.resortMap.querySelectorAll('.map-point[tabindex="0"]')].forEach(point => {
-    const selectIt = () => {
-      state.selectedId = point.dataset.id;
-      render();
-      document.getElementById('selectedResort').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
+    const selectIt = () => { state.selectedId = point.dataset.id; render(); };
     point.addEventListener('click', selectIt);
-    point.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') selectIt(); });
+    point.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') selectIt(); });
 
-    // Hover tooltip
+    const resort = resorts.find(r => r.id === point.dataset.id);
+    if (!resort) return;
+
     point.addEventListener('mouseenter', e => {
-      const id = point.dataset.id;
-      const resort = decoratedMap[id];
-      if (!resort) return;
       els.mapTooltip.innerHTML = `
         <div class="map-tooltip-name">${resort.name}</div>
-        <div class="map-tooltip-meta">${resort.state} · ${resort.vertical} ft · ${resort.trails} trails</div>
-        <div class="map-tooltip-score">Score: ${resort.score}</div>`;
+        <div class="map-tooltip-meta">${resort.state} · ${resort.vertical} ft · ${resort.trails} trails · ${resort.acres} acres</div>`;
       els.mapTooltip.classList.add('visible');
-      els.mapTooltip.setAttribute('aria-hidden', 'false');
       positionTooltip(e);
     });
     point.addEventListener('mousemove', positionTooltip);
-    point.addEventListener('mouseleave', () => {
-      els.mapTooltip.classList.remove('visible');
-      els.mapTooltip.setAttribute('aria-hidden', 'true');
-    });
+    point.addEventListener('mouseleave', () => els.mapTooltip.classList.remove('visible'));
   });
 }
 
 function positionTooltip(e) {
-  const mapRect = els.resortMap.getBoundingClientRect();
-  let x = e.clientX - mapRect.left + 14;
-  let y = e.clientY - mapRect.top - 10;
-  // Prevent overflow right
-  if (x + 180 > mapRect.width) x = e.clientX - mapRect.left - 174;
+  const rect = els.resortMap.getBoundingClientRect();
+  let x = e.clientX - rect.left + 14;
+  let y = e.clientY - rect.top - 10;
+  if (x + 200 > rect.width) x = e.clientX - rect.left - 214;
   els.mapTooltip.style.left = x + 'px';
   els.mapTooltip.style.top  = y + 'px';
 }
 
-// ─── Weight controls ─────────────────────────────────────────────────────────
-let renderWeightsDebounceTimer = null;
-
-function renderWeightControls() {
-  const labels = {
-    vertical: 'Vertical', trails: 'Trails', snowfall: 'Snowfall',
-    snowmaking: 'Snowmaking', night: 'Night Skiing', charm: 'Charm', vibe: 'Local Vibe'
-  };
-  els.weightControls.innerHTML = Object.entries(labels).map(([key, label]) => `
-    <div class="sub-card weight-card">
-      <label for="weight-${key}">
-        <span>${label}</span>
-        <span id="value-${key}" class="weight-value">${state.weights[key]}%</span>
-      </label>
-      <input id="weight-${key}" type="range" min="0" max="40" step="1" value="${state.weights[key]}" data-weight-key="${key}" />
-    </div>`).join('');
-
-  updateWeightsTotal();
-
-  [...document.querySelectorAll('[data-weight-key]')].forEach(slider => {
-    slider.addEventListener('input', () => {
-      const key = slider.dataset.weightKey;
-      state.weights[key] = Number(slider.value);
-      document.getElementById(`value-${key}`).textContent = `${slider.value}%`;
-      updateWeightsTotal();
-      // Debounce the full re-render while dragging
-      clearTimeout(renderWeightsDebounceTimer);
-      renderWeightsDebounceTimer = setTimeout(render, 80);
+// ─── Table sort headers ───────────────────────────────────────────────────────
+function wireSortHeaders() {
+  [...els.comparisonTable.querySelectorAll('th.sortable')].forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (state.sortCol === col) {
+        state.sortDir = state.sortDir === 'desc' ? 'asc' : 'desc';
+      } else {
+        state.sortCol = col;
+        // Default direction: desc for numbers, asc for text
+        state.sortDir = (col === 'name' || col === 'state') ? 'asc' : 'desc';
+      }
+      render();
     });
   });
-}
-
-function updateWeightsTotal() {
-  const total = Object.values(state.weights).reduce((a, b) => a + b, 0);
-  els.weightsTotal.textContent = `${total}%`;
-  if (total !== 100) {
-    els.weightsWarning.textContent = `(scores are normalized — total doesn't need to be 100)`;
-  } else {
-    els.weightsWarning.textContent = '';
-  }
 }
 
 // ─── Event wiring ─────────────────────────────────────────────────────────────
@@ -581,7 +476,6 @@ function wireEvents() {
   els.searchInput.addEventListener('input', e => { state.search = e.target.value; render(); });
   els.stateFilter.addEventListener('change', e => { state.stateFilter = e.target.value; render(); });
   els.passFilter.addEventListener('change',  e => { state.pass = e.target.value; render(); });
-  els.sortBy.addEventListener('change',      e => { state.sortBy = e.target.value; render(); });
 
   els.toggleNight.addEventListener('click', () => {
     state.nightOnly = !state.nightOnly;
@@ -596,29 +490,20 @@ function wireEvents() {
     state.selectedId = pick.id;
     render();
     showToast(`✦ Showing: ${pick.name}`);
-    document.getElementById('selectedResort').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  els.resetWeights.addEventListener('click', () => {
-    state.weights = { ...DEFAULT_WEIGHTS };
-    render();
-    showToast('Weights reset to defaults');
-  });
+  wireSortHeaders();
 }
 
-// ─── Main render ─────────────────────────────────────────────────────────────
+// ─── Main render ──────────────────────────────────────────────────────────────
 function render() {
   const resorts = filteredResorts();
   renderSummaryCards(resorts);
-  renderWeightControls();
-  renderResortList(resorts);
   renderActiveFilters();
-
-  // Sync sidebar scroll to selected item
-  const activeItem = els.resortList.querySelector('.resort-item.active');
-  if (activeItem) {
-    activeItem.scrollIntoView({ block: 'nearest' });
-  }
+  renderResortList(resorts);
+  renderComparisonTable(resorts);
+  renderMap(resorts);
+  renderSelectedResort(resorts.find(r => r.id === state.selectedId) || null);
 }
 
 // ─── Initialize ───────────────────────────────────────────────────────────────

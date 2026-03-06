@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Small Mountain Ski Dashboard</title>
-  <meta name="description" content="Interactive ski resort dashboard with adjustable scoring, webcams, trail maps, rankings, and a New England resort map." />
+  <meta name="description" content="Interactive ski resort dashboard for New England small mountains." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -13,11 +13,12 @@
 <body>
   <div id="toast" class="toast" aria-live="polite"></div>
   <div class="container">
+
     <section class="hero card">
       <div>
         <div class="eyebrow">New England · Small Mountain Guide</div>
         <h1>Small Mountain Ski Dashboard</h1>
-        <p>Search, compare, rank, and explore New England ski areas. Tune the scoring model, add webcams and trail maps, and publish directly to GitHub Pages.</p>
+        <p>Search, compare, and explore New England ski areas. Filter by state or pass, browse the map, and dig into terrain details.</p>
       </div>
       <div id="summaryCards" class="summary-grid"></div>
     </section>
@@ -34,17 +35,6 @@
       <div class="field">
         <label for="passFilter">Pass</label>
         <select id="passFilter"></select>
-      </div>
-      <div class="field">
-        <label for="sortBy">Sort by</label>
-        <select id="sortBy">
-          <option value="score">Custom Score</option>
-          <option value="experienceScore">Experience Score</option>
-          <option value="vertical">Vertical</option>
-          <option value="trails">Trails</option>
-          <option value="snowfall">Snowfall</option>
-          <option value="snowmaking">Snowmaking</option>
-        </select>
       </div>
       <div class="field">
         <label>&nbsp;</label>
@@ -68,6 +58,36 @@
 
       <main class="main-content">
 
+        <!-- Comparison chart -->
+        <section class="card panel">
+          <div class="section-header">
+            <div>
+              <h2>Compare Resorts</h2>
+              <p class="muted small">Click a column header to sort.</p>
+            </div>
+          </div>
+          <div class="chart-table-wrap">
+            <table id="comparisonTable" class="comparison-table">
+              <thead>
+                <tr>
+                  <th data-col="name" class="sortable col-name">Resort <span class="sort-icon"></span></th>
+                  <th data-col="state" class="sortable col-state">State <span class="sort-icon"></span></th>
+                  <th data-col="vertical" class="sortable col-num">Vertical <span class="sort-icon"></span></th>
+                  <th data-col="trails" class="sortable col-num">Trails <span class="sort-icon"></span></th>
+                  <th data-col="lifts" class="sortable col-num">Lifts <span class="sort-icon"></span></th>
+                  <th data-col="acres" class="sortable col-num">Acres <span class="sort-icon"></span></th>
+                  <th data-col="longestRun" class="sortable col-num">Longest Run <span class="sort-icon"></span></th>
+                  <th data-col="snowfall" class="sortable col-num">Snowfall <span class="sort-icon"></span></th>
+                  <th data-col="snowmaking" class="sortable col-num">Snowmaking <span class="sort-icon"></span></th>
+                  <th data-col="night" class="sortable col-center">Night <span class="sort-icon"></span></th>
+                </tr>
+              </thead>
+              <tbody id="comparisonBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Map + selected resort side by side -->
         <section class="two-col-grid">
           <section class="card panel map-panel">
             <div class="section-header">
@@ -80,32 +100,9 @@
             <div id="mapTooltip" class="map-tooltip" role="tooltip" aria-hidden="true"></div>
           </section>
 
-          <section class="card panel">
-            <div class="section-header">
-              <div>
-                <h2>Rankings</h2>
-                <p class="muted small">Based on your current scoring weights.</p>
-              </div>
-            </div>
-            <div id="rankings"></div>
+          <section id="selectedResort" class="card panel">
+            <div class="empty-state muted">Select a resort to see details.</div>
           </section>
-        </section>
-
-        <section id="selectedResort"></section>
-
-        <section class="score-editor card">
-          <div class="section-header">
-            <div>
-              <h2>Adjust the Scoring Model</h2>
-              <p class="muted small">Move the sliders. Scores and rankings update instantly.</p>
-            </div>
-            <button id="resetWeights" class="btn btn-secondary">Reset Weights</button>
-          </div>
-          <div id="weightControls" class="weights-grid"></div>
-          <div class="weights-total">
-            Weight total: <strong id="weightsTotal">100%</strong>
-            <span id="weightsWarning" class="weights-warning" aria-live="polite"></span>
-          </div>
         </section>
 
       </main>
