@@ -3,11 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New England Small Mountain Ski Dashboard</title>
-  <meta name="description" content="Real-time ski conditions, weather, drive times, and resort comparison for New England small mountains." />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <title>New England Ski Mountain Guide</title>
+  <meta name="description" content="Real-time ski conditions, weather, powder alerts, drive times, and resort comparison for New England small mountains." />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛷️</text></svg>" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet (in head where CSS belongs) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -25,7 +34,7 @@
     </div>
   </nav>
 
-  <button id="backToTop" class="back-to-top" aria-label="Back to top">↑ Top</button>
+  <button id="backToTop" type="button" class="back-to-top" aria-label="Back to top">↑ Top</button>
 
   <div class="container">
 
@@ -34,24 +43,35 @@
       <div class="hero-text">
         <div class="eyebrow">New England · Local Hills to Regional Classics</div>
         <h1>New England Ski Mountain Guide</h1>
-        <p>Compare ski mountains across New England with live weather, forecast snow, drive times, and side-by-side stats — from local hills to regional classics.</p>
+        <p>Compare ski mountains across New England with live weather, powder alerts, forecast snow, drive times, and side-by-side stats.</p>
         <div class="location-row">
           <div class="field" style="flex:1;max-width:320px">
             <label for="originInput">📍 Your starting location</label>
             <input id="originInput" type="text" placeholder="e.g. Boston, MA or 02101" />
           </div>
-          <button id="setLocation" class="btn btn-primary btn-sm">Set location</button>
-          <button id="detectLocation" class="btn btn-secondary btn-sm">Use my location</button>
+          <button id="setLocation" type="button" class="btn btn-primary btn-sm">Set location</button>
+          <button id="detectLocation" type="button" class="btn btn-secondary btn-sm">Use my location</button>
         </div>
       </div>
       <div id="summaryCards" class="summary-grid"></div>
+    </section>
+
+    <!-- QUICK FILTERS -->
+    <section class="quick-filters card">
+      <span class="quick-label">Quick filters:</span>
+      <button type="button" class="qf-btn" data-qf="beginners">🎿 Beginners</button>
+      <button type="button" class="qf-btn" data-qf="steeps">⚫ Steeps</button>
+      <button type="button" class="qf-btn" data-qf="night">🌙 Night skiing</button>
+      <button type="button" class="qf-btn" data-qf="natural-snow">❄️ Natural snow</button>
+      <button type="button" class="qf-btn" data-qf="terrain-park">🛹 Terrain park</button>
+      <button type="button" class="qf-btn" data-qf="budget">💰 Budget (&lt;$65)</button>
     </section>
 
     <!-- TOOLBAR -->
     <section class="toolbar card">
       <div class="field field-wide">
         <label for="searchInput">Search resorts</label>
-        <input id="searchInput" list="resortSuggestions" type="text" placeholder="Search resorts by name" />
+        <input id="searchInput" list="resortSuggestions" type="text" placeholder="Search by name, state, tag…" />
         <datalist id="resortSuggestions"></datalist>
       </div>
       <div class="field">
@@ -78,11 +98,11 @@
       </div>
       <div class="field">
         <label>&nbsp;</label>
-        <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">🌙 Night Only</button>
+        <button id="toggleNight" type="button" class="btn btn-secondary" aria-pressed="false">🌙 Night Only</button>
       </div>
       <div class="field">
         <label>&nbsp;</label>
-        <button id="randomResort" class="btn btn-primary">✦ Surprise Me</button>
+        <button id="randomResort" type="button" class="btn btn-primary">✦ Surprise Me</button>
       </div>
       <div id="activeFilters" class="active-filters"></div>
     </section>
@@ -99,33 +119,34 @@
 
       <main class="main-content">
 
+        <!-- BEST TODAY -->
+        <section id="todaySection" class="card panel feature-section">
+          <div class="section-header">
+            <div>
+              <h2>🏆 Best Mountain Today</h2>
+              <p class="muted small">Objective daily picks based on forecast snow, drive time, snowmaking, price, and mountain size.</p>
+            </div>
+          </div>
+          <div id="bestTodayGrid" class="feature-grid"></div>
+        </section>
 
-    <section id="todaySection" class="card panel feature-section">
-      <div class="section-header">
-        <div>
-          <h2>🏆 Best Mountain Today</h2>
-          <p class="muted small">Objective daily picks based on forecast snow, drive time, snowmaking, price, and mountain size.</p>
-        </div>
-      </div>
-      <div id="bestTodayGrid" class="feature-grid"></div>
-    </section>
-
-    <section id="weekendSection" class="card panel feature-section">
-      <div class="section-header">
-        <div>
-          <h2>🗓 Weekend Ski Planner</h2>
-          <p class="muted small">See the strongest Saturday and Sunday setups across the current filtered mountains.</p>
-        </div>
-      </div>
-      <div id="weekendPlannerGrid" class="feature-grid"></div>
-    </section>
+        <!-- WEEKEND PLANNER -->
+        <section id="weekendSection" class="card panel feature-section">
+          <div class="section-header">
+            <div>
+              <h2>🗓 Weekend Ski Planner</h2>
+              <p class="muted small">The strongest upcoming Saturday and Sunday setups across the current filtered mountains.</p>
+            </div>
+          </div>
+          <div id="weekendPlannerGrid" class="feature-grid"></div>
+        </section>
 
         <!-- COMPARISON TABLE -->
         <section id="compareSection" class="card panel">
           <div class="section-header">
             <div>
               <h2>🏔 Compare Resorts</h2>
-              <p class="muted small">Click a column header to sort · click a row to select.</p>
+              <p class="muted small">Click a column header to sort · click a row to select · best value per column highlighted.</p>
             </div>
           </div>
           <div class="chart-table-wrap">
@@ -150,10 +171,10 @@
               <tbody id="comparisonBody"></tbody>
             </table>
           </div>
-          <p class="price-disclaimer">*Ticket prices are directional estimates and can vary by date, demand, age, and promos. Confirm final pricing with the mountain.</p>
+          <p class="price-disclaimer">*Ticket prices are directional estimates and vary by date, demand, age, and promotions. Confirm with the mountain.</p>
         </section>
 
-        <!-- SELECTED RESORT (full width, shown when selected) -->
+        <!-- SELECTED RESORT -->
         <section id="selectedResortSection" class="selected-resort-section" style="display:none">
           <div id="selectedResort" class="card panel"></div>
         </section>
@@ -163,8 +184,8 @@
           <div class="compare-tray-inner">
             <span class="compare-tray-label">Comparing:</span>
             <div id="comparePills" class="compare-pills"></div>
-            <button id="compareBtn" class="btn btn-primary btn-sm">Compare Side-by-Side</button>
-            <button id="clearCompare" class="btn btn-secondary btn-sm">Clear</button>
+            <button id="compareBtn" type="button" class="btn btn-primary btn-sm">Compare Side-by-Side</button>
+            <button id="clearCompare" type="button" class="btn btn-secondary btn-sm">Clear</button>
           </div>
         </div>
 
@@ -172,7 +193,7 @@
         <section id="comparePanel" class="card panel" style="display:none">
           <div class="section-header">
             <h2>Side-by-Side Comparison</h2>
-            <button id="closeCompare" class="btn btn-secondary btn-sm">✕ Close</button>
+            <button id="closeCompare" type="button" class="btn btn-secondary btn-sm">✕ Close</button>
           </div>
           <div id="compareContent"></div>
         </section>
@@ -180,47 +201,53 @@
       </main>
     </section>
 
-
+    <!-- SNOW OUTLOOK -->
     <section id="snowSection" class="card panel feature-section">
       <div class="section-header">
         <div>
-          <h2>❄️ Snow Outlook & Crowd Forecast</h2>
-          <p class="muted small">Objective helper cards using upcoming weather, snowfall forecast, ticket price, and drive time when available.</p>
+          <h2>❄️ Snow Outlook</h2>
+          <p class="muted small">Ranked by forecast snowfall and objective conditions across the current filtered mountains.</p>
         </div>
       </div>
       <div id="snowRankings" class="feature-grid"></div>
     </section>
 
+    <!-- PASS CALCULATOR -->
     <section id="passCalcSection" class="card panel feature-section">
       <div class="section-header">
         <div>
           <h2>🎟 Pass Value Calculator</h2>
-          <p class="muted small">Simple break-even math for resorts in the current filtered list.</p>
+          <p class="muted small">Break-even math for Indy Pass ($349) across the current filtered list.</p>
         </div>
         <div class="field" style="max-width:180px">
           <label for="skiDays">Expected ski days</label>
-          <input id="skiDays" type="number" min="1" max="20" step="1" value="5" />
+          <input id="skiDays" type="number" min="1" max="30" step="1" value="5" />
         </div>
       </div>
       <div id="passCalcGrid" class="feature-grid"></div>
     </section>
 
-    <!-- FULL-WIDTH MAP -->
+    <!-- MAP -->
     <section id="mapSection" class="fullwidth-map-section card">
       <div class="section-header" style="padding:18px 18px 0">
         <div>
           <h2>New England Map</h2>
-          <p class="muted small">Click a pin to select a resort · markers reflect current filters.</p>
+          <p class="muted small">Click a pin to select a resort · markers reflect current filters · colour = drive time.</p>
         </div>
       </div>
-      <div class="map-legend"><span><i class="legend-dot d1"></i> under 90 min</span><span><i class="legend-dot d2"></i> 90–150 min</span><span><i class="legend-dot d3"></i> 150–210 min</span><span><i class="legend-dot d4"></i> 210+ min</span></div><div id="leafletMap" class="leaflet-map-container"></div>
+      <div class="map-legend">
+        <span><i class="legend-dot d1"></i> under 90 min</span>
+        <span><i class="legend-dot d2"></i> 90–150 min</span>
+        <span><i class="legend-dot d3"></i> 150–210 min</span>
+        <span><i class="legend-dot d4"></i> 210+ min</span>
+      </div>
+      <div id="leafletMap" class="leaflet-map-container"></div>
     </section>
 
-  </div>
+  </div><!-- /.container -->
 
-  <!-- Leaflet CSS/JS (no API key needed) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="resorts.js"></script>
+  <!-- Leaflet JS (deferred so it doesn't block render) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
+  <script src="resorts.js" defer></script>
 </body>
 </html>
