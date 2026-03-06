@@ -17,7 +17,7 @@
 
   <nav class="primary-nav card" aria-label="Primary navigation">
     <a class="pnav-link" href="#searchSection">Search</a>
-    <a class="pnav-link" href="#resortsSection">Resorts</a>
+    <a class="pnav-link" href="#compareSection">Compare</a>
     <a class="pnav-link" href="#passCalcSection">Pass Value Calculator</a>
   </nav>
 
@@ -51,6 +51,7 @@
             <span class="location-icon">📍</span>
             <input id="originInput" type="text" placeholder="Your city or zip for drive times…" autocomplete="off" spellcheck="false"/>
           </div>
+          <button id="setLocation" class="btn btn-accent btn-sm" title="Set location">Set location</button>
           <button id="detectLocation" class="btn btn-ghost btn-sm" title="Use my location">⊙ Locate me</button>
         </div>
         <div id="locationStatus" class="location-status" aria-live="polite"></div>
@@ -96,7 +97,8 @@
     <section class="card toolbar" id="searchSection" data-section="dashboard">
       <div class="field field-search">
         <label for="searchInput">Search</label>
-        <input id="searchInput" type="search" placeholder="Name, state, pass, tags…" autocomplete="off"/>
+        <input id="searchInput" type="search" placeholder="Start typing a resort name…" autocomplete="off" list="resortSuggestions"/>
+        <datalist id="resortSuggestions"></datalist>
       </div>
       <div class="field">
         <label for="stateFilter">State</label>

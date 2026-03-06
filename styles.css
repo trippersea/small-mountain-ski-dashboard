@@ -488,3 +488,22 @@ button { font:inherit; cursor:pointer; border-radius:var(--r-sm); -webkit-tap-hi
 @media (max-width: 768px) {
   .primary-nav { display:none; }
 }
+
+
+/* User-requested simplifications */
+.qf-bar,
+#resortsSection { display: none !important; }
+
+.layout { grid-template-columns: 1fr !important; }
+
+.primary-nav {
+  position: sticky;
+  top: 10px;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+}
+
+.location-bar { flex-wrap: wrap; }
+
+#searchSection .field-search { position: relative; }
+#searchInput::-webkit-calendar-picker-indicator { display:none !important; }

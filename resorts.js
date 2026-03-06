@@ -466,7 +466,9 @@ const el = {
   closeCompare: $('closeCompare'),
   originInput:  $('originInput'),
   detectLoc:    $('detectLocation'),
+  setLocation:  $('setLocation'),
   locStatus:    $('locationStatus'),
+  resortSuggestions: $('resortSuggestions'),
   plannerGrid:  $('plannerGrid'),
   plannerDay:   $('plannerDay'),
   skiDays:      $('skiDays'),
@@ -544,6 +546,7 @@ async function fetchDrive(resort) {
   try {
     const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${S.origin.lon},${S.origin.lat};${resort.lon},${resort.lat}?overview=false`);
     const d = await r.json();
+    if (!d.routes || !d.routes[0]) throw new Error('No route');
     const mins = Math.round(d.routes[0].duration/60);
     S.driveCache[resort.id] = mins;
     return mins;
@@ -563,19 +566,43 @@ async function loadAllDrives() {
   toast('✓ Drive times updated');
 }
 
-// ─── Geocode (Nominatim) ──────────────────────────────────────────────────────
+// ─── Geocode / ZIP lookup ─────────────────────────────────────────────────────
 async function geocode(q) {
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=us`,{headers:{'Accept-Language':'en'}});
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=us`,{
+      headers:{'Accept-Language':'en'}
+    });
     const d = await r.json();
     if (!d.length) return null;
     return {lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon),label:d[0].display_name.split(',')[0]};
   } catch { return null; }
 }
 
+async function lookupZip(zip) {
+  try {
+    const r = await fetch(`https://api.zippopotam.us/us/${zip}`);
+    if (!r.ok) return null;
+    const d = await r.json();
+    const place = d.places?.[0];
+    if (!place) return null;
+    const stateName = place.state || place['state abbreviation'] || '';
+    return {
+      lat: parseFloat(place.latitude),
+      lon: parseFloat(place.longitude),
+      label: `${place['place name']}, ${stateName}`.replace(/,\s*$/, '')
+    };
+  } catch { return null; }
+}
+
 async function resolveOrigin(query) {
   const q = query.trim();
   if (!q) return null;
+
+  if (/^\d{5}$/.test(q)) {
+    const zipLoc = await lookupZip(q);
+    if (zipLoc) return zipLoc;
+  }
+
   const attempts = /^\d{5}$/.test(q)
     ? [`${q}, USA`, q]
     : [q, `${q}, USA`];
@@ -608,6 +635,7 @@ async function applyOriginQuery(query) {
     await loadAllDrives();
   } else {
     el.locStatus.textContent = '⚠️ Location not found';
+    toast('Could not find that ZIP or location');
   }
 }
 
@@ -723,7 +751,7 @@ function renderFilters() {
 function clearQF(){
   S.qf=null;
   document.querySelectorAll('.qf-btn').forEach(b=>b.classList.remove('active'));
-  el.clearQF.style.display='none';
+  if (el.clearQF) el.clearQF.style.display='none';
 }
 
 // ─── Sidebar list ─────────────────────────────────────────────────────────────
@@ -1263,7 +1291,25 @@ function render() {
 
 // ─── Wire events ──────────────────────────────────────────────────────────────
 function wire(){
-  el.searchInput.addEventListener('input',e=>{S.search=e.target.value;render();});
+  el.searchInput.addEventListener('input',e=>{
+    const q = e.target.value;
+    S.search = q;
+    const exact = RESORTS.find(r => r.name.toLowerCase() === q.trim().toLowerCase());
+    if (exact) S.selectedId = exact.id;
+    render();
+  });
+  el.searchInput.addEventListener('change', e => {
+    const q = e.target.value.trim().toLowerCase();
+    if (!q) return;
+    const match = RESORTS.find(r => r.name.toLowerCase() === q) || RESORTS.find(r => r.name.toLowerCase().startsWith(q));
+    if (match) {
+      S.selectedId = match.id;
+      S.search = match.name;
+      el.searchInput.value = match.name;
+      render();
+      document.getElementById('compareSection')?.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  });
   el.stateFilter.addEventListener('change',e=>{S.stateFilter=e.target.value;render();});
   el.passFilter .addEventListener('change',e=>{S.pass=e.target.value;render();});
   el.sortBy.addEventListener('change',e=>{
@@ -1296,10 +1342,10 @@ function wire(){
       render();
     });
   });
-  el.clearQF.addEventListener('click',()=>{clearQF();render();});
+  el.clearQF?.addEventListener('click',()=>{clearQF();render();});
 
   // Sidebar toggle
-  el.sidebarToggle.addEventListener('click',()=>{
+  el.sidebarToggle?.addEventListener('click',()=>{
     const list=el.resortList;
     const collapsed=list.classList.toggle('collapsed');
     el.sidebarToggle.setAttribute('aria-expanded',String(!collapsed));
@@ -1307,22 +1353,18 @@ function wire(){
   });
 
   // Location input
-  let locT;
-  el.originInput.addEventListener('input',()=>{
-    clearTimeout(locT);
-    locT=setTimeout(()=>applyOriginQuery(el.originInput.value),500);
-  });
-  el.originInput.addEventListener('keydown',async e=>{
+  el.originInput.addEventListener('keydown', async e => {
     if(e.key!=='Enter') return;
     e.preventDefault();
-    clearTimeout(locT);
     await applyOriginQuery(el.originInput.value);
   });
-  el.originInput.addEventListener('blur',()=>{
+  el.setLocation?.addEventListener('click', async ()=> {
+    await applyOriginQuery(el.originInput.value);
+  });
+  el.originInput.addEventListener('blur', async ()=>{
     const q = el.originInput.value.trim();
     if (!q) return;
-    clearTimeout(locT);
-    locT=setTimeout(()=>applyOriginQuery(q),150);
+    await applyOriginQuery(q);
   });
   el.detectLoc.addEventListener('click',()=>{
     if(!navigator.geolocation){toast('Geolocation not supported');return;}
@@ -1344,6 +1386,9 @@ function wire(){
 function init(){
   el.stateFilter.innerHTML=uniqueStates().map(s=>`<option value="${s}">${s}</option>`).join('');
   el.passFilter .innerHTML=uniquePasses().map(p=>`<option value="${p}">${p}</option>`).join('');
+  if (el.resortSuggestions) {
+    el.resortSuggestions.innerHTML = RESORTS.map(r => `<option value="${r.name}">${r.town}, ${r.state}</option>`).join('');
+  }
   // Restore saved location
   if(S.origin){
     el.originInput.value=S.origin.label||'';
