@@ -168,6 +168,157 @@ const RESORTS = [
     notes: 'Massachusetts volume leader with elite convenience and huge after-work appeal.',
     tags: ['Night skiing', 'High volume', 'Near Boston'],
     bestFor: ['night', 'beginners', 'terrain-park', 'family']
+  },
+
+  // ── Maine ─────────────────────────────────────────────────────────────────
+  {
+    id: 'big-moose', name: 'Big Moose Mountain', state: 'ME', pass: 'Independent', owner: 'Independent',
+    vertical: 1150, trails: 30, lifts: 3, acres: 200, snowfall: 130, snowmaking: 80, night: false,
+    longestRun: 2.0, lat: 45.6312, lon: -69.7031,
+    difficulty: { beginner: 0.20, intermediate: 0.45, advanced: 0.25, expert: 0.10 },
+    liftsBreakdown: [['Double', 2], ['Surface', 1]],
+    website: 'https://www.bigmooseski.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://www.bigmooseski.com/',
+    price: 55, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'Remote central Maine mountain near Greenville and Moosehead Lake. True north-woods ski experience with minimal crowds.',
+    tags: ['Remote', 'Maine', 'North woods'],
+    bestFor: ['budget', 'family']
+  },
+  {
+    id: 'big-rock', name: 'Big Rock', state: 'ME', pass: 'Independent', owner: 'Independent',
+    vertical: 990, trails: 30, lifts: 4, acres: 170, snowfall: 110, snowmaking: 85, night: true,
+    longestRun: 1.5, lat: 46.8756, lon: -68.3384,
+    difficulty: { beginner: 0.25, intermediate: 0.40, advanced: 0.25, expert: 0.10 },
+    liftsBreakdown: [['Quad', 1], ['Double', 2], ['Surface', 1]],
+    website: 'https://bigrockmaine.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://bigrockmaine.com/',
+    price: 49, terrainPark: true, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'The only ski area in Aroostook County — northern Maine\'s community hill with night skiing and a genuine local following.',
+    tags: ['Aroostook County', 'Night skiing', 'Community hill'],
+    bestFor: ['budget', 'night', 'family', 'terrain-park']
+  },
+  {
+    id: 'camden', name: 'Camden Snow Bowl', state: 'ME', pass: 'Independent', owner: 'City of Camden',
+    vertical: 950, trails: 31, lifts: 4, acres: 150, snowfall: 95, snowmaking: 70, night: true,
+    longestRun: 1.4, lat: 44.2162, lon: -69.0853,
+    difficulty: { beginner: 0.25, intermediate: 0.40, advanced: 0.25, expert: 0.10 },
+    liftsBreakdown: [['Triple', 1], ['Double', 2], ['Surface', 1]],
+    website: 'https://www.camdensnowbowl.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://www.camdensnowbowl.com/',
+    price: 50, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'Municipally owned coastal Maine gem with ocean views from the summit. One of the most scenic small mountains in New England.',
+    tags: ['Ocean views', 'Municipal', 'Coastal Maine'],
+    bestFor: ['budget', 'family', 'beginners']
+  },
+  {
+    id: 'lost-valley', name: 'Lost Valley', state: 'ME', pass: 'Independent', owner: 'Independent',
+    vertical: 240, trails: 16, lifts: 4, acres: 50, snowfall: 75, snowmaking: 100, night: true,
+    longestRun: 0.5, lat: 44.1201, lon: -70.2648,
+    difficulty: { beginner: 0.35, intermediate: 0.40, advanced: 0.20, expert: 0.05 },
+    liftsBreakdown: [['Triple', 2], ['Surface', 1], ['Carpet', 1]],
+    website: 'https://www.lostvalleyski.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://www.lostvalleyski.com/',
+    price: 42, terrainPark: true, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'Auburn, Maine feeder hill with full snowmaking, night skiing, and an emphasis on lessons and junior programs.',
+    tags: ['Night skiing', 'Lessons', 'Auburn ME'],
+    bestFor: ['beginners', 'budget', 'night', 'family']
+  },
+
+  // ── New Hampshire ─────────────────────────────────────────────────────────
+  {
+    id: 'cannon', name: 'Cannon Mountain', state: 'NH', pass: 'Independent', owner: 'State of NH',
+    vertical: 2180, trails: 97, lifts: 9, acres: 285, snowfall: 180, snowmaking: 96, night: false,
+    longestRun: 2.3, lat: 44.1726, lon: -71.6973,
+    difficulty: { beginner: 0.20, intermediate: 0.36, advanced: 0.28, expert: 0.16 },
+    liftsBreakdown: [['Aerial tram', 1], ['High-speed quad', 2], ['Fixed quad', 1], ['Triple', 1], ['Double', 2], ['Surface', 2]],
+    website: 'https://www.cannonmt.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://www.cannonmt.com/',
+    price: 99, terrainPark: false, seasonOpen: 'Nov', seasonClose: 'Apr',
+    notes: 'State-owned Franconia Notch classic with the highest vertical in NH, a historic tram, and serious expert terrain on the Front Five.',
+    tags: ['State-owned', 'Expert terrain', 'Franconia Notch', 'Tram'],
+    bestFor: ['steeps', 'natural-snow']
+  },
+  {
+    id: 'dartmouth-skiway', name: 'Dartmouth Skiway', state: 'NH', pass: 'Independent', owner: 'Dartmouth College',
+    vertical: 968, trails: 33, lifts: 4, acres: 100, snowfall: 140, snowmaking: 60, night: false,
+    longestRun: 1.5, lat: 43.8968, lon: -72.0365,
+    difficulty: { beginner: 0.20, intermediate: 0.40, advanced: 0.30, expert: 0.10 },
+    liftsBreakdown: [['Quad', 2], ['Double', 1], ['Surface', 1]],
+    website: 'https://skiway.dartmouth.edu/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://skiway.dartmouth.edu/',
+    price: 65, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'College-owned hill on the NH/VT border near Hanover. Strong racing heritage, relaxed atmosphere, and modest pricing.',
+    tags: ['College-owned', 'NH/VT border', 'Race heritage'],
+    bestFor: ['budget', 'family', 'natural-snow']
+  },
+  {
+    id: 'king-pine', name: 'King Pine', state: 'NH', pass: 'Independent', owner: 'Purity Spring Resort',
+    vertical: 350, trails: 16, lifts: 5, acres: 55, snowfall: 70, snowmaking: 100, night: true,
+    longestRun: 0.75, lat: 43.9404, lon: -71.0101,
+    difficulty: { beginner: 0.38, intermediate: 0.37, advanced: 0.18, expert: 0.07 },
+    liftsBreakdown: [['Triple', 2], ['Double', 1], ['Surface', 1], ['Carpet', 1]],
+    website: 'https://www.kingpine.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://www.kingpine.com/',
+    price: 55, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'Family resort in the Lakes Region attached to Purity Spring Resort. Beginner-forward with a warm, low-key feel.',
+    tags: ['Family resort', 'Lakes Region', 'Learn-to-ski'],
+    bestFor: ['beginners', 'family', 'budget']
+  },
+  {
+    id: 'mcintyre', name: 'McIntyre Ski Area', state: 'NH', pass: 'Independent', owner: 'City of Manchester',
+    vertical: 160, trails: 10, lifts: 4, acres: 35, snowfall: 55, snowmaking: 100, night: true,
+    longestRun: 0.3, lat: 42.9720, lon: -71.4548,
+    difficulty: { beginner: 0.40, intermediate: 0.40, advanced: 0.20, expert: 0.00 },
+    liftsBreakdown: [['Triple', 1], ['Double', 1], ['Surface', 1], ['Carpet', 1]],
+    website: 'https://mcintyreskiarea.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://mcintyreskiarea.com/',
+    price: 38, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'City-run Manchester hill offering accessible, affordable night skiing for the southern NH metro area. The ultimate urban feeder hill.',
+    tags: ['City-owned', 'Night skiing', 'Manchester NH', 'Urban hill'],
+    bestFor: ['beginners', 'budget', 'night', 'family']
+  },
+  {
+    id: 'tenney', name: 'Tenney Mountain', state: 'NH', pass: 'Independent', owner: 'Independent',
+    vertical: 1430, trails: 50, lifts: 4, acres: 150, snowfall: 130, snowmaking: 75, night: false,
+    longestRun: 2.2, lat: 43.7851, lon: -71.8234,
+    difficulty: { beginner: 0.22, intermediate: 0.42, advanced: 0.26, expert: 0.10 },
+    liftsBreakdown: [['High-speed quad', 1], ['Double', 2], ['Surface', 1]],
+    website: 'https://tenneymountain.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://tenneymountain.com/',
+    price: 69, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'Reopened Plymouth-area mountain with solid vertical and a refreshed independent spirit. Good value for central NH.',
+    tags: ['Reopened', 'Plymouth NH', 'Central NH'],
+    bestFor: ['family', 'budget']
+  },
+
+  // ── Vermont ───────────────────────────────────────────────────────────────
+  {
+    id: 'middlebury', name: 'Middlebury Snow Bowl', state: 'VT', pass: 'Independent', owner: 'Middlebury College',
+    vertical: 1020, trails: 17, lifts: 3, acres: 110, snowfall: 150, snowmaking: 40, night: false,
+    longestRun: 1.5, lat: 43.9443, lon: -72.9637,
+    difficulty: { beginner: 0.20, intermediate: 0.40, advanced: 0.30, expert: 0.10 },
+    liftsBreakdown: [['Triple', 1], ['Double', 1], ['Surface', 1]],
+    website: 'https://www.middlebury.edu/snow-bowl', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://www.middlebury.edu/snow-bowl',
+    price: 55, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
+    notes: 'College-owned Bread Loaf Mountain gem with excellent natural snow, a low-key atmosphere, and great value for a Middlebury-adjacent ski day.',
+    tags: ['College-owned', 'Natural snow', 'VT classic'],
+    bestFor: ['natural-snow', 'budget', 'steeps']
+  },
+
+  // ── Massachusetts ─────────────────────────────────────────────────────────
+  {
+    id: 'berkshire-east', name: 'Berkshire East', state: 'MA', pass: 'Indy', owner: 'Independent',
+    vertical: 1180, trails: 45, lifts: 6, acres: 170, snowfall: 90, snowmaking: 90, night: true,
+    longestRun: 1.5, lat: 42.6398, lon: -72.7804,
+    difficulty: { beginner: 0.25, intermediate: 0.40, advanced: 0.25, expert: 0.10 },
+    liftsBreakdown: [['Quad', 2], ['Triple', 1], ['Double', 2], ['Surface', 1]],
+    website: 'https://berkshireeast.com/', webcamImage: '', webcamPage: '',
+    trailMapImage: '', trailMapPage: 'https://berkshireeast.com/',
+    price: 79, terrainPark: true, seasonOpen: 'Nov', seasonClose: 'Apr',
+    notes: 'Independently owned Charlemont mountain with solid vertical for Massachusetts, a zipline canopy tour, and strong night skiing product.',
+    tags: ['Night skiing', 'Indy', 'Charlemont MA', 'Zipline'],
+    bestFor: ['night', 'terrain-park', 'family']
   }
 ];
 
