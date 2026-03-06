@@ -13,43 +13,46 @@
 <body>
   <div id="toast" class="toast" aria-live="polite"></div>
 
+  <nav class="top-nav">
+    <div class="top-nav-inner">
+      <a href="#searchSection">🔎 Search</a>
+      <a href="#todaySection">🏆 Today</a>
+      <a href="#weekendSection">🗓 Weekend</a>
+      <a href="#compareSection">🏔 Compare</a>
+      <a href="#snowSection">❄️ Snow Outlook</a>
+      <a href="#passCalcSection">🎟 Pass Value</a>
+      <a href="#mapSection">🗺 Map</a>
+    </div>
+  </nav>
+
+  <button id="backToTop" class="back-to-top" aria-label="Back to top">↑ Top</button>
+
   <div class="container">
 
     <!-- HERO -->
-    <section class="hero card">
+    <section id="searchSection" class="hero card">
       <div class="hero-text">
-        <div class="eyebrow">New England · Small Mountain Guide</div>
-        <h1>Small Mountain Ski Dashboard</h1>
-        <p>Live conditions, weather, drive times, and side-by-side resort comparison for New England's best small mountains.</p>
+        <div class="eyebrow">New England · Local Hills to Regional Classics</div>
+        <h1>New England Ski Mountain Guide</h1>
+        <p>Compare ski mountains across New England with live weather, forecast snow, drive times, and side-by-side stats — from local hills to regional classics.</p>
         <div class="location-row">
           <div class="field" style="flex:1;max-width:320px">
             <label for="originInput">📍 Your starting location</label>
             <input id="originInput" type="text" placeholder="e.g. Boston, MA or 02101" />
           </div>
+          <button id="setLocation" class="btn btn-primary btn-sm">Set location</button>
           <button id="detectLocation" class="btn btn-secondary btn-sm">Use my location</button>
         </div>
       </div>
       <div id="summaryCards" class="summary-grid"></div>
     </section>
 
-    <!-- QUICK FILTERS -->
-    <section class="quick-filters card">
-      <span class="quick-label">Best for:</span>
-      <button class="qf-btn" data-qf="beginners">🟢 Beginners</button>
-      <button class="qf-btn" data-qf="steeps">⚫ Steeps</button>
-      <button class="qf-btn" data-qf="night">🌙 Night Skiing</button>
-      <button class="qf-btn" data-qf="natural-snow">❄️ Natural Snow</button>
-      <button class="qf-btn" data-qf="terrain-park">🛹 Terrain Park</button>
-      <button class="qf-btn" data-qf="family">👨‍👩‍👧 Family</button>
-      <button class="qf-btn" data-qf="budget">💵 Budget</button>
-      <button id="clearQF" class="qf-btn qf-clear" style="display:none">✕ Clear</button>
-    </section>
-
     <!-- TOOLBAR -->
     <section class="toolbar card">
       <div class="field field-wide">
         <label for="searchInput">Search resorts</label>
-        <input id="searchInput" type="text" placeholder="Search name, state, pass, tags, or notes" />
+        <input id="searchInput" list="resortSuggestions" type="text" placeholder="Search resorts by name" />
+        <datalist id="resortSuggestions"></datalist>
       </div>
       <div class="field">
         <label for="stateFilter">State</label>
@@ -96,8 +99,29 @@
 
       <main class="main-content">
 
+
+    <section id="todaySection" class="card panel feature-section">
+      <div class="section-header">
+        <div>
+          <h2>🏆 Best Mountain Today</h2>
+          <p class="muted small">Objective daily picks based on forecast snow, drive time, snowmaking, price, and mountain size.</p>
+        </div>
+      </div>
+      <div id="bestTodayGrid" class="feature-grid"></div>
+    </section>
+
+    <section id="weekendSection" class="card panel feature-section">
+      <div class="section-header">
+        <div>
+          <h2>🗓 Weekend Ski Planner</h2>
+          <p class="muted small">See the strongest Saturday and Sunday setups across the current filtered mountains.</p>
+        </div>
+      </div>
+      <div id="weekendPlannerGrid" class="feature-grid"></div>
+    </section>
+
         <!-- COMPARISON TABLE -->
-        <section class="card panel">
+        <section id="compareSection" class="card panel">
           <div class="section-header">
             <div>
               <h2>🏔 Compare Resorts</h2>
@@ -126,6 +150,7 @@
               <tbody id="comparisonBody"></tbody>
             </table>
           </div>
+          <p class="price-disclaimer">*Ticket prices are directional estimates and can vary by date, demand, age, and promos. Confirm final pricing with the mountain.</p>
         </section>
 
         <!-- SELECTED RESORT (full width, shown when selected) -->
@@ -155,15 +180,40 @@
       </main>
     </section>
 
+
+    <section id="snowSection" class="card panel feature-section">
+      <div class="section-header">
+        <div>
+          <h2>❄️ Snow Outlook & Crowd Forecast</h2>
+          <p class="muted small">Objective helper cards using upcoming weather, snowfall forecast, ticket price, and drive time when available.</p>
+        </div>
+      </div>
+      <div id="snowRankings" class="feature-grid"></div>
+    </section>
+
+    <section id="passCalcSection" class="card panel feature-section">
+      <div class="section-header">
+        <div>
+          <h2>🎟 Pass Value Calculator</h2>
+          <p class="muted small">Simple break-even math for resorts in the current filtered list.</p>
+        </div>
+        <div class="field" style="max-width:180px">
+          <label for="skiDays">Expected ski days</label>
+          <input id="skiDays" type="number" min="1" max="20" step="1" value="5" />
+        </div>
+      </div>
+      <div id="passCalcGrid" class="feature-grid"></div>
+    </section>
+
     <!-- FULL-WIDTH MAP -->
-    <section class="fullwidth-map-section card">
+    <section id="mapSection" class="fullwidth-map-section card">
       <div class="section-header" style="padding:18px 18px 0">
         <div>
-          <h2>🗺 New England Map</h2>
+          <h2>New England Map</h2>
           <p class="muted small">Click a pin to select a resort · markers reflect current filters.</p>
         </div>
       </div>
-      <div id="leafletMap" class="leaflet-map-container"></div>
+      <div class="map-legend"><span><i class="legend-dot d1"></i> under 90 min</span><span><i class="legend-dot d2"></i> 90–150 min</span><span><i class="legend-dot d3"></i> 150–210 min</span><span><i class="legend-dot d4"></i> 210+ min</span></div><div id="leafletMap" class="leaflet-map-container"></div>
     </section>
 
   </div>

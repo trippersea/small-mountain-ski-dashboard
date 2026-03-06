@@ -327,13 +327,14 @@ const state = {
   search: '', pass: 'All', stateFilter: 'All',
   nightOnly: false, selectedId: null,
   sortCol: 'vertical', sortDir: 'desc',
-  activeQF: null,
   origin: null,        // { lat, lon, label }
   driveCache: {},      // id → minutes
   weatherCache: {},    // id → weather data
   compareSet: new Set(),
   userNotes: JSON.parse(localStorage.getItem('ski-notes') || '{}'),
   favorites: new Set(JSON.parse(localStorage.getItem('ski-favorites') || '[]')),
+  skiDays: 5,
+  drivesLoading: false,
 };
 
 const COL_MAX = { vertical:2100, trails:75, lifts:12, acres:650, longestRun:3.2, snowfall:320, snowmaking:100, price:130 };
@@ -353,6 +354,14 @@ const els = {
   comparePanel: $('comparePanel'), compareContent: $('compareContent'),
   closeCompare: $('closeCompare'),
   originInput: $('originInput'), detectLocation: $('detectLocation'),
+  setLocation: $('setLocation'),
+  bestTodayGrid: $('bestTodayGrid'),
+  weekendPlannerGrid: $('weekendPlannerGrid'),
+  snowRankings: $('snowRankings'),
+  skiDays: $('skiDays'),
+  passCalcGrid: $('passCalcGrid'),
+  backToTop: $('backToTop'),
+  resortSuggestions: $('resortSuggestions'),
   toast: $('toast'),
 };
 
@@ -375,7 +384,6 @@ const QF_RULES = {
   night:         r => r.night,
   'natural-snow':r => r.snowfall >= 150,
   'terrain-park':r => r.terrainPark,
-  family:        r => r.bestFor?.includes('family'),
   budget:        r => r.price <= 65,
 };
 
@@ -386,8 +394,7 @@ function filteredResorts() {
     return (!q || hay.includes(q))
       && (state.pass === 'All' || r.pass === state.pass)
       && (state.stateFilter === 'All' || r.state === state.stateFilter)
-      && (!state.nightOnly || r.night)
-      && (!state.activeQF || QF_RULES[state.activeQF]?.(r));
+      && (!state.nightOnly || r.night);
   }).sort((a, b) => {
     let col = state.sortCol;
     if (col === 'drive') {
@@ -410,6 +417,7 @@ async function fetchDriveTime(resort) {
     const url = `https://router.project-osrm.org/route/v1/driving/${state.origin.lon},${state.origin.lat};${resort.lon},${resort.lat}?overview=false`;
     const res = await fetch(url);
     const data = await res.json();
+    if (!data.routes || !data.routes[0]) throw new Error('No route');
     const mins = Math.round(data.routes[0].duration / 60);
     state.driveCache[resort.id] = mins;
     return mins;
@@ -430,21 +438,58 @@ function formatDrive(mins) {
 
 async function loadAllDriveTimes() {
   if (!state.origin) return;
+  state.drivesLoading = true;
+  render();
   showToast('⏱ Calculating drive times…', 4000);
-  await Promise.all(RESORTS.map(r => fetchDriveTime(r)));
+
+  const queue = [...RESORTS];
+  const workers = Array.from({ length: 4 }, async () => {
+    while (queue.length) {
+      const resort = queue.shift();
+      if (!resort) break;
+      await fetchDriveTime(resort);
+    }
+  });
+
+  await Promise.all(workers);
+  state.drivesLoading = false;
   render();
   showToast('✓ Drive times updated');
 }
 
 // ─── Geocode origin (nominatim) ───────────────────────────────────────────────
 async function geocodeOrigin(query) {
-  try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
-    const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
-    const data = await res.json();
-    if (!data.length) return null;
-    return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), label: data[0].display_name.split(',')[0] };
-  } catch { return null; }
+  const q = query.trim();
+  if (!q) return null;
+
+  const geocode = async candidate => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(candidate)}&format=json&limit=1&countrycodes=us`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+      const data = await res.json();
+      if (!data.length) return null;
+      return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), label: data[0].display_name.split(',')[0] };
+    } catch { return null; }
+  };
+
+  if (/^\d{5}$/.test(q)) {
+    try {
+      const res = await fetch(`https://api.zippopotam.us/us/${q}`);
+      if (res.ok) {
+        const d = await res.json();
+        const place = d.places?.[0];
+        if (place) {
+          return {
+            lat: parseFloat(place.latitude),
+            lon: parseFloat(place.longitude),
+            label: `${place['place name']}, ${place.state || place['state abbreviation'] || ''}`.replace(/,\s*$/, '')
+          };
+        }
+      }
+    } catch {}
+  }
+
+  return await geocode(q) || await geocode(`${q}, USA`);
 }
 
 // ─── Weather (Open-Meteo, free, no key) ──────────────────────────────────────
@@ -465,7 +510,7 @@ const WX_DESC = {
 async function fetchWeather(resort) {
   if (state.weatherCache[resort.id]) return state.weatherCache[resort.id];
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4&timezone=America%2FNew_York`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4&timezone=America%2FNew_York`;
     const res = await fetch(url);
     const d = await res.json();
     const wx = {
@@ -477,6 +522,7 @@ async function fetchWeather(resort) {
         code: d.daily.weathercode[i+1],
         hi: Math.round(d.daily.temperature_2m_max[i+1]),
         lo: Math.round(d.daily.temperature_2m_min[i+1]),
+        snow: Math.round((d.daily.snowfall_sum?.[i+1] || 0) * 10) / 10,
       }))
     };
     state.weatherCache[resort.id] = wx;
@@ -490,7 +536,7 @@ function renderSummaryCards(resorts) {
   const avg = key => n ? Math.round(resorts.reduce((s,r)=>s+r[key],0)/n) : 0;
   const minPrice = n ? Math.min(...resorts.map(r=>r.price)) : '—';
   const topDrive = n && Object.keys(state.driveCache).length
-    ? resorts.filter(r => state.driveCache[r.id]).sort((a,b)=>state.driveCache[a.id]-state.driveCache[b.id])[0]
+    ? resorts.filter(r => state.driveCache[r.id] !== null && state.driveCache[r.id] !== undefined).sort((a,b)=>state.driveCache[a.id]-state.driveCache[b.id])[0]
     : null;
   els.summaryCards.innerHTML = [
     ['Resorts', n, ''],
@@ -514,7 +560,7 @@ function renderActiveFilters() {
   if (state.stateFilter !== 'All') tags.push({ label:`State: ${state.stateFilter}`, clear:()=>{ state.stateFilter='All'; els.stateFilter.value='All'; }});
   if (state.pass !== 'All')        tags.push({ label:`Pass: ${state.pass}`,          clear:()=>{ state.pass='All'; els.passFilter.value='All'; }});
   if (state.nightOnly)             tags.push({ label:'🌙 Night only',                clear:()=>{ state.nightOnly=false; els.toggleNight.setAttribute('aria-pressed','false'); }});
-  if (state.activeQF)              tags.push({ label:`✦ ${state.activeQF}`,          clear:()=>{ state.activeQF=null; document.querySelectorAll('.qf-btn').forEach(b=>b.classList.remove('active')); $('clearQF').style.display='none'; }});
+
   els.activeFilters.innerHTML = tags.map((t,i)=>
     `<span class="filter-tag">${t.label}<button data-idx="${i}" aria-label="Remove filter">✕</button></span>`
   ).join('');
@@ -585,7 +631,7 @@ function renderComparisonTable(resorts) {
     const drive = state.driveCache[r.id];
     const driveCell = drive === null ? `<span class="drive-na">N/A</span>`
       : drive !== undefined ? `<span class="drive-cell">${formatDrive(drive)}</span>`
-      : `<span class="drive-na">—</span>`;
+      : `<span class="drive-na">${state.origin ? (state.drivesLoading ? '…' : '—') : 'Set'}</span>`;
     return `
       <tr data-id="${r.id}" class="${r.id===state.selectedId?'active-row':''}">
         <td class="col-name">
@@ -623,7 +669,7 @@ async function renderSelectedResort(resort) {
   const wxPromise = fetchWeather(resort);
 
   const drive = state.driveCache[resort.id];
-  const driveStr = drive ? formatDrive(drive) : state.origin ? 'Calculating…' : 'Set location above';
+  const driveStr = (drive !== null && drive !== undefined) ? formatDrive(drive) : state.origin ? (state.drivesLoading ? 'Calculating…' : '—') : 'Set location above';
   const isFav = state.favorites.has(resort.id);
 
   const terrainBars = [
@@ -765,6 +811,8 @@ async function renderSelectedResort(resort) {
     const card = $(`weatherCard-${resort.id}`);
     if (!card) return;
     if (!wx) { card.querySelector('.loading-text').textContent = 'Weather unavailable.'; return; }
+    const crowd = crowdForecast(resort);
+    const snowVals = wx.forecast.map(f => f.snow || 0);
     card.innerHTML = `
       <h3>Current Weather at ${resort.name}</h3>
       <div class="weather-current">
@@ -780,97 +828,239 @@ async function renderSelectedResort(resort) {
           <div class="forecast-day">
             <div class="fday">${f.day}</div>
             <div class="ficon">${WX_CODES[f.code]||'❓'}</div>
-            <div class="ftemp">${f.hi}° / ${f.lo}°</div><div class="sub">${f.snow ? `❄️ ${f.snow}"` : 'No forecast snow'}</div>
+            <div class="ftemp">${f.hi}° / ${f.lo}°</div>
+            <div class="sub">${f.snow ? `❄️ ${f.snow}"` : 'No forecast snow'}</div>
           </div>`).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
-        <span class="badge-soft">Crowd pressure: <strong class="${crowdForecast(resort).className}">${crowdForecast(resort).label}</strong></span>
-        <span class="ops-chip ${operationsOutlook(resort,wx).warn?'warn':''}">${operationsOutlook(resort,wx).label}</span>
+        <span class="badge-soft">Crowd pressure: <strong class="${crowd.className}">${crowd.label}</strong></span>
+        <span class="ops-chip ${operationsOutlook(resort, wx).warn ? 'warn' : ''}">${operationsOutlook(resort, wx).label}</span>
       </div>
-      <div style="margin-top:10px"><div class="sub">3-day snowfall sparkline</div><div class="sparkline">${sparkline(wx.forecast.map(f=>f.snow||0))}</div></div>`;
+      <div style="margin-top:10px">
+        <div class="sub">3-day snowfall sparkline</div>
+        <div class="sparkline">${sparkline(snowVals)}</div>
+      </div>`;
   });
 }
 
 
-function sparkline(values=[]){
-  const ticks='▁▂▃▄▅▆▇█';
-  const nums=values.map(v=>Number(v)||0);
-  const max=Math.max(1,...nums);
-  return nums.map(v=>ticks[Math.max(0,Math.min(ticks.length-1,Math.round((v/max)*(ticks.length-1))))]).join(' ');
+function sparkline(values=[]) {
+  const ticks = '▁▂▃▄▅▆▇█';
+  const nums = values.map(v => Number(v) || 0);
+  const max = Math.max(1, ...nums);
+  return nums.map(v => ticks[Math.max(0, Math.min(ticks.length - 1, Math.round((v / max) * (ticks.length - 1))))]).join(' ');
 }
-function crowdForecast(resort){
-  let score=20;
-  if(resort.price<70) score+=15;
-  if(resort.night) score+=8;
-  if(resort.terrainPark) score+=6;
-  if(resort.vertical>1400) score+=10;
-  if((resort.pass||'').includes('Indy')) score+=10;
-  if(S.driveCache[resort.id]!=null){
-    const d=S.driveCache[resort.id];
-    if(d<120) score+=20;
-    else if(d<180) score+=12;
-    else if(d<240) score+=6;
+
+function crowdForecast(resort) {
+  let score = 20;
+  if (resort.price < 70) score += 15;
+  if (resort.night) score += 8;
+  if (resort.terrainPark) score += 6;
+  if (resort.vertical > 1400) score += 10;
+  if ((resort.pass || '').includes('Indy')) score += 10;
+  if (state.driveCache[resort.id] !== undefined && state.driveCache[resort.id] !== null) {
+    const d = state.driveCache[resort.id];
+    if (d < 120) score += 20;
+    else if (d < 180) score += 12;
+    else if (d < 240) score += 6;
   }
-  if(score<35) return {label:'Low', className:'crowd-low'};
-  if(score<60) return {label:'Moderate', className:'crowd-medium'};
-  return {label:'High', className:'crowd-high'};
+  if (score < 35) return { label: 'Low', className: 'crowd-low', score };
+  if (score < 60) return { label: 'Moderate', className: 'crowd-medium', score };
+  return { label: 'High', className: 'crowd-high', score };
 }
-function operationsOutlook(resort, wx){
-  const warmRisk=(wx?.temp||0)>=38;
-  const lowSnowmaking=resort.snowmaking<70;
-  if(warmRisk||lowSnowmaking) return {label:'Ops outlook: Watch conditions', warn:true};
-  return {label:'Ops outlook: Strong snowmaking setup', warn:false};
+
+function operationsOutlook(resort, wx) {
+  const warmRisk = wx?.temp >= 38;
+  const lowSnowmaking = resort.snowmaking < 70;
+  if (warmRisk || lowSnowmaking) return { label: 'Ops outlook: Watch conditions', warn: true };
+  return { label: 'Ops outlook: Strong snowmaking setup', warn: false };
 }
-function driveColor(minutes, isSelected=false){
-  if(isSelected) return '#22b38a';
-  if(minutes<=90) return '#22b38a';
-  if(minutes<=150) return '#8ccf57';
-  if(minutes<=210) return '#f0b44c';
+
+function driveColor(minutes, isSelected=false) {
+  if (isSelected) return '#22b38a';
+  if (minutes <= 90) return '#22b38a';
+  if (minutes <= 150) return '#8ccf57';
+  if (minutes <= 210) return '#f0b44c';
   return '#e07a5f';
 }
-async function renderSnowRankings(resorts){
-  if(!el.snowRankings) return;
-  el.snowRankings.innerHTML='<div class="feature-card"><div class="feature-title">Loading forecast cards…</div></div>';
-  const enriched=await Promise.all(resorts.slice(0,12).map(async r=>{
-    const wx=await fetchWeather(r);
-    const nextSnow=wx?wx.forecast.reduce((s,f)=>s+(f.snow||0),0):0;
-    const crowd=crowdForecast(r);
-    const drive=S.driveCache[r.id];
-    const objectiveScore=(nextSnow*12)+Math.max(0,40-((drive??220)/10))+(r.snowmaking/8)+(r.vertical/250);
-    return {r,wx,nextSnow,crowd,drive,objectiveScore};
+
+
+function mountainTodayScore(resort, wx) {
+  const snow3 = wx ? wx.forecast.reduce((sum, f) => sum + (f.snow || 0), 0) : 0;
+  const drive = state.driveCache[resort.id];
+  let score = 0;
+  score += snow3 * 12;
+  score += Math.max(0, 40 - ((drive ?? 240) / 10));
+  score += resort.snowmaking / 8;
+  score += resort.vertical / 250;
+  score += Math.max(0, 80 - resort.price) / 3;
+  return Math.round(score * 10) / 10;
+}
+
+async function renderBestToday(resorts) {
+  if (!els.bestTodayGrid) return;
+  els.bestTodayGrid.innerHTML = '<div class="feature-card"><div class="feature-title">Loading today\'s picks…</div></div>';
+  const enriched = await Promise.all(resorts.slice(0, 16).map(async resort => {
+    const wx = await fetchWeather(resort);
+    const score = mountainTodayScore(resort, wx);
+    const crowd = crowdForecast(resort);
+    const snow3 = wx ? wx.forecast.reduce((sum, f) => sum + (f.snow || 0), 0) : 0;
+    return { resort, wx, score, crowd, snow3, drive: state.driveCache[resort.id] };
   }));
-  enriched.sort((a,b)=>b.objectiveScore-a.objectiveScore);
-  el.snowRankings.innerHTML=enriched.slice(0,6).map((item,i)=>{
-    const {r,wx,nextSnow,crowd,drive}=item;
-    const snowVals=wx?.forecast?.map(f=>f.snow||0)||[0,0,0];
-    return `<div class="feature-card">
-      <div class="feature-kicker">${i===0?'Top weather setup':'Snow outlook'}</div>
-      <div class="feature-title">${r.name}</div>
-      <div class="feature-meta">${r.state} · ${r.pass} pass · ${drive!=null?fmtDrive(drive):'set location for drive'}</div>
-      <div class="badge-soft">${nextSnow ? `❄️ ${nextSnow.toFixed(1)}" next 3 days` : 'No forecast snow'}</div>
-      <div style="margin:10px 0 12px"><div class="sub">Snow sparkline</div><div class="sparkline">${sparkline(snowVals)}</div></div>
+  enriched.sort((a,b) => b.score - a.score);
+  els.bestTodayGrid.innerHTML = enriched.slice(0, 3).map((item, idx) => {
+    const { resort, wx, score, crowd, snow3, drive } = item;
+    return `<div class="feature-card ${idx===0 ? 'primary-pick' : ''}">
+      <div class="feature-kicker">${idx===0 ? 'Best Mountain Today' : 'Strong option'}</div>
+      <div class="feature-title">${resort.name}</div>
+      <div class="feature-meta">${resort.state} · ${resort.pass} pass</div>
+      <div class="feature-row"><span>Objective score</span><strong>${score}</strong></div>
+      <div class="feature-row"><span>Forecast snow (3 days)</span><strong>${snow3 ? `${snow3.toFixed(1)}"` : '0"'}</strong></div>
+      <div class="feature-row"><span>Drive</span><strong>${drive != null ? formatDrive(drive) : 'Set location'}</strong></div>
+      <div class="feature-row"><span>Day ticket*</span><strong>$${resort.price}</strong></div>
       <div class="feature-row"><span>Crowd pressure</span><strong class="${crowd.className}">${crowd.label}</strong></div>
-      <div class="feature-row"><span>Snowmaking</span><strong>${r.snowmaking}%</strong></div>
-      <div class="feature-row"><span>Vertical</span><strong>${r.vertical} ft</strong></div>
-      <div class="feature-row"><span>3-day forecast</span><strong>${wx?.forecast?.map(f=>`${f.day} ${f.hi}°`).join(' · ')||'Loading'}</strong></div>
+      <div class="feature-subnote">${wx ? wx.forecast.map(f => `${f.day} ${f.hi}°`).join(' · ') : 'Loading forecast…'}</div>
     </div>`;
   }).join('');
 }
-function wireEnhancements(){
-  document.querySelectorAll('.top-nav a').forEach(a=>{
-    a.addEventListener('click',e=>{
-      const href=a.getAttribute('href');
-      const target=href?document.querySelector(href):null;
-      if(!target) return;
+
+async function renderWeekendPlanner(resorts) {
+  if (!els.weekendPlannerGrid) return;
+  els.weekendPlannerGrid.innerHTML = '<div class="feature-card"><div class="feature-title">Loading weekend planner…</div></div>';
+  const saturdayIndex = 1;
+  const sundayIndex = 2;
+  const enriched = await Promise.all(resorts.slice(0, 20).map(async resort => {
+    const wx = await fetchWeather(resort);
+    const drive = state.driveCache[resort.id];
+    const sat = wx?.forecast?.[saturdayIndex-1];
+    const sun = wx?.forecast?.[sundayIndex-1];
+    const crowd = crowdForecast(resort).score;
+    const satScore = ((sat?.snow || 0) * 12) + ((resort.snowmaking || 0) / 8) + (resort.vertical / 250) + Math.max(0, 40 - ((drive ?? 240) / 10)) - crowd / 8;
+    const sunScore = ((sun?.snow || 0) * 12) + ((resort.snowmaking || 0) / 8) + (resort.vertical / 250) + Math.max(0, 40 - ((drive ?? 240) / 10)) - crowd / 8;
+    return { resort, wx, sat, sun, satScore, sunScore, drive };
+  }));
+  const bestSat = [...enriched].sort((a,b) => b.satScore - a.satScore)[0];
+  const bestSun = [...enriched].sort((a,b) => b.sunScore - a.sunScore)[0];
+  const cheapest = [...resorts].sort((a,b)=>a.price-b.price)[0];
+  const closest = [...resorts].filter(r => state.driveCache[r.id] != null).sort((a,b)=>state.driveCache[a.id]-state.driveCache[b.id])[0];
+
+  const cards = [];
+  if (bestSat) cards.push(`<div class="feature-card weekend-pick">
+      <div class="feature-kicker">Saturday pick</div>
+      <div class="feature-title">${bestSat.resort.name}</div>
+      <div class="feature-meta">${bestSat.resort.state} · ${bestSat.drive != null ? formatDrive(bestSat.drive) : 'Set location'}</div>
+      <div class="feature-row"><span>Sat forecast</span><strong>${bestSat.sat ? `${bestSat.sat.hi}° / ${bestSat.sat.lo}°` : '—'}</strong></div>
+      <div class="feature-row"><span>Sat forecast snow</span><strong>${bestSat.sat?.snow ? `${bestSat.sat.snow}"` : '0"'}</strong></div>
+      <div class="feature-row"><span>Day ticket*</span><strong>$${bestSat.resort.price}</strong></div>
+    </div>`);
+  if (bestSun) cards.push(`<div class="feature-card weekend-pick">
+      <div class="feature-kicker">Sunday pick</div>
+      <div class="feature-title">${bestSun.resort.name}</div>
+      <div class="feature-meta">${bestSun.resort.state} · ${bestSun.drive != null ? formatDrive(bestSun.drive) : 'Set location'}</div>
+      <div class="feature-row"><span>Sun forecast</span><strong>${bestSun.sun ? `${bestSun.sun.hi}° / ${bestSun.sun.lo}°` : '—'}</strong></div>
+      <div class="feature-row"><span>Sun forecast snow</span><strong>${bestSun.sun?.snow ? `${bestSun.sun.snow}"` : '0"'}</strong></div>
+      <div class="feature-row"><span>Day ticket*</span><strong>$${bestSun.resort.price}</strong></div>
+    </div>`);
+  if (closest) cards.push(`<div class="feature-card">
+      <div class="feature-kicker">Closest option</div>
+      <div class="feature-title">${closest.name}</div>
+      <div class="feature-meta">${closest.state} · ${formatDrive(state.driveCache[closest.id])}</div>
+      <div class="feature-row"><span>Ticket*</span><strong>$${closest.price}</strong></div>
+      <div class="feature-row"><span>Vertical</span><strong>${closest.vertical} ft</strong></div>
+      <div class="feature-row"><span>Night skiing</span><strong>${closest.night ? 'Yes' : 'No'}</strong></div>
+    </div>`);
+  if (cheapest) cards.push(`<div class="feature-card">
+      <div class="feature-kicker">Budget pick</div>
+      <div class="feature-title">${cheapest.name}</div>
+      <div class="feature-meta">${cheapest.state} · lowest listed day ticket</div>
+      <div class="feature-row"><span>Ticket*</span><strong>$${cheapest.price}</strong></div>
+      <div class="feature-row"><span>Trails</span><strong>${cheapest.trails}</strong></div>
+      <div class="feature-row"><span>Snowmaking</span><strong>${cheapest.snowmaking}%</strong></div>
+    </div>`);
+  els.weekendPlannerGrid.innerHTML = cards.join('');
+}
+
+async function renderSnowRankings(resorts) {
+  if (!els.snowRankings) return;
+  els.snowRankings.innerHTML = '<div class="feature-card"><div class="feature-title">Loading forecast cards…</div></div>';
+  const enriched = await Promise.all(resorts.slice(0, 12).map(async resort => {
+    const wx = await fetchWeather(resort);
+    const nextSnow = wx ? wx.forecast.reduce((sum, f) => sum + (f.snow || 0), 0) : 0;
+    const crowd = crowdForecast(resort);
+    const drive = state.driveCache[resort.id];
+    const objectiveScore = (nextSnow * 12) + Math.max(0, 40 - ((drive ?? 220) / 10)) + (resort.snowmaking / 8) + (resort.vertical / 250);
+    return { resort, wx, nextSnow, crowd, drive, objectiveScore };
+  }));
+  enriched.sort((a,b) => b.objectiveScore - a.objectiveScore);
+  els.snowRankings.innerHTML = enriched.slice(0, 6).map((item, idx) => {
+    const { resort, wx, nextSnow, crowd, drive } = item;
+    const snowVals = wx?.forecast?.map(f => f.snow || 0) || [0,0,0];
+    return `<div class="feature-card">
+      <div class="feature-kicker">${idx === 0 ? 'Top weather setup' : 'Snow outlook'}</div>
+      <div class="feature-title">${resort.name}</div>
+      <div class="feature-meta">${resort.state} · ${resort.pass} pass · ${drive !== undefined && drive !== null ? formatDrive(drive) : 'set location for drive'}</div>
+      <div class="badge-soft">${nextSnow ? `❄️ ${nextSnow.toFixed(1)}" next 3 days` : 'No forecast snow'}</div>
+      <div style="margin:10px 0 12px">
+        <div class="sub">Snow sparkline</div>
+        <div class="sparkline">${sparkline(snowVals)}</div>
+      </div>
+      <div class="feature-row"><span>Crowd pressure</span><strong class="${crowd.className}">${crowd.label}</strong></div>
+      <div class="feature-row"><span>Snowmaking</span><strong>${resort.snowmaking}%</strong></div>
+      <div class="feature-row"><span>Vertical</span><strong>${resort.vertical} ft</strong></div>
+      <div class="feature-row"><span>3-day forecast</span><strong>${wx?.forecast?.map(f => `${f.day} ${f.hi}°`).join(' · ') || 'Loading'}</strong></div>
+    </div>`;
+  }).join('');
+}
+
+function renderPassCalculator(resorts) {
+  if (!els.passCalcGrid) return;
+  const days = Math.max(1, Number(els.skiDays?.value || state.skiDays || 5));
+  state.skiDays = days;
+  const INDY_PRICE = 349;
+  els.passCalcGrid.innerHTML = resorts.slice(0, 9).map(resort => {
+    const dayTotal = resort.price * days;
+    const indyEligible = resort.pass === 'Indy';
+    const breakEven = indyEligible ? Math.ceil(INDY_PRICE / resort.price) : null;
+    let verdict = 'Day tickets likely best';
+    let extra = '';
+    if (indyEligible) {
+      if (days >= breakEven) verdict = `Indy saves about $${Math.max(0, dayTotal - INDY_PRICE)}`;
+      else verdict = `${Math.max(0, breakEven - days)} more day(s) to break even`;
+      extra = `<div class="feature-row"><span>Indy break-even</span><strong>${breakEven} days</strong></div>`;
+    }
+    return `<div class="feature-card">
+      <div class="feature-kicker">${indyEligible ? 'Indy math' : 'Day-ticket math'}</div>
+      <div class="feature-title">${resort.name}</div>
+      <div class="feature-meta">${resort.state} · ${resort.pass}</div>
+      <div class="feature-row"><span>Ticket price</span><strong>$${resort.price}</strong></div>
+      <div class="feature-row"><span>${days} ski day total</span><strong>$${dayTotal}</strong></div>
+      ${indyEligible ? `<div class="feature-row"><span>Indy Pass estimate</span><strong>$${INDY_PRICE}</strong></div>` : ''}
+      ${extra}
+      <div class="feature-row"><span>Recommendation</span><strong>${verdict}</strong></div>
+    </div>`;
+  }).join('');
+}
+
+function wireEnhancements() {
+  document.querySelectorAll('.top-nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      const target = href ? document.querySelector(href) : null;
+      if (!target) return;
       e.preventDefault();
-      target.scrollIntoView({behavior:'smooth', block:'start'});
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
-  if(el.backToTop){
-    window.addEventListener('scroll',()=>{el.backToTop.classList.toggle('show', window.scrollY>500);});
-    el.backToTop.addEventListener('click',()=>window.scrollTo({top:0, behavior:'smooth'}));
+  if (els.backToTop) {
+    window.addEventListener('scroll', () => {
+      els.backToTop.classList.toggle('show', window.scrollY > 500);
+    });
+    els.backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
+  els.skiDays?.addEventListener('input', () => renderPassCalculator(filteredResorts()));
 }
+
+
 // ─── Compare tray & panel ─────────────────────────────────────────────────────
 function renderCompareTray() {
   if (state.compareSet.size === 0) {
@@ -961,7 +1151,10 @@ function updateLeafletMap(resorts) {
     const inFilter = filteredIds.has(base.id);
     const isSelected = base.id === state.selectedId;
 
-    const color = isSelected ? '#3dd9a4' : inFilter ? '#5b9cf6' : '#374f6e';
+    let color = isSelected ? '#22b38a' : inFilter ? '#2b6de9' : '#9fb6d3';
+    if (state.origin && state.driveCache[base.id] !== undefined && state.driveCache[base.id] !== null) {
+      color = driveColor(state.driveCache[base.id], isSelected);
+    }
     const size  = isSelected ? 14 : 10;
     const opacity = inFilter ? 1 : 0.35;
 
@@ -1029,50 +1222,43 @@ function wireSortHeaders() {
 }
 
 // ─── Quick filter wiring ──────────────────────────────────────────────────────
-function wireQuickFilters() {
-  document.querySelectorAll('.qf-btn[data-qf]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const qf = btn.dataset.qf;
-      if (state.activeQF === qf) {
-        state.activeQF = null;
-        btn.classList.remove('active');
-        $('clearQF').style.display = 'none';
-      } else {
-        state.activeQF = qf;
-        document.querySelectorAll('.qf-btn[data-qf]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        $('clearQF').style.display = '';
-      }
-      render();
-    });
-  });
-  $('clearQF').addEventListener('click', () => {
-    state.activeQF = null;
-    document.querySelectorAll('.qf-btn').forEach(b => b.classList.remove('active'));
-    $('clearQF').style.display = 'none';
-    render();
-  });
-}
-
 // ─── Location wiring ──────────────────────────────────────────────────────────
 function wireLocation() {
+  const applyLocation = async () => {
+    const q = els.originInput.value.trim();
+    if (!q) {
+      state.origin = null;
+      state.driveCache = {};
+      state.drivesLoading = false;
+      render();
+      return;
+    }
+    showToast('🔍 Finding location…', 3000);
+    const loc = await geocodeOrigin(q);
+    if (loc) {
+      state.origin = loc;
+      state.driveCache = {};
+      showToast(`📍 Origin set to ${loc.label}`);
+      await loadAllDriveTimes();
+    } else {
+      showToast('Could not find that ZIP or location');
+    }
+  };
+
+  els.originInput.addEventListener('keydown', async e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    await applyLocation();
+  });
+  els.setLocation?.addEventListener('click', applyLocation);
+
   let locationTimer;
   els.originInput.addEventListener('input', () => {
     clearTimeout(locationTimer);
-    locationTimer = setTimeout(async () => {
+    locationTimer = setTimeout(() => {
       const q = els.originInput.value.trim();
-      if (!q) { state.origin = null; state.driveCache = {}; render(); return; }
-      showToast('🔍 Finding location…', 3000);
-      const loc = await geocodeOrigin(q);
-      if (loc) {
-        state.origin = loc;
-        state.driveCache = {};
-        showToast(`📍 Origin set to ${loc.label}`);
-        await loadAllDriveTimes();
-      } else {
-        showToast('Could not find that location');
-      }
-    }, 900);
+      if (!q) { state.origin = null; state.driveCache = {}; state.drivesLoading = false; render(); }
+    }, 600);
   });
 
   els.detectLocation.addEventListener('click', () => {
@@ -1089,10 +1275,16 @@ function wireLocation() {
 
 // ─── Main event wiring ────────────────────────────────────────────────────────
 function wireEvents() {
-  els.searchInput.addEventListener('input', e => { state.search = e.target.value; render(); });
+  els.searchInput.addEventListener('input', e => {
+    state.search = e.target.value;
+    const q = e.target.value.trim().toLowerCase();
+    const exact = RESORTS.find(r => r.name.toLowerCase() === q) || RESORTS.find(r => r.name.toLowerCase().startsWith(q));
+    if (exact) state.selectedId = exact.id;
+    render();
+  });
   els.stateFilter.addEventListener('change', e => { state.stateFilter = e.target.value; render(); });
   els.passFilter.addEventListener('change', e => { state.pass = e.target.value; render(); });
-  els.sortBy.addEventListener('change', e => { state.sortCol = e.target.value; state.sortDir = 'desc'; render(); });
+  els.sortBy.addEventListener('change', e => { state.sortCol = e.target.value; state.sortDir = (['drive','price','name','state'].includes(state.sortCol)) ? 'asc' : 'desc'; render(); });
   els.toggleNight.addEventListener('click', () => {
     state.nightOnly = !state.nightOnly;
     els.toggleNight.setAttribute('aria-pressed', state.nightOnly?'true':'false');
@@ -1116,7 +1308,6 @@ function wireEvents() {
   els.closeCompare.addEventListener('click', () => { els.comparePanel.style.display = 'none'; });
 
   wireSortHeaders();
-  wireQuickFilters();
   wireLocation();
 }
 
@@ -1131,74 +1322,24 @@ function render() {
   const selected = resorts.find(r=>r.id===state.selectedId) || null;
   renderSelectedResort(selected);
   renderCompareTray();
+  renderBestToday(resorts);
+  renderWeekendPlanner(resorts);
+  renderPassCalculator(resorts);
+  renderSnowRankings(resorts);
 }
 
 // ─── Initialize ───────────────────────────────────────────────────────────────
 function initialize() {
   els.stateFilter.innerHTML = uniqueStates().map(s=>`<option value="${s}">${s}</option>`).join('');
   els.passFilter.innerHTML  = uniquePasses().map(p=>`<option value="${p}">${p}</option>`).join('');
+  if (els.resortSuggestions) {
+    els.resortSuggestions.innerHTML = RESORTS.map(r => `<option value="${r.name}">${r.state}</option>`).join('');
+  }
+  if (els.skiDays) els.skiDays.value = String(state.skiDays);
   wireEvents();
+  wireEnhancements();
   render();
-  // Init map after layout paint
   setTimeout(() => initLeafletMap(), 100);
 }
 
-initialize();async function loadAllDrives() {
-  if (!S.origin) return;
-  S.drivesLoading = true;
-  render();
-  toast('⏱ Calculating drive times…',4000);
-
-  const queue=[...RESORTS];
-  const workers=Array.from({length:4}, async()=>{
-    while(queue.length){
-      const resort=queue.shift();
-      if(!resort) break;
-      await fetchDrive(resort);
-    }
-  });
-
-  await Promise.all(workers);
-  S.drivesLoading = false;
-  persist();
-  render();
-  await renderPlanner();
-  if(el.sbsPanel.style.display!=='none') renderSBS();
-  toast('✓ Drive times updated');
-}
-
-// ─── Geocode / ZIP lookup ─────────────────────────────────────────────────────
-async function geocodeOrigin(query) {
-  const q = query.trim();
-  if (!q) return null;
-
-  const geocode = async candidate => {
-    try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(candidate)}&format=json&limit=1&countrycodes=us`,{headers:{'Accept-Language':'en'}});
-      const d = await r.json();
-      if (!d.length) return null;
-      return {lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon),label:d[0].display_name.split(',')[0]};
-    } catch { return null; }
-  };
-
-  if(/^\d{5}$/.test(q)){
-    try{
-      const r = await fetch(`https://api.zippopotam.us/us/${q}`);
-      if(r.ok){
-        const d = await r.json();
-        const place = d.places?.[0];
-        if(place){
-          return {
-            lat:parseFloat(place.latitude),
-            lon:parseFloat(place.longitude),
-            label:`${place['place name']}, ${place.state || place['state abbreviation'] || ''}`.replace(/,\s*$/,'')
-          };
-        }
-      }
-    }catch{}
-  }
-
-  return await geocode(q) || await geocode(`${q}, USA`);
-}
-
-
+initialize();
