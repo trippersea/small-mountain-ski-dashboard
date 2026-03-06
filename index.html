@@ -13,22 +13,10 @@
 <body>
   <div id="toast" class="toast" aria-live="polite"></div>
 
-  <nav class="top-nav">
-    <div class="top-nav-inner">
-      <a href="#searchSection">🔎 Search</a>
-      <a href="#compareSection">🏔 Compare</a>
-      <a href="#snowSection">❄️ Snow Outlook</a>
-      <a href="#passCalcSection">🎟 Pass Value</a>
-      <a href="#mapSection">🗺 Map</a>
-    </div>
-  </nav>
-
-  <button id="backToTop" class="back-to-top" aria-label="Back to top">↑ Top</button>
-
   <div class="container">
 
     <!-- HERO -->
-    <section id="searchSection" class="hero card">
+    <section class="hero card">
       <div class="hero-text">
         <div class="eyebrow">New England · Small Mountain Guide</div>
         <h1>Small Mountain Ski Dashboard</h1>
@@ -36,10 +24,8 @@
         <div class="location-row">
           <div class="field" style="flex:1;max-width:320px">
             <label for="originInput">📍 Your starting location</label>
-            <input id="originInput" list="resortSuggestions" type="text" placeholder="e.g. Boston, MA or 02101" />
-            <datalist id="resortSuggestions"></datalist>
+            <input id="originInput" type="text" placeholder="e.g. Boston, MA or 02101" />
           </div>
-          <button id="setLocation" class="btn btn-primary btn-sm">Set location</button>
           <button id="detectLocation" class="btn btn-secondary btn-sm">Use my location</button>
         </div>
       </div>
@@ -111,7 +97,7 @@
       <main class="main-content">
 
         <!-- COMPARISON TABLE -->
-        <section id="compareSection" class="card panel">
+        <section class="card panel">
           <div class="section-header">
             <div>
               <h2>🏔 Compare Resorts</h2>
@@ -131,7 +117,7 @@
                   <th data-col="longestRun"  class="sortable col-num">Longest Run <span class="sort-icon"></span></th>
                   <th data-col="snowfall"    class="sortable col-num">Avg Snow <span class="sort-icon"></span></th>
                   <th data-col="snowmaking"  class="sortable col-num">Snowmaking <span class="sort-icon"></span></th>
-                  <th data-col="price"       class="sortable col-num">Day Ticket <span class="sort-icon"></span></th>
+                  <th data-col="price"       class="sortable col-num">Day Ticket* <span class="sort-icon"></span></th>
                   <th data-col="drive"       class="sortable col-num">Drive <span class="sort-icon"></span></th>
                   <th data-col="night"       class="sortable col-center">Night <span class="sort-icon"></span></th>
                   <th data-col="terrainPark" class="sortable col-center">Park <span class="sort-icon"></span></th>
@@ -169,36 +155,11 @@
       </main>
     </section>
 
-
-    <section id="snowSection" class="card panel feature-section">
-      <div class="section-header">
-        <div>
-          <h2>❄️ Snow Outlook & Crowd Forecast</h2>
-          <p class="muted small">Objective helper cards using upcoming weather, snowfall forecast, ticket price, and drive time when available.</p>
-        </div>
-      </div>
-      <div id="snowRankings" class="feature-grid"></div>
-    </section>
-
-    <section id="passCalcSection" class="card panel feature-section">
-      <div class="section-header">
-        <div>
-          <h2>🎟 Pass Value Calculator</h2>
-          <p class="muted small">Simple break-even math for resorts in the current filtered list.</p>
-        </div>
-        <div class="field" style="max-width:180px">
-          <label for="skiDays">Expected ski days</label>
-          <input id="skiDays" type="number" min="1" max="20" step="1" value="5" />
-        </div>
-      </div>
-      <div id="passCalcGrid" class="feature-grid"></div>
-    </section>
-
     <!-- FULL-WIDTH MAP -->
-    <section id="mapSection" class="fullwidth-map-section card">
+    <section class="fullwidth-map-section card">
       <div class="section-header" style="padding:18px 18px 0">
         <div>
-          <h2>New England Map</h2>
+          <h2>🗺 New England Map</h2>
           <p class="muted small">Click a pin to select a resort · markers reflect current filters.</p>
         </div>
       </div>

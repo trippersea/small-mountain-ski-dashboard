@@ -50,16 +50,15 @@ trailMapPage: 'https://example.com/trail-map/'
 Some resorts block direct image embedding for webcams or trail maps. In those cases, leave `webcamImage` or `trailMapImage` blank and just use the page link.
 
 
-## Bright theme and new features
-This version adds:
-- a brighter ski-themed color palette
-- sticky top navigation
-- snow outlook cards with snowfall sparklines
-- crowd-pressure estimates
-- pass value calculator
-- drive-time heat map colors on the map when a location is set
+## 2026 refresh
+This version includes:
+- brighter snow-and-sky color palette
+- primary top navigation and back-to-top button
+- search typeahead on the resort search field
+- ZIP lookup via Zippopotam.us and weather/snow outlook via Open-Meteo
+- drive-time routing via OSRM
+- Snow Outlook cards with simple snowfall sparklines
+- price disclaimers for day-ticket and pass calculations
 
-## Notes on data
-- Weather and snowfall forecast use Open-Meteo in the browser.
-- Drive times use a public OSRM routing service and may take a few seconds to populate.
-- Crowd pressure and operations outlook are clearly labeled estimates, not official resort status feeds.
+## Data notes
+Ticket prices are directional estimates only and can change by date, demand, age band, and promotions. Confirm final pricing and pass terms directly with the resort.
