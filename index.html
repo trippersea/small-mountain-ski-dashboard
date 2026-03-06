@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Small Mountain Ski Dashboard</title>
-  <meta name="description" content="Interactive ski resort dashboard for New England small mountains." />
+  <title>New England Small Mountain Ski Dashboard</title>
+  <meta name="description" content="Real-time ski conditions, weather, drive times, and resort comparison for New England small mountains." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,17 +12,40 @@
 </head>
 <body>
   <div id="toast" class="toast" aria-live="polite"></div>
+
   <div class="container">
 
+    <!-- HERO -->
     <section class="hero card">
-      <div>
+      <div class="hero-text">
         <div class="eyebrow">New England · Small Mountain Guide</div>
         <h1>Small Mountain Ski Dashboard</h1>
-        <p>Search, compare, and explore New England ski areas. Filter by state or pass, browse the map, and dig into terrain details.</p>
+        <p>Live conditions, weather, drive times, and side-by-side resort comparison for New England's best small mountains.</p>
+        <div class="location-row">
+          <div class="field" style="flex:1;max-width:320px">
+            <label for="originInput">📍 Your starting location</label>
+            <input id="originInput" type="text" placeholder="e.g. Boston, MA or 02101" />
+          </div>
+          <button id="detectLocation" class="btn btn-secondary btn-sm">Use my location</button>
+        </div>
       </div>
       <div id="summaryCards" class="summary-grid"></div>
     </section>
 
+    <!-- QUICK FILTERS -->
+    <section class="quick-filters card">
+      <span class="quick-label">Best for:</span>
+      <button class="qf-btn" data-qf="beginners">🟢 Beginners</button>
+      <button class="qf-btn" data-qf="steeps">⚫ Steeps</button>
+      <button class="qf-btn" data-qf="night">🌙 Night Skiing</button>
+      <button class="qf-btn" data-qf="natural-snow">❄️ Natural Snow</button>
+      <button class="qf-btn" data-qf="terrain-park">🛹 Terrain Park</button>
+      <button class="qf-btn" data-qf="family">👨‍👩‍👧 Family</button>
+      <button class="qf-btn" data-qf="budget">💵 Budget</button>
+      <button id="clearQF" class="qf-btn qf-clear" style="display:none">✕ Clear</button>
+    </section>
+
+    <!-- TOOLBAR -->
     <section class="toolbar card">
       <div class="field field-wide">
         <label for="searchInput">Search resorts</label>
@@ -37,8 +60,22 @@
         <select id="passFilter"></select>
       </div>
       <div class="field">
+        <label for="sortBy">Sort by</label>
+        <select id="sortBy">
+          <option value="vertical">Vertical</option>
+          <option value="trails">Trails</option>
+          <option value="lifts">Lifts</option>
+          <option value="acres">Acres</option>
+          <option value="longestRun">Longest Run</option>
+          <option value="snowfall">Avg Snowfall</option>
+          <option value="snowmaking">Snowmaking</option>
+          <option value="drive">Drive Time</option>
+          <option value="price">Ticket Price</option>
+        </select>
+      </div>
+      <div class="field">
         <label>&nbsp;</label>
-        <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">🌙 Night Skiing</button>
+        <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">🌙 Night Only</button>
       </div>
       <div class="field">
         <label>&nbsp;</label>
@@ -47,6 +84,7 @@
       <div id="activeFilters" class="active-filters"></div>
     </section>
 
+    <!-- MAIN LAYOUT -->
     <section class="layout">
       <aside class="card sidebar">
         <div class="section-header">
@@ -58,28 +96,31 @@
 
       <main class="main-content">
 
-        <!-- Comparison chart -->
+        <!-- COMPARISON TABLE -->
         <section class="card panel">
           <div class="section-header">
             <div>
               <h2>Compare Resorts</h2>
-              <p class="muted small">Click a column header to sort.</p>
+              <p class="muted small">Click a column header to sort · click a row to select.</p>
             </div>
           </div>
           <div class="chart-table-wrap">
             <table id="comparisonTable" class="comparison-table">
               <thead>
                 <tr>
-                  <th data-col="name" class="sortable col-name">Resort <span class="sort-icon"></span></th>
-                  <th data-col="state" class="sortable col-state">State <span class="sort-icon"></span></th>
-                  <th data-col="vertical" class="sortable col-num">Vertical <span class="sort-icon"></span></th>
-                  <th data-col="trails" class="sortable col-num">Trails <span class="sort-icon"></span></th>
-                  <th data-col="lifts" class="sortable col-num">Lifts <span class="sort-icon"></span></th>
-                  <th data-col="acres" class="sortable col-num">Acres <span class="sort-icon"></span></th>
-                  <th data-col="longestRun" class="sortable col-num">Longest Run <span class="sort-icon"></span></th>
-                  <th data-col="snowfall" class="sortable col-num">Snowfall <span class="sort-icon"></span></th>
-                  <th data-col="snowmaking" class="sortable col-num">Snowmaking <span class="sort-icon"></span></th>
-                  <th data-col="night" class="sortable col-center">Night <span class="sort-icon"></span></th>
+                  <th data-col="name"        class="sortable col-name">Resort <span class="sort-icon"></span></th>
+                  <th data-col="state"       class="sortable col-state">State <span class="sort-icon"></span></th>
+                  <th data-col="vertical"    class="sortable col-num">Vertical <span class="sort-icon"></span></th>
+                  <th data-col="trails"      class="sortable col-num">Trails <span class="sort-icon"></span></th>
+                  <th data-col="lifts"       class="sortable col-num">Lifts <span class="sort-icon"></span></th>
+                  <th data-col="acres"       class="sortable col-num">Acres <span class="sort-icon"></span></th>
+                  <th data-col="longestRun"  class="sortable col-num">Longest Run <span class="sort-icon"></span></th>
+                  <th data-col="snowfall"    class="sortable col-num">Avg Snow <span class="sort-icon"></span></th>
+                  <th data-col="snowmaking"  class="sortable col-num">Snowmaking <span class="sort-icon"></span></th>
+                  <th data-col="price"       class="sortable col-num">Day Ticket <span class="sort-icon"></span></th>
+                  <th data-col="drive"       class="sortable col-num">Drive <span class="sort-icon"></span></th>
+                  <th data-col="night"       class="sortable col-center">Night <span class="sort-icon"></span></th>
+                  <th data-col="terrainPark" class="sortable col-center">Park <span class="sort-icon"></span></th>
                 </tr>
               </thead>
               <tbody id="comparisonBody"></tbody>
@@ -87,28 +128,49 @@
           </div>
         </section>
 
-        <!-- Map + selected resort side by side -->
-        <section class="two-col-grid">
-          <section class="card panel map-panel">
-            <div class="section-header">
-              <div>
-                <h2>New England Map</h2>
-                <p class="muted small">Click a marker to select · hover to preview.</p>
-              </div>
-            </div>
-            <div id="resortMap" class="svg-map"></div>
-            <div id="mapTooltip" class="map-tooltip" role="tooltip" aria-hidden="true"></div>
-          </section>
+        <!-- SELECTED RESORT (full width, shown when selected) -->
+        <section id="selectedResortSection" class="selected-resort-section" style="display:none">
+          <div id="selectedResort" class="card panel"></div>
+        </section>
 
-          <section id="selectedResort" class="card panel">
-            <div class="empty-state muted">Select a resort to see details.</div>
-          </section>
+        <!-- COMPARE TRAY -->
+        <div id="compareTray" class="compare-tray" style="display:none">
+          <div class="compare-tray-inner">
+            <span class="compare-tray-label">Comparing:</span>
+            <div id="comparePills" class="compare-pills"></div>
+            <button id="compareBtn" class="btn btn-primary btn-sm">Compare Side-by-Side</button>
+            <button id="clearCompare" class="btn btn-secondary btn-sm">Clear</button>
+          </div>
+        </div>
+
+        <!-- SIDE-BY-SIDE COMPARE PANEL -->
+        <section id="comparePanel" class="card panel" style="display:none">
+          <div class="section-header">
+            <h2>Side-by-Side Comparison</h2>
+            <button id="closeCompare" class="btn btn-secondary btn-sm">✕ Close</button>
+          </div>
+          <div id="compareContent"></div>
         </section>
 
       </main>
     </section>
+
+    <!-- FULL-WIDTH MAP -->
+    <section class="fullwidth-map-section card">
+      <div class="section-header" style="padding:18px 18px 0">
+        <div>
+          <h2>New England Map</h2>
+          <p class="muted small">Click a pin to select a resort · markers reflect current filters.</p>
+        </div>
+      </div>
+      <div id="leafletMap" class="leaflet-map-container"></div>
+    </section>
+
   </div>
 
+  <!-- Leaflet CSS/JS (no API key needed) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="resorts.js"></script>
 </body>
 </html>
