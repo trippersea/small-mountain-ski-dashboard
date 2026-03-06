@@ -3,36 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Small Mountain Dashboard</title>
-  <meta name="description" content="A GitHub Pages-ready ski resort dashboard for small mountains, webcams, map views, rankings, and snow forecast tracking." />
+  <title>Small Mountain Ski Dashboard</title>
+  <meta name="description" content="Interactive ski resort dashboard with adjustable scoring, webcams, trail maps, rankings, and a New England resort map." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <section class="hero">
-      <div class="hero-main card">
+    <section class="hero card">
+      <div>
         <div class="eyebrow">GitHub Pages Ready</div>
-        <h1>Small Mountain Dashboard</h1>
-        <p>
-          A static ski-resort dashboard for your small-mountain project. Search, filter, rank, map,
-          and compare resorts, then pull a live 3-day snow forecast into the selected resort panel.
-        </p>
+        <h1>Small Mountain Ski Dashboard</h1>
+        <p>Search, compare, rank, and explore New England ski areas. Tune the scoring model, add webcams and trail maps, and publish it directly to GitHub Pages.</p>
       </div>
-      <div class="hero-side card" id="summaryCards"></div>
+      <div id="summaryCards" class="summary-grid"></div>
     </section>
 
     <section class="toolbar card">
-      <div class="field field-search">
+      <div class="field field-wide">
         <label for="searchInput">Search resorts</label>
-        <input id="searchInput" placeholder="Search name, state, pass, owner, tags, or notes" />
-      </div>
-      <div class="field">
-        <label for="regionFilter">Region</label>
-        <select id="regionFilter"></select>
+        <input id="searchInput" type="text" placeholder="Search name, state, pass, tags, or notes" />
       </div>
       <div class="field">
         <label for="passFilter">Pass</label>
@@ -41,52 +33,67 @@
       <div class="field">
         <label for="sortBy">Sort by</label>
         <select id="sortBy">
-          <option value="score">Small Mountain Score</option>
+          <option value="score">Custom Score</option>
+          <option value="experienceScore">Experience Score</option>
           <option value="vertical">Vertical</option>
           <option value="trails">Trails</option>
-          <option value="snowfall">Avg Snowfall</option>
+          <option value="snowfall">Snowfall</option>
           <option value="snowmaking">Snowmaking</option>
-          <option value="experienceScore">Experience Score</option>
         </select>
       </div>
-      <button class="btn-secondary" id="toggleNight">Night Skiing Only</button>
-      <button class="btn-primary" id="randomResort">Surprise Me</button>
+      <button id="toggleNight" class="btn btn-secondary">Night Skiing Only</button>
+      <button id="randomResort" class="btn btn-primary">Surprise Me</button>
     </section>
 
-    <section class="grid">
-      <div class="panel card left-panel">
-        <div class="panel-header">
+    <section class="layout">
+      <aside class="card sidebar">
+        <div class="section-header">
           <h2>Resorts</h2>
-          <div class="muted" id="resultCount">0 resorts</div>
+          <span id="resultCount" class="muted">0 resorts</span>
         </div>
         <div id="resortList" class="resort-list"></div>
-      </div>
+      </aside>
 
-      <div class="dashboard">
-        <div id="selectedResort"></div>
+      <main class="main-content">
+        <section id="selectedResort"></section>
 
-        <div class="section-grid two-up">
-          <div class="card panel">
-            <div class="panel-header">
-              <h2>New England Map</h2>
-              <div class="muted">Click any marker to jump</div>
+        <section class="score-editor card">
+          <div class="section-header">
+            <div>
+              <h2>Adjust the Scoring Model</h2>
+              <p class="muted small">Move the sliders. Scores and rankings update instantly.</p>
             </div>
-            <div id="map"></div>
+            <button id="resetWeights" class="btn btn-secondary">Reset Weights</button>
           </div>
+          <div id="weightControls" class="weights-grid"></div>
+          <div class="weights-total">Current total: <strong id="weightsTotal">100%</strong></div>
+        </section>
 
-          <div class="card panel">
-            <div class="panel-header">
-              <h2>Rankings</h2>
-              <div class="muted">Current filtered list</div>
+        <section class="two-col-grid">
+          <section class="card panel">
+            <div class="section-header">
+              <div>
+                <h2>New England Map</h2>
+                <p class="muted small">Click a marker to select a mountain.</p>
+              </div>
+            </div>
+            <div id="resortMap" class="svg-map"></div>
+          </section>
+
+          <section class="card panel">
+            <div class="section-header">
+              <div>
+                <h2>Rankings</h2>
+                <p class="muted small">Based on your current scoring weights.</p>
+              </div>
             </div>
             <div id="rankings"></div>
-          </div>
-        </div>
-      </div>
+          </section>
+        </section>
+      </main>
     </section>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="resorts.js"></script>
 </body>
 </html>
