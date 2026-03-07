@@ -1,37 +1,49 @@
-# New England Ski Mountain Guide
+# New England Ski Decision Engine
 
-A GitHub Pages-ready ski planning dashboard for New England ski mountains with transparent, user-adjustable scoring.
+A GitHub Pages-ready, Kayak-style ski decision engine for Northeast mountains.
 
-## What's included
-- Planner Score controls with presets and custom sliders
-- Best Mountain Today
-- Where Should I Ski This Weekend?
-- Storm Chaser snowfall leaderboard
+## Phase 1 scope
+This version expands beyond a small-mountain dashboard into a broader Northeast search-and-compare tool with pass filters for:
+- Epic
+- Ikon
+- Indy
+- Independent
+
+The initial Northeast catalog is built from a broader North American resort dataset plus current pass-group mapping for Northeast resorts.
+
+## What this build includes
+- `Where Should I Ski Tomorrow?`
+- `Where Should I Ski This Weekend?`
+- Storm Chaser leaderboard
+- Hidden Gem Score
 - Indy Pass Optimization Tool
-- Crowd Prediction
+- Planner Score controls with presets and custom sliders
 - Compare table and side-by-side compare
-- Search typeahead
-- Drive times from ZIP or city
-- Weather and snowfall forecasts
-- Map with drive-radius coloring
+- Drive-radius / Storm / Pass map modes
+- Search typeahead for resort names
+- ZIP or city-based drive times
 
-## Planner Score
-Planner Score combines:
-- Forecast snow
-- Drive time
-- Snowmaking
-- Vertical
-- Price/value
-- Crowd penalty
+## Architecture fields now included
+Each resort record now includes:
+- `passGroup`
+- `ownerGroup`
+- `region`
+- `baseElevation`
+- `summitElevation`
+- `vertical`
+- `terrainBreakdown`
+- `avgSnowfall`
+- `snowmaking`
+- `price`
+- `night`
+- `terrainPark`
 
-Users can change the weights directly on the page.
-
-## Live data sources
+## Free data sources used in-browser
 - Open-Meteo for weather and forecast snowfall
 - Zippopotam.us for ZIP lookup
-- Nominatim for city/state lookup
+- Nominatim for city/state geocoding
 - OSRM for drive times
-- Leaflet + OpenStreetMap for the map
+- Leaflet + OpenStreetMap for mapping
 
-## Notes
+## Important note
 Ticket prices are directional estimates and can vary by date, demand, age, and promotions. Confirm final pricing with the mountain.

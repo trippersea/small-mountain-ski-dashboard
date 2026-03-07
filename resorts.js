@@ -1,410 +1,275 @@
-// ─── Resort Data ─────────────────────────────────────────────────────────────
-const RESORTS = [
-  {
-    id: 'black-nh', name: 'Black Mountain', state: 'NH', pass: 'Indy', owner: 'Independent',
-    vertical: 1100, trails: 45, lifts: 5, acres: 143, snowfall: 120, snowmaking: 98, night: false,
-    longestRun: 2.5, lat: 44.1776, lon: -71.1284,
-    difficulty: { beginner: 0.20, intermediate: 0.45, advanced: 0.25, expert: 0.10 },
-    liftsBreakdown: [['Double', 3], ['Triple', 1], ['Surface', 1]],
-    website: 'https://www.blackmt.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.blackmt.com/',
-    price: 69, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Classic New Hampshire small-mountain feel with strong historic character.',
-    tags: ['Historic', 'Classic doubles', 'Indy favorite'],
-    bestFor: ['beginners', 'family']
-  },
-  {
-    id: 'black-me', name: 'Black Mountain of Maine', state: 'ME', pass: 'Indy', owner: 'Community nonprofit',
-    vertical: 1380, trails: 50, lifts: 3, acres: 600, snowfall: 110, snowmaking: 75, night: true,
-    longestRun: 2.0, lat: 44.5342, lon: -70.5368,
-    difficulty: { beginner: 0.24, intermediate: 0.38, advanced: 0.24, expert: 0.14 },
-    liftsBreakdown: [['Double', 2], ['T-Bar', 1]],
-    website: 'https://skiblackmountain.org/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://skiblackmountain.org/',
-    price: 55, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Rumford soul hill with big acreage, meaningful vert, top-to-bottom night skiing, and nonprofit energy.',
-    tags: ['Night skiing', 'Maine', 'Community hill'],
-    bestFor: ['night', 'budget', 'family']
-  },
-  {
-    id: 'bolton', name: 'Bolton Valley', state: 'VT', pass: 'Indy', owner: 'Independent',
-    vertical: 1634, trails: 71, lifts: 6, acres: 300, snowfall: 300, snowmaking: 62, night: true,
-    longestRun: 2.0, lat: 44.4217, lon: -72.8518,
-    difficulty: { beginner: 0.18, intermediate: 0.44, advanced: 0.25, expert: 0.13 },
-    liftsBreakdown: [['Quad', 2], ['Double', 3], ['Surface', 1]],
-    website: 'https://www.boltonvalley.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.boltonvalley.com/',
-    price: 89, terrainPark: true, seasonOpen: 'Nov', seasonClose: 'Apr',
-    notes: 'Natural-snow standout with night skiing, backcountry credibility, and one of the strongest local scenes in Vermont.',
-    tags: ['Night skiing', 'Natural snow', 'Backcountry'],
-    bestFor: ['night', 'natural-snow', 'steeps']
-  },
-  {
-    id: 'bousquet', name: 'Bousquet', state: 'MA', pass: 'Indy', owner: 'Private',
-    vertical: 750, trails: 24, lifts: 5, acres: 100, snowfall: 70, snowmaking: 95, night: true,
-    longestRun: 1.0, lat: 42.4138, lon: -73.2820,
-    difficulty: { beginner: 0.28, intermediate: 0.44, advanced: 0.22, expert: 0.06 },
-    liftsBreakdown: [['Quad', 2], ['Triple', 1], ['Surface', 2]],
-    website: 'https://www.bousquetmountain.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.bousquetmountain.com/',
-    price: 65, terrainPark: true, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Compact but useful mountain with lights, local energy, and easy access.',
-    tags: ['Night skiing', 'Berkshires', 'Local hill'],
-    bestFor: ['night', 'beginners', 'terrain-park']
-  },
-  {
-    id: 'bradford', name: 'Bradford Ski Area', state: 'MA', pass: 'Independent', owner: 'Independent',
-    vertical: 230, trails: 15, lifts: 10, acres: 48, snowfall: 40, snowmaking: 100, night: true,
-    longestRun: 0.4, lat: 42.7779, lon: -71.0819,
-    difficulty: { beginner: 0.34, intermediate: 0.40, advanced: 0.20, expert: 0.06 },
-    liftsBreakdown: [['Triple', 3], ['T-Bar', 1], ['Rope tow', 3], ['Carpet', 3]],
-    website: 'https://skibradford.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://skibradford.com/',
-    price: 49, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Pure local feeder hill near Boston with strong night-skiing utility and learn-to-ride value.',
-    tags: ['Boston-area', 'Night skiing', 'Feeder hill'],
-    bestFor: ['beginners', 'night', 'budget', 'family']
-  },
-  {
-    id: 'bromley', name: 'Bromley', state: 'VT', pass: 'Independent', owner: 'Corporate',
-    vertical: 1334, trails: 47, lifts: 9, acres: 178, snowfall: 145, snowmaking: 98, night: false,
-    longestRun: 2.5, lat: 43.2278, lon: -72.9382,
-    difficulty: { beginner: 0.32, intermediate: 0.36, advanced: 0.20, expert: 0.12 },
-    liftsBreakdown: [['High-speed quad', 1], ['Fixed quad', 1], ['Double', 4], ['T-Bar', 1], ['Carpet', 2]],
-    website: 'https://www.bromley.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.bromley.com/',
-    price: 99, terrainPark: true, seasonOpen: 'Nov', seasonClose: 'Apr',
-    notes: 'South-facing family cruiser with a balanced terrain mix.',
-    tags: ['Family', 'Southern Vermont', 'Cruisers'],
-    bestFor: ['family', 'beginners', 'terrain-park']
-  },
-  {
-    id: 'burke', name: 'Burke Mountain', state: 'VT', pass: 'Independent', owner: 'Independent',
-    vertical: 2057, trails: 55, lifts: 4, acres: 260, snowfall: 217, snowmaking: 70, night: false,
-    longestRun: 2.0, lat: 44.5717, lon: -71.8928,
-    difficulty: { beginner: 0.18, intermediate: 0.42, advanced: 0.24, expert: 0.16 },
-    liftsBreakdown: [['High-speed quad', 2], ['T-Bar', 1], ['J-Bar', 1]],
-    website: 'https://skiburke.com/', webcamImage: '', webcamPage: 'https://skiburke.com/the-mountain/webcams',
-    trailMapImage: '', trailMapPage: 'https://skiburke.com/the-mountain/weather-conditions#map',
-    price: 109, terrainPark: false, seasonOpen: 'Nov', seasonClose: 'Apr',
-    notes: 'Big vert, race culture, and serious Northeast Kingdom terrain.',
-    tags: ['Northeast Kingdom', 'Race culture', 'Big vert'],
-    bestFor: ['steeps', 'natural-snow']
-  },
-  {
-    id: 'catamount', name: 'Catamount', state: 'NY/MA', pass: 'Indy', owner: 'Independent',
-    vertical: 1000, trails: 44, lifts: 8, acres: 119, snowfall: 75, snowmaking: 93, night: true,
-    longestRun: 1.75, lat: 42.1269, lon: -73.5206,
-    difficulty: { beginner: 0.35, intermediate: 0.42, advanced: 0.17, expert: 0.06 },
-    liftsBreakdown: [['Quad', 2], ['Triple', 3], ['Carpet', 3]],
-    website: 'https://catamountski.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://catamountski.com/',
-    price: 79, terrainPark: true, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Broad lit terrain and strong southern New England access.',
-    tags: ['Night skiing', 'Indy', 'Hudson Valley access'],
-    bestFor: ['night', 'beginners', 'terrain-park', 'family']
-  },
-  {
-    id: 'gunstock', name: 'Gunstock', state: 'NH', pass: 'Independent', owner: 'County-owned',
-    vertical: 1400, trails: 55, lifts: 8, acres: 227, snowfall: 160, snowmaking: 98, night: true,
-    longestRun: 1.6, lat: 43.5404, lon: -71.3702,
-    difficulty: { beginner: 0.22, intermediate: 0.42, advanced: 0.25, expert: 0.11 },
-    liftsBreakdown: [['High-speed quad', 1], ['Fixed quad', 2], ['Triple', 1], ['Double', 2], ['Surface', 2]],
-    website: 'https://www.gunstock.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.gunstock.com/',
-    price: 89, terrainPark: true, seasonOpen: 'Nov', seasonClose: 'Apr',
-    notes: 'Big-small mountain blend with strong operations and one of the better night products in New England.',
-    tags: ['Night skiing', 'Family', 'Strong ops'],
-    bestFor: ['night', 'family', 'terrain-park']
-  },
-  {
-    id: 'magic', name: 'Magic Mountain', state: 'VT', pass: 'Indy', owner: 'Community-backed independent',
-    vertical: 1500, trails: 51, lifts: 5, acres: 285, snowfall: 120, snowmaking: 45, night: false,
-    longestRun: 3.0, lat: 43.1964, lon: -72.8243,
-    difficulty: { beginner: 0.14, intermediate: 0.32, advanced: 0.34, expert: 0.20 },
-    liftsBreakdown: [['Quad', 1], ['Double', 3], ['Surface', 1]],
-    website: 'https://magicmtn.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://magicmtn.com/',
-    price: 79, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Apr',
-    notes: 'Cult-favorite Vermont mountain with soul, steeper terrain, and elite vibe scores.',
-    tags: ['Soul skiing', 'Steeps', 'Indy legend'],
-    bestFor: ['steeps', 'budget']
-  },
-  {
-    id: 'nashoba', name: 'Nashoba Valley', state: 'MA', pass: 'Independent', owner: 'Independent',
-    vertical: 240, trails: 17, lifts: 10, acres: 46, snowfall: 50, snowmaking: 100, night: true,
-    longestRun: 0.5, lat: 42.5290, lon: -71.4731,
-    difficulty: { beginner: 0.20, intermediate: 0.50, advanced: 0.30, expert: 0.00 },
-    liftsBreakdown: [['Triple', 3], ['Double', 1], ['Conveyor', 3], ['Rope tow', 3]],
-    website: 'https://skinashoba.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://skinashoba.com/',
-    price: 49, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Metro-Boston night-ski machine built for quick laps and lessons.',
-    tags: ['Night skiing', 'Metro Boston', 'Lessons'],
-    bestFor: ['beginners', 'night', 'budget', 'family']
-  },
-  {
-    id: 'pats-peak', name: 'Pats Peak', state: 'NH', pass: 'Indy', owner: 'Family-owned',
-    vertical: 770, trails: 28, lifts: 11, acres: 117, snowfall: 80, snowmaking: 100, night: true,
-    longestRun: 1.5, lat: 43.1790, lon: -71.8196,
-    difficulty: { beginner: 0.50, intermediate: 0.21, advanced: 0.12, expert: 0.17 },
-    liftsBreakdown: [['Quad', 1], ['Triple', 3], ['Double', 2], ['J-Bar', 1], ['Handle tow', 2], ['Carpet', 2]],
-    website: 'https://www.patspeak.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.patspeak.com/',
-    price: 75, terrainPark: true, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'One of the strongest night and learn-to-ski operations in New England.',
-    tags: ['Night skiing', 'Family-owned', 'Race leagues'],
-    bestFor: ['beginners', 'night', 'family', 'terrain-park']
-  },
-  {
-    id: 'wachusett', name: 'Wachusett', state: 'MA', pass: 'Independent', owner: 'Independent',
-    vertical: 1000, trails: 27, lifts: 8, acres: 110, snowfall: 72, snowmaking: 100, night: true,
-    longestRun: 2.0, lat: 42.4884, lon: -71.8863,
-    difficulty: { beginner: 0.25, intermediate: 0.50, advanced: 0.20, expert: 0.05 },
-    liftsBreakdown: [['High-speed quad', 2], ['Triple', 2], ['Surface', 4]],
-    website: 'https://www.wachusett.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.wachusett.com/',
-    price: 89, terrainPark: true, seasonOpen: 'Nov', seasonClose: 'Apr',
-    notes: 'Massachusetts volume leader with elite convenience and huge after-work appeal.',
-    tags: ['Night skiing', 'High volume', 'Near Boston'],
-    bestFor: ['night', 'beginners', 'terrain-park', 'family']
-  },
+const RESORTS = [{"id":"mohawk-mountain","name":"Mohawk Mountain","state":"CT","region":"Connecticut","passGroup":"Indy","ownerGroup":"Indy + independent","lat":41.83549,"lon":-73.31095,"vertical":650,"trails":31,"lifts":3,"acres":146,"longestRun":1.5,"snowmaking":10000,"price":72,"night":true,"terrainPark":false,"baseElevation":950,"summitElevation":1600,"avgSnowfall":70,"terrainBreakdown":{"beginner":0.3,"intermediate":0.5,"advanced":0.2},"rating":3.2,"ratingCount":38},{"id":"mount-southington-ski-area","name":"Mount Southington","state":"CT","region":"Connecticut","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.58206,"lon":-72.92492,"vertical":425,"trails":24,"lifts":5,"acres":53,"longestRun":0.3,"snowmaking":5100,"price":72,"night":true,"terrainPark":false,"baseElevation":100,"summitElevation":525,"avgSnowfall":70,"terrainBreakdown":{"beginner":0.43,"intermediate":0.43,"advanced":0.14},"rating":3.1,"ratingCount":28},{"id":"powder-ridge-park","name":"Powder Ridge","state":"CT","region":"Connecticut","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.50052,"lon":-72.74075,"vertical":550,"trails":28,"lifts":4,"acres":78,"longestRun":0.5,"snowmaking":6800,"price":76,"night":true,"terrainPark":false,"baseElevation":170,"summitElevation":720,"avgSnowfall":70,"terrainBreakdown":{"beginner":0.42,"intermediate":0.37,"advanced":0.21},"rating":3.3,"ratingCount":1},{"id":"ski-sundown","name":"Ski Sundown","state":"CT","region":"Connecticut","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.88469,"lon":-72.9467,"vertical":625,"trails":30,"lifts":2,"acres":115,"longestRun":1.0,"snowmaking":7000,"price":79,"night":true,"terrainPark":false,"baseElevation":450,"summitElevation":1075,"avgSnowfall":70,"terrainBreakdown":{"beginner":0.5,"intermediate":0.25,"advanced":0.19},"rating":3.2,"ratingCount":31},{"id":"woodbury-ski-area","name":"Woodbury","state":"CT","region":"Connecticut","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.5906,"lon":-73.25536,"vertical":300,"trails":21,"lifts":5,"acres":35,"longestRun":0.2,"snowmaking":5000,"price":67,"night":false,"terrainPark":false,"baseElevation":430,"summitElevation":730,"avgSnowfall":70,"terrainBreakdown":{"beginner":0.25,"intermediate":0.25,"advanced":0.25},"rating":2.2,"ratingCount":15},{"id":"berkshire-east","name":"Berkshire East","state":"MA","region":"Massachusetts","passGroup":"Indy","ownerGroup":"Indy + independent","lat":42.62266,"lon":-72.87838,"vertical":1180,"trails":46,"lifts":5,"acres":315,"longestRun":2.0,"snowmaking":15000,"price":80,"night":true,"terrainPark":false,"baseElevation":540,"summitElevation":1720,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.37,"intermediate":0.44,"advanced":0.17},"rating":3.1,"ratingCount":26},{"id":"blandford-ski-area","name":"Blandford","state":"MA","region":"Massachusetts","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.19436,"lon":-72.91167,"vertical":465,"trails":25,"lifts":5,"acres":66,"longestRun":0.5,"snowmaking":8200,"price":72,"night":false,"terrainPark":false,"baseElevation":1035,"summitElevation":1685,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.4,"intermediate":0.5,"advanced":0.1},"rating":2.7,"ratingCount":9},{"id":"blue-hills-ski-area","name":"Blue Hills","state":"MA","region":"Massachusetts","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.21536,"lon":-71.11928,"vertical":309,"trails":21,"lifts":4,"acres":31,"longestRun":0.0,"snowmaking":6000,"price":69,"night":true,"terrainPark":false,"baseElevation":326,"summitElevation":635,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.13,"intermediate":0.25,"advanced":0.62},"rating":3.1,"ratingCount":9},{"id":"bousquet-ski-area","name":"Bousquet","state":"MA","region":"Massachusetts","passGroup":"Indy","ownerGroup":"Indy + independent","lat":42.41801,"lon":-73.2772,"vertical":750,"trails":33,"lifts":5,"acres":138,"longestRun":1.0,"snowmaking":9800,"price":70,"night":true,"terrainPark":false,"baseElevation":1125,"summitElevation":1875,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.34,"intermediate":0.33,"advanced":0.33},"rating":3.2,"ratingCount":9},{"id":"bradford-ski-area","name":"Bradford","state":"MA","region":"Massachusetts","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.74473,"lon":-71.05582,"vertical":248,"trails":19,"lifts":8,"acres":31,"longestRun":0.3,"snowmaking":4800,"price":71,"night":true,"terrainPark":false,"baseElevation":1300,"summitElevation":1548,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.1,"intermediate":0.8,"advanced":0.1},"rating":3.1,"ratingCount":7},{"id":"jiminy-peak","name":"Jiminy Peak","state":"MA","region":"Massachusetts","passGroup":"Ikon","ownerGroup":"Ikon network","lat":42.54425,"lon":-73.28622,"vertical":1150,"trails":45,"lifts":5,"acres":307,"longestRun":2.0,"snowmaking":16300,"price":128,"night":true,"terrainPark":true,"baseElevation":1230,"summitElevation":2380,"avgSnowfall":109,"terrainBreakdown":{"beginner":0.53,"intermediate":0.27,"advanced":0.13},"rating":3.5,"ratingCount":67},{"id":"nashoba-valley","name":"Nashoba Valley","state":"MA","region":"Massachusetts","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.54256,"lon":-71.44504,"vertical":240,"trails":19,"lifts":8,"acres":34,"longestRun":0.5,"snowmaking":5200,"price":72,"night":true,"terrainPark":false,"baseElevation":200,"summitElevation":440,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.24,"intermediate":0.47,"advanced":0.29},"rating":3.1,"ratingCount":17},{"id":"otis-ridge-ski-area","name":"Otis Ridge","state":"MA","region":"Massachusetts","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.19638,"lon":-73.0984,"vertical":400,"trails":23,"lifts":4,"acres":73,"longestRun":1.0,"snowmaking":5500,"price":75,"night":false,"terrainPark":false,"baseElevation":1300,"summitElevation":1700,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.3,"intermediate":0.4,"advanced":0.3},"rating":2.8,"ratingCount":5},{"id":"ski-butternut","name":"Ski Butternut","state":"MA","region":"Massachusetts","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.18366,"lon":-73.32015,"vertical":1000,"trails":41,"lifts":10,"acres":225,"longestRun":1.5,"snowmaking":11000,"price":86,"night":true,"terrainPark":false,"baseElevation":800,"summitElevation":1800,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.2,"intermediate":0.6,"advanced":0.2},"rating":3.2,"ratingCount":50},{"id":"ski-ward","name":"Ski Ward","state":"MA","region":"Massachusetts","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.30165,"lon":-71.68197,"vertical":210,"trails":18,"lifts":3,"acres":25,"longestRun":0.2,"snowmaking":4500,"price":68,"night":true,"terrainPark":false,"baseElevation":210,"summitElevation":420,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.3,"intermediate":0.5,"advanced":0.2},"rating":2.6,"ratingCount":3},{"id":"wachusett-mountain-ski-area","name":"Wachusett","state":"MA","region":"Massachusetts","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.50298,"lon":-71.88631,"vertical":1000,"trails":41,"lifts":4,"acres":225,"longestRun":1.5,"snowmaking":10800,"price":86,"night":true,"terrainPark":true,"baseElevation":1006,"summitElevation":2006,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.3,"intermediate":0.4,"advanced":0.3},"rating":3.2,"ratingCount":66},{"id":"big-squaw-mountain-ski-resort","name":"Big Moose Mountain","state":"ME","region":"Maine","passGroup":"Independent","ownerGroup":"Independent / local","lat":45.50672,"lon":-69.70202,"vertical":660,"trails":31,"lifts":2,"acres":110,"longestRun":0.8,"snowmaking":50,"price":83,"night":false,"terrainPark":false,"baseElevation":1750,"summitElevation":3200,"avgSnowfall":230,"terrainBreakdown":{"beginner":0.33,"intermediate":0.34,"advanced":0.33},"rating":3.2,"ratingCount":7},{"id":"black-mountain-of-maine","name":"Black Mountain of Maine","state":"ME","region":"Maine","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.5342,"lon":-70.5368,"vertical":1380,"trails":50,"lifts":3,"acres":600,"longestRun":2.0,"snowmaking":75,"price":55,"night":true,"terrainPark":false,"baseElevation":1080,"summitElevation":2460,"avgSnowfall":110,"terrainBreakdown":{"beginner":0.24,"intermediate":0.38,"advanced":0.38},"rating":4.0,"ratingCount":120},{"id":"camden-snow-bowl","name":"Camden Snow Bowl","state":"ME","region":"Maine","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.21727,"lon":-69.13467,"vertical":850,"trails":36,"lifts":2,"acres":156,"longestRun":1.0,"snowmaking":4800,"price":76,"night":false,"terrainPark":false,"baseElevation":150,"summitElevation":1080,"avgSnowfall":170,"terrainBreakdown":{"beginner":0.09,"intermediate":0.3,"advanced":0.61},"rating":3.1,"ratingCount":4},{"id":"lost-valley","name":"Lost Valley","state":"ME","region":"Maine","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.13406,"lon":-70.28237,"vertical":240,"trails":19,"lifts":2,"acres":30,"longestRun":0.3,"snowmaking":4500,"price":64,"night":true,"terrainPark":false,"baseElevation":255,"summitElevation":495,"avgSnowfall":170,"terrainBreakdown":{"beginner":0.47,"intermediate":0.2,"advanced":0.33},"rating":2.7,"ratingCount":4},{"id":"mt-abram-ski-resort","name":"Mt. Abram","state":"ME","region":"Maine","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.3798,"lon":-70.70686,"vertical":1150,"trails":45,"lifts":5,"acres":163,"longestRun":0.5,"snowmaking":17500,"price":76,"night":false,"terrainPark":false,"baseElevation":1050,"summitElevation":2250,"avgSnowfall":182,"terrainBreakdown":{"beginner":0.19,"intermediate":0.41,"advanced":0.26},"rating":3.2,"ratingCount":14},{"id":"mt-jefferson","name":"Mt. Jefferson","state":"ME","region":"Maine","passGroup":"Independent","ownerGroup":"Independent / local","lat":45.35399,"lon":-68.28303,"vertical":432,"trails":24,"lifts":3,"acres":54,"longestRun":0.3,"snowmaking":0,"price":73,"night":false,"terrainPark":true,"baseElevation":351,"summitElevation":753,"avgSnowfall":170,"terrainBreakdown":{"beginner":0.33,"intermediate":0.34,"advanced":0.33},"rating":2.0,"ratingCount":1},{"id":"new-hermon-mountain","name":"New Hermon","state":"ME","region":"Maine","passGroup":"Independent","ownerGroup":"Independent / local","lat":44.78079,"lon":-68.95727,"vertical":350,"trails":22,"lifts":3,"acres":90,"longestRun":1.9,"snowmaking":7000,"price":84,"night":false,"terrainPark":false,"baseElevation":100,"summitElevation":450,"avgSnowfall":170,"terrainBreakdown":{"beginner":0.4,"intermediate":0.3,"advanced":0.3},"rating":2.6,"ratingCount":4},{"id":"saddleback-inc","name":"Saddleback","state":"ME","region":"Maine","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.96506,"lon":-70.76822,"vertical":2000,"trails":69,"lifts":5,"acres":717,"longestRun":3.1,"snowmaking":12500,"price":100,"night":false,"terrainPark":false,"baseElevation":2460,"summitElevation":4120,"avgSnowfall":276,"terrainBreakdown":{"beginner":0.35,"intermediate":0.3,"advanced":0.25},"rating":3.1,"ratingCount":22},{"id":"shawnee-peak","name":"Shawnee Peak","state":"ME","region":"Maine","passGroup":"Independent","ownerGroup":"Independent / local","lat":44.05899,"lon":-70.81554,"vertical":1350,"trails":51,"lifts":3,"acres":225,"longestRun":0.8,"snowmaking":23400,"price":90,"night":false,"terrainPark":true,"baseElevation":600,"summitElevation":1900,"avgSnowfall":170,"terrainBreakdown":{"beginner":0.25,"intermediate":0.45,"advanced":0.2},"rating":3.1,"ratingCount":20},{"id":"sugarloaf","name":"Sugarloaf","state":"ME","region":"Maine","passGroup":"Ikon","ownerGroup":"Ikon network","lat":45.03144,"lon":-70.31313,"vertical":2820,"trails":93,"lifts":10,"acres":1104,"longestRun":3.5,"snowmaking":61800,"price":157,"night":false,"terrainPark":false,"baseElevation":1417,"summitElevation":4237,"avgSnowfall":282,"terrainBreakdown":{"beginner":0.23,"intermediate":0.34,"advanced":0.28},"rating":3.2,"ratingCount":39},{"id":"sunday-river","name":"Sunday River","state":"ME","region":"Maine","passGroup":"Ikon","ownerGroup":"Ikon network","lat":44.46715,"lon":-70.84715,"vertical":2340,"trails":79,"lifts":7,"acres":819,"longestRun":3.0,"snowmaking":55200,"price":150,"night":false,"terrainPark":true,"baseElevation":825,"summitElevation":3150,"avgSnowfall":228,"terrainBreakdown":{"beginner":0.21,"intermediate":0.32,"advanced":0.23},"rating":3.3,"ratingCount":74},{"id":"attitash","name":"Attitash","state":"NH","region":"New Hampshire","passGroup":"Epic","ownerGroup":"Epic network","lat":44.08278,"lon":-71.2294,"vertical":1750,"trails":62,"lifts":5,"acres":612,"longestRun":3.0,"snowmaking":24000,"price":151,"night":false,"terrainPark":false,"baseElevation":600,"summitElevation":2350,"avgSnowfall":168,"terrainBreakdown":{"beginner":0.26,"intermediate":0.46,"advanced":0.28},"rating":3.2,"ratingCount":36},{"id":"black-mountain","name":"Black Mountain","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.16668,"lon":-71.16378,"vertical":1100,"trails":43,"lifts":4,"acres":257,"longestRun":1.6,"snowmaking":14000,"price":86,"night":false,"terrainPark":false,"baseElevation":1250,"summitElevation":2350,"avgSnowfall":168,"terrainBreakdown":{"beginner":0.33,"intermediate":0.34,"advanced":0.08},"rating":3.1,"ratingCount":11},{"id":"bretton-woods","name":"Bretton Woods","state":"NH","region":"New Hampshire","passGroup":"Independent","ownerGroup":"Independent / local","lat":44.25812,"lon":-71.44119,"vertical":1500,"trails":55,"lifts":5,"acres":400,"longestRun":2.0,"snowmaking":40000,"price":104,"night":false,"terrainPark":true,"baseElevation":1600,"summitElevation":3100,"avgSnowfall":205,"terrainBreakdown":{"beginner":0.25,"intermediate":0.29,"advanced":0.3},"rating":3.5,"ratingCount":64},{"id":"cannon-mountain","name":"Cannon Mountain","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.15645,"lon":-71.69842,"vertical":2180,"trails":74,"lifts":6,"acres":636,"longestRun":2.3,"snowmaking":19100,"price":102,"night":false,"terrainPark":false,"baseElevation":1900,"summitElevation":4080,"avgSnowfall":254,"terrainBreakdown":{"beginner":0.15,"intermediate":0.52,"advanced":0.33},"rating":3.3,"ratingCount":50},{"id":"cranmore-mountain-resort","name":"Cranmore","state":"NH","region":"New Hampshire","passGroup":"Independent","ownerGroup":"Independent / local","lat":44.05685,"lon":-71.09959,"vertical":1200,"trails":46,"lifts":4,"acres":220,"longestRun":1.0,"snowmaking":19200,"price":94,"night":false,"terrainPark":true,"baseElevation":600,"summitElevation":2000,"avgSnowfall":150,"terrainBreakdown":{"beginner":0.28,"intermediate":0.44,"advanced":0.28},"rating":3.2,"ratingCount":20},{"id":"crotched-mountain","name":"Crotched","state":"NH","region":"New Hampshire","passGroup":"Epic","ownerGroup":"Epic network","lat":42.99842,"lon":-71.87369,"vertical":1016,"trails":41,"lifts":3,"acres":203,"longestRun":1.2,"snowmaking":10000,"price":133,"night":true,"terrainPark":true,"baseElevation":1050,"summitElevation":2066,"avgSnowfall":153,"terrainBreakdown":{"beginner":0.28,"intermediate":0.4,"advanced":0.32},"rating":3.2,"ratingCount":32},{"id":"dartmouth-skiway","name":"Dartmouth Skiway","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.78775,"lon":-72.09954,"vertical":969,"trails":40,"lifts":4,"acres":186,"longestRun":1.1,"snowmaking":5400,"price":82,"night":false,"terrainPark":false,"baseElevation":974,"summitElevation":1943,"avgSnowfall":150,"terrainBreakdown":{"beginner":0.21,"intermediate":0.5,"advanced":0.25},"rating":3.2,"ratingCount":5},{"id":"granite-gorge","name":"Granite Gorge","state":"NH","region":"New Hampshire","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.97098,"lon":-72.21204,"vertical":525,"trails":27,"lifts":4,"acres":74,"longestRun":0.5,"snowmaking":3900,"price":82,"night":false,"terrainPark":false,"baseElevation":800,"summitElevation":1325,"avgSnowfall":150,"terrainBreakdown":{"beginner":0.35,"intermediate":0.35,"advanced":0.15},"rating":2.8,"ratingCount":4},{"id":"gunstock","name":"Gunstock","state":"NH","region":"New Hampshire","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.53538,"lon":-71.37009,"vertical":1400,"trails":52,"lifts":4,"acres":315,"longestRun":1.5,"snowmaking":17600,"price":99,"night":true,"terrainPark":false,"baseElevation":900,"summitElevation":2300,"avgSnowfall":165,"terrainBreakdown":{"beginner":0.12,"intermediate":0.61,"advanced":0.0},"rating":3.2,"ratingCount":27},{"id":"king-pine","name":"King Pine","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.86808,"lon":-71.0889,"vertical":350,"trails":22,"lifts":3,"acres":44,"longestRun":0.3,"snowmaking":4500,"price":70,"night":true,"terrainPark":false,"baseElevation":500,"summitElevation":850,"avgSnowfall":150,"terrainBreakdown":{"beginner":0.44,"intermediate":0.31,"advanced":0.1},"rating":2.8,"ratingCount":8},{"id":"loon-mountain","name":"Loon Mountain","state":"NH","region":"New Hampshire","passGroup":"Ikon","ownerGroup":"Ikon network","lat":44.03597,"lon":-71.62144,"vertical":2100,"trails":72,"lifts":7,"acres":648,"longestRun":2.5,"snowmaking":32200,"price":150,"night":false,"terrainPark":true,"baseElevation":950,"summitElevation":3050,"avgSnowfall":202,"terrainBreakdown":{"beginner":0.2,"intermediate":0.6,"advanced":0.17},"rating":3.7,"ratingCount":70},{"id":"mcintyre-ski-area","name":"McIntyre Ski Area","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":42.996,"lon":-71.488,"vertical":200,"trails":11,"lifts":5,"acres":20,"longestRun":0.5,"snowmaking":100,"price":45,"night":true,"terrainPark":true,"baseElevation":300,"summitElevation":500,"avgSnowfall":65,"terrainBreakdown":{"beginner":0.45,"intermediate":0.35,"advanced":0.2},"rating":3.4,"ratingCount":40},{"id":"mount-sunapee","name":"Mount Sunapee","state":"NH","region":"New Hampshire","passGroup":"Epic","ownerGroup":"Epic network","lat":43.33189,"lon":-72.08014,"vertical":1510,"trails":55,"lifts":6,"acres":252,"longestRun":0.8,"snowmaking":21500,"price":135,"night":false,"terrainPark":false,"baseElevation":1233,"summitElevation":2743,"avgSnowfall":187,"terrainBreakdown":{"beginner":0.26,"intermediate":0.49,"advanced":0.25},"rating":3.1,"ratingCount":54},{"id":"pats-peak","name":"Pats Peak","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.15944,"lon":-71.79604,"vertical":770,"trails":34,"lifts":8,"acres":173,"longestRun":1.5,"snowmaking":11500,"price":82,"night":true,"terrainPark":false,"baseElevation":690,"summitElevation":1460,"avgSnowfall":150,"terrainBreakdown":{"beginner":0.5,"intermediate":0.21,"advanced":0.11},"rating":3.2,"ratingCount":38},{"id":"ragged-mountain-resort","name":"Ragged Mountain","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.50323,"lon":-71.8427,"vertical":1250,"trails":48,"lifts":4,"acres":198,"longestRun":0.7,"snowmaking":20000,"price":82,"night":false,"terrainPark":false,"baseElevation":1000,"summitElevation":2250,"avgSnowfall":162,"terrainBreakdown":{"beginner":0.23,"intermediate":0.3,"advanced":0.39},"rating":3.1,"ratingCount":38},{"id":"tenney-mountain","name":"Tenney Mountain","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.769,"lon":-71.812,"vertical":1500,"trails":53,"lifts":4,"acres":110,"longestRun":2.0,"snowmaking":65,"price":79,"night":false,"terrainPark":true,"baseElevation":749,"summitElevation":2250,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.22,"intermediate":0.42,"advanced":0.36},"rating":3.8,"ratingCount":65},{"id":"waterville-valley","name":"Waterville Valley","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.95007,"lon":-71.49952,"vertical":2020,"trails":70,"lifts":7,"acres":707,"longestRun":3.0,"snowmaking":22000,"price":105,"night":true,"terrainPark":true,"baseElevation":1984,"summitElevation":4004,"avgSnowfall":250,"terrainBreakdown":{"beginner":0.15,"intermediate":0.6,"advanced":0.22},"rating":3.4,"ratingCount":37},{"id":"whaleback-mountain","name":"Whaleback","state":"NH","region":"New Hampshire","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.6017,"lon":-72.18027,"vertical":700,"trails":32,"lifts":3,"acres":128,"longestRun":1.0,"snowmaking":6000,"price":79,"night":true,"terrainPark":false,"baseElevation":1100,"summitElevation":1800,"avgSnowfall":150,"terrainBreakdown":{"beginner":0.23,"intermediate":0.41,"advanced":0.23},"rating":3.2,"ratingCount":7},{"id":"wildcat-mountain","name":"Wildcat","state":"NH","region":"New Hampshire","passGroup":"Epic","ownerGroup":"Epic network","lat":44.25895,"lon":-71.20146,"vertical":2112,"trails":72,"lifts":1,"acres":704,"longestRun":2.8,"snowmaking":20000,"price":154,"night":false,"terrainPark":false,"baseElevation":1950,"summitElevation":4062,"avgSnowfall":253,"terrainBreakdown":{"beginner":0.21,"intermediate":0.46,"advanced":0.33},"rating":3.2,"ratingCount":25},{"id":"campgaw-mountain","name":"Campgaw","state":"NJ","region":"New Jersey","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.05426,"lon":-74.19931,"vertical":274,"trails":20,"lifts":5,"acres":34,"longestRun":0.3,"snowmaking":2300,"price":71,"night":true,"terrainPark":false,"baseElevation":450,"summitElevation":726,"avgSnowfall":70,"terrainBreakdown":{"beginner":0.33,"intermediate":0.33,"advanced":0.25},"rating":3.1,"ratingCount":21},{"id":"mountain-creek-resort","name":"Mountain Creek","state":"NJ","region":"New Jersey","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.19075,"lon":-74.50512,"vertical":1040,"trails":42,"lifts":4,"acres":277,"longestRun":2.0,"snowmaking":16700,"price":88,"night":true,"terrainPark":true,"baseElevation":440,"summitElevation":1480,"avgSnowfall":70,"terrainBreakdown":{"beginner":0.17,"intermediate":0.63,"advanced":0.2},"rating":2.8,"ratingCount":128},{"id":"belleayre","name":"Belleayre","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.13224,"lon":-74.50531,"vertical":1404,"trails":52,"lifts":6,"acres":398,"longestRun":2.2,"snowmaking":16400,"price":103,"night":false,"terrainPark":false,"baseElevation":2025,"summitElevation":3429,"avgSnowfall":211,"terrainBreakdown":{"beginner":0.22,"intermediate":0.58,"advanced":0.1},"rating":3.3,"ratingCount":73},{"id":"brantling-ski-slopes","name":"Brantling","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.15012,"lon":-77.06574,"vertical":250,"trails":19,"lifts":5,"acres":27,"longestRun":0.1,"snowmaking":1600,"price":77,"night":true,"terrainPark":false,"baseElevation":600,"summitElevation":850,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.3,"intermediate":0.4,"advanced":0.3},"rating":2.7,"ratingCount":14},{"id":"bristol-mountain","name":"Bristol Mountain","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.7467,"lon":-77.40194,"vertical":1200,"trails":46,"lifts":3,"acres":320,"longestRun":2.0,"snowmaking":14800,"price":100,"night":false,"terrainPark":true,"baseElevation":1000,"summitElevation":2200,"avgSnowfall":150,"terrainBreakdown":{"beginner":0.35,"intermediate":0.45,"advanced":0.2},"rating":3.3,"ratingCount":54},{"id":"buffalo-ski-club-ski-area","name":"Buffalo Ski Club","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.68098,"lon":-78.69204,"vertical":500,"trails":26,"lifts":6,"acres":50,"longestRun":0.0,"snowmaking":15000,"price":81,"night":false,"terrainPark":false,"baseElevation":2025,"summitElevation":3429,"avgSnowfall":211,"terrainBreakdown":{"beginner":0.2,"intermediate":0.46,"advanced":0.0},"rating":3.2,"ratingCount":3},{"id":"catamount-ski-ride-area","name":"Catamount","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.45921,"lon":-73.87237,"vertical":1000,"trails":41,"lifts":6,"acres":267,"longestRun":2.0,"snowmaking":13000,"price":88,"night":true,"terrainPark":false,"baseElevation":1000,"summitElevation":2000,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.36,"intermediate":0.44,"advanced":0.14},"rating":3.2,"ratingCount":53},{"id":"dry-hill-ski-area","name":"Dry Hill","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.93123,"lon":-75.90181,"vertical":300,"trails":21,"lifts":3,"acres":35,"longestRun":0.2,"snowmaking":2600,"price":68,"night":true,"terrainPark":false,"baseElevation":650,"summitElevation":950,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.33,"intermediate":0.34,"advanced":0.33},"rating":2.7,"ratingCount":10},{"id":"gore-mountain","name":"Gore Mountain","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.67328,"lon":-74.00684,"vertical":2537,"trails":84,"lifts":8,"acres":1205,"longestRun":4.5,"snowmaking":42500,"price":129,"night":false,"terrainPark":false,"baseElevation":998,"summitElevation":3600,"avgSnowfall":220,"terrainBreakdown":{"beginner":0.1,"intermediate":0.51,"advanced":0.34},"rating":3.3,"ratingCount":59},{"id":"greek-peak","name":"Greek Peak","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":42.51237,"lon":-76.14755,"vertical":952,"trails":39,"lifts":7,"acres":214,"longestRun":1.5,"snowmaking":18400,"price":84,"night":true,"terrainPark":false,"baseElevation":1148,"summitElevation":2100,"avgSnowfall":145,"terrainBreakdown":{"beginner":0.48,"intermediate":0.21,"advanced":0.24},"rating":3.1,"ratingCount":44},{"id":"hickory-ski-center","name":"Hickory","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.47441,"lon":-73.81735,"vertical":1200,"trails":46,"lifts":3,"acres":220,"longestRun":1.0,"snowmaking":0,"price":93,"night":false,"terrainPark":false,"baseElevation":700,"summitElevation":1900,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.3,"intermediate":0.3,"advanced":0.4},"rating":3.1,"ratingCount":6},{"id":"holimont-ski-area","name":"HoliMont","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.27316,"lon":-78.68944,"vertical":700,"trails":32,"lifts":5,"acres":158,"longestRun":1.5,"snowmaking":13500,"price":91,"night":false,"terrainPark":false,"baseElevation":1560,"summitElevation":2260,"avgSnowfall":153,"terrainBreakdown":{"beginner":0.26,"intermediate":0.28,"advanced":0.45},"rating":3.1,"ratingCount":10},{"id":"holiday-mountain","name":"Holiday Mountain","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.62959,"lon":-74.61449,"vertical":400,"trails":23,"lifts":4,"acres":53,"longestRun":0.4,"snowmaking":3700,"price":80,"night":false,"terrainPark":false,"baseElevation":1150,"summitElevation":1550,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.3,"intermediate":0.27,"advanced":0.31},"rating":2.7,"ratingCount":7},{"id":"holiday-valley","name":"Holiday Valley","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.25845,"lon":-78.67385,"vertical":750,"trails":33,"lifts":10,"acres":138,"longestRun":1.0,"snowmaking":26600,"price":90,"night":true,"terrainPark":true,"baseElevation":1500,"summitElevation":2250,"avgSnowfall":152,"terrainBreakdown":{"beginner":0.34,"intermediate":0.28,"advanced":0.37},"rating":3.3,"ratingCount":53},{"id":"hunt-hollow-ski-club","name":"Hunt Hollow","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.6461,"lon":-77.47812,"vertical":825,"trails":36,"lifts":3,"acres":151,"longestRun":1.0,"snowmaking":40000,"price":91,"night":false,"terrainPark":false,"baseElevation":1000,"summitElevation":2030,"avgSnowfall":142,"terrainBreakdown":{"beginner":0.32,"intermediate":0.21,"advanced":0.37},"rating":3.4,"ratingCount":1},{"id":"hunter-mountain","name":"Hunter Mountain","state":"NY","region":"New York","passGroup":"Epic","ownerGroup":"Epic network","lat":42.17787,"lon":-74.23042,"vertical":1600,"trails":58,"lifts":7,"acres":427,"longestRun":2.0,"snowmaking":24000,"price":143,"night":false,"terrainPark":false,"baseElevation":1600,"summitElevation":3200,"avgSnowfall":200,"terrainBreakdown":{"beginner":0.28,"intermediate":0.24,"advanced":0.33},"rating":3.1,"ratingCount":89},{"id":"kissing-bridge","name":"Kissing Bridge","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.60746,"lon":-78.65278,"vertical":550,"trails":28,"lifts":9,"acres":78,"longestRun":0.5,"snowmaking":55000,"price":84,"night":true,"terrainPark":false,"baseElevation":1150,"summitElevation":1700,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.2,"intermediate":0.5,"advanced":0.3},"rating":3.1,"ratingCount":18},{"id":"labrador-mt","name":"Labrador Mountain","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.74179,"lon":-76.03021,"vertical":700,"trails":32,"lifts":3,"acres":128,"longestRun":1.0,"snowmaking":23700,"price":88,"night":false,"terrainPark":false,"baseElevation":1125,"summitElevation":1825,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.33,"intermediate":0.34,"advanced":0.33},"rating":2.9,"ratingCount":14},{"id":"maple-ski-ridge","name":"Maple Ski Ridge","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":42.81776,"lon":-74.03162,"vertical":450,"trails":25,"lifts":2,"acres":56,"longestRun":0.3,"snowmaking":2500,"price":69,"night":true,"terrainPark":false,"baseElevation":750,"summitElevation":1200,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.11,"intermediate":0.44,"advanced":0.44},"rating":2.4,"ratingCount":3},{"id":"mccauley-mountain-ski-center","name":"McCauley Mountain","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.69719,"lon":-74.96616,"vertical":633,"trails":30,"lifts":5,"acres":79,"longestRun":0.3,"snowmaking":5500,"price":74,"night":false,"terrainPark":true,"baseElevation":1563,"summitElevation":2250,"avgSnowfall":152,"terrainBreakdown":{"beginner":0.26,"intermediate":0.43,"advanced":0.3},"rating":3.3,"ratingCount":13},{"id":"mount-peter-ski-area","name":"Mount Peter","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.2478,"lon":-74.29519,"vertical":450,"trails":25,"lifts":5,"acres":83,"longestRun":1.0,"snowmaking":6900,"price":86,"night":false,"terrainPark":false,"baseElevation":750,"summitElevation":1250,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.43,"intermediate":0.21,"advanced":0.21},"rating":3.2,"ratingCount":43},{"id":"oak-mountain","name":"Oak Mountain","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.51812,"lon":-74.36221,"vertical":650,"trails":31,"lifts":3,"acres":130,"longestRun":1.2,"snowmaking":1800,"price":77,"night":false,"terrainPark":false,"baseElevation":1750,"summitElevation":2400,"avgSnowfall":160,"terrainBreakdown":{"beginner":0.45,"intermediate":0.27,"advanced":0.18},"rating":0.0,"ratingCount":0},{"id":"peekn-peak","name":"Peek\u2019n Peak","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":42.06204,"lon":-79.7356,"vertical":400,"trails":23,"lifts":2,"acres":120,"longestRun":2.4,"snowmaking":11000,"price":85,"night":true,"terrainPark":true,"baseElevation":1400,"summitElevation":1800,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.3,"intermediate":0.45,"advanced":0.15},"rating":3.3,"ratingCount":58},{"id":"plattekill-mountain","name":"Plattekill","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.10731,"lon":-74.08652,"vertical":1100,"trails":43,"lifts":3,"acres":293,"longestRun":2.0,"snowmaking":7500,"price":99,"night":false,"terrainPark":false,"baseElevation":2400,"summitElevation":3500,"avgSnowfall":215,"terrainBreakdown":{"beginner":0.2,"intermediate":0.4,"advanced":0.2},"rating":3.2,"ratingCount":25},{"id":"royal-mountain-ski-area","name":"Royal Mountain","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.0813,"lon":-74.50481,"vertical":550,"trails":28,"lifts":3,"acres":69,"longestRun":0.3,"snowmaking":2800,"price":83,"night":false,"terrainPark":false,"baseElevation":1250,"summitElevation":1800,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.33,"intermediate":0.34,"advanced":0.33},"rating":3.1,"ratingCount":7},{"id":"snow-ridge","name":"Snow Ridge","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":42.02733,"lon":-74.10883,"vertical":650,"trails":31,"lifts":6,"acres":108,"longestRun":0.8,"snowmaking":6500,"price":75,"night":true,"terrainPark":false,"baseElevation":1350,"summitElevation":2000,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.14,"intermediate":0.33,"advanced":0.33},"rating":2.6,"ratingCount":7},{"id":"song-mountain","name":"Song Mountain","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.77422,"lon":-76.15877,"vertical":700,"trails":32,"lifts":4,"acres":93,"longestRun":0.4,"snowmaking":7000,"price":83,"night":true,"terrainPark":false,"baseElevation":1240,"summitElevation":1940,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.5,"intermediate":0.29,"advanced":0.13},"rating":2.6,"ratingCount":9},{"id":"swain","name":"Swain","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":42.47784,"lon":-77.85333,"vertical":650,"trails":31,"lifts":5,"acres":119,"longestRun":1.0,"snowmaking":9000,"price":78,"night":false,"terrainPark":false,"baseElevation":1320,"summitElevation":1970,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.27,"intermediate":0.39,"advanced":0.33},"rating":3.1,"ratingCount":13},{"id":"thunder-ridge","name":"Thunder Ridge","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.50793,"lon":-73.58608,"vertical":500,"trails":26,"lifts":5,"acres":67,"longestRun":0.4,"snowmaking":10000,"price":83,"night":false,"terrainPark":false,"baseElevation":770,"summitElevation":1270,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.4,"intermediate":0.4,"advanced":0.2},"rating":3.1,"ratingCount":29},{"id":"titus-mountain","name":"Titus Mountain","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.76575,"lon":-74.23398,"vertical":1200,"trails":46,"lifts":8,"acres":320,"longestRun":2.0,"snowmaking":15000,"price":90,"night":true,"terrainPark":false,"baseElevation":825,"summitElevation":2025,"avgSnowfall":141,"terrainBreakdown":{"beginner":0.34,"intermediate":0.38,"advanced":0.22},"rating":3.2,"ratingCount":15},{"id":"toggenburg-mountain","name":"Toggenburg","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":42.82624,"lon":-75.95988,"vertical":700,"trails":32,"lifts":4,"acres":93,"longestRun":0.4,"snowmaking":0,"price":84,"night":false,"terrainPark":false,"baseElevation":1300,"summitElevation":2000,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.33,"intermediate":0.33,"advanced":0.34},"rating":2.9,"ratingCount":11},{"id":"west-mountain","name":"West Mountain","state":"NY","region":"New York","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.69376,"lon":-74.12347,"vertical":1010,"trails":41,"lifts":4,"acres":151,"longestRun":0.6,"snowmaking":10500,"price":79,"night":true,"terrainPark":false,"baseElevation":460,"summitElevation":1470,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.36,"intermediate":0.55,"advanced":0.09},"rating":3.0,"ratingCount":27},{"id":"whiteface-mountain-resort","name":"Whiteface","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":44.29706,"lon":-74.01057,"vertical":3430,"trails":110,"lifts":7,"acres":943,"longestRun":2.1,"snowmaking":22000,"price":123,"night":false,"terrainPark":false,"baseElevation":1220,"summitElevation":4650,"avgSnowfall":272,"terrainBreakdown":{"beginner":0.2,"intermediate":0.42,"advanced":0.38},"rating":3.2,"ratingCount":68},{"id":"willard-mountain","name":"Willard Mountain","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.02066,"lon":-73.51588,"vertical":505,"trails":26,"lifts":5,"acres":67,"longestRun":0.4,"snowmaking":3500,"price":83,"night":false,"terrainPark":false,"baseElevation":910,"summitElevation":1415,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.3,"intermediate":0.4,"advanced":0.3},"rating":3.1,"ratingCount":7},{"id":"windham-mountain","name":"Windham Mountain","state":"NY","region":"New York","passGroup":"Ikon","ownerGroup":"Ikon network","lat":42.29373,"lon":-74.25671,"vertical":1600,"trails":58,"lifts":6,"acres":427,"longestRun":2.0,"snowmaking":28000,"price":140,"night":false,"terrainPark":true,"baseElevation":1500,"summitElevation":3100,"avgSnowfall":195,"terrainBreakdown":{"beginner":0.3,"intermediate":0.43,"advanced":0.16},"rating":3.3,"ratingCount":48},{"id":"woods-valley-ski-area","name":"Woods Valley","state":"NY","region":"New York","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.30267,"lon":-75.38476,"vertical":500,"trails":26,"lifts":6,"acres":62,"longestRun":0.3,"snowmaking":1600,"price":81,"night":false,"terrainPark":false,"baseElevation":900,"summitElevation":1400,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.2,"intermediate":0.6,"advanced":0.2},"rating":2.9,"ratingCount":9},{"id":"bear-creek-mountain-resort","name":"Bear Creek","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":40.47533,"lon":-75.6253,"vertical":510,"trails":27,"lifts":5,"acres":94,"longestRun":1.0,"snowmaking":8600,"price":83,"night":false,"terrainPark":true,"baseElevation":600,"summitElevation":1100,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.3,"intermediate":0.4,"advanced":0.3},"rating":3.2,"ratingCount":55},{"id":"big-boulder","name":"Big Boulder","state":"PA","region":"Pennsylvania","passGroup":"Epic","ownerGroup":"Epic network","lat":41.11,"lon":-75.65123,"vertical":600,"trails":29,"lifts":6,"acres":60,"longestRun":0.0,"snowmaking":5500,"price":117,"night":true,"terrainPark":false,"baseElevation":1700,"summitElevation":2175,"avgSnowfall":99,"terrainBreakdown":{"beginner":1.0,"intermediate":0.0,"advanced":0.0},"rating":3.1,"ratingCount":36},{"id":"blue-knob","name":"Blue Knob","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":40.28841,"lon":-78.56168,"vertical":1072,"trails":43,"lifts":3,"acres":286,"longestRun":2.0,"snowmaking":8400,"price":95,"night":false,"terrainPark":false,"baseElevation":2074,"summitElevation":3146,"avgSnowfall":147,"terrainBreakdown":{"beginner":0.15,"intermediate":0.41,"advanced":0.26},"rating":3.2,"ratingCount":42},{"id":"blue-mountain-ski-area","name":"Blue Mountain","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":40.82264,"lon":-75.51248,"vertical":1082,"trails":43,"lifts":13,"acres":216,"longestRun":1.2,"snowmaking":16400,"price":91,"night":true,"terrainPark":true,"baseElevation":460,"summitElevation":1600,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.41,"intermediate":0.13,"advanced":0.13},"rating":3.5,"ratingCount":154},{"id":"camelback-mountain-resort","name":"Camelback","state":"PA","region":"Pennsylvania","passGroup":"Ikon","ownerGroup":"Ikon network","lat":41.05149,"lon":-75.35518,"vertical":800,"trails":35,"lifts":11,"acres":147,"longestRun":1.0,"snowmaking":16000,"price":122,"night":true,"terrainPark":true,"baseElevation":1250,"summitElevation":2100,"avgSnowfall":95,"terrainBreakdown":{"beginner":0.32,"intermediate":0.32,"advanced":0.32},"rating":3.2,"ratingCount":126},{"id":"eagle-rock","name":"Eagle Rock","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.20268,"lon":-75.37779,"vertical":550,"trails":28,"lifts":3,"acres":101,"longestRun":1.0,"snowmaking":0,"price":83,"night":false,"terrainPark":false,"baseElevation":1260,"summitElevation":1810,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.5,"intermediate":0.07,"advanced":0.43},"rating":3.1,"ratingCount":12},{"id":"elk-mountain-ski-resort","name":"Elk Mountain","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.72051,"lon":-75.5593,"vertical":1000,"trails":41,"lifts":7,"acres":158,"longestRun":0.7,"snowmaking":14600,"price":86,"night":false,"terrainPark":false,"baseElevation":1693,"summitElevation":2693,"avgSnowfall":125,"terrainBreakdown":{"beginner":0.22,"intermediate":0.37,"advanced":0.41},"rating":3.3,"ratingCount":96},{"id":"jack-frost","name":"Jack Frost","state":"PA","region":"Pennsylvania","passGroup":"Epic","ownerGroup":"Epic network","lat":41.11,"lon":-75.65123,"vertical":600,"trails":29,"lifts":7,"acres":110,"longestRun":1.0,"snowmaking":10000,"price":124,"night":true,"terrainPark":false,"baseElevation":1400,"summitElevation":2000,"avgSnowfall":90,"terrainBreakdown":{"beginner":1.0,"intermediate":0.0,"advanced":0.0},"rating":3.2,"ratingCount":42},{"id":"liberty","name":"Liberty Mountain","state":"PA","region":"Pennsylvania","passGroup":"Epic","ownerGroup":"Epic network","lat":41.55841,"lon":-77.10469,"vertical":620,"trails":30,"lifts":8,"acres":114,"longestRun":1.0,"snowmaking":10000,"price":124,"night":true,"terrainPark":false,"baseElevation":570,"summitElevation":1190,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.35,"intermediate":0.4,"advanced":0.0},"rating":3.1,"ratingCount":62},{"id":"montage-mountain","name":"Montage Mountain","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":45.26046,"lon":-111.3667,"vertical":1000,"trails":41,"lifts":4,"acres":200,"longestRun":1.2,"snowmaking":14000,"price":90,"night":true,"terrainPark":true,"baseElevation":960,"summitElevation":1960,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.35,"intermediate":0.3,"advanced":0.2},"rating":3.4,"ratingCount":124},{"id":"mount-pleasant-of-edinboro","name":"Mount Pleasant of Edinboro","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.85099,"lon":-80.07029,"vertical":340,"trails":22,"lifts":1,"acres":48,"longestRun":0.5,"snowmaking":3500,"price":79,"night":false,"terrainPark":false,"baseElevation":1200,"summitElevation":1540,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.22,"intermediate":0.56,"advanced":0.22},"rating":3.3,"ratingCount":3},{"id":"roundtop-mountain-resort","name":"Roundtop","state":"PA","region":"Pennsylvania","passGroup":"Epic","ownerGroup":"Epic network","lat":40.10945,"lon":-76.92755,"vertical":600,"trails":29,"lifts":6,"acres":80,"longestRun":0.4,"snowmaking":10300,"price":119,"night":false,"terrainPark":false,"baseElevation":800,"summitElevation":1400,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.2,"intermediate":0.25,"advanced":0.4},"rating":2.9,"ratingCount":39},{"id":"seven-springs","name":"Seven Springs","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":40.02298,"lon":-79.29771,"vertical":750,"trails":33,"lifts":7,"acres":150,"longestRun":1.2,"snowmaking":28500,"price":86,"night":false,"terrainPark":true,"baseElevation":2240,"summitElevation":2994,"avgSnowfall":140,"terrainBreakdown":{"beginner":0.36,"intermediate":0.42,"advanced":0.18},"rating":3.1,"ratingCount":120},{"id":"shawnee-mountain-ski-area","name":"Shawnee Mountain","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.03961,"lon":-75.08526,"vertical":700,"trails":32,"lifts":8,"acres":163,"longestRun":1.6,"snowmaking":12500,"price":88,"night":false,"terrainPark":false,"baseElevation":650,"summitElevation":1350,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.26,"intermediate":0.48,"advanced":0.26},"rating":3.2,"ratingCount":35},{"id":"ski-big-bear","name":"Ski Big Bear","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.52398,"lon":-75.0233,"vertical":650,"trails":31,"lifts":6,"acres":146,"longestRun":1.5,"snowmaking":2600,"price":87,"night":false,"terrainPark":false,"baseElevation":600,"summitElevation":1250,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.33,"intermediate":0.28,"advanced":0.33},"rating":3.1,"ratingCount":28},{"id":"big-bear","name":"Ski Big Bear at Masthope","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.52242,"lon":-75.02357,"vertical":500,"trails":26,"lifts":2,"acres":92,"longestRun":1.0,"snowmaking":50,"price":59,"night":true,"terrainPark":false,"baseElevation":500,"summitElevation":1200,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.28,"intermediate":0.42,"advanced":0.3},"rating":3.5,"ratingCount":0},{"id":"ski-sawmill","name":"Ski Sawmill","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.5186,"lon":-77.29075,"vertical":515,"trails":27,"lifts":4,"acres":56,"longestRun":0.1,"snowmaking":1300,"price":78,"night":false,"terrainPark":false,"baseElevation":1700,"summitElevation":2215,"avgSnowfall":101,"terrainBreakdown":{"beginner":0.35,"intermediate":0.25,"advanced":0.4},"rating":3.2,"ratingCount":14},{"id":"sno-mountain","name":"Sno Mountain","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.35124,"lon":-75.66292,"vertical":500,"trails":26,"lifts":2,"acres":92,"longestRun":1.0,"snowmaking":50,"price":59,"night":false,"terrainPark":false,"baseElevation":500,"summitElevation":1200,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.28,"intermediate":0.42,"advanced":0.3},"rating":3.5,"ratingCount":0},{"id":"spring-mountain-ski-area","name":"Spring Mountain","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":40.27254,"lon":-75.45006,"vertical":450,"trails":25,"lifts":5,"acres":52,"longestRun":0.2,"snowmaking":4500,"price":77,"night":false,"terrainPark":false,"baseElevation":78,"summitElevation":528,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.37,"intermediate":0.5,"advanced":0.13},"rating":3.0,"ratingCount":52},{"id":"tussey-mountain","name":"Tussey Mountain","state":"PA","region":"Pennsylvania","passGroup":"Independent","ownerGroup":"Independent / local","lat":40.21,"lon":-78.33222,"vertical":520,"trails":27,"lifts":5,"acres":65,"longestRun":0.3,"snowmaking":3000,"price":78,"night":false,"terrainPark":false,"baseElevation":1230,"summitElevation":1750,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.4,"intermediate":0.4,"advanced":0.0},"rating":3.0,"ratingCount":12},{"id":"whitetail-resort","name":"Whitetail","state":"PA","region":"Pennsylvania","passGroup":"Epic","ownerGroup":"Epic network","lat":39.74177,"lon":-77.93328,"vertical":935,"trails":39,"lifts":7,"acres":171,"longestRun":1.0,"snowmaking":12000,"price":127,"night":false,"terrainPark":true,"baseElevation":865,"summitElevation":1800,"avgSnowfall":90,"terrainBreakdown":{"beginner":0.32,"intermediate":0.45,"advanced":0.0},"rating":3.2,"ratingCount":61},{"id":"yawgoo-valley","name":"Yawgoo Valley","state":"RI","region":"Rhode Island","passGroup":"Independent","ownerGroup":"Independent / local","lat":41.5176,"lon":-71.52726,"vertical":245,"trails":19,"lifts":4,"acres":29,"longestRun":0.2,"snowmaking":3000,"price":71,"night":true,"terrainPark":false,"baseElevation":70,"summitElevation":315,"avgSnowfall":60,"terrainBreakdown":{"beginner":0.3,"intermediate":0.4,"advanced":0.3},"rating":3.3,"ratingCount":5},{"id":"bolton-valley","name":"Bolton Valley","state":"VT","region":"Vermont","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.42099,"lon":-72.85033,"vertical":1704,"trails":61,"lifts":6,"acres":256,"longestRun":0.6,"snowmaking":9000,"price":86,"night":true,"terrainPark":false,"baseElevation":1446,"summitElevation":3150,"avgSnowfall":238,"terrainBreakdown":{"beginner":0.34,"intermediate":0.38,"advanced":0.23},"rating":3.2,"ratingCount":34},{"id":"bromley-mountain","name":"Bromley","state":"VT","region":"Vermont","passGroup":"Independent","ownerGroup":"Independent / local","lat":43.22785,"lon":-72.93871,"vertical":1334,"trails":50,"lifts":7,"acres":411,"longestRun":2.5,"snowmaking":15500,"price":104,"night":true,"terrainPark":false,"baseElevation":1950,"summitElevation":3284,"avgSnowfall":244,"terrainBreakdown":{"beginner":0.3,"intermediate":0.36,"advanced":0.32},"rating":3.2,"ratingCount":24},{"id":"burke-mountain","name":"Burke Mountain","state":"VT","region":"Vermont","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.57117,"lon":-71.89232,"vertical":2011,"trails":69,"lifts":4,"acres":570,"longestRun":2.2,"snowmaking":12500,"price":99,"night":false,"terrainPark":false,"baseElevation":1210,"summitElevation":3267,"avgSnowfall":243,"terrainBreakdown":{"beginner":0.11,"intermediate":0.46,"advanced":0.34},"rating":3.2,"ratingCount":23},{"id":"jay-peak","name":"Jay Peak","state":"VT","region":"Vermont","passGroup":"Indy","ownerGroup":"Indy + independent","lat":44.93794,"lon":-72.50452,"vertical":2153,"trails":74,"lifts":6,"acres":754,"longestRun":3.0,"snowmaking":30000,"price":107,"night":false,"terrainPark":true,"baseElevation":1815,"summitElevation":3968,"avgSnowfall":278,"terrainBreakdown":{"beginner":0.2,"intermediate":0.4,"advanced":0.4},"rating":3.5,"ratingCount":111},{"id":"killington-resort","name":"Killington","state":"VT","region":"Vermont","passGroup":"Ikon","ownerGroup":"Ikon network","lat":43.6198,"lon":-72.80271,"vertical":3050,"trails":99,"lifts":11,"acres":1830,"longestRun":6.0,"snowmaking":50000,"price":179,"night":false,"terrainPark":true,"baseElevation":1165,"summitElevation":4241,"avgSnowfall":292,"terrainBreakdown":{"beginner":0.28,"intermediate":0.33,"advanced":0.24},"rating":3.6,"ratingCount":174},{"id":"mad-river-glen","name":"Mad River Glen","state":"VT","region":"Vermont","passGroup":"Independent","ownerGroup":"Independent / local","lat":44.20248,"lon":-72.91754,"vertical":2037,"trails":70,"lifts":3,"acres":373,"longestRun":1.0,"snowmaking":1600,"price":102,"night":false,"terrainPark":false,"baseElevation":1600,"summitElevation":3637,"avgSnowfall":262,"terrainBreakdown":{"beginner":0.2,"intermediate":0.35,"advanced":0.45},"rating":3.2,"ratingCount":26},{"id":"magic-mountain","name":"Magic Mountain","state":"VT","region":"Vermont","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.20171,"lon":-72.77264,"vertical":1500,"trails":55,"lifts":3,"acres":350,"longestRun":1.6,"snowmaking":9500,"price":91,"night":false,"terrainPark":false,"baseElevation":1350,"summitElevation":2850,"avgSnowfall":222,"terrainBreakdown":{"beginner":0.3,"intermediate":0.3,"advanced":0.15},"rating":3.3,"ratingCount":27},{"id":"middlebury-snow-bowl","name":"Middlebury Snow Bowl","state":"VT","region":"Vermont","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.9612,"lon":-73.0122,"vertical":1020,"trails":17,"lifts":4,"acres":100,"longestRun":1.2,"snowmaking":80,"price":69,"night":false,"terrainPark":false,"baseElevation":1600,"summitElevation":2620,"avgSnowfall":150,"terrainBreakdown":{"beginner":0.22,"intermediate":0.4,"advanced":0.38},"rating":3.8,"ratingCount":50},{"id":"mount-snow","name":"Mount Snow","state":"VT","region":"Vermont","passGroup":"Epic","ownerGroup":"Epic network","lat":42.96368,"lon":-72.88753,"vertical":1700,"trails":61,"lifts":10,"acres":453,"longestRun":2.0,"snowmaking":48000,"price":146,"night":false,"terrainPark":true,"baseElevation":1900,"summitElevation":3600,"avgSnowfall":260,"terrainBreakdown":{"beginner":0.14,"intermediate":0.73,"advanced":0.13},"rating":3.4,"ratingCount":106},{"id":"okemo-mountain-resort","name":"Okemo","state":"VT","region":"Vermont","passGroup":"Epic","ownerGroup":"Epic network","lat":43.40156,"lon":-72.717,"vertical":2200,"trails":75,"lifts":12,"acres":953,"longestRun":4.0,"snowmaking":65400,"price":164,"night":false,"terrainPark":true,"baseElevation":1144,"summitElevation":3344,"avgSnowfall":247,"terrainBreakdown":{"beginner":0.32,"intermediate":0.37,"advanced":0.23},"rating":3.8,"ratingCount":100},{"id":"pico-mountain-at-killington","name":"Pico","state":"VT","region":"Vermont","passGroup":"Ikon","ownerGroup":"Ikon network","lat":43.65136,"lon":-72.841,"vertical":1967,"trails":68,"lifts":3,"acres":852,"longestRun":4.0,"snowmaking":15600,"price":156,"night":false,"terrainPark":true,"baseElevation":2000,"summitElevation":3967,"avgSnowfall":278,"terrainBreakdown":{"beginner":0.18,"intermediate":0.46,"advanced":0.33},"rating":3.4,"ratingCount":29},{"id":"suicide-six","name":"Saskadena Six","state":"VT","region":"Vermont","passGroup":"Indy","ownerGroup":"Indy + independent","lat":43.66506,"lon":-72.54327,"vertical":650,"trails":31,"lifts":3,"acres":87,"longestRun":0.4,"snowmaking":5000,"price":75,"night":false,"terrainPark":false,"baseElevation":550,"summitElevation":1200,"avgSnowfall":180,"terrainBreakdown":{"beginner":0.3,"intermediate":0.4,"advanced":0.3},"rating":3.2,"ratingCount":12},{"id":"smugglers-notch-resort","name":"Smugglers' Notch","state":"VT","region":"Vermont","passGroup":"Independent","ownerGroup":"Independent / local","lat":44.58847,"lon":-72.79005,"vertical":2610,"trails":87,"lifts":8,"acres":914,"longestRun":3.0,"snowmaking":19200,"price":120,"night":false,"terrainPark":true,"baseElevation":1030,"summitElevation":3640,"avgSnowfall":262,"terrainBreakdown":{"beginner":0.19,"intermediate":0.5,"advanced":0.25},"rating":3.3,"ratingCount":71},{"id":"stowe-mountain-resort","name":"Stowe","state":"VT","region":"Vermont","passGroup":"Epic","ownerGroup":"Epic network","lat":44.52973,"lon":-72.77927,"vertical":2360,"trails":79,"lifts":9,"acres":964,"longestRun":3.7,"snowmaking":38800,"price":162,"night":false,"terrainPark":true,"baseElevation":2035,"summitElevation":4395,"avgSnowfall":300,"terrainBreakdown":{"beginner":0.16,"intermediate":0.55,"advanced":0.15},"rating":3.3,"ratingCount":77},{"id":"stratton-mountain","name":"Stratton","state":"VT","region":"Vermont","passGroup":"Ikon","ownerGroup":"Ikon network","lat":43.11344,"lon":-72.90813,"vertical":2003,"trails":69,"lifts":6,"acres":701,"longestRun":3.0,"snowmaking":57000,"price":150,"night":false,"terrainPark":true,"baseElevation":1872,"summitElevation":3875,"avgSnowfall":274,"terrainBreakdown":{"beginner":0.41,"intermediate":0.31,"advanced":0.17},"rating":3.2,"ratingCount":90},{"id":"sugarbush","name":"Sugarbush","state":"VT","region":"Vermont","passGroup":"Ikon","ownerGroup":"Ikon network","lat":44.13611,"lon":-72.89442,"vertical":2600,"trails":86,"lifts":9,"acres":910,"longestRun":3.0,"snowmaking":35600,"price":157,"night":false,"terrainPark":true,"baseElevation":1483,"summitElevation":4083,"avgSnowfall":284,"terrainBreakdown":{"beginner":0.23,"intermediate":0.42,"advanced":0.27},"rating":3.4,"ratingCount":83}];
 
-  // ── Maine ─────────────────────────────────────────────────────────────────
-  {
-    id: 'big-moose', name: 'Big Moose Mountain', state: 'ME', pass: 'Independent', owner: 'Independent',
-    vertical: 1150, trails: 30, lifts: 3, acres: 200, snowfall: 130, snowmaking: 80, night: false,
-    longestRun: 2.0, lat: 45.6312, lon: -69.7031,
-    difficulty: { beginner: 0.20, intermediate: 0.45, advanced: 0.25, expert: 0.10 },
-    liftsBreakdown: [['Double', 2], ['Surface', 1]],
-    website: 'https://www.bigmooseski.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.bigmooseski.com/',
-    price: 55, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Remote central Maine mountain near Greenville and Moosehead Lake. True north-woods ski experience with minimal crowds.',
-    tags: ['Remote', 'Maine', 'North woods'],
-    bestFor: ['budget', 'family']
-  },
-  {
-    id: 'big-rock', name: 'Big Rock', state: 'ME', pass: 'Independent', owner: 'Independent',
-    vertical: 990, trails: 30, lifts: 4, acres: 170, snowfall: 110, snowmaking: 85, night: true,
-    longestRun: 1.5, lat: 46.8756, lon: -68.3384,
-    difficulty: { beginner: 0.25, intermediate: 0.40, advanced: 0.25, expert: 0.10 },
-    liftsBreakdown: [['Quad', 1], ['Double', 2], ['Surface', 1]],
-    website: 'https://bigrockmaine.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://bigrockmaine.com/',
-    price: 49, terrainPark: true, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'The only ski area in Aroostook County — northern Maine\'s community hill with night skiing and a genuine local following.',
-    tags: ['Aroostook County', 'Night skiing', 'Community hill'],
-    bestFor: ['budget', 'night', 'family', 'terrain-park']
-  },
-  {
-    id: 'camden', name: 'Camden Snow Bowl', state: 'ME', pass: 'Independent', owner: 'City of Camden',
-    vertical: 950, trails: 31, lifts: 4, acres: 150, snowfall: 95, snowmaking: 70, night: true,
-    longestRun: 1.4, lat: 44.2162, lon: -69.0853,
-    difficulty: { beginner: 0.25, intermediate: 0.40, advanced: 0.25, expert: 0.10 },
-    liftsBreakdown: [['Triple', 1], ['Double', 2], ['Surface', 1]],
-    website: 'https://www.camdensnowbowl.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.camdensnowbowl.com/',
-    price: 50, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Municipally owned coastal Maine gem with ocean views from the summit. One of the most scenic small mountains in New England.',
-    tags: ['Ocean views', 'Municipal', 'Coastal Maine'],
-    bestFor: ['budget', 'family', 'beginners']
-  },
-  {
-    id: 'lost-valley', name: 'Lost Valley', state: 'ME', pass: 'Independent', owner: 'Independent',
-    vertical: 240, trails: 16, lifts: 4, acres: 50, snowfall: 75, snowmaking: 100, night: true,
-    longestRun: 0.5, lat: 44.1201, lon: -70.2648,
-    difficulty: { beginner: 0.35, intermediate: 0.40, advanced: 0.20, expert: 0.05 },
-    liftsBreakdown: [['Triple', 2], ['Surface', 1], ['Carpet', 1]],
-    website: 'https://www.lostvalleyski.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.lostvalleyski.com/',
-    price: 42, terrainPark: true, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Auburn, Maine feeder hill with full snowmaking, night skiing, and an emphasis on lessons and junior programs.',
-    tags: ['Night skiing', 'Lessons', 'Auburn ME'],
-    bestFor: ['beginners', 'budget', 'night', 'family']
-  },
-
-  // ── New Hampshire ─────────────────────────────────────────────────────────
-  {
-    id: 'cannon', name: 'Cannon Mountain', state: 'NH', pass: 'Independent', owner: 'State of NH',
-    vertical: 2180, trails: 97, lifts: 9, acres: 285, snowfall: 180, snowmaking: 96, night: false,
-    longestRun: 2.3, lat: 44.1726, lon: -71.6973,
-    difficulty: { beginner: 0.20, intermediate: 0.36, advanced: 0.28, expert: 0.16 },
-    liftsBreakdown: [['Aerial tram', 1], ['High-speed quad', 2], ['Fixed quad', 1], ['Triple', 1], ['Double', 2], ['Surface', 2]],
-    website: 'https://www.cannonmt.com/', webcamImage: '', webcamPage: 'https://www.cannonmt.com/webcam',
-    trailMapImage: 'https://admin.cannonmt.com/publicFiles/documents/2526_Cannon_TrailMap_Digital.jpg', trailMapPage: 'https://www.cannonmt.com/trail-map',
-    price: 99, terrainPark: false, seasonOpen: 'Nov', seasonClose: 'Apr',
-    notes: 'State-owned Franconia Notch classic with the highest vertical in NH, a historic tram, and serious expert terrain on the Front Five.',
-    tags: ['State-owned', 'Expert terrain', 'Franconia Notch', 'Tram'],
-    bestFor: ['steeps', 'natural-snow']
-  },
-  {
-    id: 'dartmouth-skiway', name: 'Dartmouth Skiway', state: 'NH', pass: 'Independent', owner: 'Dartmouth College',
-    vertical: 968, trails: 33, lifts: 4, acres: 100, snowfall: 140, snowmaking: 60, night: false,
-    longestRun: 1.5, lat: 43.8968, lon: -72.0365,
-    difficulty: { beginner: 0.20, intermediate: 0.40, advanced: 0.30, expert: 0.10 },
-    liftsBreakdown: [['Quad', 2], ['Double', 1], ['Surface', 1]],
-    website: 'https://skiway.dartmouth.edu/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://skiway.dartmouth.edu/',
-    price: 65, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'College-owned hill on the NH/VT border near Hanover. Strong racing heritage, relaxed atmosphere, and modest pricing.',
-    tags: ['College-owned', 'NH/VT border', 'Race heritage'],
-    bestFor: ['budget', 'family', 'natural-snow']
-  },
-  {
-    id: 'king-pine', name: 'King Pine', state: 'NH', pass: 'Independent', owner: 'Purity Spring Resort',
-    vertical: 350, trails: 16, lifts: 5, acres: 55, snowfall: 70, snowmaking: 100, night: true,
-    longestRun: 0.75, lat: 43.9404, lon: -71.0101,
-    difficulty: { beginner: 0.38, intermediate: 0.37, advanced: 0.18, expert: 0.07 },
-    liftsBreakdown: [['Triple', 2], ['Double', 1], ['Surface', 1], ['Carpet', 1]],
-    website: 'https://www.kingpine.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.kingpine.com/',
-    price: 55, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Family resort in the Lakes Region attached to Purity Spring Resort. Beginner-forward with a warm, low-key feel.',
-    tags: ['Family resort', 'Lakes Region', 'Learn-to-ski'],
-    bestFor: ['beginners', 'family', 'budget']
-  },
-  {
-    id: 'mcintyre', name: 'McIntyre Ski Area', state: 'NH', pass: 'Independent', owner: 'City of Manchester',
-    vertical: 160, trails: 10, lifts: 4, acres: 35, snowfall: 55, snowmaking: 100, night: true,
-    longestRun: 0.3, lat: 42.9720, lon: -71.4548,
-    difficulty: { beginner: 0.40, intermediate: 0.40, advanced: 0.20, expert: 0.00 },
-    liftsBreakdown: [['Triple', 1], ['Double', 1], ['Surface', 1], ['Carpet', 1]],
-    website: 'https://mcintyreskiarea.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://mcintyreskiarea.com/',
-    price: 38, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'City-run Manchester hill offering accessible, affordable night skiing for the southern NH metro area. The ultimate urban feeder hill.',
-    tags: ['City-owned', 'Night skiing', 'Manchester NH', 'Urban hill'],
-    bestFor: ['beginners', 'budget', 'night', 'family']
-  },
-  {
-    id: 'tenney', name: 'Tenney Mountain', state: 'NH', pass: 'Independent', owner: 'Independent',
-    vertical: 1430, trails: 50, lifts: 4, acres: 150, snowfall: 130, snowmaking: 75, night: false,
-    longestRun: 2.2, lat: 43.7851, lon: -71.8234,
-    difficulty: { beginner: 0.22, intermediate: 0.42, advanced: 0.26, expert: 0.10 },
-    liftsBreakdown: [['High-speed quad', 1], ['Double', 2], ['Surface', 1]],
-    website: 'https://tenneymountain.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://tenneymountain.com/',
-    price: 69, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'Reopened Plymouth-area mountain with solid vertical and a refreshed independent spirit. Good value for central NH.',
-    tags: ['Reopened', 'Plymouth NH', 'Central NH'],
-    bestFor: ['family', 'budget']
-  },
-
-  // ── Vermont ───────────────────────────────────────────────────────────────
-  {
-    id: 'middlebury', name: 'Middlebury Snow Bowl', state: 'VT', pass: 'Independent', owner: 'Middlebury College',
-    vertical: 1020, trails: 17, lifts: 3, acres: 110, snowfall: 150, snowmaking: 40, night: false,
-    longestRun: 1.5, lat: 43.9443, lon: -72.9637,
-    difficulty: { beginner: 0.20, intermediate: 0.40, advanced: 0.30, expert: 0.10 },
-    liftsBreakdown: [['Triple', 1], ['Double', 1], ['Surface', 1]],
-    website: 'https://www.middlebury.edu/snow-bowl', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://www.middlebury.edu/snow-bowl',
-    price: 55, terrainPark: false, seasonOpen: 'Dec', seasonClose: 'Mar',
-    notes: 'College-owned Bread Loaf Mountain gem with excellent natural snow, a low-key atmosphere, and great value for a Middlebury-adjacent ski day.',
-    tags: ['College-owned', 'Natural snow', 'VT classic'],
-    bestFor: ['natural-snow', 'budget', 'steeps']
-  },
-
-  // ── Massachusetts ─────────────────────────────────────────────────────────
-  {
-    id: 'berkshire-east', name: 'Berkshire East', state: 'MA', pass: 'Indy', owner: 'Independent',
-    vertical: 1180, trails: 45, lifts: 6, acres: 170, snowfall: 90, snowmaking: 90, night: true,
-    longestRun: 1.5, lat: 42.6398, lon: -72.7804,
-    difficulty: { beginner: 0.25, intermediate: 0.40, advanced: 0.25, expert: 0.10 },
-    liftsBreakdown: [['Quad', 2], ['Triple', 1], ['Double', 2], ['Surface', 1]],
-    website: 'https://berkshireeast.com/', webcamImage: '', webcamPage: '',
-    trailMapImage: '', trailMapPage: 'https://berkshireeast.com/',
-    price: 79, terrainPark: true, seasonOpen: 'Nov', seasonClose: 'Apr',
-    notes: 'Independently owned Charlemont mountain with solid vertical for Massachusetts, a zipline canopy tour, and strong night skiing product.',
-    tags: ['Night skiing', 'Indy', 'Charlemont MA', 'Zipline'],
-    bestFor: ['night', 'terrain-park', 'family']
-  }
-];
-
-// ─── App State ────────────────────────────────────────────────────────────────
-const state = {
-  search: '', pass: 'All', stateFilter: 'All',
-  nightOnly: false, selectedId: null,
-  sortCol: 'vertical', sortDir: 'desc',
-  origin: null,        // { lat, lon, label }
-  driveCache: {},      // id → minutes
-  weatherCache: {},    // id → weather data
-  compareSet: new Set(),
-  userNotes: JSON.parse(localStorage.getItem('ski-notes') || '{}'),
-  favorites: new Set(JSON.parse(localStorage.getItem('ski-favorites') || '[]')),
-  weights: JSON.parse(localStorage.getItem('ski-planner-weights') || '{"snow":40,"drive":20,"snowmaking":15,"vertical":15,"price":10,"crowd":10}'),
-  preset: localStorage.getItem('ski-planner-preset') || 'balanced',
+const PRESETS = {
+  balanced: { snow:40, drive:20, snowmaking:15, vertical:15, price:10, crowd:10 },
+  powder:   { snow:50, drive:10, snowmaking:10, vertical:20, price:5, crowd:5 },
+  family:   { snow:20, drive:20, snowmaking:25, vertical:10, price:15, crowd:20 },
+  cheap:    { snow:10, drive:30, snowmaking:15, vertical:10, price:30, crowd:5 },
+  indy:     { snow:25, drive:20, snowmaking:15, vertical:15, price:10, crowd:15 },
 };
 
-const COL_MAX = { vertical:2100, trails:75, lifts:12, acres:650, longestRun:3.2, snowfall:320, snowmaking:100, price:130 };
-
-// ─── DOM refs ─────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
+const state = {
+  search: '',
+  passFilter: 'All',
+  stateFilter: 'All',
+  sortBy: 'planner',
+  nightOnly: false,
+  selectedId: null,
+  origin: null,
+  driveCache: {},
+  weatherCache: {},
+  compareSet: new Set(),
+  mapMode: 'drive',
+  preset: localStorage.getItem('ski-planner-preset') || 'balanced',
+  weights: JSON.parse(localStorage.getItem('ski-planner-weights') || JSON.stringify(PRESETS.balanced)),
+  skiDays: Number(localStorage.getItem('ski-ski-days') || 5),
+};
+
 const els = {
-  summaryCards: $('summaryCards'), searchInput: $('searchInput'),
+  summaryCards: $('summaryCards'),
+  searchInput: $('searchInput'),
   resortSuggestions: $('resortSuggestions'),
-  stateFilter: $('stateFilter'), passFilter: $('passFilter'),
-  sortBy: $('sortBy'), toggleNight: $('toggleNight'),
-  randomResort: $('randomResort'), activeFilters: $('activeFilters'),
-  resortList: $('resortList'), resultCount: $('resultCount'),
-  comparisonBody: $('comparisonBody'), comparisonTable: $('comparisonTable'),
-  selectedResortSection: $('selectedResortSection'), selectedResort: $('selectedResort'),
-  compareTray: $('compareTray'), comparePills: $('comparePills'),
-  compareBtn: $('compareBtn'), clearCompare: $('clearCompare'),
-  comparePanel: $('comparePanel'), compareContent: $('compareContent'),
-  closeCompare: $('closeCompare'),
-  originInput: $('originInput'), detectLocation: $('detectLocation'),
-  bestTodayGrid: $('bestTodayGrid'),
-  weekendPlannerGrid: $('weekendPlannerGrid'),
-  stormChaserGrid: $('stormChaserGrid'),
-  indyOptimizerGrid: $('indyOptimizerGrid'),
+  passFilter: $('passFilter'),
+  stateFilter: $('stateFilter'),
+  sortBy: $('sortBy'),
+  toggleNight: $('toggleNight'),
+  resetFilters: $('resetFilters'),
+  activeFilters: $('activeFilters'),
+  originInput: $('originInput'),
+  setLocation: $('setLocation'),
+  detectLocation: $('detectLocation'),
+  locationStatus: $('locationStatus'),
+  jumpTomorrow: $('jumpTomorrow'),
+  jumpWeekend: $('jumpWeekend'),
   weightSummary: $('weightSummary'),
-  snowWeight: $('snowWeight'), driveWeight: $('driveWeight'),
-  snowmakingWeight: $('snowmakingWeight'), verticalWeight: $('verticalWeight'),
-  priceWeight: $('priceWeight'), crowdWeight: $('crowdWeight'),
-  snowWeightVal: $('snowWeightVal'), driveWeightVal: $('driveWeightVal'),
-  snowmakingWeightVal: $('snowmakingWeightVal'), verticalWeightVal: $('verticalWeightVal'),
-  priceWeightVal: $('priceWeightVal'), crowdWeightVal: $('crowdWeightVal'),
+  snowWeight: $('snowWeight'), driveWeight: $('driveWeight'), snowmakingWeight: $('snowmakingWeight'),
+  verticalWeight: $('verticalWeight'), priceWeight: $('priceWeight'), crowdWeight: $('crowdWeight'),
+  snowWeightVal: $('snowWeightVal'), driveWeightVal: $('driveWeightVal'), snowmakingWeightVal: $('snowmakingWeightVal'),
+  verticalWeightVal: $('verticalWeightVal'), priceWeightVal: $('priceWeightVal'), crowdWeightVal: $('crowdWeightVal'),
+  tomorrowGrid: $('tomorrowGrid'), weekendGrid: $('weekendGrid'), stormGrid: $('stormGrid'),
+  hiddenGemGrid: $('hiddenGemGrid'), indyGrid: $('indyGrid'), passCalcGrid: $('passCalcGrid'),
+  skiDays: $('skiDays'),
+  resultCount: $('resultCount'),
+  comparisonBody: $('comparisonBody'),
+  compareTray: $('compareTray'),
+  comparePills: $('comparePills'),
+  compareBtn: $('compareBtn'),
+  clearCompare: $('clearCompare'),
+  comparePanel: $('comparePanel'),
+  compareContent: $('compareContent'),
+  closeCompare: $('closeCompare'),
+  detailSection: $('detailSection'),
+  detailCard: $('detailCard'),
+  mapLegend: $('mapLegend'),
+  backToTop: $('backToTop'),
   toast: $('toast'),
 };
 
-// ─── Toast ────────────────────────────────────────────────────────────────────
 let toastTimer = null;
-function showToast(msg, dur=2800) {
-  els.toast.textContent = msg;
+function showToast(message, dur = 2600) {
+  els.toast.textContent = message;
   els.toast.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => els.toast.classList.remove('show'), dur);
 }
 
-// ─── Filtering ────────────────────────────────────────────────────────────────
-function uniquePasses()  { return ['All', ...new Set(RESORTS.map(r => r.pass))]; }
-function uniqueStates()  { return ['All', ...[...new Set(RESORTS.map(r => r.state))].sort()]; }
+function uniqueStates() { return ['All', ...new Set(RESORTS.map(r => r.state))].sort(); }
+function uniquePasses() { return ['All', 'Epic', 'Ikon', 'Indy', 'Independent']; }
+
+function savePlannerState() {
+  localStorage.setItem('ski-planner-weights', JSON.stringify(state.weights));
+  localStorage.setItem('ski-planner-preset', state.preset);
+  localStorage.setItem('ski-ski-days', String(state.skiDays));
+}
+
+function syncPlannerControls() {
+  const map = [
+    ['snow', 'snowWeight', 'snowWeightVal'],
+    ['drive', 'driveWeight', 'driveWeightVal'],
+    ['snowmaking', 'snowmakingWeight', 'snowmakingWeightVal'],
+    ['vertical', 'verticalWeight', 'verticalWeightVal'],
+    ['price', 'priceWeight', 'priceWeightVal'],
+    ['crowd', 'crowdWeight', 'crowdWeightVal'],
+  ];
+  map.forEach(([key, inputId, valueId]) => {
+    els[inputId].value = state.weights[key];
+    els[valueId].textContent = `${state.weights[key]}%`;
+  });
+  els.skiDays.value = state.skiDays;
+  els.weightSummary.textContent =
+    `Planner score uses Snow ${state.weights.snow}% · Drive ${state.weights.drive}% · Snowmaking ${state.weights.snowmaking}% · Vertical ${state.weights.vertical}% · Price ${state.weights.price}% · Crowd penalty ${state.weights.crowd}%`;
+  document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
+  document.querySelectorAll('.map-mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
+}
+
+function applyPreset(name) {
+  state.preset = name;
+  state.weights = { ...PRESETS[name] };
+  savePlannerState();
+  syncPlannerControls();
+  render();
+}
+
+function normalizedWeights() {
+  const total = Object.values(state.weights).reduce((sum, v) => sum + v, 0) || 1;
+  return Object.fromEntries(Object.entries(state.weights).map(([k, v]) => [k, v / total]));
+}
+
+function crowdForecast(resort) {
+  let score = 20;
+  if (resort.price < 70) score += 15;
+  if (resort.night) score += 8;
+  if (resort.terrainPark) score += 6;
+  if (resort.vertical > 1400) score += 10;
+  if (resort.passGroup === 'Epic' || resort.passGroup === 'Ikon') score += 15;
+  if (resort.passGroup === 'Indy') score += 8;
+  const drive = state.driveCache[resort.id];
+  if (drive !== undefined && drive !== null) {
+    if (drive < 90) score += 22;
+    else if (drive < 150) score += 14;
+    else if (drive < 210) score += 7;
+  }
+  const label = score < 35 ? 'Low' : score < 60 ? 'Moderate' : 'High';
+  return { score, label };
+}
+
+function plannerScoreBreakdown(resort, weather, forecastIndex = null) {
+  const w = normalizedWeights();
+  const forecast = weather?.forecast || [];
+  const picks = forecastIndex === null ? forecast : (forecast[forecastIndex] ? [forecast[forecastIndex]] : []);
+  const snowTotal = picks.reduce((sum, f) => sum + (f.snow || 0), 0);
+  const drive = state.driveCache[resort.id];
+  const crowd = crowdForecast(resort);
+
+  const normalized = {
+    snow: Math.min(1, snowTotal / 8),
+    drive: drive !== undefined && drive !== null ? Math.max(0, 1 - drive / 300) : 0.4,
+    snowmaking: Math.min(1, resort.snowmaking / 100),
+    vertical: Math.min(1, resort.vertical / 2200),
+    price: Math.max(0, Math.min(1, (180 - resort.price) / 145)),
+    crowdPenalty: Math.min(1, crowd.score / 85),
+  };
+
+  const components = {
+    snow: normalized.snow * w.snow * 100,
+    drive: normalized.drive * w.drive * 100,
+    snowmaking: normalized.snowmaking * w.snowmaking * 100,
+    vertical: normalized.vertical * w.vertical * 100,
+    price: normalized.price * w.price * 100,
+    crowdPenalty: normalized.crowdPenalty * w.crowd * 100,
+  };
+
+  let score = components.snow + components.drive + components.snowmaking + components.vertical + components.price - components.crowdPenalty;
+  if (state.preset === 'indy' && resort.passGroup === 'Indy') score += 8;
+  if (state.nightOnly && resort.night) score += 4;
+  return {
+    score: Math.round(score * 10) / 10,
+    snowTotal,
+    drive,
+    crowdLabel: crowd.label,
+    components,
+  };
+}
+
+function hiddenGemScore(resort) {
+  const crowd = crowdForecast(resort).score;
+  let score = 0;
+  score += Math.max(0, 100 - crowd);
+  score += Math.max(0, 120 - resort.price);
+  score += Math.min(60, resort.vertical / 25);
+  score += resort.avgSnowfall / 4;
+  if (resort.passGroup === 'Independent' || resort.passGroup === 'Indy') score += 15;
+  return Math.round(score);
+}
+
+function formatDrive(mins) {
+  if (mins === undefined || mins === null) return '—';
+  if (mins >= 60) {
+    const h = Math.floor(mins / 60), m = mins % 60;
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+  return `${mins}m`;
+}
+
+function activeFilters() {
+  const filters = [];
+  if (state.search.trim()) filters.push(`Search: "${state.search.trim()}"`);
+  if (state.passFilter !== 'All') filters.push(`Pass: ${state.passFilter}`);
+  if (state.stateFilter !== 'All') filters.push(`State: ${state.stateFilter}`);
+  if (state.nightOnly) filters.push('Night only');
+  return filters;
+}
+
+function renderActiveFilters() {
+  const filters = activeFilters();
+  els.activeFilters.innerHTML = filters.map(f => `<span class="filter-pill">${f}</span>`).join('');
+}
 
 function filteredResorts() {
+  const q = state.search.trim().toLowerCase();
   return RESORTS.filter(r => {
-    const q = state.search.trim().toLowerCase();
-    const hay = [r.name,r.state,r.pass,r.owner,r.notes,...(r.tags||[])].join(' ').toLowerCase();
+    const hay = `${r.name} ${r.state} ${r.passGroup} ${r.region}`.toLowerCase();
     return (!q || hay.includes(q))
-      && (state.pass === 'All' || r.pass === state.pass)
+      && (state.passFilter === 'All' || r.passGroup === state.passFilter)
       && (state.stateFilter === 'All' || r.state === state.stateFilter)
       && (!state.nightOnly || r.night);
-  }).sort((a, b) => {
-    let col = state.sortCol;
-    if (col === 'drive') {
-      const da = state.driveCache[a.id] ?? Infinity;
-      const db = state.driveCache[b.id] ?? Infinity;
-      return state.sortDir === 'asc' ? da - db : db - da;
-    }
-    let av = a[col], bv = b[col];
-    if (typeof av === 'boolean') { av = av?1:0; bv = bv?1:0; }
-    if (typeof av === 'string') return state.sortDir==='asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-    return state.sortDir==='asc' ? av-bv : bv-av;
   });
 }
 
-// ─── Drive time (OpenRouteService free API) ───────────────────────────────────
+function staticSort(resorts) {
+  const sorted = [...resorts];
+  sorted.sort((a, b) => {
+    switch (state.sortBy) {
+      case 'drive': return (state.driveCache[a.id] ?? 9999) - (state.driveCache[b.id] ?? 9999);
+      case 'price': return a.price - b.price;
+      case 'vertical': return b.vertical - a.vertical;
+      case 'snowmaking': return b.snowmaking - a.snowmaking;
+      case 'avgSnowfall': return b.avgSnowfall - a.avgSnowfall;
+      default: return a.name.localeCompare(b.name);
+    }
+  });
+  return sorted;
+}
+
+async function fetchWeather(resort) {
+  const cached = state.weatherCache[resort.id];
+  if (cached && Date.now() - cached.ts < 30 * 60 * 1000) return cached.data;
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4&timezone=America%2FNew_York`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const wx = {
+      temp: Math.round(data.current.temperature_2m),
+      code: data.current.weathercode,
+      wind: Math.round(data.current.windspeed_10m),
+      forecast: data.daily.time.slice(1, 4).map((date, i) => ({
+        day: new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
+        code: data.daily.weathercode[i + 1],
+        hi: Math.round(data.daily.temperature_2m_max[i + 1]),
+        lo: Math.round(data.daily.temperature_2m_min[i + 1]),
+        snow: Math.round((data.daily.snowfall_sum?.[i + 1] || 0) * 10) / 10
+      }))
+    };
+    state.weatherCache[resort.id] = { ts: Date.now(), data: wx };
+    return wx;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function ensureWeather(resorts) {
+  const queue = [...resorts];
+  const workers = Array.from({ length: 8 }, async () => {
+    while (queue.length) {
+      const resort = queue.shift();
+      if (!resort) break;
+      await fetchWeather(resort);
+    }
+  });
+  await Promise.all(workers);
+}
+
 async function fetchDriveTime(resort) {
   if (!state.origin) return null;
   if (state.driveCache[resort.id] !== undefined) return state.driveCache[resort.id];
@@ -412,37 +277,34 @@ async function fetchDriveTime(resort) {
     const url = `https://router.project-osrm.org/route/v1/driving/${state.origin.lon},${state.origin.lat};${resort.lon},${resort.lat}?overview=false`;
     const res = await fetch(url);
     const data = await res.json();
+    if (!data.routes || !data.routes[0]) throw new Error('No route');
     const mins = Math.round(data.routes[0].duration / 60);
     state.driveCache[resort.id] = mins;
     return mins;
-  } catch {
+  } catch (e) {
     state.driveCache[resort.id] = null;
     return null;
   }
 }
 
-function formatDrive(mins) {
-  if (mins === null || mins === undefined) return null;
-  if (mins >= 60) {
-    const h = Math.floor(mins/60), m = mins%60;
-    return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  }
-  return `${mins}m`;
-}
-
-async function loadAllDriveTimes() {
+async function loadDriveTimes(resorts) {
   if (!state.origin) return;
-  showToast('⏱ Calculating drive times…', 4000);
-  await Promise.all(RESORTS.map(r => fetchDriveTime(r)));
+  showToast('Calculating drive times…', 3600);
+  const queue = [...resorts];
+  const workers = Array.from({ length: 4 }, async () => {
+    while (queue.length) {
+      const resort = queue.shift();
+      if (!resort) break;
+      await fetchDriveTime(resort);
+    }
+  });
+  await Promise.all(workers);
   render();
-  showToast('✓ Drive times updated');
 }
 
-// ─── Geocode origin (nominatim) ───────────────────────────────────────────────
 async function geocodeOrigin(query) {
   const q = query.trim();
   if (!q) return null;
-
   if (/^\d{5}$/.test(q)) {
     try {
       const res = await fetch(`https://api.zippopotam.us/us/${q}`);
@@ -457,599 +319,257 @@ async function geocodeOrigin(query) {
           };
         }
       }
-    } catch {}
+    } catch (e) {}
   }
-
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=us`;
     const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
     const data = await res.json();
     if (!data.length) return null;
     return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), label: data[0].display_name.split(',')[0] };
-  } catch { return null; }
+  } catch (e) {
+    return null;
+  }
 }
 
-// ─── Weather (Open-Meteo, free, no key) ──────────────────────────────────────
-const WX_CODES = {
-  0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',
-  51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',
-  71:'🌨️',73:'🌨️',75:'❄️',77:'🌨️',80:'🌦️',81:'🌦️',82:'⛈️',
-  85:'🌨️',86:'❄️',95:'⛈️',96:'⛈️',99:'⛈️'
-};
-const WX_DESC = {
-  0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Fog',
-  51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',
-  71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',
-  80:'Showers',81:'Showers',82:'Heavy showers',85:'Snow showers',86:'Heavy snow',
-  95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'
-};
-
-async function fetchWeather(resort) {
-  if (state.weatherCache[resort.id]) return state.weatherCache[resort.id];
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4&timezone=America%2FNew_York`;
-    const res = await fetch(url);
-    const d = await res.json();
-    const wx = {
-      temp: Math.round(d.current.temperature_2m),
-      code: d.current.weathercode,
-      wind: Math.round(d.current.windspeed_10m),
-      forecast: d.daily.time.slice(1,4).map((date,i) => ({
-        day: new Date(date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short'}),
-        code: d.daily.weathercode[i+1],
-        hi: Math.round(d.daily.temperature_2m_max[i+1]),
-        lo: Math.round(d.daily.temperature_2m_min[i+1]),
-        snow: Math.round((d.daily.snowfall_sum?.[i+1] || 0) * 10) / 10,
-      }))
-    };
-    state.weatherCache[resort.id] = wx;
-    return wx;
-  } catch { return null; }
+function summaryHtml(label, value, sub = '') {
+  return `<div class="summary-card"><div class="summary-label">${label}</div><div class="summary-value">${value}</div>${sub ? `<div class="summary-sub">${sub}</div>` : ''}</div>`;
 }
 
-// ─── Summary cards ────────────────────────────────────────────────────────────
 function renderSummaryCards(resorts) {
-  const n = resorts.length;
-  const avg = key => n ? Math.round(resorts.reduce((s,r)=>s+r[key],0)/n) : 0;
-  const minPrice = n ? Math.min(...resorts.map(r=>r.price)) : '—';
-  const topDrive = n && Object.keys(state.driveCache).length
-    ? resorts.filter(r => state.driveCache[r.id] !== null && state.driveCache[r.id] !== undefined).sort((a,b)=>state.driveCache[a.id]-state.driveCache[b.id])[0]
-    : null;
+  const count = resorts.length;
+  const avgVertical = count ? Math.round(resorts.reduce((s, r) => s + r.vertical, 0) / count) : 0;
+  const avgPrice = count ? Math.round(resorts.reduce((s, r) => s + r.price, 0) / count) : 0;
+  const closest = [...resorts].filter(r => state.driveCache[r.id] !== undefined && state.driveCache[r.id] !== null).sort((a, b) => state.driveCache[a.id] - state.driveCache[b.id])[0];
   els.summaryCards.innerHTML = [
-    ['Resorts', n, ''],
-    ['Avg Vertical', avg('vertical')+' ft', ''],
-    ['Avg Trails', avg('trails'), ''],
-    ['Night Skiing', resorts.filter(r=>r.night).length, 'of '+n],
-    ['From '+Math.min(...resorts.map(r=>r.price))+'', '$'+minPrice+' day ticket', 'lowest listed'],
-    ['Closest', topDrive?.name||'Set location', topDrive ? formatDrive(state.driveCache[topDrive.id]) : ''],
-  ].map(([label,val,sub]) => `
-    <div class="stat-card">
-      <div class="stat-label">${label}</div>
-      <div class="stat-value">${val}</div>
-      ${sub ? `<div class="stat-sub">${sub}</div>` : ''}
-    </div>`).join('');
+    summaryHtml('Mountains', count),
+    summaryHtml('Avg Vertical', `${avgVertical} ft`),
+    summaryHtml('Avg Ticket*', `$${avgPrice}`, 'directional estimate'),
+    summaryHtml('Epic', resorts.filter(r => r.passGroup === 'Epic').length),
+    summaryHtml('Ikon', resorts.filter(r => r.passGroup === 'Ikon').length),
+    summaryHtml('Closest', closest ? closest.name : 'Set location', closest ? formatDrive(state.driveCache[closest.id]) : '')
+  ].join('');
 }
 
-// ─── Active filters ───────────────────────────────────────────────────────────
-function renderActiveFilters() {
-  const tags = [];
-  if (state.search.trim())         tags.push({ label:`"${state.search.trim()}"`,     clear:()=>{ state.search=''; els.searchInput.value=''; }});
-  if (state.stateFilter !== 'All') tags.push({ label:`State: ${state.stateFilter}`, clear:()=>{ state.stateFilter='All'; els.stateFilter.value='All'; }});
-  if (state.pass !== 'All')        tags.push({ label:`Pass: ${state.pass}`,          clear:()=>{ state.pass='All'; els.passFilter.value='All'; }});
-  if (state.nightOnly)             tags.push({ label:'🌙 Night only',                clear:()=>{ state.nightOnly=false; els.toggleNight.setAttribute('aria-pressed','false'); }});
-
-  els.activeFilters.innerHTML = tags.map((t,i)=>
-    `<span class="filter-tag">${t.label}<button data-idx="${i}" aria-label="Remove filter">✕</button></span>`
-  ).join('');
-  [...els.activeFilters.querySelectorAll('button')].forEach(btn=>{
-    btn.addEventListener('click', ()=>{ tags[+btn.dataset.idx].clear(); render(); });
-  });
-}
-
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-function renderResortList(resorts) {
-  els.resultCount.textContent = `${resorts.length} resort${resorts.length===1?'':'s'}`;
-  if (!resorts.length) { els.resortList.innerHTML = '<div class="empty-state">No resorts match.</div>'; return; }
-  els.resortList.innerHTML = resorts.map(r => {
-    const drive = state.driveCache[r.id];
-    const driveChip = drive ? `<span class="chip">${formatDrive(drive)}</span>` : '';
-    const isFav = state.favorites.has(r.id);
-    return `
-    <div class="resort-item ${r.id===state.selectedId?'active':''} ${state.compareSet.has(r.id)?'compare-queued':''}" data-id="${r.id}" tabindex="0" role="button">
-      <div class="resort-top">
-        <div>
-          <div class="resort-name">${r.name} ${isFav?'⭐':''}</div>
-          <div class="resort-meta">${r.state} · $${r.price}</div>
-        </div>
-      </div>
-      <div class="chip-row">
-        <span class="chip">${r.vertical}ft</span>
-        <span class="chip">${r.trails} trails</span>
-        ${r.night ? '<span class="chip good">🌙</span>' : ''}
-        ${r.terrainPark ? '<span class="chip warn">🛹</span>' : ''}
-        ${driveChip}
-      </div>
-      <label class="compare-check">
-        <input type="checkbox" data-compare="${r.id}" ${state.compareSet.has(r.id)?'checked':''} /> Add to compare
-      </label>
-    </div>`}).join('');
-
-  [...els.resortList.querySelectorAll('.resort-item')].forEach(item => {
-    const sel = () => { state.selectedId = item.dataset.id; render(); };
-    item.addEventListener('click', e => { if (!e.target.closest('input')) sel(); });
-    item.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') sel(); });
-  });
-  [...els.resortList.querySelectorAll('[data-compare]')].forEach(cb => {
-    cb.addEventListener('change', () => {
-      const id = cb.dataset.compare;
-      cb.checked ? state.compareSet.add(id) : state.compareSet.delete(id);
-      renderCompareTray();
-      // Re-render sidebar to update highlight
-      const item = els.resortList.querySelector(`[data-id="${id}"]`);
-      if (item) item.classList.toggle('compare-queued', cb.checked);
-    });
-  });
-  const active = els.resortList.querySelector('.resort-item.active');
-  if (active) active.scrollIntoView({ block:'nearest' });
-}
-
-// ─── Comparison table ─────────────────────────────────────────────────────────
-function renderComparisonTable(resorts) {
-  [...els.comparisonTable.querySelectorAll('th.sortable')].forEach(th => {
-    th.classList.remove('sort-asc','sort-desc');
-    if (th.dataset.col === state.sortCol) th.classList.add(state.sortDir==='asc'?'sort-asc':'sort-desc');
-  });
-  if (!resorts.length) { els.comparisonBody.innerHTML = `<tr><td colspan="13" class="empty-state">No resorts match.</td></tr>`; return; }
-  els.comparisonBody.innerHTML = resorts.map(r => {
-    const bar = (val, key) => {
-      const pct = Math.min(100, Math.round((val/(COL_MAX[key]||1))*100));
-      return `<div class="bar-cell"><span>${val}</span><div class="inline-bar"><div class="inline-bar-fill" style="width:${pct}%"></div></div></div>`;
-    };
-    const drive = state.driveCache[r.id];
-    const driveCell = drive === null ? `<span class="drive-na">N/A</span>`
-      : drive !== undefined ? `<span class="drive-cell">${formatDrive(drive)}</span>`
-      : `<span class="drive-na">—</span>`;
-    return `
-      <tr data-id="${r.id}" class="${r.id===state.selectedId?'active-row':''}">
-        <td class="col-name">
-          <div class="td-resort-name">${r.name}${state.favorites.has(r.id)?' ⭐':''}</div>
-          <div class="td-resort-state">${r.seasonOpen}–${r.seasonClose}</div>
-        </td>
-        <td class="col-state td-resort-state">${r.state}</td>
-        <td class="col-num">${bar(r.vertical,'vertical')}</td>
-        <td class="col-num">${bar(r.trails,'trails')}</td>
-        <td class="col-num">${bar(r.lifts,'lifts')}</td>
-        <td class="col-num">${bar(r.acres,'acres')}</td>
-        <td class="col-num">${bar(r.longestRun,'longestRun')}</td>
-        <td class="col-num">${bar(r.snowfall,'snowfall')}</td>
-        <td class="col-num">${bar(r.snowmaking,'snowmaking')}</td>
-        <td class="col-num price-cell">$${r.price}</td>
-        <td class="col-num">${driveCell}</td>
-        <td class="col-center">${r.night?'<span class="night-yes" title="Night skiing">🌙</span>':'<span class="night-no">—</span>'}</td>
-        <td class="col-center">${r.terrainPark?'<span class="park-yes" title="Terrain park">🛹</span>':'<span class="night-no">—</span>'}</td>
-      </tr>`;
-  }).join('');
-  [...els.comparisonBody.querySelectorAll('tr[data-id]')].forEach(row => {
-    row.addEventListener('click', () => { state.selectedId = row.dataset.id; render(); });
-  });
-}
-
-// ─── Selected resort detail ───────────────────────────────────────────────────
-async function renderSelectedResort(resort) {
-  if (!resort) {
-    els.selectedResortSection.style.display = 'none';
-    return;
-  }
-  els.selectedResortSection.style.display = '';
-
-  // Kick off weather fetch in background
-  const wxPromise = fetchWeather(resort);
-
-  const drive = state.driveCache[resort.id];
-  const driveStr = (drive !== undefined && drive !== null) ? formatDrive(drive) : state.origin ? 'Calculating…' : 'Set location above';
-  const isFav = state.favorites.has(resort.id);
-
-  const terrainBars = [
-    ['Beginner','beginner',resort.difficulty.beginner],
-    ['Intermediate','intermediate',resort.difficulty.intermediate],
-    ['Advanced','advanced',resort.difficulty.advanced],
-    ['Expert','expert',resort.difficulty.expert],
-  ].map(([l,c,v]) => `
-    <div class="bar-row">
-      <div class="bar-label"><span class="difficulty-dot ${c}"></span>${l}</div>
-      <div class="bar"><div class="bar-fill ${c}" style="width:${v*100}%"></div></div>
-      <div class="bar-pct">${Math.round(v*100)}%</div>
-    </div>`).join('');
-
-  const mediaBox = (title, img, page, btn) => {
-    const media = img
-      ? `<img src="${img}" alt="${title}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">`
-        +`<div class="placeholder" style="display:none">Image unavailable</div>`
-      : `<div class="placeholder">No image — <a href="${page||'#'}" target="_blank">view page ↗</a></div>`;
-    const link = page ? `<a href="${page}" target="_blank" rel="noreferrer">${btn} ↗</a>` : '';
-    return `<div class="media-box">${media}<div class="media-caption">${link}</div></div>`;
-  };
-
-  const savedNote = state.userNotes[resort.id] || '';
-
-  els.selectedResort.innerHTML = `
-    <div class="resort-detail-header">
-      <div>
-        <div class="eyebrow">Selected Resort</div>
-        <div class="resort-detail-name">${resort.name}</div>
-        <div class="resort-detail-meta">${resort.state} · ${resort.pass} pass · ${resort.owner} · Season: ${resort.seasonOpen}–${resort.seasonClose}</div>
-      </div>
-      <div class="resort-detail-actions">
-        <button id="favBtn" class="btn btn-secondary btn-sm">${isFav?'★ Saved':'☆ Save'}</button>
-        <a href="${resort.website}" target="_blank" rel="noreferrer" class="btn btn-secondary btn-sm" style="text-decoration:none;display:inline-flex;align-items:center">Website ↗</a>
-      </div>
-    </div>
-
-    <div class="detail-grid-top">
-      <div class="metric-card highlight">
-        <div class="metric-label">Vertical</div>
-        <div class="metric-value">${resort.vertical} ft</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Trails</div>
-        <div class="metric-value">${resort.trails}</div>
-        <div class="metric-sub">${resort.lifts} lifts</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Acres</div>
-        <div class="metric-value">${resort.acres}</div>
-        <div class="metric-sub">Longest: ${resort.longestRun} mi</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Day Ticket</div>
-        <div class="metric-value">$${resort.price}</div>
-        <div class="metric-sub">${resort.pass} pass</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Avg Snowfall</div>
-        <div class="metric-value">${resort.snowfall}"</div>
-        <div class="metric-sub">Snowmaking: ${resort.snowmaking}%</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Drive Time</div>
-        <div class="metric-value" style="font-size:18px">${driveStr}</div>
-        <div class="metric-sub">${state.origin?.label||'from your location'}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Night Skiing</div>
-        <div class="metric-value">${resort.night?'🌙 Yes':'No'}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Terrain Park</div>
-        <div class="metric-value">${resort.terrainPark?'🛹 Yes':'No'}</div>
-      </div>
-    </div>
-
-    <div class="detail-grid-mid">
-      <div class="sub-card">
-        <h3>Terrain Mix</h3>
-        ${terrainBars}
-      </div>
-      <div class="sub-card">
-        <h3>Lifts</h3>
-        ${resort.liftsBreakdown.map(([type,count])=>
-          `<div class="lift-row"><span>${type}</span><span style="font-family:'DM Mono',monospace;font-weight:600">${count}</span></div>`
-        ).join('')}
-        <div class="divider"></div>
-        <div class="tag-row" style="margin-top:8px">
-          ${(resort.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
-        </div>
-        <p class="footer-note">${resort.notes}</p>
-      </div>
-      <div class="sub-card" id="weatherCard-${resort.id}">
-        <h3>Current Weather</h3>
-        <div class="loading-text">Loading weather…</div>
-      </div>
-    </div>
-
-    <div class="detail-grid-bot">
-      <div class="media-grid">
-        ${mediaBox(resort.name+' Webcam', resort.webcamImage, resort.webcamPage||resort.website, 'Open webcam')}
-        ${mediaBox(resort.name+' Trail Map', resort.trailMapImage, resort.trailMapPage||resort.website, 'Open trail map')}
-      </div>
-      <div class="notes-card">
-        <div class="notes-label">📝 Your Notes</div>
-        <textarea id="userNotesInput" class="user-notes-input" placeholder="Add your own notes about this mountain… (saved automatically)">${savedNote}</textarea>
-        <div id="notesSavedMsg" class="notes-saved" style="display:none">✓ Saved</div>
-      </div>
-    </div>
-  `;
-
-  // Fav button
-  $('favBtn').addEventListener('click', () => {
-    if (state.favorites.has(resort.id)) { state.favorites.delete(resort.id); }
-    else { state.favorites.add(resort.id); showToast(`⭐ ${resort.name} saved`); }
-    localStorage.setItem('ski-favorites', JSON.stringify([...state.favorites]));
-    render();
-  });
-
-  // Notes autosave
-  const notesInput = $('userNotesInput');
-  let notesTimer;
-  notesInput.addEventListener('input', () => {
-    clearTimeout(notesTimer);
-    notesTimer = setTimeout(() => {
-      state.userNotes[resort.id] = notesInput.value;
-      localStorage.setItem('ski-notes', JSON.stringify(state.userNotes));
-      const msg = $('notesSavedMsg');
-      if (msg) { msg.style.display='block'; setTimeout(()=>{ if(msg) msg.style.display='none'; }, 1800); }
-    }, 700);
-  });
-
-  // Scroll into view smoothly
-  els.selectedResortSection.scrollIntoView({ behavior:'smooth', block:'nearest' });
-
-  // Populate weather when ready
-  wxPromise.then(wx => {
-    const card = $(`weatherCard-${resort.id}`);
-    if (!card) return;
-    if (!wx) { card.querySelector('.loading-text').textContent = 'Weather unavailable.'; return; }
-    card.innerHTML = `
-      <h3>Current Weather at ${resort.name}</h3>
-      <div class="weather-current">
-        <div style="font-size:36px">${WX_CODES[wx.code]||'❓'}</div>
-        <div>
-          <div class="weather-temp">${wx.temp}°F</div>
-          <div class="weather-desc">${WX_DESC[wx.code]||'Unknown'}</div>
-          <div class="weather-wind">Wind: ${wx.wind} mph</div>
-        </div>
-      </div>
-      <div class="weather-forecast">
-        ${wx.forecast.map(f=>`
-          <div class="forecast-day">
-            <div class="fday">${f.day}</div>
-            <div class="ficon">${WX_CODES[f.code]||'❓'}</div>
-            <div class="ftemp">${f.hi}° / ${f.lo}°</div>
-            <div class="sub">${f.snow ? `❄️ ${f.snow}"` : 'No forecast snow'}</div>
-          </div>`).join('')}
-      </div>
-      <div class="footer-note">Planner score: <strong>${plannerScoreBreakdown(resort, wx).score}</strong> · Crowd: <strong class="crowd-${crowdForecast(resort).label.toLowerCase()}">${crowdForecast(resort).label}</strong></div>`;
-  });
-}
-
-
-function crowdForecast(resort) {
-  let score = 20;
-  if (resort.price < 70) score += 15;
-  if (resort.night) score += 8;
-  if (resort.terrainPark) score += 6;
-  if (resort.vertical > 1400) score += 10;
-  if ((resort.pass || '').includes('Indy')) score += 10;
-  const d = state.driveCache[resort.id];
-  if (d !== undefined && d !== null) {
-    if (d < 120) score += 20;
-    else if (d < 180) score += 12;
-    else if (d < 240) score += 6;
-  }
-  const label = score < 35 ? 'Low' : score < 60 ? 'Moderate' : 'High';
-  return { score, label };
-}
-
-const PRESETS = {
-  balanced: { snow:40, drive:20, snowmaking:15, vertical:15, price:10, crowd:10 },
-  powder:   { snow:50, drive:10, snowmaking:10, vertical:20, price:5,  crowd:5  },
-  family:   { snow:20, drive:20, snowmaking:25, vertical:10, price:15, crowd:20 },
-  cheap:    { snow:10, drive:30, snowmaking:15, vertical:10, price:30, crowd:5  },
-  indy:     { snow:25, drive:20, snowmaking:15, vertical:15, price:10, crowd:15 }
-};
-
-function savePlannerState() {
-  localStorage.setItem('ski-planner-weights', JSON.stringify(state.weights));
-  localStorage.setItem('ski-planner-preset', state.preset);
-}
-
-function applyPreset(name) {
-  state.preset = name;
-  state.weights = { ...PRESETS[name] };
-  savePlannerState();
-  syncPlannerControls();
-  render();
-}
-
-function syncPlannerControls() {
-  const map = {
-    snow: ['snowWeight', 'snowWeightVal'],
-    drive: ['driveWeight', 'driveWeightVal'],
-    snowmaking: ['snowmakingWeight', 'snowmakingWeightVal'],
-    vertical: ['verticalWeight', 'verticalWeightVal'],
-    price: ['priceWeight', 'priceWeightVal'],
-    crowd: ['crowdWeight', 'crowdWeightVal'],
-  };
-  Object.entries(map).forEach(([key, [inputId, labelId]]) => {
-    if (els[inputId]) els[inputId].value = state.weights[key];
-    if (els[labelId]) els[labelId].textContent = `${state.weights[key]}%`;
-  });
-  if (els.weightSummary) {
-    els.weightSummary.textContent = `Your priorities: Snow ${state.weights.snow}% · Drive ${state.weights.drive}% · Snowmaking ${state.weights.snowmaking}% · Vertical ${state.weights.vertical}% · Price ${state.weights.price}% · Crowd penalty ${state.weights.crowd}%`;
-  }
-  document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
-}
-
-function normalizedWeights() {
-  const total = Object.values(state.weights).reduce((s,v)=>s+v,0) || 1;
-  const out = {};
-  Object.keys(state.weights).forEach(k => out[k] = state.weights[k] / total);
-  return out;
-}
-
-function plannerScoreBreakdown(resort, wx, dayIndex = null) {
-  const weights = normalizedWeights();
-  const forecastItems = wx?.forecast || [];
-  const relevantForecast = dayIndex === null ? forecastItems : (forecastItems[dayIndex] ? [forecastItems[dayIndex]] : []);
-  const snowTotal = relevantForecast.reduce((sum, f) => sum + (f.snow || 0), 0);
-  const drive = state.driveCache[resort.id];
-  const crowd = crowdForecast(resort).score;
-
-  const normalized = {
-    snow: Math.min(1, snowTotal / 8),
-    drive: drive !== undefined && drive !== null ? Math.max(0, 1 - drive / 300) : 0.4,
-    snowmaking: Math.min(1, resort.snowmaking / 100),
-    vertical: Math.min(1, resort.vertical / 2200),
-    price: Math.max(0, Math.min(1, (130 - resort.price) / 100)),
-    crowdPenalty: Math.min(1, crowd / 80)
-  };
-
-  const components = {
-    snow: normalized.snow * weights.snow * 100,
-    drive: normalized.drive * weights.drive * 100,
-    snowmaking: normalized.snowmaking * weights.snowmaking * 100,
-    vertical: normalized.vertical * weights.vertical * 100,
-    price: normalized.price * weights.price * 100,
-    crowdPenalty: normalized.crowdPenalty * weights.crowd * 100
-  };
-
-  let score = components.snow + components.drive + components.snowmaking + components.vertical + components.price - components.crowdPenalty;
-  if (state.preset === 'indy' && resort.pass === 'Indy') score += 8;
-  return {
-    score: Math.round(score * 10) / 10,
-    snowTotal,
-    crowdLabel: crowdForecast(resort).label,
-    drive,
-    components
-  };
-}
-
-function breakdownHtml(breakdown) {
-  const c = breakdown.components;
+function cardBreakdown(b) {
+  const c = b.components;
   return `
     <div class="breakdown">
       <div>Snow forecast: <strong>+${c.snow.toFixed(1)}</strong></div>
       <div>Drive time: <strong>+${c.drive.toFixed(1)}</strong></div>
       <div>Snowmaking: <strong>+${c.snowmaking.toFixed(1)}</strong></div>
       <div>Vertical: <strong>+${c.vertical.toFixed(1)}</strong></div>
-      <div>Price/value: <strong>+${c.price.toFixed(1)}</strong></div>
+      <div>Price / value: <strong>+${c.price.toFixed(1)}</strong></div>
       <div>Crowd penalty: <strong>-${c.crowdPenalty.toFixed(1)}</strong></div>
     </div>`;
 }
 
-async function enrichResortsWithWeather(resorts) {
-  return await Promise.all(resorts.map(async resort => {
-    const wx = await fetchWeather(resort);
-    return { resort, wx, breakdown: plannerScoreBreakdown(resort, wx) };
-  }));
+function crowdClass(label) {
+  return `crowd-${label.toLowerCase()}`;
 }
 
-async function renderBestToday(resorts) {
-  if (!els.bestTodayGrid) return;
-  els.bestTodayGrid.innerHTML = '<div class="planner-card">Loading today\'s picks…</div>';
-  const enriched = await enrichResortsWithWeather(resorts.slice(0, 20));
-  enriched.sort((a,b) => b.breakdown.score - a.breakdown.score);
-  els.bestTodayGrid.innerHTML = enriched.slice(0, 3).map((item, idx) => {
-    const { resort, breakdown } = item;
+
+function plannerCandidates(resorts) {
+  return [...resorts].sort((a, b) =>
+    (b.avgSnowfall + b.vertical / 20 + b.snowmaking) - (a.avgSnowfall + a.vertical / 20 + a.snowmaking)
+  ).slice(0, 80);
+}
+
+async function renderTomorrow(resorts) {
+  els.tomorrowGrid.innerHTML = '<div class="planner-card">Loading tomorrow\'s picks…</div>';
+  const sample = plannerCandidates(resorts);
+  await ensureWeather(sample);
+  renderCompareTable(filteredResorts());
+  updateMap(filteredResorts());
+  renderDetail();
+  const enriched = sample.map(resort => {
+    const wx = state.weatherCache[resort.id]?.data;
+    return { resort, breakdown: plannerScoreBreakdown(resort, wx, 0) };
+  }).sort((a, b) => b.breakdown.score - a.breakdown.score).slice(0, 3);
+
+  els.tomorrowGrid.innerHTML = enriched.map((item, i) => `
+    <div class="planner-card ${i===0 ? 'top' : ''}">
+      <div class="planner-title">${item.resort.name}</div>
+      <div class="planner-meta">${item.resort.state} · ${item.resort.passGroup} · Planner score ${item.breakdown.score}</div>
+      <div class="metric-chip">${item.breakdown.drive !== undefined && item.breakdown.drive !== null ? formatDrive(item.breakdown.drive) : 'Set location'}</div>
+      <div class="metric-chip">❄️ ${item.breakdown.snowTotal.toFixed(1)}" tomorrow</div>
+      <div class="metric-chip">Crowd: <span class="${crowdClass(item.breakdown.crowdLabel)}">${item.breakdown.crowdLabel}</span></div>
+      ${cardBreakdown(item.breakdown)}
+    </div>`).join('');
+}
+
+async function renderWeekend(resorts) {
+  els.weekendGrid.innerHTML = '<div class="planner-card">Loading weekend picks…</div>';
+  const sample = plannerCandidates(resorts);
+  await ensureWeather(sample);
+  const enriched = sample.map(resort => {
+    const wx = state.weatherCache[resort.id]?.data;
+    return { resort, d1: plannerScoreBreakdown(resort, wx, 0), d2: plannerScoreBreakdown(resort, wx, 1) };
+  });
+  const day1 = [...enriched].sort((a, b) => b.d1.score - a.d1.score)[0];
+  const day2 = [...enriched].sort((a, b) => b.d2.score - a.d2.score)[0];
+  const cards = [];
+  if (day1) cards.push(`
+    <div class="planner-card top">
+      <div class="planner-title">Day 1: ${day1.resort.name}</div>
+      <div class="planner-meta">Planner score ${day1.d1.score}</div>
+      <div class="metric-chip">❄️ ${day1.d1.snowTotal.toFixed(1)}"</div>
+      <div class="metric-chip">${day1.d1.drive !== undefined && day1.d1.drive !== null ? formatDrive(day1.d1.drive) : 'Set location'}</div>
+      ${cardBreakdown(day1.d1)}
+    </div>`);
+  if (day2) cards.push(`
+    <div class="planner-card top">
+      <div class="planner-title">Day 2: ${day2.resort.name}</div>
+      <div class="planner-meta">Planner score ${day2.d2.score}</div>
+      <div class="metric-chip">❄️ ${day2.d2.snowTotal.toFixed(1)}"</div>
+      <div class="metric-chip">${day2.d2.drive !== undefined && day2.d2.drive !== null ? formatDrive(day2.d2.drive) : 'Set location'}</div>
+      ${cardBreakdown(day2.d2)}
+    </div>`);
+  els.weekendGrid.innerHTML = cards.join('');
+}
+
+async function renderStorm(resorts) {
+  els.stormGrid.innerHTML = '<div class="planner-card">Loading storm outlook…</div>';
+  const sample = plannerCandidates(resorts);
+  await ensureWeather(sample);
+  const enriched = sample.map(resort => {
+    const wx = state.weatherCache[resort.id]?.data;
+    const storm = (wx?.forecast || []).reduce((sum, f) => sum + (f.snow || 0), 0);
+    return { resort, storm, drive: state.driveCache[resort.id] };
+  }).sort((a, b) => b.storm - a.storm).slice(0, 3);
+
+  els.stormGrid.innerHTML = enriched.map(item => `
+    <div class="planner-card">
+      <div class="planner-title">${item.resort.name}</div>
+      <div class="planner-meta">${item.resort.state} · Storm total ${item.storm.toFixed(1)}" next 3 days</div>
+      <div class="metric-chip">${item.drive !== undefined && item.drive !== null ? formatDrive(item.drive) : 'Set location'}</div>
+      <div class="metric-chip">Snowmaking ${item.resort.snowmaking}%</div>
+      <div class="metric-chip">${item.resort.passGroup}</div>
+    </div>`).join('');
+}
+
+function renderHiddenGems(resorts) {
+  const top = [...resorts].sort((a, b) => hiddenGemScore(b) - hiddenGemScore(a)).slice(0, 3);
+  els.hiddenGemGrid.innerHTML = top.map(resort => `
+    <div class="planner-card">
+      <div class="planner-title">${resort.name}</div>
+      <div class="planner-meta">${resort.state} · Hidden Gem Score ${hiddenGemScore(resort)}</div>
+      <div class="metric-chip">${resort.passGroup}</div>
+      <div class="metric-chip">Avg snowfall ${resort.avgSnowfall}"</div>
+      <div class="metric-chip">Ticket* $${resort.price}</div>
+      <div class="breakdown">
+        <div>Why it rates well: <strong>${crowdForecast(resort).label}</strong> crowds, <strong>${resort.vertical} ft</strong> vertical, and better-than-average value.</div>
+      </div>
+    </div>`).join('');
+}
+
+async function renderIndy(resorts) {
+  els.indyGrid.innerHTML = '<div class="planner-card">Loading Indy options…</div>';
+  const indyResorts = plannerCandidates(resorts.filter(r => r.passGroup === 'Indy'));
+  await ensureWeather(indyResorts);
+  const enriched = indyResorts.map(resort => {
+    const wx = state.weatherCache[resort.id]?.data;
+    const breakdown = plannerScoreBreakdown(resort, wx, 0);
+    const twoDayValue = resort.price * 2;
+    return { resort, breakdown, twoDayValue };
+  }).sort((a, b) => (b.breakdown.score + b.twoDayValue / 25) - (a.breakdown.score + a.twoDayValue / 25)).slice(0, 3);
+
+  els.indyGrid.innerHTML = enriched.map(item => `
+    <div class="planner-card">
+      <div class="planner-title">${item.resort.name}</div>
+      <div class="planner-meta">Estimated 2-day value $${item.twoDayValue} · Planner score ${item.breakdown.score}</div>
+      <div class="metric-chip">${item.breakdown.drive !== undefined && item.breakdown.drive !== null ? formatDrive(item.breakdown.drive) : 'Set location'}</div>
+      <div class="metric-chip">❄️ ${item.breakdown.snowTotal.toFixed(1)}"</div>
+      ${cardBreakdown(item.breakdown)}
+    </div>`).join('') || '<div class="planner-card">No Indy mountains match the current filters.</div>';
+}
+
+function renderPassCalc(resorts) {
+  const top = resorts.slice(0, 6);
+  els.passCalcGrid.innerHTML = top.map(resort => {
+    const total = resort.price * state.skiDays;
+    let verdict = 'Day tickets likely best';
+    if (resort.passGroup === 'Indy') {
+      const breakeven = Math.ceil(349 / resort.price);
+      verdict = state.skiDays >= breakeven ? `Indy likely saves about $${Math.max(0, total - 349)}` : `${Math.max(0, breakeven - state.skiDays)} more day(s) to break even`;
+    }
     return `
-      <div class="planner-card ${idx===0 ? 'top' : ''}">
+      <div class="planner-card">
         <div class="planner-title">${resort.name}</div>
-        <div class="planner-meta">${resort.state} · ${resort.pass} pass · Planner score ${breakdown.score}</div>
-        <div class="metric-chip-row">
-          <span class="metric-chip">❄️ ${breakdown.snowTotal.toFixed(1)}" next 3 days</span>
-          <span class="metric-chip">${breakdown.drive !== undefined && breakdown.drive !== null ? formatDrive(breakdown.drive) : 'Set location'}</span>
-          <span class="metric-chip">Crowd: <span class="crowd-${breakdown.crowdLabel.toLowerCase()}">${breakdown.crowdLabel}</span></span>
+        <div class="planner-meta">${resort.passGroup} · Ticket* $${resort.price}</div>
+        <div class="breakdown">
+          <div>${state.skiDays} ski days: <strong>$${total}</strong></div>
+          <div>Recommendation: <strong>${verdict}</strong></div>
         </div>
-        ${breakdownHtml(breakdown)}
       </div>`;
   }).join('');
 }
 
-async function renderWeekendPlanner(resorts) {
-  if (!els.weekendPlannerGrid) return;
-  els.weekendPlannerGrid.innerHTML = '<div class="planner-card">Loading weekend planner…</div>';
-  const enriched = await Promise.all(resorts.slice(0, 20).map(async resort => {
-    const wx = await fetchWeather(resort);
-    return {
-      resort,
-      day1: plannerScoreBreakdown(resort, wx, 0),
-      day2: plannerScoreBreakdown(resort, wx, 1)
-    };
-  }));
-  const sat = [...enriched].sort((a,b) => b.day1.score - a.day1.score)[0];
-  const sun = [...enriched].sort((a,b) => b.day2.score - a.day2.score)[0];
-  const cards = [];
-  if (sat) cards.push(`
-    <div class="planner-card top">
-      <div class="planner-title">Day 1 Pick: ${sat.resort.name}</div>
-      <div class="planner-meta">Planner score ${sat.day1.score}</div>
-      <div class="metric-chip-row">
-        <span class="metric-chip">❄️ ${sat.day1.snowTotal.toFixed(1)}" forecast</span>
-        <span class="metric-chip">${sat.day1.drive !== undefined && sat.day1.drive !== null ? formatDrive(sat.day1.drive) : 'Set location'}</span>
-      </div>
-      ${breakdownHtml(sat.day1)}
-    </div>`);
-  if (sun) cards.push(`
-    <div class="planner-card top">
-      <div class="planner-title">Day 2 Pick: ${sun.resort.name}</div>
-      <div class="planner-meta">Planner score ${sun.day2.score}</div>
-      <div class="metric-chip-row">
-        <span class="metric-chip">❄️ ${sun.day2.snowTotal.toFixed(1)}" forecast</span>
-        <span class="metric-chip">${sun.day2.drive !== undefined && sun.day2.drive !== null ? formatDrive(sun.day2.drive) : 'Set location'}</span>
-      </div>
-      ${breakdownHtml(sun.day2)}
-    </div>`);
-  els.weekendPlannerGrid.innerHTML = cards.join('');
+function renderCompareTable(resorts) {
+  els.resultCount.textContent = `${resorts.length} mountains`;
+  const sorted = [...resorts];
+  if (state.sortBy === 'planner' || state.sortBy === 'storm') {
+    sorted.sort((a, b) => {
+      const aw = state.weatherCache[a.id]?.data;
+      const bw = state.weatherCache[b.id]?.data;
+      if (state.sortBy === 'storm') {
+        const as = (aw?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
+        const bs = (bw?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
+        return bs - as;
+      }
+      return plannerScoreBreakdown(b, bw, 0).score - plannerScoreBreakdown(a, aw, 0).score;
+    });
+  } else {
+    sorted.splice(0, sorted.length, ...staticSort(sorted));
+  }
+  els.comparisonBody.innerHTML = sorted.map(resort => {
+    const weather = state.weatherCache[resort.id]?.data;
+    const planner = weather ? plannerScoreBreakdown(resort, weather, 0).score : '—';
+    const storm = weather ? (weather.forecast || []).reduce((s, f) => s + (f.snow || 0), 0).toFixed(1) + '"' : '…';
+    const drive = state.driveCache[resort.id];
+    const crowd = crowdForecast(resort).label;
+    return `
+      <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
+        <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
+        <td><div class="row-name">${resort.name}</div></td>
+        <td>${resort.state}</td>
+        <td>${resort.passGroup}</td>
+        <td>${planner}</td>
+        <td>${storm}</td>
+        <td>${drive !== undefined && drive !== null ? formatDrive(drive) : '—'}</td>
+        <td>${resort.vertical}</td>
+        <td>${resort.trails}</td>
+        <td>${resort.snowmaking}%</td>
+        <td>$${resort.price}</td>
+        <td class="${crowdClass(crowd)}">${crowd}</td>
+      </tr>`;
+  }).join('');
+
+  [...els.comparisonBody.querySelectorAll('tr[data-id]')].forEach(row => {
+    row.addEventListener('click', e => {
+      if (e.target.closest('input')) return;
+      state.selectedId = row.dataset.id;
+      renderDetail();
+    });
+  });
+  [...els.comparisonBody.querySelectorAll('input[data-compare]')].forEach(box => {
+    box.addEventListener('change', () => {
+      if (box.checked) state.compareSet.add(box.dataset.compare);
+      else state.compareSet.delete(box.dataset.compare);
+      renderCompareTray();
+    });
+  });
 }
 
-async function renderStormChaser(resorts) {
-  if (!els.stormChaserGrid) return;
-  els.stormChaserGrid.innerHTML = '<div class="planner-card">Loading storm outlook…</div>';
-  const enriched = await Promise.all(resorts.slice(0, 20).map(async resort => {
-    const wx = await fetchWeather(resort);
-    const total = (wx?.forecast || []).reduce((s,f)=>s+(f.snow||0),0);
-    return { resort, total, drive: state.driveCache[resort.id] };
-  }));
-  enriched.sort((a,b)=>b.total-a.total);
-  els.stormChaserGrid.innerHTML = enriched.slice(0, 3).map(item => `
-    <div class="planner-card">
-      <div class="planner-title">${item.resort.name}</div>
-      <div class="planner-meta">${item.resort.state} · Storm total ${item.total.toFixed(1)}"</div>
-      <div class="metric-chip-row">
-        <span class="metric-chip">${item.drive !== undefined && item.drive !== null ? formatDrive(item.drive) : 'Set location'}</span>
-        <span class="metric-chip">Snowmaking ${item.resort.snowmaking}%</span>
-      </div>
-    </div>`).join('');
-}
-
-async function renderIndyOptimizer(resorts) {
-  if (!els.indyOptimizerGrid) return;
-  els.indyOptimizerGrid.innerHTML = '<div class="planner-card">Loading Indy options…</div>';
-  const indy = resorts.filter(r => r.pass === 'Indy');
-  const enriched = await Promise.all(indy.slice(0, 20).map(async resort => {
-    const wx = await fetchWeather(resort);
-    const breakdown = plannerScoreBreakdown(resort, wx);
-    const estimatedTwoDayValue = resort.price * 2;
-    return { resort, breakdown, estimatedTwoDayValue };
-  }));
-  enriched.sort((a,b) => (b.breakdown.score + b.estimatedTwoDayValue/25) - (a.breakdown.score + a.estimatedTwoDayValue/25));
-  els.indyOptimizerGrid.innerHTML = enriched.slice(0, 3).map(item => `
-    <div class="planner-card">
-      <div class="planner-title">${item.resort.name}</div>
-      <div class="planner-meta">Indy option · Estimated 2-day value $${item.estimatedTwoDayValue}</div>
-      <div class="metric-chip-row">
-        <span class="metric-chip">Planner score ${item.breakdown.score}</span>
-        <span class="metric-chip">${item.breakdown.drive !== undefined && item.breakdown.drive !== null ? formatDrive(item.breakdown.drive) : 'Set location'}</span>
-      </div>
-      ${breakdownHtml(item.breakdown)}
-    </div>`).join('');
-}
-
-function renderPlannerControls() {
-  syncPlannerControls();
-}
-
-// ─── Compare tray & panel ─────────────────────────────────────────────────────
 function renderCompareTray() {
-  if (state.compareSet.size === 0) {
+  if (!state.compareSet.size) {
     els.compareTray.style.display = 'none';
     return;
   }
   els.compareTray.style.display = '';
-  const names = [...state.compareSet].map(id => RESORTS.find(r=>r.id===id)?.name||id);
-  els.comparePills.innerHTML = names.map((name,i) => {
-    const id = [...state.compareSet][i];
-    return `<span class="compare-pill">${name}<button data-remove="${id}">✕</button></span>`;
+  els.comparePills.innerHTML = [...state.compareSet].map(id => {
+    const resort = RESORTS.find(r => r.id === id);
+    return `<span class="compare-pill">${resort?.name || id}<button data-remove="${id}">✕</button></span>`;
   }).join('');
   [...els.comparePills.querySelectorAll('[data-remove]')].forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1061,195 +581,203 @@ function renderCompareTray() {
 }
 
 function renderComparePanel() {
-  const resorts = [...state.compareSet].map(id => RESORTS.find(r=>r.id===id)).filter(Boolean);
-  if (resorts.length < 2) { showToast('Select at least 2 resorts to compare'); return; }
+  const resorts = [...state.compareSet].map(id => RESORTS.find(r => r.id === id)).filter(Boolean);
+  if (resorts.length < 2) {
+    showToast('Select at least 2 mountains to compare');
+    return;
+  }
   els.comparePanel.style.display = '';
-  els.comparePanel.scrollIntoView({ behavior:'smooth', block:'start' });
-
-  const ROWS = [
-    ['State', r=>r.state, null],
-    ['Vertical', r=>`${r.vertical} ft`, 'vertical'],
-    ['Trails', r=>r.trails, 'trails'],
-    ['Lifts', r=>r.lifts, 'lifts'],
-    ['Acres', r=>r.acres, 'acres'],
-    ['Longest Run', r=>`${r.longestRun} mi`, 'longestRun'],
-    ['Avg Snowfall', r=>`${r.snowfall}"`, 'snowfall'],
-    ['Snowmaking', r=>`${r.snowmaking}%`, 'snowmaking'],
-    ['Day Ticket', r=>`$${r.price}`, null, (a,b)=>a.price-b.price],
-    ['Night Skiing', r=>r.night?'🌙 Yes':'No', null],
-    ['Terrain Park', r=>r.terrainPark?'🛹 Yes':'No', null],
-    ['Season', r=>`${r.seasonOpen}–${r.seasonClose}`, null],
-    ['Drive', r=>{ const d=state.driveCache[r.id]; return d !== undefined && d !== null ? formatDrive(d):'—'; }, null, (a,b)=>(state.driveCache[a.id]??999)-(state.driveCache[b.id]??999)],
+  const rows = [
+    ['Pass', r => r.passGroup],
+    ['Vertical', r => `${r.vertical} ft`],
+    ['Trails', r => r.trails],
+    ['Snowmaking', r => `${r.snowmaking}%`],
+    ['Avg snowfall', r => `${r.avgSnowfall}"`],
+    ['Day ticket*', r => `$${r.price}`],
+    ['Drive', r => formatDrive(state.driveCache[r.id])],
+    ['Tomorrow Planner', r => {
+      const wx = state.weatherCache[r.id]?.data;
+      return wx ? plannerScoreBreakdown(r, wx, 0).score : '—';
+    }],
+    ['Crowd', r => crowdForecast(r).label],
+    ['Base / summit', r => `${r.baseElevation} / ${r.summitElevation} ft`],
   ];
-
   els.compareContent.innerHTML = `
-    <table class="compare-table">
-      <thead><tr>
-        <th>Stat</th>
-        ${resorts.map(r=>`<th style="color:var(--text)">${r.name}</th>`).join('')}
-      </tr></thead>
-      <tbody>
-        ${ROWS.map(([label, fn, numKey, sortFn]) => {
-          let bestIdx = -1;
-          if (numKey) {
-            const vals = resorts.map(r=>r[numKey]);
-            bestIdx = vals.indexOf(Math.max(...vals));
-          } else if (sortFn) {
-            const sorted = [...resorts].sort(sortFn);
-            bestIdx = resorts.indexOf(sorted[0]);
-          }
-          return `<tr>
-            <td style="color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em">${label}</td>
-            ${resorts.map((r,i)=>`<td class="${i===bestIdx?'best':''}">${fn(r)}</td>`).join('')}
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>`;
+    <div class="table-wrap">
+      <table class="comparison-table">
+        <thead>
+          <tr><th>Metric</th>${resorts.map(r => `<th>${r.name}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          ${rows.map(([label, fn]) => `<tr><td><strong>${label}</strong></td>${resorts.map(r => `<td>${fn(r)}</td>`).join('')}</tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  els.comparePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ─── Leaflet Map ──────────────────────────────────────────────────────────────
-let leafletMap = null;
-let leafletMarkers = {};
-
-function initLeafletMap() {
-  if (leafletMap) return;
-  leafletMap = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true })
-    .setView([43.5, -71.8], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 18,
-  }).addTo(leafletMap);
+function renderDetail() {
+  const resort = RESORTS.find(r => r.id === state.selectedId);
+  if (!resort) {
+    els.detailSection.style.display = 'none';
+    return;
+  }
+  els.detailSection.style.display = '';
+  const wx = state.weatherCache[resort.id]?.data;
+  const planner = wx ? plannerScoreBreakdown(resort, wx, 0) : null;
+  const crowd = crowdForecast(resort);
+  els.detailCard.innerHTML = `
+    <div class="section-header">
+      <div>
+        <div class="eyebrow">Selected Mountain</div>
+        <h2>${resort.name}</h2>
+        <p class="muted small">${resort.state} · ${resort.passGroup} · ${resort.ownerGroup}</p>
+      </div>
+      <div class="metric-chip">${planner ? `Planner score ${planner.score}` : 'Loading planner score…'}</div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-box"><div class="metric-label">Vertical</div><div class="metric-value">${resort.vertical} ft</div></div>
+      <div class="metric-box"><div class="metric-label">Trails</div><div class="metric-value">${resort.trails}</div></div>
+      <div class="metric-box"><div class="metric-label">Day Ticket*</div><div class="metric-value">$${resort.price}</div></div>
+      <div class="metric-box"><div class="metric-label">Snowmaking</div><div class="metric-value">${resort.snowmaking}%</div></div>
+      <div class="metric-box"><div class="metric-label">Drive</div><div class="metric-value">${formatDrive(state.driveCache[resort.id])}</div></div>
+      <div class="metric-box"><div class="metric-label">Crowd</div><div class="metric-value" style="font-size:16px">${crowd.label}</div></div>
+    </div>
+    <div class="detail-grid" style="margin-top:16px">
+      <div class="sub-card">
+        <h3 style="margin:0 0 10px">Terrain Breakdown</h3>
+        <div class="bar-row"><div>Beginner</div><div class="bar"><div class="bar-fill" style="width:${resort.terrainBreakdown.beginner * 100}%"></div></div><div>${Math.round(resort.terrainBreakdown.beginner * 100)}%</div></div>
+        <div class="bar-row"><div>Intermediate</div><div class="bar"><div class="bar-fill" style="width:${resort.terrainBreakdown.intermediate * 100}%"></div></div><div>${Math.round(resort.terrainBreakdown.intermediate * 100)}%</div></div>
+        <div class="bar-row"><div>Advanced</div><div class="bar"><div class="bar-fill" style="width:${resort.terrainBreakdown.advanced * 100}%"></div></div><div>${Math.round(resort.terrainBreakdown.advanced * 100)}%</div></div>
+        <div class="breakdown">
+          <div>Base / summit: <strong>${resort.baseElevation} / ${resort.summitElevation} ft</strong></div>
+          <div>Avg snowfall: <strong>${resort.avgSnowfall}"</strong></div>
+          <div>Night skiing: <strong>${resort.night ? 'Yes' : 'No'}</strong></div>
+          <div>Terrain park: <strong>${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <h3 style="margin:0 0 10px">Planner Explanation</h3>
+        ${planner ? cardBreakdown(planner) : '<div class="muted">Weather is loading…</div>'}
+      </div>
+    </div>`;
+  els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+let map = null;
+let markers = {};
 
-function driveRadiusColor(minutes) {
-  if (minutes <= 90) return '#22b38a';
-  if (minutes <= 150) return '#8bc34a';
-  if (minutes <= 210) return '#f5a623';
+function passColor(passGroup) {
+  return { Epic:'#2b6de9', Ikon:'#8a4dff', Indy:'#22b38a', Independent:'#90a4be' }[passGroup] || '#90a4be';
+}
+function driveColor(mins) {
+  if (mins <= 90) return '#22b38a';
+  if (mins <= 150) return '#8ccf57';
+  if (mins <= 210) return '#f0b44c';
   return '#e07a5f';
 }
+function stormColor(total) {
+  if (total >= 8) return '#1d4ed8';
+  if (total >= 5) return '#3b82f6';
+  if (total >= 2) return '#93c5fd';
+  return '#cbd5e1';
+}
 
-function updateLeafletMap(resorts) {
-  if (!leafletMap) initLeafletMap();
-  const filteredIds = new Set(resorts.map(r=>r.id));
+function renderMapLegend() {
+  let html = '';
+  if (state.mapMode === 'drive') {
+    html = `
+      <span class="legend-chip"><i class="legend-dot" style="background:#22b38a"></i> under 90 min</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#8ccf57"></i> 90–150 min</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#f0b44c"></i> 150–210 min</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#e07a5f"></i> 210+ min</span>`;
+  } else if (state.mapMode === 'storm') {
+    html = `
+      <span class="legend-chip"><i class="legend-dot" style="background:#1d4ed8"></i> 8&quot;+ forecast</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#3b82f6"></i> 5–8&quot;</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#93c5fd"></i> 2–5&quot;</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#cbd5e1"></i> under 2&quot;</span>`;
+  } else {
+    html = `
+      <span class="legend-chip"><i class="legend-dot" style="background:#2b6de9"></i> Epic</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#8a4dff"></i> Ikon</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#22b38a"></i> Indy</span>
+      <span class="legend-chip"><i class="legend-dot" style="background:#90a4be"></i> Independent</span>`;
+  }
+  els.mapLegend.innerHTML = html;
+}
 
-  RESORTS.forEach(base => {
-    const inFilter = filteredIds.has(base.id);
-    const isSelected = base.id === state.selectedId;
+function initMap() {
+  if (map) return;
+  map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 18
+  }).addTo(map);
+}
 
-    let color = isSelected ? '#3dd9a4' : inFilter ? '#5b9cf6' : '#374f6e';
-    const drive = state.driveCache[base.id];
-    if (!isSelected && inFilter && drive !== undefined && drive !== null) color = driveRadiusColor(drive);
-    const size  = isSelected ? 14 : 10;
-    const opacity = inFilter ? 1 : 0.35;
-
+function updateMap(resorts) {
+  initMap();
+  renderMapLegend();
+  const filtered = new Set(resorts.map(r => r.id));
+  RESORTS.forEach(resort => {
+    const inFilter = filtered.has(resort.id);
+    const selected = resort.id === state.selectedId;
+    const wx = state.weatherCache[resort.id]?.data;
+    const storm = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
+    let color = passColor(resort.passGroup);
+    if (state.mapMode === 'drive' && state.driveCache[resort.id] !== undefined && state.driveCache[resort.id] !== null) color = driveColor(state.driveCache[resort.id]);
+    if (state.mapMode === 'storm') color = stormColor(storm);
+    const size = selected ? 16 : 10;
+    const opacity = inFilter ? 1 : 0.22;
     const icon = L.divIcon({
-      className: '',
-      html: `<div style="
-        width:${size}px;height:${size}px;border-radius:50%;
-        background:${color};border:2px solid rgba(7,16,29,0.8);
-        box-shadow:${isSelected?'0 0 0 4px rgba(61,217,164,0.25)':'0 2px 6px rgba(0,0,0,0.4)'};
-        opacity:${opacity};transition:all .2s;
-      "></div>`,
-      iconSize: [size, size],
-      iconAnchor: [size/2, size/2],
+      className:'',
+      html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid rgba(0,0,0,.18);opacity:${opacity};box-shadow:${selected ? '0 0 0 4px rgba(43,109,233,.18)' : '0 2px 6px rgba(0,0,0,.18)'}"></div>`,
+      iconSize:[size,size],
+      iconAnchor:[size/2,size/2]
     });
-
-    if (leafletMarkers[base.id]) {
-      leafletMarkers[base.id].setIcon(icon);
+    if (markers[resort.id]) {
+      markers[resort.id].setIcon(icon);
       return;
     }
-
-    const resort = RESORTS.find(r=>r.id===base.id);
-    const marker = L.marker([base.lat, base.lon], { icon })
-      .addTo(leafletMap)
-      .bindPopup(`
-        <div class="map-popup-name">${resort.name}</div>
-        <div class="map-popup-meta">${resort.state} · ${resort.pass} pass</div>
-        <div class="map-popup-stats">
-          <div class="map-popup-stat"><span>Vertical</span><span>${resort.vertical} ft</span></div>
-          <div class="map-popup-stat"><span>Trails</span><span>${resort.trails}</span></div>
-          <div class="map-popup-stat"><span>Day Ticket</span><span>$${resort.price}</span></div>
-          <div class="map-popup-stat"><span>Night</span><span>${resort.night?'🌙 Yes':'No'}</span></div>
-        </div>
-        <button class="map-popup-btn" onclick="selectResortFromMap('${resort.id}')">View Details</button>
-      `, { maxWidth: 220 });
-
+    const marker = L.marker([resort.lat, resort.lon], { icon })
+      .addTo(map)
+      .bindPopup(`<strong>${resort.name}</strong><br>${resort.state} · ${resort.passGroup}<br>Vertical ${resort.vertical} ft<br>Ticket* $${resort.price}`);
     marker.on('click', () => {
       state.selectedId = resort.id;
-      render();
+      renderDetail();
     });
-
-    leafletMarkers[base.id] = marker;
+    markers[resort.id] = marker;
   });
 }
 
-window.selectResortFromMap = function(id) {
-  state.selectedId = id;
-  render();
-  document.querySelector('.main-content').scrollIntoView({ behavior:'smooth', block:'start' });
-};
-
-// ─── Sort header wiring ───────────────────────────────────────────────────────
-function wireSortHeaders() {
-  [...els.comparisonTable.querySelectorAll('th.sortable')].forEach(th => {
-    th.addEventListener('click', () => {
-      const col = th.dataset.col;
-      state.sortDir = (state.sortCol === col && state.sortDir === 'desc') ? 'asc' : 'desc';
-      if (state.sortCol !== col) {
-        state.sortCol = col;
-        state.sortDir = (col==='name'||col==='state') ? 'asc' : 'desc';
-      }
-      els.sortBy.value = col;
-      render();
-    });
+function renderMapModeButtons() {
+  document.querySelectorAll('.map-mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode);
   });
 }
 
-// ─── Location wiring ──────────────────────────────────────────────────────────
-function wireLocation() {
-  const applyLocation = async () => {
-    const q = els.originInput.value.trim();
-    if (!q) { state.origin = null; state.driveCache = {}; render(); return; }
-    showToast('🔍 Finding location…', 3000);
-    const loc = await geocodeOrigin(q);
-    if (loc) {
-      state.origin = loc;
-      state.driveCache = {};
-      showToast(`📍 Origin set to ${loc.label}`);
-      await loadAllDriveTimes();
-    } else {
-      showToast('Could not find that ZIP or location');
-    }
-  };
-
-  let locationTimer;
-  els.originInput.addEventListener('input', () => {
-    clearTimeout(locationTimer);
-    locationTimer = setTimeout(() => {
-      const q = els.originInput.value.trim();
-      if (!q) { state.origin = null; state.driveCache = {}; render(); }
-    }, 600);
-  });
-  els.originInput.addEventListener('keydown', async e => {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-    await applyLocation();
-  });
-
-  els.detectLocation.addEventListener('click', () => {
-    if (!navigator.geolocation) { showToast('Geolocation not supported'); return; }
-    showToast('📍 Detecting location…', 3000);
-    navigator.geolocation.getCurrentPosition(async pos => {
-      state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
-      els.originInput.value = 'Your location';
-      state.driveCache = {};
-      await loadAllDriveTimes();
-    }, () => showToast('Could not get location'));
-  });
+function renderAllCards(resorts) {
+  renderSummaryCards(resorts);
+  renderActiveFilters();
+  renderHiddenGems(resorts);
+  renderPassCalc(resorts);
+  renderCompareTable(resorts);
+  renderCompareTray();
+  renderDetail();
+  updateMap(resorts);
+  renderMapModeButtons();
+  renderTomorrow(resorts);
+  renderWeekend(resorts);
+  renderStorm(resorts);
+  renderIndy(resorts);
 }
 
-// ─── Main event wiring ────────────────────────────────────────────────────────
+function render() {
+  const resorts = filteredResorts();
+  renderAllCards(resorts);
+}
+
 function wireEvents() {
   els.searchInput.addEventListener('input', e => {
     state.search = e.target.value;
@@ -1258,33 +786,40 @@ function wireEvents() {
     if (match) state.selectedId = match.id;
     render();
   });
+  els.passFilter.addEventListener('change', e => { state.passFilter = e.target.value; render(); });
   els.stateFilter.addEventListener('change', e => { state.stateFilter = e.target.value; render(); });
-  els.passFilter.addEventListener('change', e => { state.pass = e.target.value; render(); });
-  els.sortBy.addEventListener('change', e => { state.sortCol = e.target.value; state.sortDir = (['drive','price','name','state'].includes(state.sortCol)) ? 'asc' : 'desc'; render(); });
+  els.sortBy.addEventListener('change', e => { state.sortBy = e.target.value; render(); });
   els.toggleNight.addEventListener('click', () => {
     state.nightOnly = !state.nightOnly;
-    els.toggleNight.setAttribute('aria-pressed', state.nightOnly?'true':'false');
+    els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
     render();
   });
-  els.randomResort.addEventListener('click', () => {
-    const resorts = filteredResorts();
-    if (!resorts.length) return;
-    const pick = resorts[Math.floor(Math.random()*resorts.length)];
-    state.selectedId = pick.id;
+  els.resetFilters.addEventListener('click', () => {
+    state.search = '';
+    state.passFilter = 'All';
+    state.stateFilter = 'All';
+    state.sortBy = 'planner';
+    state.nightOnly = false;
+    els.searchInput.value = '';
+    els.passFilter.value = 'All';
+    els.stateFilter.value = 'All';
+    els.sortBy.value = 'planner';
+    els.toggleNight.setAttribute('aria-pressed', 'false');
     render();
-    showToast(`✦ Showing: ${pick.name}`);
   });
+  els.jumpTomorrow.addEventListener('click', () => $('tomorrowSection').scrollIntoView({ behavior: 'smooth' }));
+  els.jumpWeekend.addEventListener('click', () => $('weekendSection').scrollIntoView({ behavior: 'smooth' }));
   els.compareBtn.addEventListener('click', renderComparePanel);
   els.clearCompare.addEventListener('click', () => {
     state.compareSet.clear();
-    renderCompareTray();
     els.comparePanel.style.display = 'none';
+    renderCompareTray();
     render();
   });
-  els.closeCompare.addEventListener('click', () => { els.comparePanel.style.display = 'none'; });
+  els.closeCompare.addEventListener('click', () => els.comparePanel.style.display = 'none');
 
   [['snow','snowWeight'],['drive','driveWeight'],['snowmaking','snowmakingWeight'],['vertical','verticalWeight'],['price','priceWeight'],['crowd','crowdWeight']].forEach(([key, id]) => {
-    els[id]?.addEventListener('input', e => {
+    els[id].addEventListener('input', e => {
       state.weights[key] = Number(e.target.value);
       state.preset = 'custom';
       savePlannerState();
@@ -1293,41 +828,74 @@ function wireEvents() {
     });
   });
   document.querySelectorAll('.preset-btn').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
+  document.querySelectorAll('.map-mode-btn').forEach(btn => btn.addEventListener('click', () => {
+    state.mapMode = btn.dataset.mapMode;
+    updateMap(filteredResorts());
+    renderMapModeButtons();
+  }));
+  els.skiDays.addEventListener('input', e => {
+    state.skiDays = Math.max(1, Number(e.target.value || 5));
+    savePlannerState();
+    renderPassCalc(filteredResorts());
+  });
 
-  wireSortHeaders();
-  wireLocation();
+  const applyLocation = async () => {
+    const q = els.originInput.value.trim();
+    if (!q) {
+      state.origin = null;
+      state.driveCache = {};
+      els.locationStatus.textContent = '';
+      render();
+      return;
+    }
+    els.locationStatus.textContent = 'Finding location…';
+    const loc = await geocodeOrigin(q);
+    if (loc) {
+      state.origin = loc;
+      state.driveCache = {};
+      els.locationStatus.textContent = `Location set to ${loc.label}`;
+      await loadDriveTimes(filteredResorts());
+    } else {
+      els.locationStatus.textContent = 'Location not found';
+      showToast('Could not find that ZIP or location');
+    }
+  };
+  els.setLocation.addEventListener('click', applyLocation);
+  els.originInput.addEventListener('keydown', async e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    await applyLocation();
+  });
+  els.detectLocation.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      showToast('Geolocation not supported');
+      return;
+    }
+    els.locationStatus.textContent = 'Detecting your location…';
+    navigator.geolocation.getCurrentPosition(async pos => {
+      state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
+      els.originInput.value = 'Your location';
+      await loadDriveTimes(filteredResorts());
+      els.locationStatus.textContent = 'Using your location';
+    }, () => {
+      els.locationStatus.textContent = 'Could not get location';
+    });
+  });
+
+  window.addEventListener('scroll', () => {
+    els.backToTop.classList.toggle('show', window.scrollY > 500);
+  });
+  els.backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 }
 
-// ─── Main render ──────────────────────────────────────────────────────────────
-function render() {
-  const resorts = filteredResorts();
-  renderSummaryCards(resorts);
-  renderActiveFilters();
-  renderPlannerControls();
-  renderBestToday(resorts);
-  renderWeekendPlanner(resorts);
-  renderStormChaser(resorts);
-  renderIndyOptimizer(resorts);
-  renderResortList(resorts);
-  renderComparisonTable(resorts);
-  updateLeafletMap(resorts);
-  const selected = resorts.find(r=>r.id===state.selectedId) || null;
-  renderSelectedResort(selected);
-  renderCompareTray();
-}
-
-// ─── Initialize ───────────────────────────────────────────────────────────────
 function initialize() {
-  els.stateFilter.innerHTML = uniqueStates().map(s=>`<option value="${s}">${s}</option>`).join('');
-  els.passFilter.innerHTML  = uniquePasses().map(p=>`<option value="${p}">${p}</option>`).join('');
-  if (els.resortSuggestions) {
-    els.resortSuggestions.innerHTML = RESORTS.map(r => `<option value="${r.name}">${r.state}</option>`).join('');
-  }
+  els.resortSuggestions.innerHTML = RESORTS.map(r => `<option value="${r.name}">${r.state}</option>`).join('');
+  els.passFilter.innerHTML = uniquePasses().map(v => `<option value="${v}">${v}</option>`).join('');
+  els.stateFilter.innerHTML = uniqueStates().map(v => `<option value="${v}">${v}</option>`).join('');
   syncPlannerControls();
   wireEvents();
   render();
-  // Init map after layout paint
-  setTimeout(() => initLeafletMap(), 100);
+  setTimeout(() => initMap(), 100);
 }
 
 initialize();
