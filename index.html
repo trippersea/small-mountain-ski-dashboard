@@ -33,6 +33,11 @@
 
   <div class="container">
 
+    <!-- STATS BAR — compact summary of all mountains in current filter -->
+    <section class="stats-bar card">
+      <div id="summaryCards" class="stats-strip"></div>
+    </section>
+
     <!-- STEP 1: FIND YOUR MOUNTAIN -->
     <section id="searchSection" class="hero card">
       <div class="hero-copy">
@@ -69,10 +74,6 @@
           <button id="jumpWeekend" class="btn btn-secondary">📅 Plan This Weekend</button>
         </div>
       </div>
-
-      <div class="hero-right">
-        <div id="summaryCards" class="summary-grid"></div>
-      </div>
     </section>
 
     <!-- STEP 2: CUSTOMIZE YOUR SCORE -->
@@ -94,28 +95,33 @@
       <div id="weightSummary" class="weight-summary"></div>
       <div class="score-grid">
         <div class="score-control">
-          <label for="snowWeight">Fresh snow <span id="snowWeightVal"></span></label>
-          <input id="snowWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Raise this if you only go on powder days. Pulls in resorts with the most forecast snow.</div>
+          <label for="snowWeight">Fresh Snow <span id="snowWeightVal"></span></label>
+          <input id="snowWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">How much forecast snowfall matters. 10 = only go on powder days.</div>
         </div>
         <div class="score-control">
-          <label for="driveWeight">Short drive <span id="driveWeightVal"></span></label>
-          <input id="driveWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Favors mountains closest to you. Use <strong>Max Drive</strong> in the filters below for a hard cutoff.</div>
+          <label for="driveWeight">Drive Time <span id="driveWeightVal"></span></label>
+          <input id="driveWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">Favors mountains closest to you. Use <strong>Drive Time</strong> in filters for a hard range cutoff.</div>
         </div>
         <div class="score-control">
-          <label for="verticalWeight">Big mountain <span id="verticalWeightVal"></span></label>
-          <input id="verticalWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Rewards more vertical drop and terrain variety. Best for advanced skiers who want long, challenging runs.</div>
+          <label for="verticalWeight">Vertical <span id="verticalWeightVal"></span></label>
+          <input id="verticalWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">Rewards more vertical drop. Best for advanced skiers who want long, challenging runs.</div>
         </div>
         <div class="score-control">
-          <label for="priceWeight">Best value <span id="priceWeightVal"></span></label>
-          <input id="priceWeight" type="range" min="0" max="50" step="1">
+          <label for="trailsWeight">Trails <span id="trailsWeightVal"></span></label>
+          <input id="trailsWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">10 = strongly favor mountains with the most trails. Great for variety-seekers and groups with mixed abilities.</div>
+        </div>
+        <div class="score-control">
+          <label for="priceWeight">Best Value <span id="priceWeightVal"></span></label>
+          <input id="priceWeight" type="range" min="1" max="10" step="1">
           <div class="score-desc">Strongly favors cheaper day tickets. Great for families, frequent skiers, or anyone without a season pass.</div>
         </div>
         <div class="score-control">
-          <label for="crowdWeight">Avoid crowds <span id="crowdWeightVal"></span></label>
-          <input id="crowdWeight" type="range" min="0" max="50" step="1">
+          <label for="crowdWeight">Avoid Crowds <span id="crowdWeightVal"></span></label>
+          <input id="crowdWeight" type="range" min="1" max="10" step="1">
           <div class="score-desc">Penalizes busy mountains. Raises the rank of smaller, quieter hills — especially on holiday weekends.</div>
         </div>
       </div>
@@ -127,14 +133,14 @@
         <span class="toolbar-label">🎛️ Filters</span>
         <div class="toolbar-controls">
           <div class="field">
-            <label for="maxDriveFilter">Max Drive</label>
+            <label for="maxDriveFilter">Drive Time</label>
             <select id="maxDriveFilter">
               <option value="0">Any distance</option>
-              <option value="90">Under 1.5 hrs</option>
-              <option value="120">Under 2 hrs</option>
-              <option value="180">Under 3 hrs</option>
-              <option value="240">Under 4 hrs</option>
-              <option value="300">Under 5 hrs</option>
+              <option value="1">Under 90 min</option>
+              <option value="2">90 – 150 min</option>
+              <option value="3">151 – 210 min</option>
+              <option value="4">211 – 300 min</option>
+              <option value="5">301+ min</option>
             </select>
           </div>
           <div class="field">
@@ -177,43 +183,6 @@
         <p class="muted small">Based on your location, trip style, and live weather — a straight answer so you don't have to check five different sites.</p>
       </div>
       <div id="verdictCard"></div>
-    </section>
-
-    <!-- COMPARE TABLE -->
-    <section id="compareSection" class="card panel">
-      <div class="section-header">
-        <div>
-          <div class="eyebrow">Full Mountain Database</div>
-          <h2>Compare All Mountains</h2>
-          <p class="muted small">Every mountain in the Northeast, fully sortable. Check the box on any row — or use the search above — to add mountains to the side-by-side panel.</p>
-        </div>
-        <div id="resultCount" class="helper-text result-count"></div>
-      </div>
-      <div class="table-wrap">
-        <table id="compareTable" class="comparison-table">
-          <thead>
-            <tr>
-              <th scope="col"></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="name">Name</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="state">State</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="pass">Pass</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="planner">Score</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="storm">Storm 3d</button></th>
-              <th scope="col" title="Snowfall in the past 7 days"><button type="button" class="sort-header" data-sort="hist">7-Day ❄️</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="drive">Drive</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="vertical">Vertical</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="trails">Trails</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="price">Day Ticket*</button></th>
-              <th scope="col"><button type="button" class="sort-header" data-sort="crowd">Crowd</button></th>
-            </tr>
-          </thead>
-          <tbody id="comparisonBody"></tbody>
-        </table>
-      </div>
-      <div class="compare-table-footer">
-        <button id="toggleCompareRows" class="btn btn-secondary hidden" type="button">View All</button>
-        <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
-      </div>
     </section>
 
     <!-- PICKS & PANELS -->
@@ -273,7 +242,39 @@
       </section>
     </section>
 
-
+    <!-- COMPARE TABLE -->
+    <section id="compareSection" class="card panel">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Full Mountain Database</div>
+          <h2>Compare All Mountains</h2>
+          <p class="muted small">Every mountain in the Northeast, fully sortable. Check the box on any row — or use the search above — to add mountains to the side-by-side panel.</p>
+        </div>
+        <div id="resultCount" class="helper-text result-count"></div>
+      </div>
+      <div class="table-wrap">
+        <table id="compareTable" class="comparison-table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Name</th>
+              <th scope="col">State</th>
+              <th scope="col">Pass</th>
+              <th scope="col">Score</th>
+              <th scope="col">Storm 3d</th>
+              <th scope="col" title="Snowfall in the past 7 days">7-Day ❄️</th>
+              <th scope="col">Drive</th>
+              <th scope="col">Vertical</th>
+              <th scope="col">Trails</th>
+              <th scope="col">Day Ticket*</th>
+              <th scope="col">Crowd</th>
+            </tr>
+          </thead>
+          <tbody id="comparisonBody"></tbody>
+        </table>
+      </div>
+      <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
+    </section>
 
     <div id="compareTray" class="compare-tray hidden">
       <div class="compare-tray-inner">
