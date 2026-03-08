@@ -1261,12 +1261,26 @@ function renderAllCards(resorts) {
   renderDetail();
   updateMap(resorts);
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
-  // Show loading state in async panels immediately
-  if (els.verdictSection) els.verdictSection.classList.add('hidden'); // hide until weather loads
-  els.tomorrowGrid.innerHTML = '<div class="planner-card">Loading tomorrow\'s picks…</div>';
-  els.weekendGrid.innerHTML  = '<div class="planner-card">Loading weekend picks…</div>';
-  els.stormGrid.innerHTML    = '<div class="planner-card">Loading storm outlook…</div>';
-  // Single async pipeline — fire and forget
+
+  // If weather is already cached, re-render immediately so weight slider changes
+  // take effect instantly without hiding the verdict or showing loading placeholders.
+  const candidates = plannerCandidates(resorts);
+  const hasWeather = candidates.some(r => state.weatherCache[r.id]?.data);
+
+  if (hasWeather) {
+    renderVerdict(candidates);
+    _renderTomorrow(resorts, candidates);
+    _renderWeekend(resorts, candidates);
+    _renderStorm(resorts, candidates);
+  } else {
+    // First load — show placeholders until the async fetch completes
+    if (els.verdictSection) els.verdictSection.classList.add('hidden');
+    els.tomorrowGrid.innerHTML = '<div class="planner-card">Loading tomorrow\'s picks…</div>';
+    els.weekendGrid.innerHTML  = '<div class="planner-card">Loading weekend picks…</div>';
+    els.stormGrid.innerHTML    = '<div class="planner-card">Loading storm outlook…</div>';
+  }
+
+  // Always run async pipeline to catch any missing weather/history and stay fresh
   renderAsyncPanels(resorts);
 }
 
@@ -1275,7 +1289,7 @@ function render() {
 }
 
 // ─── Event wiring ─────────────────────────────────────────────────────────────
-const debouncedRender = debounce(render, 150); // audit #7, #8
+const debouncedRender = debounce(render, 50);
 
 function wireEvents() {
   // ── Sortable column headers ─────────────────────────────────────────────
