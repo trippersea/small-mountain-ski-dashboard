@@ -39,24 +39,20 @@
     </section>
 
     <!-- STEP 1: FIND YOUR MOUNTAIN -->
-    <section id="searchSection" class="hero card">
-      <div class="hero-copy">
-        <div class="eyebrow">Northeast Ski Decision Engine</div>
-        <h1>Find Your Perfect Mountain</h1>
-        <p class="hero-text">Set your location, pick a trip style, and get a live ranked answer — today's snow, drive time, crowds, and value all in one score.</p>
-
-        <div class="hero-block">
-          <div class="hero-block-label">📍 Where are you starting from?</div>
-          <div class="location-row">
-            <div class="field field-grow">
-              <label for="originInput">Your starting location</label>
-              <input id="originInput" type="text" placeholder="City, town, or ZIP — e.g. Boston, MA" />
-            </div>
-            <button id="setLocation" class="btn btn-primary">Set</button>
-            <button id="detectLocation" class="btn btn-secondary">Use my location</button>
-          </div>
-          <div id="locationStatus" class="helper-text"></div>
+    <section id="searchSection" class="hero card hero-compact">
+      <div class="hero-compact-inner">
+        <div class="hero-compact-label">
+          <span class="eyebrow-inline">⛷️ Northeast Ski Decision Engine</span>
+          <span class="hero-compact-tagline">120 mountains · live weather · ranked for you</span>
         </div>
+        <div class="location-row">
+          <div class="field field-grow">
+            <input id="originInput" type="text" placeholder="📍 City, town, or ZIP — e.g. Boston, MA" />
+          </div>
+          <button id="setLocation" class="btn btn-primary">Set</button>
+          <button id="detectLocation" class="btn btn-secondary">📡 Locate me</button>
+        </div>
+        <div id="locationStatus" class="helper-text"></div>
       </div>
     </section>
 
@@ -133,6 +129,15 @@
               <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
             </div>
             <div class="score-desc">Select your season pass to give a <strong>+200 point bonus</strong> to every mountain included on it. Mountains not on your pass still appear — they just rank lower. Combine with the <strong>Pass filter</strong> above the table to hide other passes entirely.</div>
+          </div>
+
+          <div class="score-control skill-control">
+            <label>🚗 Day Trip Mode <span class="skill-label-sub muted small">— filters to within 150 min</span></label>
+            <div class="skill-btn-row">
+              <button id="plannerDaytripToggle" class="skill-btn" data-daytrip="off">Off</button>
+              <button class="skill-btn" data-daytrip="on" style="display:none"></button>
+            </div>
+            <div class="score-desc">When on, hides any resort more than <strong>150 minutes</strong> from your location — close enough to leave after breakfast and be home for dinner. Requires your location to be set.</div>
           </div>
 
         </div>

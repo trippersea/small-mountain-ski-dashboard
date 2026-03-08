@@ -1429,6 +1429,26 @@ function wireEvents() {
     });
   }
 
+  // In-planner Daytrip toggle (mirrors toolbar toggleDaytrip)
+  function syncPlannerDaytripBtn() {
+    const btn = document.getElementById('plannerDaytripToggle');
+    if (!btn) return;
+    btn.textContent = state.daytripOnly ? '✅ On' : 'Off';
+    btn.classList.toggle('active', state.daytripOnly);
+  }
+  const plannerDtBtn = document.getElementById('plannerDaytripToggle');
+  if (plannerDtBtn) {
+    plannerDtBtn.addEventListener('click', () => {
+      state.daytripOnly = !state.daytripOnly;
+      if (els.toggleDaytrip) els.toggleDaytrip.setAttribute('aria-pressed', String(state.daytripOnly));
+      syncPlannerDaytripBtn();
+      savePlannerState();
+      pushUrlDebounced();
+      debouncedRender();
+    });
+    syncPlannerDaytripBtn();
+  }
+
   // Sticky nav: highlight active section on scroll
   (function initNavHighlight() {
     const sectionIds = ['searchSection','plannerSection','verdictSection','compareSection','stormSection','mapSection'];

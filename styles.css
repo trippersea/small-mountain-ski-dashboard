@@ -747,3 +747,66 @@ button { font: inherit; }
   .nav-secondary { display: none; }
   .nav-divider:last-of-type { display: none; }
 }
+
+/* ─── Compact hero ────────────────────────────────────────────────────────── */
+.hero-compact {
+  padding: 14px 20px !important;
+  gap: 0 !important;
+  background:
+    radial-gradient(ellipse at 90% 50%, rgba(43,109,233,.06), transparent 50%),
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(244,249,255,.98)) !important;
+}
+.hero-compact-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.hero-compact-label {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.eyebrow-inline {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.hero-compact-tagline {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ─── Customize button — prominent, right-anchored ───────────────────────── */
+.planner-summary-row {
+  align-items: center;
+}
+.planner-toggle-btn {
+  margin-left: auto;
+  padding: 9px 20px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 2px 8px rgba(43,109,233,.25);
+}
+.planner-toggle-btn:hover {
+  opacity: .88;
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+.planner-toggle-btn[aria-expanded="true"] {
+  background: #1a4fa8 !important;
+  border-color: #1a4fa8 !important;
+  box-shadow: none;
+}
+
+@media (max-width: 480px) {
+  .hero-compact-label { flex-direction: column; gap: 2px; }
+}
