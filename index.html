@@ -35,45 +35,43 @@
 
     <!-- STEP 1: FIND YOUR MOUNTAIN -->
     <section id="searchSection" class="hero card">
-      <div class="hero-copy hero-copy-full">
+      <div class="hero-copy">
         <div class="eyebrow">Northeast Ski Decision Engine</div>
         <h1>Find Your Perfect Mountain</h1>
         <p class="hero-text">Set your location, pick a trip style, and get a live ranked answer — today's snow, drive time, crowds, and value all in one score.</p>
 
-        <div class="hero-overview">
-          <div id="summaryCards" class="summary-grid summary-grid-compact"></div>
+        <div class="hero-block">
+          <div class="hero-block-label">📍 Where are you starting from?</div>
+          <div class="location-row">
+            <div class="field field-grow">
+              <label for="originInput">Your starting location</label>
+              <input id="originInput" type="text" placeholder="City, town, or ZIP — e.g. Boston, MA" />
+            </div>
+            <button id="setLocation" class="btn btn-primary">Set</button>
+            <button id="detectLocation" class="btn btn-secondary">Use my location</button>
+          </div>
+          <div id="locationStatus" class="helper-text"></div>
         </div>
 
-        <div class="hero-input-grid">
-          <div class="hero-block">
-            <div class="hero-block-label">📍 Set your location</div>
-            <div class="location-row">
-              <div class="field field-grow">
-                <label for="originInput">Your starting location</label>
-                <input id="originInput" type="text" placeholder="City, town, or ZIP — e.g. Boston, MA" />
-              </div>
-              <button id="setLocation" class="btn btn-primary">Set</button>
-              <button id="detectLocation" class="btn btn-secondary">Use my location</button>
-            </div>
-            <div id="locationStatus" class="helper-text"></div>
+        <div class="hero-block">
+          <div class="hero-block-label">🔍 Search &amp; compare mountains</div>
+          <div class="field">
+            <label for="searchInput">Mountain name</label>
+            <input id="searchInput" type="text" autocomplete="off"
+                   placeholder="Type to search — click + Compare to build a side-by-side" />
+            <datalist id="resortSuggestions"></datalist>
           </div>
-
-          <div class="hero-block hero-block-search">
-            <div class="hero-block-label">🔍 Search &amp; compare mountains</div>
-            <div class="field">
-              <label for="searchInput">Mountain name</label>
-              <input id="searchInput" type="text" autocomplete="off"
-                     placeholder="Type to search — click + Compare to build a side-by-side" />
-              <datalist id="resortSuggestions"></datalist>
-            </div>
-            <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
-          </div>
+          <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
         </div>
 
         <div class="hero-actions">
           <button id="jumpTomorrow" class="btn btn-primary">🎿 Where Should I Ski Tomorrow?</button>
           <button id="jumpWeekend" class="btn btn-secondary">📅 Plan This Weekend</button>
         </div>
+      </div>
+
+      <div class="hero-right">
+        <div id="summaryCards" class="summary-grid"></div>
       </div>
     </section>
 
@@ -97,28 +95,28 @@
       <div class="score-grid">
         <div class="score-control">
           <label for="snowWeight">Fresh snow <span id="snowWeightVal"></span></label>
-          <input id="snowWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">1–10 scale. A 10 puts the most weight on mountains with the most forecast snow.</div>
+          <input id="snowWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Raise this if you only go on powder days. Pulls in resorts with the most forecast snow.</div>
         </div>
         <div class="score-control">
-          <label for="driveWeight">Short drive <span id="driveWeightVal"></span></label>
-          <input id="driveWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">1–10 scale. Per your request, a 10 favors the farthest driving distance, while <strong>Max Drive</strong> still works as a hard cutoff filter.</div>
+          <label for="driveWeight">Drive Time <span id="driveWeightVal"></span></label>
+          <input id="driveWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Favors mountains closest to you. Use <strong>Max Drive</strong> in the filters below for a hard cutoff.</div>
         </div>
         <div class="score-control">
           <label for="verticalWeight">Big mountain <span id="verticalWeightVal"></span></label>
-          <input id="verticalWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">1–10 scale. A 10 gives the most weight to mountains with the biggest vertical.</div>
+          <input id="verticalWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Rewards more vertical drop and terrain variety. Best for advanced skiers who want long, challenging runs.</div>
         </div>
         <div class="score-control">
           <label for="priceWeight">Best value <span id="priceWeightVal"></span></label>
-          <input id="priceWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">1–10 scale. Per your request, a 10 favors the most expensive lift tickets.</div>
+          <input id="priceWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Strongly favors cheaper day tickets. Great for families, frequent skiers, or anyone without a season pass.</div>
         </div>
         <div class="score-control">
           <label for="crowdWeight">Avoid crowds <span id="crowdWeightVal"></span></label>
-          <input id="crowdWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">1–10 scale. Per your request, a 10 favors the busiest mountains.</div>
+          <input id="crowdWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Penalizes busy mountains. Raises the rank of smaller, quieter hills — especially on holiday weekends.</div>
         </div>
       </div>
     </section>
@@ -129,14 +127,14 @@
         <span class="toolbar-label">🎛️ Filters</span>
         <div class="toolbar-controls">
           <div class="field">
-            <label for="maxDriveFilter">Max Drive</label>
+            <label for="maxDriveFilter">Drive Time</label>
             <select id="maxDriveFilter">
               <option value="0">Any distance</option>
-              <option value="90">Under 1.5 hrs</option>
-              <option value="120">Under 2 hrs</option>
-              <option value="180">Under 3 hrs</option>
-              <option value="240">Under 4 hrs</option>
-              <option value="300">Under 5 hrs</option>
+              <option value="1">Under 90 minutes</option>
+              <option value="2">90–150 minutes</option>
+              <option value="3">151–210 minutes</option>
+              <option value="4">210–300 minutes</option>
+              <option value="5">301+ minutes</option>
             </select>
           </div>
           <div class="field">
