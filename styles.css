@@ -600,3 +600,51 @@ button { font: inherit; }
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* ─── Pass Preference Buttons ────────────────────────────────────────────── */
+.pass-pref-row {
+  flex-wrap: wrap;
+}
+
+.pass-pref-btn {
+  padding: 0.45rem 1.0rem;
+  border-radius: 2rem;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.pass-pref-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+/* Any — neutral */
+.pass-pref-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(43,109,233,0.22);
+}
+
+/* Epic — deep blue */
+.epic-btn:hover  { border-color: #1a4fa8; color: #1a4fa8; }
+.epic-btn.active { background: #1a4fa8; border-color: #1a4fa8; color: #fff; box-shadow: 0 2px 8px rgba(26,79,168,0.3); }
+
+/* Ikon — dark charcoal / gold accent */
+.ikon-btn:hover  { border-color: #c8a84b; color: #c8a84b; }
+.ikon-btn.active { background: #1a1a1a; border-color: #c8a84b; color: #c8a84b; box-shadow: 0 2px 8px rgba(200,168,75,0.3); }
+
+/* Indy — forest green */
+.indy-btn:hover  { border-color: #2d7a3a; color: #2d7a3a; }
+.indy-btn.active { background: #2d7a3a; border-color: #2d7a3a; color: #fff; box-shadow: 0 2px 8px rgba(45,122,58,0.3); }
+
+/* Independent — warm slate */
+.indep-btn:hover  { border-color: #6b5e7a; color: #6b5e7a; }
+.indep-btn.active { background: #6b5e7a; border-color: #6b5e7a; color: #fff; box-shadow: 0 2px 8px rgba(107,94,122,0.3); }

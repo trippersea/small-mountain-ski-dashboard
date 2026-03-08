@@ -90,6 +90,12 @@ function loadSavedWeights() {
 function loadSavedSkillLevel() {
   try { return localStorage.getItem('ski-skill-level') || 'mixed'; } catch (e) { return 'mixed'; }
 }
+function loadSavedPassPreference() {
+  try {
+    const v = localStorage.getItem('ski-pass-pref');
+    return ['any','Epic','Ikon','Indy','Independent'].includes(v) ? v : 'any';
+  } catch (e) { return 'any'; }
+}
 function loadSavedPreset() {
   try { return localStorage.getItem('ski-planner-preset') || 'balanced'; } catch (e) { return 'balanced'; }
 }
@@ -113,6 +119,7 @@ const state = Object.seal({
   preset:       loadSavedPreset(),
   weights:      loadSavedWeights(),
   skillLevel:   loadSavedSkillLevel(),
+  passPreference: loadSavedPassPreference(),
   skiDays:      loadSavedSkiDays(),
   tableSearch:  '',
   tableViewAll: false,
@@ -478,6 +485,7 @@ function savePlannerState() {
     localStorage.setItem('ski-planner-weights', JSON.stringify(state.weights));
     localStorage.setItem('ski-planner-preset',  state.preset);
     localStorage.setItem('ski-skill-level',      state.skillLevel);
+    localStorage.setItem('ski-pass-pref',         state.passPreference);
     localStorage.setItem('ski-ski-days',         String(state.skiDays));
   } catch (e) { /* quota exceeded — silent */ }
 }
@@ -500,12 +508,18 @@ function syncPlannerControls() {
     btn.classList.toggle('active', btn.dataset.skill === state.skillLevel);
   });
 
+  // Sync pass preference buttons
+  document.querySelectorAll('.pass-pref-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.pass === state.passPreference);
+  });
+
   const w = state.weights;
   const skillLabel = { beginner: 'Beginner 🟢', mixed: 'All Levels 🔵', advanced: 'Advanced ⚫' }[state.skillLevel] || 'All Levels';
+  const passLabel  = state.passPreference === 'any' ? 'Any' : `${state.passPreference} (+10 pts)`;
   els.weightSummary.innerHTML =
     `<strong>Active profile:</strong> ` +
-    `Snow ${w.snow}/10 · Drive ${w.drive}/10 · Mountain Size ${w.size}/10 · ` +
-    `Value ${w.value}/10 · Crowds ${w.crowd}/10 · Skill: ${skillLabel} ` +
+    `Snow ${w.snow}/10 · Drive ${w.drive}/10 · Size ${w.size}/10 · ` +
+    `Value ${w.value}/10 · Crowds ${w.crowd}/10 · Skill: ${skillLabel} · Pass: ${passLabel} ` +
     `<span style="color:var(--muted)">— sliders are independent (1 = low priority, 10 = must-have)</span>`;
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
@@ -517,6 +531,7 @@ function applyPreset(name) {
   state.preset = name;
   state.weights = { ...PRESETS[name] };
   if (PRESET_SKILLS[name]) state.skillLevel = PRESET_SKILLS[name];
+  if (name === 'indy') state.passPreference = 'Indy'; else if (state.passPreference === 'Indy' && name !== 'indy') {} // keep user's pass choice
   savePlannerState();
   syncPlannerControls();
   render();
@@ -721,7 +736,8 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
 
   let score = components.snow + components.drive + components.size +
               components.skillMatch + components.value - components.crowdPenalty;
-  if (state.preset === 'indy' && resort.passGroup === 'Indy') score += 8;
+  // Pass preference bonus — +10 for mountains on your pass, regardless of preset
+  if (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) score += 10;
   if (state.nightOnly && resort.night) score += 4;
 
   return { score: Math.round(score * 10) / 10, snowTotal, drive, resortId: resort.id, crowdLabel: crowd.label, normalized, components };
@@ -1385,7 +1401,7 @@ function wireEvents() {
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.nightOnly = false; state.maxDrive = 0;
-    state.skillLevel = 'mixed'; state.tableSearch = ''; state.tableViewAll = false;
+    state.skillLevel = 'mixed'; state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
     els.stateFilter.value    = 'All';
@@ -1440,6 +1456,18 @@ function wireEvents() {
   document.querySelectorAll('.skill-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       state.skillLevel = btn.dataset.skill;
+      state.preset = 'custom';
+      savePlannerState();
+      syncPlannerControls();
+      pushUrlDebounced();
+      debouncedRender();
+    });
+  });
+
+  // Pass preference buttons
+  document.querySelectorAll('.pass-pref-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.passPreference = btn.dataset.pass;
       state.preset = 'custom';
       savePlannerState();
       syncPlannerControls();
