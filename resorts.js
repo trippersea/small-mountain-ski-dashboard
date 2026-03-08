@@ -1222,19 +1222,8 @@ function renderMapLegend() {
 
 function initMap() {
   if (map) return;
-  // Disable default zoom control so we can manually place it bottom-right
-  map = L.map('leafletMap', { zoomControl: false, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
-  
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-    attribution: '© OpenStreetMap', 
-    maxZoom: 18 
-  }).addTo(map);
-
-  // Force Leaflet to recalculate bounds after the split-pane flexbox paints
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 250);
+  map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
 }
 
 function updateMap(resorts) {

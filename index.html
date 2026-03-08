@@ -24,17 +24,14 @@
       <a href="#weekendSection">Weekend</a>
       <a href="#stormSection">Storm</a>
       <a href="#compareSection">Compare</a>
-      <a href="#leafletMap">Map</a>
+      <a href="#mapSection">Map</a>
       <button class="btn-ghost nav-share" onclick="copyShareLink()">🔗 Share</button>
     </div>
   </nav>
 
   <button id="backToTop" class="back-to-top" aria-label="Back to top">↑ Top</button>
 
-  <div class="split-view">
-
-    <div class="content-pane">
-      <div class="container-inner">
+  <div class="container">
 
     <!-- STEP 1: FIND YOUR MOUNTAIN -->
     <section id="searchSection" class="hero card">
@@ -291,22 +288,19 @@
       <div id="detailCard"></div>
     </section>
 
-
-      </div>
-    </div>
-
-    <div class="map-pane">
-      <div class="map-overlay-controls">
+    <!-- MAP -->
+    <section id="mapSection" class="card panel">
+      <div class="section-header">
+        <div><h2>🗺️ Northeast Map</h2><p class="muted small">Drive radius, storm intensity, or pass network.</p></div>
         <div class="map-mode-row">
           <button class="map-mode-btn active" data-map-mode="drive">Drive</button>
           <button class="map-mode-btn" data-map-mode="storm">Storm</button>
           <button class="map-mode-btn" data-map-mode="pass">Pass</button>
         </div>
-        <div class="map-legend" id="mapLegend"></div>
       </div>
-      
-      <div id="leafletMap" class="leaflet-map-full"></div>
-    </div>
+      <div class="map-legend" id="mapLegend"></div>
+      <div id="leafletMap" class="leaflet-map"></div>
+    </section>
 
   </div>
 
