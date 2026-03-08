@@ -62,9 +62,9 @@
     <section id="plannerSection" class="card panel">
       <div class="section-header">
         <div>
-          <div class="eyebrow">Step 2 — Your Trip Style</div>
-          <h2>What matters most to you?</h2>
-          <p class="muted small">Pick a preset or fine-tune the sliders. The Planner Score re-ranks every mountain in real time — it's how we decide which mountain wins.</p>
+          <div class="eyebrow">Step 2 — Your Trip Profile</div>
+          <h2>What makes the perfect ski day?</h2>
+          <p class="muted small">Pick a preset or fine-tune below. Every adjustment re-ranks all mountains in real time.</p>
         </div>
       </div>
       <div class="preset-row">
@@ -75,37 +75,49 @@
         <button class="preset-btn" data-preset="indy">🎫 Indy Pass</button>
       </div>
       <div id="weightSummary" class="weight-summary"></div>
+
       <div class="score-grid">
+
         <div class="score-control">
-          <label for="snowWeight">Fresh Snow <span id="snowWeightVal"></span></label>
+          <label for="snowWeight">❄️ Snow Quality <span id="snowWeightVal"></span></label>
           <input id="snowWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">How much forecast snowfall matters. 10 = only go on powder days.</div>
+          <div class="score-desc">Blends <strong>live forecast snow</strong> (60%) with each mountain's <strong>historical avg snowfall</strong> (40%). At 10, you only go when conditions are exceptional — powder days or mountains with proven snow reliability.</div>
         </div>
+
         <div class="score-control">
-          <label for="driveWeight">Drive Time <span id="driveWeightVal"></span></label>
+          <label for="driveWeight">🚗 Drive Time <span id="driveWeightVal"></span></label>
           <input id="driveWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">Favors mountains closest to you. Use <strong>Drive Time</strong> in filters for a hard range cutoff.</div>
+          <div class="score-desc">Higher scores favor mountains closest to your location. Use the <strong>Drive Time filter</strong> above the table for a hard range cutoff. This slider softly nudges rankings.</div>
         </div>
+
         <div class="score-control">
-          <label for="verticalWeight">Vertical <span id="verticalWeightVal"></span></label>
-          <input id="verticalWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">Rewards more vertical drop. Best for advanced skiers who want long, challenging runs.</div>
+          <label for="sizeWeight">🏔️ Mountain Size <span id="sizeWeightVal"></span></label>
+          <input id="sizeWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">A composite of <strong>vertical drop</strong> (50%), <strong>skiable acres</strong> (35%), and <strong>longest run</strong> (15%). At 10, only big destination mountains like Killington, Whiteface, or Stowe will rank highly.</div>
         </div>
+
         <div class="score-control">
-          <label for="trailsWeight">Trails <span id="trailsWeightVal"></span></label>
-          <input id="trailsWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">10 = strongly favor mountains with the most trails. Great for variety-seekers and groups with mixed abilities.</div>
+          <label for="valueWeight">💰 Best Value <span id="valueWeightVal"></span></label>
+          <input id="valueWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">Strongly rewards cheaper day ticket prices. At 10, smaller independents like McIntyre ($45) beat Killington ($179) regardless of size. Best for budget-conscious days or when you don't have a season pass.</div>
         </div>
+
         <div class="score-control">
-          <label for="priceWeight">Best Value <span id="priceWeightVal"></span></label>
-          <input id="priceWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">Strongly favors cheaper day tickets. Great for families, frequent skiers, or anyone without a season pass.</div>
-        </div>
-        <div class="score-control">
-          <label for="crowdWeight">Avoid Crowds <span id="crowdWeightVal"></span></label>
+          <label for="crowdWeight">👥 Avoid Crowds <span id="crowdWeightVal"></span></label>
           <input id="crowdWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">Penalizes busy mountains. Raises the rank of smaller, quieter hills — especially on holiday weekends.</div>
+          <div class="score-desc">Penalizes mountains that tend to be busy — based on pass network size, proximity to population centers, and day ticket price. At 10, quiet independent mountains rise to the top.</div>
         </div>
+
+        <div class="score-control skill-control">
+          <label>🎯 Skill Level <span class="skill-label-sub muted small">— always applied to score</span></label>
+          <div class="skill-btn-row">
+            <button class="skill-btn" data-skill="beginner">🟢 Beginner</button>
+            <button class="skill-btn active" data-skill="mixed">🔵 All Levels</button>
+            <button class="skill-btn" data-skill="advanced">⚫ Advanced</button>
+          </div>
+          <div class="score-desc">Matches mountains to your ability. <strong>Beginner</strong> rewards gentle, well-groomed terrain. <strong>Advanced</strong> rewards steep expert terrain + long vertical. <strong>All Levels</strong> rewards balanced mountains good for mixed groups.</div>
+        </div>
+
       </div>
     </section>
 

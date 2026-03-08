@@ -495,3 +495,53 @@ button { font: inherit; }
   display: inline-block;
   min-width: 12px;
 }
+
+/* ─── Skill Level Selector ───────────────────────────────────────────────── */
+.skill-control { grid-column: 1 / -1; }
+
+.skill-btn-row {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.4rem;
+  flex-wrap: wrap;
+}
+
+.skill-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 2rem;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+
+.skill-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.skill-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(43,109,233,0.25);
+}
+
+.skill-label-sub {
+  font-weight: 400;
+  font-size: 0.78rem;
+  margin-left: 0.3rem;
+}
+
+/* Score breakdown tooltip in table — show normalized factors */
+.score-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
