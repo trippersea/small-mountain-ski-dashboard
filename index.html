@@ -99,7 +99,7 @@
           <div class="score-desc">Raise this if you only go on powder days. Pulls in resorts with the most forecast snow.</div>
         </div>
         <div class="score-control">
-          <label for="driveWeight">Drive Time <span id="driveWeightVal"></span></label>
+          <label for="driveWeight">Short drive <span id="driveWeightVal"></span></label>
           <input id="driveWeight" type="range" min="0" max="50" step="1">
           <div class="score-desc">Favors mountains closest to you. Use <strong>Max Drive</strong> in the filters below for a hard cutoff.</div>
         </div>
@@ -127,14 +127,14 @@
         <span class="toolbar-label">🎛️ Filters</span>
         <div class="toolbar-controls">
           <div class="field">
-            <label for="maxDriveFilter">Drive Time</label>
+            <label for="maxDriveFilter">Max Drive</label>
             <select id="maxDriveFilter">
               <option value="0">Any distance</option>
-              <option value="1">Under 90 minutes</option>
-              <option value="2">90–150 minutes</option>
-              <option value="3">151–210 minutes</option>
-              <option value="4">210–300 minutes</option>
-              <option value="5">301+ minutes</option>
+              <option value="90">Under 1.5 hrs</option>
+              <option value="120">Under 2 hrs</option>
+              <option value="180">Under 3 hrs</option>
+              <option value="240">Under 4 hrs</option>
+              <option value="300">Under 5 hrs</option>
             </select>
           </div>
           <div class="field">

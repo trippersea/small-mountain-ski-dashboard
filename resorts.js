@@ -508,34 +508,6 @@ function formatDriveMins(mins, estimated = false) {
 function formatDrive(resortId) {               // always pass a resort ID (audit #16, #33)
   return formatDriveMins(getDriveMins(resortId), isDriveEstimated(resortId));
 }
-function getDriveBucket(mins) {
-  if (mins == null) return 3;
-  if (mins < 90) return 1;
-  if (mins <= 150) return 2;
-  if (mins <= 210) return 3;
-  if (mins <= 300) return 4;
-  return 5;
-}
-function driveBucketLabel(bucket) {
-  switch (Number(bucket)) {
-    case 1: return 'Under 90 minutes';
-    case 2: return '90–150 minutes';
-    case 3: return '151–210 minutes';
-    case 4: return '210–300 minutes';
-    case 5: return '301+ minutes';
-    default: return 'Any distance';
-  }
-}
-function driveBucketRange(bucket) {
-  switch (Number(bucket)) {
-    case 1: return { min: 0,   max: 89.999 };
-    case 2: return { min: 90,  max: 150 };
-    case 3: return { min: 151, max: 210 };
-    case 4: return { min: 211, max: 300 };
-    case 5: return { min: 301, max: Infinity };
-    default: return null;
-  }
-}
 
 // ─── Snowmaking helpers ───────────────────────────────────────────────────────
 function snowmakingRating(val) { return Math.round(val / SCORING.SNOWMAKING_MAX * 100); }
@@ -677,7 +649,7 @@ function hiddenGemScore(resort) {
 function activeFilters() {
   const filters = [];
   if (state.search.trim())     filters.push(`Search: "${esc(state.search.trim())}"`);
-  if (state.maxDrive > 0)      filters.push(`Drive Time: ${driveBucketLabel(state.maxDrive)}${state.origin ? '' : ' (set location to activate)'}`);
+  if (state.maxDrive > 0)      filters.push(`Max drive: ${formatDriveMins(state.maxDrive)}${state.origin ? '' : ' (set location to activate)'}`);
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
   if (state.nightOnly)         filters.push('Night only');
@@ -697,10 +669,7 @@ function filteredResorts() {
     if (state.nightOnly && !r.night) return false;
     if (state.maxDrive > 0 && state.origin) {
       const mins = getDriveMins(r.id);
-      if (mins !== null) {
-        const range = driveBucketRange(state.maxDrive);
-        if (range && (mins < range.min || mins > range.max)) return false;
-      }
+      if (mins !== null && mins > state.maxDrive) return false;
     }
     return true;
   });
@@ -1409,7 +1378,7 @@ function wireEvents() {
   els.stateFilter.addEventListener('change',    e => { state.stateFilter = e.target.value; pushUrlDebounced(); render(); });
   els.maxDriveFilter.addEventListener('change', e => {
     state.maxDrive = Number(e.target.value);
-    if (state.maxDrive > 0 && !state.origin) showToast('Set a starting location to use the Drive Time filter');
+    if (state.maxDrive > 0 && !state.origin) showToast('Set a starting location to use the Max Drive filter');
     pushUrlDebounced(); render();
   });
   els.sortBy.addEventListener('change', e => { state.sortBy = e.target.value; pushUrlDebounced(); render(); });
