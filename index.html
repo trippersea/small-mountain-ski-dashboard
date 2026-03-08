@@ -186,9 +186,16 @@
         <div>
           <div class="eyebrow">Full Mountain Database</div>
           <h2>Compare All Mountains</h2>
-          <p class="muted small">Top 10 mountains based on your filters and sort. Check the box on any row to add mountains to the side-by-side panel. Click any column header to sort.</p>
+          <p class="muted small">Ranked by your score settings. Search by name, state, or pass. Click any column to sort.</p>
         </div>
         <div id="resultCount" class="helper-text result-count"></div>
+      </div>
+      <div class="table-toolbar">
+        <div class="table-search-wrap">
+          <span class="table-search-icon">🔍</span>
+          <input id="tableSearch" type="text" class="table-search-input" placeholder="Search mountains, state, or pass…" autocomplete="off" />
+        </div>
+        <button id="tableViewAllBtn" class="btn btn-secondary">View All</button>
       </div>
       <div class="table-wrap">
         <table id="compareTable" class="comparison-table">
@@ -230,22 +237,6 @@
 
     <!-- PICKS & PANELS -->
     <section class="feature-grid">
-      <section id="tomorrowSection" class="card panel">
-        <div class="section-header"><div>
-          <h2>🎿 Tomorrow's Top Picks</h2>
-          <p class="muted small">Best mountains for tomorrow based on your Planner Score settings.</p>
-        </div></div>
-        <div id="tomorrowGrid" class="card-grid"></div>
-      </section>
-
-      <section id="weekendSection" class="card panel">
-        <div class="section-header"><div>
-          <h2>📅 Weekend Plan</h2>
-          <p class="muted small">Best mountain for each day — chosen to avoid repeating the same resort.</p>
-        </div></div>
-        <div id="weekendGrid" class="card-grid"></div>
-      </section>
-
       <section id="stormSection" class="card panel">
         <div class="section-header"><div>
           <h2>🌨️ Storm Chaser</h2>

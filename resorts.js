@@ -114,6 +114,8 @@ const state = Object.seal({
   weights:      loadSavedWeights(),
   skillLevel:   loadSavedSkillLevel(),
   skiDays:      loadSavedSkiDays(),
+  tableSearch:  '',
+  tableViewAll: false,
 });
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -137,8 +139,8 @@ const els = {
   sizeWeight:    $('sizeWeight'),    valueWeight:  $('valueWeight'),   crowdWeight: $('crowdWeight'),
   snowWeightVal: $('snowWeightVal'), driveWeightVal: $('driveWeightVal'),
   sizeWeightVal: $('sizeWeightVal'), valueWeightVal: $('valueWeightVal'), crowdWeightVal: $('crowdWeightVal'),
-  tomorrowGrid:        $('tomorrowGrid'),     weekendGrid:       $('weekendGrid'),
   stormGrid:           $('stormGrid'),        hiddenGemGrid:     $('hiddenGemGrid'),
+  tableSearch:         $('tableSearch'),      tableViewAllBtn:   $('tableViewAllBtn'),
   resultCount:         $('resultCount'),
   comparisonBody:      $('comparisonBody'),
   compareTray:         $('compareTray'),
@@ -986,9 +988,7 @@ async function renderAsyncPanels(resorts) {
   updateMap(resorts);
   renderDetail();
   renderVerdict(resorts);          // first pass — use full filtered set
-  _renderTomorrow(resorts, candidates);
-  _renderWeekend(resorts, candidates);
-  _renderStorm(resorts, candidates);
+  _renderStorm(resorts);
 
   // Fetch last-7-days historical data in parallel — re-render when ready
   ensureHistory(candidates.slice(0, 50)).then(() => {
@@ -998,71 +998,37 @@ async function renderAsyncPanels(resorts) {
   });
 }
 
-function _renderTomorrow(resorts, candidates) {   // audit #3 — no side-effects
-  const w = normalizedWeights();
-  const enriched = candidates.map(resort => {
-    const wx = state.weatherCache[resort.id]?.data;
-    return { resort, breakdown: plannerScoreBreakdown(resort, wx, 0, w) };
-  }).sort((a, b) => b.breakdown.score - a.breakdown.score).slice(0, 3);
 
-  els.tomorrowGrid.innerHTML = enriched.map((item, i) => `
+
+function _renderStorm(resorts) {
+  // Use the full filtered pool — pick any resort that has weather cached.
+  // Sort by 3-day storm total descending; show top 4.
+  const enriched = resorts
+    .map(resort => {
+      const wx    = state.weatherCache[resort.id]?.data;
+      const storm = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
+      return { resort, wx, storm };
+    })
+    .filter(item => item.wx)               // only resorts with live weather
+    .sort((a, b) => b.storm - a.storm)
+    .slice(0, 4);
+
+  if (!enriched.length) {
+    els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data — set a location or wait a moment for weather to load.</div>';
+    return;
+  }
+
+  els.stormGrid.innerHTML = enriched.map((item, i) => {
+    const days = (item.wx.forecast || []).map(f =>
+      `<span class="metric-chip">❄️ ${f.day}: ${f.snow.toFixed(1)}"</span>`).join('');
+    return `
     <div class="planner-card ${i === 0 ? 'top' : ''}">
       <div class="planner-title">${esc(item.resort.name)}</div>
-      <div class="planner-meta">${esc(item.resort.state)} · ${esc(item.resort.passGroup)} · Planner score ${item.breakdown.score}</div>
-      <div class="metric-chip">${item.breakdown.drive !== null ? formatDrive(item.breakdown.resortId) : 'Set location'}</div>
-      <div class="metric-chip">❄️ ${item.breakdown.snowTotal.toFixed(1)}" tomorrow</div>
-      <div class="metric-chip">Crowd: <span class="${crowdClass(item.breakdown.crowdLabel)}">${item.breakdown.crowdLabel}</span></div>
-      ${cardBreakdown(item.breakdown)}
-    </div>`).join('');
-}
-
-function _renderWeekend(resorts, candidates) {
-  const w = normalizedWeights();
-  const enriched = candidates.map(resort => {
-    const wx = state.weatherCache[resort.id]?.data;
-    return { resort, d1: plannerScoreBreakdown(resort, wx, 0, w), d2: plannerScoreBreakdown(resort, wx, 1, w) };
-  });
-
-  const day1 = [...enriched].sort((a, b) => b.d1.score - a.d1.score)[0];
-  // Exclude day 1 winner from day 2 to guarantee variety (audit #36)
-  const day2 = [...enriched]
-    .filter(x => x.resort.id !== day1?.resort.id)
-    .sort((a, b) => b.d2.score - a.d2.score)[0];
-
-  const cards = [];
-  if (day1) cards.push(`
-    <div class="planner-card top">
-      <div class="planner-title">Day 1: ${esc(day1.resort.name)}</div>
-      <div class="planner-meta">Planner score ${day1.d1.score}</div>
-      <div class="metric-chip">❄️ ${day1.d1.snowTotal.toFixed(1)}"</div>
-      <div class="metric-chip">${day1.d1.drive !== null ? formatDrive(day1.d1.resortId) : 'Set location'}</div>
-      ${cardBreakdown(day1.d1)}
-    </div>`);
-  if (day2) cards.push(`
-    <div class="planner-card top">
-      <div class="planner-title">Day 2: ${esc(day2.resort.name)}</div>
-      <div class="planner-meta">Planner score ${day2.d2.score}</div>
-      <div class="metric-chip">❄️ ${day2.d2.snowTotal.toFixed(1)}"</div>
-      <div class="metric-chip">${day2.d2.drive !== null ? formatDrive(day2.d2.resortId) : 'Set location'}</div>
-      ${cardBreakdown(day2.d2)}
-    </div>`);
-  els.weekendGrid.innerHTML = cards.join('');
-}
-
-function _renderStorm(resorts, candidates) {
-  const enriched = candidates.map(resort => {
-    const wx    = state.weatherCache[resort.id]?.data;
-    const storm = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-    return { resort, storm };
-  }).sort((a, b) => b.storm - a.storm).slice(0, 3);
-
-  els.stormGrid.innerHTML = enriched.map(item => `
-    <div class="planner-card">
-      <div class="planner-title">${esc(item.resort.name)}</div>
-      <div class="planner-meta">${esc(item.resort.state)} · Storm total ${item.storm.toFixed(1)}" next 3 days</div>
-      <div class="metric-chip">${formatDrive(item.resort.id)}</div>
-      <div class="metric-chip">${esc(item.resort.passGroup)}</div>
-    </div>`).join('');
+      <div class="planner-meta">${esc(item.resort.state)} · ${esc(item.resort.passGroup)} · <strong>${item.storm.toFixed(1)}"</strong> over 3 days</div>
+      ${days}
+      <div class="metric-chip">🚗 ${formatDrive(item.resort.id)}</div>
+    </div>`;
+  }).join('');
 }
 
 
@@ -1090,11 +1056,15 @@ function renderHiddenGems(resorts) {
 
 // ─── Compare table ────────────────────────────────────────────────────────────
 function renderCompareTable(resorts) {
-  // resultCount shown after top10 slice
+  // Apply inline table search filter
+  const q = (state.tableSearch || '').trim().toLowerCase();
+  const filtered = q
+    ? resorts.filter(r => `${r.name} ${r.state} ${r.passGroup} ${r.region}`.toLowerCase().includes(q))
+    : resorts;
 
-  // Schwartzian transform — compute breakdown once per resort, not in sort comparator (audit #6)
+  // Schwartzian transform — compute breakdown once per resort (audit #6)
   const w = normalizedWeights();
-  const decorated = resorts.map(resort => {
+  const decorated = filtered.map(resort => {
     const weather    = state.weatherCache[resort.id]?.data;
     const breakdown  = weather ? plannerScoreBreakdown(resort, weather, 0, w) : null;
     const stormTotal = weather ? (weather.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
@@ -1114,9 +1084,23 @@ function renderCompareTable(resorts) {
     decorated.sort((a, b) => (order.get(a.resort.id) ?? 9999) - (order.get(b.resort.id) ?? 9999));
   }
 
-  // Top 10 only
-  const top10 = decorated.slice(0, 10);
-  els.resultCount.textContent = `Top ${top10.length} of ${resorts.length} mountains`;
+  // Show top 10 by default; View All shows everything
+  const showAll = state.tableViewAll || q;  // always show all rows when searching
+  const displayed = showAll ? decorated : decorated.slice(0, 10);
+
+  // Update result count + View All button
+  const totalFiltered = filtered.length;
+  if (q) {
+    els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${q}"`;
+  } else {
+    els.resultCount.textContent = state.tableViewAll
+      ? `All ${totalFiltered} mountains`
+      : `Top 10 of ${totalFiltered} mountains`;
+  }
+  if (els.tableViewAllBtn) {
+    els.tableViewAllBtn.textContent = (state.tableViewAll && !q) ? '⬆ Show Top 10' : `View All ${totalFiltered}`;
+    els.tableViewAllBtn.style.display = q ? 'none' : '';
+  }
 
   // Update sort indicators on column headers
   document.querySelectorAll('.sortable-th').forEach(th => {
@@ -1131,7 +1115,7 @@ function renderCompareTable(resorts) {
     }
   });
 
-  els.comparisonBody.innerHTML = top10.map(({ resort, breakdown, stormTotal, hist }) => {
+  els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }) => {
     const planner  = breakdown ? breakdown.score : '—';
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
@@ -1346,15 +1330,11 @@ function renderAllCards(resorts) {
   if (hasWeather) {
     // Pass full filtered resorts to verdict so its #1 = table #1
     renderVerdict(resorts);
-    _renderTomorrow(resorts, candidates);
-    _renderWeekend(resorts, candidates);
-    _renderStorm(resorts, candidates);
+    _renderStorm(resorts);
   } else {
     // First load — show placeholders until the async fetch completes
     if (els.verdictSection) els.verdictSection.classList.add('hidden');
-    els.tomorrowGrid.innerHTML = '<div class="planner-card">Loading tomorrow\'s picks…</div>';
-    els.weekendGrid.innerHTML  = '<div class="planner-card">Loading weekend picks…</div>';
-    els.stormGrid.innerHTML    = '<div class="planner-card">Loading storm outlook…</div>';
+    els.stormGrid.innerHTML    = '<div class="planner-card">Loading storm data…</div>';
   }
 
   // Always run async pipeline to catch any missing weather/history and stay fresh
@@ -1405,15 +1385,33 @@ function wireEvents() {
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.nightOnly = false; state.maxDrive = 0;
-    state.skillLevel = 'mixed';
+    state.skillLevel = 'mixed'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
     els.stateFilter.value    = 'All';
     els.maxDriveFilter.value = '0';
     els.sortBy.value         = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false');
+    if (els.tableSearch) els.tableSearch.value = '';
     pushUrlDebounced(); render();
   });
+
+  // Table inline search
+  if (els.tableSearch) {
+    els.tableSearch.addEventListener('input', e => {
+      state.tableSearch = e.target.value;
+      state.tableViewAll = false;
+      renderCompareTable(filteredResorts());
+    });
+  }
+
+  // View All / Show Top 10 toggle
+  if (els.tableViewAllBtn) {
+    els.tableViewAllBtn.addEventListener('click', () => {
+      state.tableViewAll = !state.tableViewAll;
+      renderCompareTable(filteredResorts());
+    });
+  }
 
   els.compareBtn.addEventListener('click', renderComparePanel);
   els.clearCompare.addEventListener('click', () => {
