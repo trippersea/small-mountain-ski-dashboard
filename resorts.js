@@ -4,6 +4,7 @@ const RESORTS = [{"id":"mohawk-mountain","name":"Mohawk Mountain","state":"CT","
 const SCORING = Object.freeze({
   SNOWMAKING_MAX:  65400, // Okemo — highest in dataset
   VERTICAL_MAX:    3430,  // Whiteface
+  TRAILS_MAX:        110, // Whiteface — highest in dataset
   DRIVE_SCALE:       300, // minutes — 5 hrs = zero drive score
   SNOW_SCALE:          8, // inches — 8"+ = max snow score
   PRICE_MAX:         180,
@@ -12,15 +13,25 @@ const SCORING = Object.freeze({
   DRIVE_DEFAULT:     0.5, // fallback when no origin set (audit #18)
 });
 
+// Drive filter ranges — index stored in state.maxDrive (0 = any)
+const DRIVE_RANGES = Object.freeze([
+  { label: 'Any distance',   min: 0,   max: Infinity },
+  { label: 'Under 90 min',   min: 0,   max: 90       },
+  { label: '90 – 150 min',   min: 90,  max: 150      },
+  { label: '151 – 210 min',  min: 151, max: 210      },
+  { label: '211 – 300 min',  min: 211, max: 300      },
+  { label: '301+ min',       min: 301, max: Infinity },
+]);
+
 // Pass break-even prices (audit #39)
 const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 
 const PRESETS = {
-  balanced: { snow:40, drive:20, snowmaking:15, vertical:15, price:10, crowd:10 },
-  powder:   { snow:50, drive:10, snowmaking:10, vertical:20, price:5,  crowd:5  },
-  family:   { snow:20, drive:20, snowmaking:25, vertical:10, price:15, crowd:20 },
-  cheap:    { snow:10, drive:30, snowmaking:15, vertical:10, price:30, crowd:5  },
-  indy:     { snow:25, drive:20, snowmaking:15, vertical:15, price:10, crowd:15 },
+  balanced: { snow:7, drive:4, vertical:4, trails:4, price:3, crowd:3 },
+  powder:   { snow:10, drive:2, vertical:4, trails:3, price:2, crowd:2 },
+  family:   { snow:4, drive:5, vertical:2, trails:7, price:5, crowd:5 },
+  cheap:    { snow:3, drive:7, vertical:2, trails:3, price:8, crowd:2 },
+  indy:     { snow:6, drive:4, vertical:4, trails:4, price:3, crowd:4 },
 };
 
 // Pre-computed — RESORTS is a compile-time constant (audit #37)
@@ -43,7 +54,16 @@ const HIST_TTL = 24 * 60 * 60 * 1000; // 24 hours
 function loadSavedWeights() {        // audit #19 — safe localStorage read
   try {
     const raw = localStorage.getItem('ski-planner-weights');
-    return raw ? JSON.parse(raw) : { ...PRESETS.balanced };
+    if (raw) {
+      const w = JSON.parse(raw);
+      // Migrate old format: had snowmaking key, no trails key, or was on 0-50 scale
+      if (w.snowmaking !== undefined || w.trails === undefined || w.snow > 10) {
+        localStorage.removeItem('ski-planner-weights');
+        return { ...PRESETS.balanced };
+      }
+      return w;
+    }
+    return { ...PRESETS.balanced };
   } catch (e) {
     localStorage.removeItem('ski-planner-weights');
     return { ...PRESETS.balanced };
@@ -97,9 +117,11 @@ const els = {
   weightSummary:       $('weightSummary'),
   snowWeight:          $('snowWeight'),       driveWeight:       $('driveWeight'),
   snowmakingWeight:    $('snowmakingWeight'), verticalWeight:    $('verticalWeight'),
+  trailsWeight:        $('trailsWeight'),
   priceWeight:         $('priceWeight'),      crowdWeight:       $('crowdWeight'),
   snowWeightVal:       $('snowWeightVal'),    driveWeightVal:    $('driveWeightVal'),
   snowmakingWeightVal: $('snowmakingWeightVal'), verticalWeightVal: $('verticalWeightVal'),
+  trailsWeightVal:     $('trailsWeightVal'),
   priceWeightVal:      $('priceWeightVal'),   crowdWeightVal:    $('crowdWeightVal'),
   tomorrowGrid:        $('tomorrowGrid'),     weekendGrid:       $('weekendGrid'),
   stormGrid:           $('stormGrid'),        hiddenGemGrid:     $('hiddenGemGrid'),
@@ -150,7 +172,7 @@ function serializeState() {
   if (state.preset !== 'balanced')  p.set('preset', state.preset);
   if (state.preset === 'custom') {
     const w = state.weights;
-    p.set('w', [w.snow, w.drive, w.snowmaking, w.vertical, w.price, w.crowd].join(','));
+    p.set('w', [w.snow, w.drive, w.vertical, w.trails, w.price, w.crowd].join(','));
   }
   if (state.passFilter  !== 'All')     p.set('pass',  state.passFilter);
   if (state.stateFilter !== 'All')     p.set('st',    state.stateFilter);
@@ -180,9 +202,9 @@ function applyUrlState() {
     const wStr = p.get('w');
     if (wStr) {
       const parts = wStr.split(',').map(Number);
-      const [snow, drive, snowmaking, vertical, price, crowd] = parts;
+      const [snow, drive, vertical, trails, price, crowd] = parts;
       if (parts.length === 6 && parts.every(n => !isNaN(n) && n >= 0)) {
-        state.weights = { snow, drive, snowmaking, vertical, price, crowd };
+        state.weights = { snow, drive, vertical, trails, price, crowd };
       }
     }
   }
@@ -444,25 +466,27 @@ function savePlannerState() {
 }
 
 function syncPlannerControls() {
-  const total = Object.values(state.weights).reduce((s, v) => s + v, 0) || 1;
   const KEYS = [
-    ['snow',        'snowWeight',        'snowWeightVal'],
-    ['drive',       'driveWeight',       'driveWeightVal'],
-    ['vertical',    'verticalWeight',    'verticalWeightVal'],
-    ['price',       'priceWeight',       'priceWeightVal'],
-    ['crowd',       'crowdWeight',       'crowdWeightVal'],
+    ['snow',     'snowWeight',     'snowWeightVal'],
+    ['drive',    'driveWeight',    'driveWeightVal'],
+    ['vertical', 'verticalWeight', 'verticalWeightVal'],
+    ['trails',   'trailsWeight',   'trailsWeightVal'],
+    ['price',    'priceWeight',    'priceWeightVal'],
+    ['crowd',    'crowdWeight',    'crowdWeightVal'],
   ];
   KEYS.forEach(([key, inputId, valueId]) => {
-    if (els[inputId])  els[inputId].value = state.weights[key];
-    if (els[valueId])  els[valueId].textContent = `${Math.round(state.weights[key] / total * 100)}%`;
+    if (els[inputId])  els[inputId].value = state.weights[key] ?? 1;
+    // Show raw 1-10 value — independent of other sliders, so changing one never affects others
+    if (els[valueId])  els[valueId].textContent = `${state.weights[key] ?? 1}/10`;
   });
   els.skiDays.value = state.skiDays;
 
-  const pct = k => Math.round(state.weights[k] / total * 100);
+  const w = state.weights;
   els.weightSummary.innerHTML =
-    `<strong>Score weights:</strong> Snow ${pct('snow')}% · Drive ${pct('drive')}% · ` +
-    `Big mountain ${pct('vertical')}% · Value ${pct('price')}% · ` +
-    `Crowd penalty ${pct('crowd')}% <span style="color:var(--muted)">(sliders auto-normalize to 100%)</span>`;
+    `<strong>Score settings:</strong> ` +
+    `Snow ${w.snow}/10 · Drive ${w.drive}/10 · Vertical ${w.vertical}/10 · ` +
+    `Trails ${w.trails}/10 · Value ${w.price}/10 · Crowd penalty ${w.crowd}/10 ` +
+    `<span style="color:var(--muted)">— each slider is independent (1 = low priority, 10 = must-have)</span>`;
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
@@ -611,23 +635,23 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
   const normalized = {
     snow:         Math.min(1, snowTotal / SCORING.SNOW_SCALE),
     drive:        drive !== null ? Math.max(0, 1 - drive / SCORING.DRIVE_SCALE) : SCORING.DRIVE_DEFAULT,
-    snowmaking:   Math.min(1, resort.snowmaking / SCORING.SNOWMAKING_MAX),
-    vertical:     Math.min(1, resort.vertical    / SCORING.VERTICAL_MAX),
+    vertical:     Math.min(1, resort.vertical / SCORING.VERTICAL_MAX),
+    trails:       Math.min(1, resort.trails   / SCORING.TRAILS_MAX),
     price:        Math.max(0, Math.min(1, (SCORING.PRICE_MAX - resort.price) / (SCORING.PRICE_MAX - SCORING.PRICE_MIN))),
     crowdPenalty: Math.min(1, crowd.score / SCORING.CROWD_SCALE),
   };
 
   const components = {
-    snow:         normalized.snow         * w.snow         * 100,
-    drive:        normalized.drive        * w.drive        * 100,
-    snowmaking:   normalized.snowmaking   * w.snowmaking   * 100,
-    vertical:     normalized.vertical     * w.vertical     * 100,
-    price:        normalized.price        * w.price        * 100,
-    crowdPenalty: normalized.crowdPenalty * w.crowd        * 100,
+    snow:         normalized.snow         * (w.snow     || 0) * 100,
+    drive:        normalized.drive        * (w.drive    || 0) * 100,
+    vertical:     normalized.vertical     * (w.vertical || 0) * 100,
+    trails:       normalized.trails       * (w.trails   || 0) * 100,
+    price:        normalized.price        * (w.price    || 0) * 100,
+    crowdPenalty: normalized.crowdPenalty * (w.crowd    || 0) * 100,
   };
 
-  let score = components.snow + components.drive + components.snowmaking +
-              components.vertical + components.price - components.crowdPenalty;
+  let score = components.snow + components.drive + components.vertical +
+              components.trails + components.price - components.crowdPenalty;
   if (state.preset === 'indy' && resort.passGroup === 'Indy') score += 8;
   if (state.nightOnly && resort.night) score += 4;
 
@@ -649,7 +673,7 @@ function hiddenGemScore(resort) {
 function activeFilters() {
   const filters = [];
   if (state.search.trim())     filters.push(`Search: "${esc(state.search.trim())}"`);
-  if (state.maxDrive > 0)      filters.push(`Max drive: ${formatDriveMins(state.maxDrive)}${state.origin ? '' : ' (set location to activate)'}`);
+  if (state.maxDrive > 0)      filters.push(`Drive: ${DRIVE_RANGES[state.maxDrive]?.label ?? ''}${state.origin ? '' : ' (set location to activate)'}`);
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
   if (state.nightOnly)         filters.push('Night only');
@@ -668,8 +692,11 @@ function filteredResorts() {
     if (state.stateFilter !== 'All' && r.state     !== state.stateFilter) return false;
     if (state.nightOnly && !r.night) return false;
     if (state.maxDrive > 0 && state.origin) {
-      const mins = getDriveMins(r.id);
-      if (mins !== null && mins > state.maxDrive) return false;
+      const range = DRIVE_RANGES[state.maxDrive];
+      if (range) {
+        const mins = getDriveMins(r.id);
+        if (mins !== null && (mins < range.min || mins > range.max)) return false;
+      }
     }
     return true;
   });
@@ -837,22 +864,23 @@ function summaryHtml(label, value, sub = '') {
 }
 
 function renderSummaryCards(resorts) {
-  const count      = resorts.length;
+  const count       = resorts.length;
   const avgVertical = count ? Math.round(resorts.reduce((s, r) => s + r.vertical, 0) / count) : 0;
   const avgPrice    = count ? Math.round(resorts.reduce((s, r) => s + r.price, 0) / count) : 0;
 
-  // Pre-extract drive mins once to avoid double lookup per sort comparison (audit #12)
   const withDrive  = resorts.map(r => ({ r, m: getDriveMins(r.id) })).filter(x => x.m !== null);
   withDrive.sort((a, b) => a.m - b.m);
   const closest    = withDrive[0];
 
   els.summaryCards.innerHTML = [
-    summaryHtml('Mountains',   count),
+    summaryHtml('Mountains',    count),
+    summaryHtml('Epic',         resorts.filter(r => r.passGroup === 'Epic').length),
+    summaryHtml('Ikon',         resorts.filter(r => r.passGroup === 'Ikon').length),
+    summaryHtml('Indy',         resorts.filter(r => r.passGroup === 'Indy').length),
+    summaryHtml('Independent',  resorts.filter(r => r.passGroup === 'Independent').length),
     summaryHtml('Avg Vertical', `${avgVertical} ft`),
-    summaryHtml('Avg Ticket*',  `$${avgPrice}`, 'directional estimate'),
-    summaryHtml('Epic',  resorts.filter(r => r.passGroup === 'Epic').length),
-    summaryHtml('Ikon',  resorts.filter(r => r.passGroup === 'Ikon').length),
-    summaryHtml('Closest', closest ? esc(closest.r.name) : 'Set location', closest ? formatDrive(closest.r.id) : ''),
+    summaryHtml('Avg Ticket*',  `$${avgPrice}`, 'est.'),
+    summaryHtml('Closest',      closest ? esc(closest.r.name) : '—', closest ? formatDrive(closest.r.id) : 'Set location'),
   ].join('');
 }
 
@@ -862,7 +890,8 @@ function cardBreakdown(b) {
   return `<div class="breakdown">
     <div>Snow forecast: <strong>+${c.snow.toFixed(1)}</strong></div>
     <div>Drive time: <strong>+${c.drive.toFixed(1)}</strong></div>
-    <div>Big mountain: <strong>+${c.vertical.toFixed(1)}</strong></div>
+    <div>Vertical: <strong>+${c.vertical.toFixed(1)}</strong></div>
+    <div>Trails: <strong>+${c.trails.toFixed(1)}</strong></div>
     <div>Price / value: <strong>+${c.price.toFixed(1)}</strong></div>
     <div>Crowd penalty: <strong>-${c.crowdPenalty.toFixed(1)}</strong></div>
   </div>`;
@@ -1378,7 +1407,7 @@ function wireEvents() {
   els.stateFilter.addEventListener('change',    e => { state.stateFilter = e.target.value; pushUrlDebounced(); render(); });
   els.maxDriveFilter.addEventListener('change', e => {
     state.maxDrive = Number(e.target.value);
-    if (state.maxDrive > 0 && !state.origin) showToast('Set a starting location to use the Max Drive filter');
+    if (state.maxDrive > 0 && !state.origin) showToast('Set a starting location to use the Drive Time filter');
     pushUrlDebounced(); render();
   });
   els.sortBy.addEventListener('change', e => { state.sortBy = e.target.value; pushUrlDebounced(); render(); });
@@ -1413,7 +1442,8 @@ function wireEvents() {
 
   // Weight sliders — sync UI instantly, debounce the expensive render (audit #7)
   [['snow','snowWeight'],['drive','driveWeight'],
-   ['vertical','verticalWeight'],['price','priceWeight'],['crowd','crowdWeight']].forEach(([key, id]) => {
+   ['vertical','verticalWeight'],['trails','trailsWeight'],
+   ['price','priceWeight'],['crowd','crowdWeight']].forEach(([key, id]) => {
     if (!els[id]) return;  // null-guard for any removed sliders
     els[id].addEventListener('input', e => {
       state.weights[key] = Number(e.target.value);

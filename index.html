@@ -33,6 +33,11 @@
 
   <div class="container">
 
+    <!-- STATS BAR — compact summary of all mountains in current filter -->
+    <section class="stats-bar card">
+      <div id="summaryCards" class="stats-strip"></div>
+    </section>
+
     <!-- STEP 1: FIND YOUR MOUNTAIN -->
     <section id="searchSection" class="hero card">
       <div class="hero-copy">
@@ -69,10 +74,6 @@
           <button id="jumpWeekend" class="btn btn-secondary">📅 Plan This Weekend</button>
         </div>
       </div>
-
-      <div class="hero-right">
-        <div id="summaryCards" class="summary-grid"></div>
-      </div>
     </section>
 
     <!-- STEP 2: CUSTOMIZE YOUR SCORE -->
@@ -94,28 +95,33 @@
       <div id="weightSummary" class="weight-summary"></div>
       <div class="score-grid">
         <div class="score-control">
-          <label for="snowWeight">Fresh snow <span id="snowWeightVal"></span></label>
-          <input id="snowWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Raise this if you only go on powder days. Pulls in resorts with the most forecast snow.</div>
+          <label for="snowWeight">Fresh Snow <span id="snowWeightVal"></span></label>
+          <input id="snowWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">How much forecast snowfall matters. 10 = only go on powder days.</div>
         </div>
         <div class="score-control">
-          <label for="driveWeight">Short drive <span id="driveWeightVal"></span></label>
-          <input id="driveWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Favors mountains closest to you. Use <strong>Max Drive</strong> in the filters below for a hard cutoff.</div>
+          <label for="driveWeight">Drive Time <span id="driveWeightVal"></span></label>
+          <input id="driveWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">Favors mountains closest to you. Use <strong>Drive Time</strong> in filters for a hard range cutoff.</div>
         </div>
         <div class="score-control">
-          <label for="verticalWeight">Big mountain <span id="verticalWeightVal"></span></label>
-          <input id="verticalWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Rewards more vertical drop and terrain variety. Best for advanced skiers who want long, challenging runs.</div>
+          <label for="verticalWeight">Vertical <span id="verticalWeightVal"></span></label>
+          <input id="verticalWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">Rewards more vertical drop. Best for advanced skiers who want long, challenging runs.</div>
         </div>
         <div class="score-control">
-          <label for="priceWeight">Best value <span id="priceWeightVal"></span></label>
-          <input id="priceWeight" type="range" min="0" max="50" step="1">
+          <label for="trailsWeight">Trails <span id="trailsWeightVal"></span></label>
+          <input id="trailsWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">10 = strongly favor mountains with the most trails. Great for variety-seekers and groups with mixed abilities.</div>
+        </div>
+        <div class="score-control">
+          <label for="priceWeight">Best Value <span id="priceWeightVal"></span></label>
+          <input id="priceWeight" type="range" min="1" max="10" step="1">
           <div class="score-desc">Strongly favors cheaper day tickets. Great for families, frequent skiers, or anyone without a season pass.</div>
         </div>
         <div class="score-control">
-          <label for="crowdWeight">Avoid crowds <span id="crowdWeightVal"></span></label>
-          <input id="crowdWeight" type="range" min="0" max="50" step="1">
+          <label for="crowdWeight">Avoid Crowds <span id="crowdWeightVal"></span></label>
+          <input id="crowdWeight" type="range" min="1" max="10" step="1">
           <div class="score-desc">Penalizes busy mountains. Raises the rank of smaller, quieter hills — especially on holiday weekends.</div>
         </div>
       </div>
@@ -127,14 +133,14 @@
         <span class="toolbar-label">🎛️ Filters</span>
         <div class="toolbar-controls">
           <div class="field">
-            <label for="maxDriveFilter">Max Drive</label>
+            <label for="maxDriveFilter">Drive Time</label>
             <select id="maxDriveFilter">
               <option value="0">Any distance</option>
-              <option value="90">Under 1.5 hrs</option>
-              <option value="120">Under 2 hrs</option>
-              <option value="180">Under 3 hrs</option>
-              <option value="240">Under 4 hrs</option>
-              <option value="300">Under 5 hrs</option>
+              <option value="1">Under 90 min</option>
+              <option value="2">90 – 150 min</option>
+              <option value="3">151 – 210 min</option>
+              <option value="4">211 – 300 min</option>
+              <option value="5">301+ min</option>
             </select>
           </div>
           <div class="field">
