@@ -33,12 +33,12 @@
 
   <div class="container">
 
-    <!-- STEP 1: FIND YOUR MOUNTAIN -->
+    <!-- STEP 1: STARTING POINT -->
     <section id="searchSection" class="hero card">
       <div class="hero-copy">
         <div class="eyebrow">Northeast Ski Decision Engine</div>
-        <h1>Find Your Perfect Mountain</h1>
-        <p class="hero-text">Set your location, pick a trip style, and get a live ranked answer — today's snow, drive time, crowds, and value all in one score.</p>
+        <h1>Set Your Start, Then Tune Your Trip Style</h1>
+        <p class="hero-text">Pick your starting point, adjust what matters most, and see the mountain rankings update immediately below — a faster, results-first flow.</p>
 
         <div class="hero-block">
           <div class="hero-block-label">📍 Where are you starting from?</div>
@@ -53,21 +53,13 @@
           <div id="locationStatus" class="helper-text"></div>
         </div>
 
-        <div class="hero-block">
-          <div class="hero-block-label">🔍 Search &amp; compare mountains</div>
-          <div class="field">
-            <label for="searchInput">Mountain name</label>
-            <input id="searchInput" type="text" autocomplete="off"
-                   placeholder="Type to search — click + Compare to build a side-by-side" />
-            <datalist id="resortSuggestions"></datalist>
-          </div>
-          <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
+        <div hidden aria-hidden="true">
+          <input id="searchInput" type="text" autocomplete="off" tabindex="-1" />
+          <button id="jumpTomorrow" type="button" tabindex="-1">Tomorrow</button>
+          <button id="jumpWeekend" type="button" tabindex="-1">Weekend</button>
         </div>
-
-        <div class="hero-actions">
-          <button id="jumpTomorrow" class="btn btn-primary">🎿 Where Should I Ski Tomorrow?</button>
-          <button id="jumpWeekend" class="btn btn-secondary">📅 Plan This Weekend</button>
-        </div>
+        <datalist id="resortSuggestions"></datalist>
+        <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
       </div>
 
       <div class="hero-right">
@@ -169,16 +161,6 @@
       <div id="activeFilters" class="active-filters"></div>
     </section>
 
-    <!-- SHOULD I GO? -->
-    <section id="verdictSection" class="verdict-section card hidden">
-      <div class="verdict-header">
-        <div class="eyebrow">Live Conditions Report</div>
-        <h2>Should I Go This Weekend?</h2>
-        <p class="muted small">Based on your location, trip style, and live weather — a straight answer so you don't have to check five different sites.</p>
-      </div>
-      <div id="verdictCard"></div>
-    </section>
-
     <!-- PICKS & PANELS -->
     <section class="feature-grid">
       <section id="tomorrowSection" class="card panel">
@@ -234,6 +216,16 @@
         </div>
         <div id="passCalcGrid" class="card-grid"></div>
       </section>
+    </section>
+
+    <!-- SHOULD I GO? -->
+    <section id="verdictSection" class="verdict-section card hidden">
+      <div class="verdict-header">
+        <div class="eyebrow">Live Conditions Report</div>
+        <h2>Should I Go This Weekend?</h2>
+        <p class="muted small">Based on your location, trip style, and live weather — a straight answer so you don't have to check five different sites.</p>
+      </div>
+      <div id="verdictCard"></div>
     </section>
 
     <!-- COMPARE TABLE -->
