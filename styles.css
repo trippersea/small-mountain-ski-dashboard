@@ -161,3 +161,202 @@ button{font:inherit}
 @media (max-width:1280px) and (min-width:1101px) {
   .toolbar { grid-template-columns: 1.4fr .7fr .7fr .8fr auto; }
 }
+
+/* ── Nav share button & conditions link ───────────────────────────────────── */
+.nav-verdict {
+  font-weight: 700;
+  color: #2b6de9 !important;
+}
+.btn-ghost {
+  background: none;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  color: inherit;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.6); }
+
+/* ── Verdict section ──────────────────────────────────────────────────────── */
+.verdict-section { padding: 0; overflow: hidden; }
+
+.verdict-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+@media (max-width: 700px) {
+  .verdict-inner { grid-template-columns: 1fr; }
+}
+
+/* tier colour bands applied to left column via border-left */
+.verdict-inner.verdict-great  { border-left: 6px solid #16a34a; }
+.verdict-inner.verdict-good   { border-left: 6px solid #2b6de9; }
+.verdict-inner.verdict-marginal { border-left: 6px solid #f0b44c; }
+.verdict-inner.verdict-bad    { border-left: 6px solid #e07a5f; }
+
+.verdict-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 22px 24px;
+}
+.verdict-icon {
+  font-size: 2.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.verdict-body { flex: 1; min-width: 0; }
+.verdict-headline {
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.verdict-great  .verdict-headline { color: #16a34a; }
+.verdict-good   .verdict-headline { color: #1d4ed8; }
+.verdict-marginal .verdict-headline { color: #b45309; }
+.verdict-bad    .verdict-headline { color: #c0392b; }
+
+.verdict-detail {
+  font-size: 0.93rem;
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.verdict-points {
+  margin: 8px 0 0 0;
+  padding-left: 18px;
+  font-size: 0.88rem;
+  color: var(--text-secondary, #6b7280);
+}
+.verdict-points li { margin-bottom: 3px; }
+.verdict-no-origin {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.verdict-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 24px;
+  background: var(--card-bg, #f8fafc);
+  border-left: 1px solid var(--border, #e2e8f0);
+  min-width: 220px;
+  max-width: 300px;
+}
+@media (max-width: 700px) {
+  .verdict-right {
+    border-left: none;
+    border-top: 1px solid var(--border, #e2e8f0);
+    max-width: 100%;
+  }
+}
+
+.verdict-pick-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+.verdict-pick-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.verdict-pick-meta {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.verdict-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.verdict-chips .metric-chip {
+  font-size: 0.78rem;
+  padding: 3px 9px;
+}
+
+.verdict-spark-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.verdict-spark-label {
+  font-size: 0.74rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.verdict-share-btn {
+  margin-top: auto;
+  font-size: 0.82rem;
+  padding: 7px 14px;
+  align-self: flex-start;
+}
+
+/* ── Snow sparkline SVG ───────────────────────────────────────────────────── */
+.snow-sparkline {
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── History & forecast rows in detail card ───────────────────────────────── */
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+.history-label {
+  font-size: 0.82rem;
+  color: #6b7280;
+  width: 80px;
+  flex-shrink: 0;
+}
+.history-total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  width: 42px;
+  flex-shrink: 0;
+}
+
+.forecast-rows { display: flex; flex-direction: column; gap: 4px; }
+.forecast-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  padding: 4px 0;
+}
+.forecast-day  { width: 36px; font-weight: 600; color: #374151; }
+.forecast-snow { flex: 1; }
+.forecast-snow.snow-big  { color: #1d4ed8; font-weight: 700; }
+.forecast-snow.snow-med  { color: #2b6de9; }
+.forecast-temps { color: #9ca3af; font-size: 0.8rem; white-space: nowrap; }
+
+/* ── 7-day column in compare table ───────────────────────────────────────── */
+.hist-cell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #2b6de9;
+}

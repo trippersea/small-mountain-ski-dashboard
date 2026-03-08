@@ -16,6 +16,7 @@
 
   <nav class="top-nav">
     <div class="top-nav-inner">
+      <a href="#verdictSection" class="nav-verdict">🎿 Conditions</a>
       <a href="#searchSection">Search</a>
       <a href="#plannerSection">Planner</a>
       <a href="#tomorrowSection">Tomorrow</a>
@@ -23,6 +24,7 @@
       <a href="#stormSection">Storm</a>
       <a href="#compareSection">Compare</a>
       <a href="#mapSection">Map</a>
+      <button class="nav-share-btn btn-ghost" onclick="copyShareLink()">🔗 Share</button>
     </div>
   </nav>
 
@@ -49,6 +51,10 @@
         <div id="locationStatus" class="helper-text"></div>
       </div>
       <div id="summaryCards" class="summary-grid"></div>
+    </section>
+
+    <section id="verdictSection" class="verdict-section card hidden">
+      <div id="verdictCard"></div>
     </section>
 
     <section class="toolbar card">
@@ -174,6 +180,7 @@
               <th scope="col">Pass</th>
               <th scope="col">Planner</th>
               <th scope="col">Storm</th>
+              <th scope="col" title="Snowfall in the past 7 days">7-Day ❄️</th>
               <th scope="col">Drive</th>
               <th scope="col">Vertical</th>
               <th scope="col">Trails</th>
