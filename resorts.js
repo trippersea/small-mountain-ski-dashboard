@@ -40,12 +40,11 @@ const PRESETS = {
   powder:   { snow:10, drive:2, size:4, value:2, crowd:2 },
   family:   { snow:4, drive:6, size:3, value:6, crowd:5 },
   cheap:    { snow:3, drive:8, size:2, value:9, crowd:2 },
-  indy:     { snow:6, drive:4, size:5, value:4, crowd:4 },
 };
 
 // Skill presets per named preset
 const PRESET_SKILLS = {
-  balanced: 'mixed', powder: 'advanced', family: 'beginner', cheap: 'mixed', indy: 'mixed',
+  balanced: 'mixed', powder: 'advanced', family: 'beginner', cheap: 'mixed',
 };
 
 // Table sort state — dir tracked separately from URL state
@@ -109,6 +108,7 @@ const state = Object.seal({
   stateFilter:  'All',
   sortBy:       'planner',
   nightOnly:    false,
+  daytripOnly:  false,
   maxDrive:     0,
   selectedId:   null,
   origin:       null,
@@ -135,6 +135,7 @@ const els = {
   maxDriveFilter:      $('maxDriveFilter'),
   sortBy:              $('sortBy'),
   toggleNight:         $('toggleNight'),
+  toggleDaytrip:        $('toggleDaytrip'),
   resetFilters:        $('resetFilters'),
   activeFilters:       $('activeFilters'),
   originInput:         $('originInput'),
@@ -200,6 +201,7 @@ function serializeState() {
   if (state.stateFilter !== 'All')     p.set('st',    state.stateFilter);
   if (state.sortBy      !== 'planner') p.set('sort',  state.sortBy);
   if (state.nightOnly)                 p.set('night', '1');
+  if (state.daytripOnly)               p.set('daytrip', '1');
   if (state.maxDrive > 0)              p.set('drive', state.maxDrive);
   if (state.skiDays  !== 5)            p.set('days',  state.skiDays);
   if (state.origin) {
@@ -233,7 +235,8 @@ function applyUrlState() {
   if (p.has('pass')  && UNIQUE_PASSES.includes(p.get('pass')))  state.passFilter  = p.get('pass');
   if (p.has('st')    && UNIQUE_STATES.includes(p.get('st')))    state.stateFilter = p.get('st');
   if (p.has('sort'))  state.sortBy    = p.get('sort');
-  if (p.has('night')) state.nightOnly = true;
+  if (p.has('night'))   state.nightOnly   = true;
+  if (p.has('daytrip')) state.daytripOnly = true;
   if (p.has('drive')) state.maxDrive  = Number(p.get('drive')) || 0;
   if (p.has('days'))  state.skiDays   = Math.max(1, Number(p.get('days')) || 5);
   if (p.has('skill') && ['beginner','mixed','advanced'].includes(p.get('skill'))) state.skillLevel = p.get('skill');
@@ -531,7 +534,6 @@ function applyPreset(name) {
   state.preset = name;
   state.weights = { ...PRESETS[name] };
   if (PRESET_SKILLS[name]) state.skillLevel = PRESET_SKILLS[name];
-  if (name === 'indy') state.passPreference = 'Indy'; else if (state.passPreference === 'Indy' && name !== 'indy') {} // keep user's pass choice
   savePlannerState();
   syncPlannerControls();
   render();
@@ -736,8 +738,8 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
 
   let score = components.snow + components.drive + components.size +
               components.skillMatch + components.value - components.crowdPenalty;
-  // Pass preference bonus — +10 for mountains on your pass, regardless of preset
-  if (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) score += 10;
+  // Pass preference bonus — +200 for mountains on your pass (~10% of typical max score)
+  if (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) score += 200;
   if (state.nightOnly && resort.night) score += 4;
 
   return { score: Math.round(score * 10) / 10, snowTotal, drive, resortId: resort.id, crowdLabel: crowd.label, normalized, components };
@@ -762,6 +764,7 @@ function activeFilters() {
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
   if (state.nightOnly)         filters.push('Night only');
+  if (state.daytripOnly)        filters.push('Day trip (≤150 min)' + (state.origin ? '' : ' — set location to activate'));
   return filters;
 }
 
@@ -776,6 +779,10 @@ function filteredResorts() {
     if (state.passFilter !== 'All'  && r.passGroup !== state.passFilter)  return false;
     if (state.stateFilter !== 'All' && r.state     !== state.stateFilter) return false;
     if (state.nightOnly && !r.night) return false;
+    if (state.daytripOnly && state.origin) {
+      const mins = getDriveMins(r.id);
+      if (mins !== null && mins > 150) return false;
+    }
     if (state.maxDrive > 0 && state.origin) {
       const range = DRIVE_RANGES[state.maxDrive];
       if (range) {
@@ -1398,9 +1405,16 @@ function wireEvents() {
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
     pushUrlDebounced(); render();
   });
+  if (els.toggleDaytrip) els.toggleDaytrip.addEventListener('click', () => {
+    state.daytripOnly = !state.daytripOnly;
+    els.toggleDaytrip.setAttribute('aria-pressed', String(state.daytripOnly));
+    savePlannerState();
+    pushUrlDebounced();
+    debouncedRender();
+  });
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
-    state.sortBy = 'planner'; state.nightOnly = false; state.maxDrive = 0;
+    state.sortBy = 'planner'; state.nightOnly = false; state.daytripOnly = false; state.maxDrive = 0;
     state.skillLevel = 'mixed'; state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
@@ -1408,6 +1422,7 @@ function wireEvents() {
     els.maxDriveFilter.value = '0';
     els.sortBy.value         = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false');
+    if (els.toggleDaytrip) els.toggleDaytrip.setAttribute('aria-pressed', 'false');
     if (els.tableSearch) els.tableSearch.value = '';
     pushUrlDebounced(); render();
   });
@@ -1577,6 +1592,7 @@ function initialize() {
     els.sortBy.value         = state.sortBy;
     els.maxDriveFilter.value = String(state.maxDrive);
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
+    if (els.toggleDaytrip) els.toggleDaytrip.setAttribute('aria-pressed', String(state.daytripOnly));
   }
 
   syncPlannerControls();
