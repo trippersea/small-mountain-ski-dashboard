@@ -448,21 +448,20 @@ function syncPlannerControls() {
   const KEYS = [
     ['snow',        'snowWeight',        'snowWeightVal'],
     ['drive',       'driveWeight',       'driveWeightVal'],
-    ['snowmaking',  'snowmakingWeight',  'snowmakingWeightVal'],
     ['vertical',    'verticalWeight',    'verticalWeightVal'],
     ['price',       'priceWeight',       'priceWeightVal'],
     ['crowd',       'crowdWeight',       'crowdWeightVal'],
   ];
   KEYS.forEach(([key, inputId, valueId]) => {
-    els[inputId].value = state.weights[key];
-    els[valueId].textContent = `${Math.round(state.weights[key] / total * 100)}%`;
+    if (els[inputId])  els[inputId].value = state.weights[key];
+    if (els[valueId])  els[valueId].textContent = `${Math.round(state.weights[key] / total * 100)}%`;
   });
   els.skiDays.value = state.skiDays;
 
   const pct = k => Math.round(state.weights[k] / total * 100);
   els.weightSummary.innerHTML =
-    `<strong>Actual score influence:</strong> Snow ${pct('snow')}% · Drive ${pct('drive')}% · ` +
-    `Snowmaking ${pct('snowmaking')}% · Vertical ${pct('vertical')}% · Price ${pct('price')}% · ` +
+    `<strong>Score weights:</strong> Snow ${pct('snow')}% · Drive ${pct('drive')}% · ` +
+    `Big mountain ${pct('vertical')}% · Value ${pct('price')}% · ` +
     `Crowd penalty ${pct('crowd')}% <span style="color:var(--muted)">(sliders auto-normalize to 100%)</span>`;
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
@@ -863,8 +862,7 @@ function cardBreakdown(b) {
   return `<div class="breakdown">
     <div>Snow forecast: <strong>+${c.snow.toFixed(1)}</strong></div>
     <div>Drive time: <strong>+${c.drive.toFixed(1)}</strong></div>
-    <div>Snowmaking: <strong>+${c.snowmaking.toFixed(1)}</strong></div>
-    <div>Vertical: <strong>+${c.vertical.toFixed(1)}</strong></div>
+    <div>Big mountain: <strong>+${c.vertical.toFixed(1)}</strong></div>
     <div>Price / value: <strong>+${c.price.toFixed(1)}</strong></div>
     <div>Crowd penalty: <strong>-${c.crowdPenalty.toFixed(1)}</strong></div>
   </div>`;
@@ -1074,7 +1072,6 @@ function renderCompareTable(resorts) {
         <td>${formatDrive(resort.id)}</td>
         <td>${resort.vertical}</td>
         <td>${resort.trails}</td>
-        <td>${snowmakingDisplay(resort.snowmaking)}</td>
         <td>$${resort.price}</td>
         <td class="${crowdClass(crowd)}">${crowd}</td>
       </tr>`;
@@ -1286,13 +1283,95 @@ const debouncedRender = debounce(render, 150); // audit #7, #8
 
 function wireEvents() {
   // Search — syncPlannerControls/renderActiveFilters immediately, defer full render
+  // ── Search with live suggest panel ──────────────────────────────────────
+  const suggestPanel = $('searchSuggestPanel');
+
+  function renderSuggestPanel(q) {
+    if (!q || q.length < 2) {
+      suggestPanel?.classList.add('hidden');
+      return;
+    }
+    const matches = RESORTS.filter(r =>
+      r.name.toLowerCase().includes(q) || r.state.toLowerCase().includes(q)
+    ).slice(0, 6);
+
+    if (!matches.length) { suggestPanel?.classList.add('hidden'); return; }
+
+    suggestPanel.innerHTML = matches.map(r => {
+      const inCompare  = state.compareSet.has(r.id);
+      const drive      = getDriveMins(r.id);
+      const driveChip  = drive !== null ? `<span class="sg-drive">${formatDrive(r.id)}</span>` : '';
+      return `
+        <div class="sg-row" data-id="${r.id}" role="option">
+          <div class="sg-info">
+            <span class="sg-name">${esc(r.name)}</span>
+            <span class="sg-meta">${esc(r.state)} · <span class="sg-pass sg-pass-${r.passGroup.toLowerCase().replace(' ','')}">${esc(r.passGroup)}</span> ${driveChip}</span>
+          </div>
+          <div class="sg-actions">
+            <button class="sg-btn sg-view" data-view="${r.id}">View</button>
+            <button class="sg-btn sg-compare ${inCompare ? 'sg-compare-active' : ''}"
+                    data-compare="${r.id}">${inCompare ? '✓ Added' : '+ Compare'}</button>
+          </div>
+        </div>`;
+    }).join('');
+    suggestPanel.classList.remove('hidden');
+  }
+
   els.searchInput.addEventListener('input', e => {
     state.search = e.target.value;
     const q = e.target.value.trim().toLowerCase();
-    const exactMatch = RESORTS.find(r => r.name.toLowerCase() === q);
+    const exactMatch = RESORTS.find(r => r.name.toLowerCase() === q ||
+      (r.name + ', ' + r.state).toLowerCase() === q);
     if (exactMatch) state.selectedId = exactMatch.id;
+    renderSuggestPanel(q);
     renderActiveFilters();
     debouncedRender();
+  });
+
+  els.searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      suggestPanel?.classList.add('hidden');
+      els.searchInput.value = '';
+      state.search = '';
+      renderActiveFilters();
+      debouncedRender();
+    }
+  });
+
+  // Delegate clicks inside the suggest panel
+  suggestPanel?.addEventListener('click', e => {
+    const viewBtn    = e.target.closest('[data-view]');
+    const compareBtn = e.target.closest('[data-compare]');
+    if (viewBtn) {
+      state.selectedId = viewBtn.dataset.view;
+      suggestPanel.classList.add('hidden');
+      els.searchInput.value = '';
+      state.search = '';
+      renderDetail();
+      $('detailSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (compareBtn) {
+      const id = compareBtn.dataset.compare;
+      if (state.compareSet.has(id)) {
+        state.compareSet.delete(id);
+        compareBtn.textContent = '+ Compare';
+        compareBtn.classList.remove('sg-compare-active');
+      } else {
+        if (state.compareSet.size >= 4) { showToast('Max 4 mountains at once'); return; }
+        state.compareSet.add(id);
+        compareBtn.textContent = '✓ Added';
+        compareBtn.classList.add('sg-compare-active');
+        showToast(`${RESORTS.find(r => r.id === id)?.name} added — open Compare below`, 2800);
+      }
+      renderCompareTray();
+    }
+  });
+
+  // Close panel on outside click
+  document.addEventListener('click', e => {
+    if (!els.searchInput.contains(e.target) && !suggestPanel?.contains(e.target)) {
+      suggestPanel?.classList.add('hidden');
+    }
   });
 
   els.passFilter.addEventListener('change',     e => { state.passFilter  = e.target.value; pushUrlDebounced(); render(); });
@@ -1333,8 +1412,9 @@ function wireEvents() {
   els.closeCompare.addEventListener('click', () => els.comparePanel.classList.add('hidden'));
 
   // Weight sliders — sync UI instantly, debounce the expensive render (audit #7)
-  [['snow','snowWeight'],['drive','driveWeight'],['snowmaking','snowmakingWeight'],
+  [['snow','snowWeight'],['drive','driveWeight'],
    ['vertical','verticalWeight'],['price','priceWeight'],['crowd','crowdWeight']].forEach(([key, id]) => {
+    if (!els[id]) return;  // null-guard for any removed sliders
     els[id].addEventListener('input', e => {
       state.weights[key] = Number(e.target.value);
       state.preset = 'custom';

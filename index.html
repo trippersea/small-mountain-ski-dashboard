@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>New England Ski Decision Engine</title>
-  <meta name="description" content="A Kayak-style ski decision engine for Northeast mountains with pass filters, planner scoring, weather, drive times, and comparison tools." />
+  <meta name="description" content="A skier-first decision tool for Northeast mountains — live weather, forecast snow, drive times, pass filters, and side-by-side comparisons." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -16,159 +16,235 @@
 
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <a href="#verdictSection" class="nav-verdict">🎿 Conditions</a>
+      <span class="nav-brand">⛷️ SkiNE</span>
       <a href="#searchSection">Search</a>
       <a href="#plannerSection">Planner</a>
+      <a href="#verdictSection" class="nav-verdict">Should I Go?</a>
       <a href="#tomorrowSection">Tomorrow</a>
       <a href="#weekendSection">Weekend</a>
       <a href="#stormSection">Storm</a>
       <a href="#compareSection">Compare</a>
       <a href="#mapSection">Map</a>
-      <button class="nav-share-btn btn-ghost" onclick="copyShareLink()">🔗 Share</button>
+      <button class="btn-ghost nav-share" onclick="copyShareLink()">🔗 Share</button>
     </div>
   </nav>
 
   <button id="backToTop" class="back-to-top" aria-label="Back to top">↑ Top</button>
 
   <div class="container">
+
+    <!-- STEP 1: FIND YOUR MOUNTAIN -->
     <section id="searchSection" class="hero card">
       <div class="hero-copy">
         <div class="eyebrow">Northeast Ski Decision Engine</div>
-        <h1>New England & Northeast Ski Mountain Guide</h1>
-        <p class="hero-text">A skier-first decision tool that helps answer one question: where should I ski tomorrow? Search every mountain in the Northeast, filter by Epic, Ikon, Indy, or Independent, and compare live weather, forecast snow, drive times, and value.</p>
-        <div class="hero-actions">
-          <button id="jumpTomorrow" class="btn btn-primary">Where Should I Ski Tomorrow?</button>
-          <button id="jumpWeekend" class="btn btn-secondary">Plan This Weekend</button>
-        </div>
-        <div class="location-row">
-          <div class="field field-grow">
-            <label for="originInput">Starting location</label>
-            <input id="originInput" type="text" placeholder="Boston, MA or 02108" />
+        <h1>Find Your Perfect Mountain</h1>
+        <p class="hero-text">Set your location, pick a trip style, and get a live ranked answer — today's snow, drive time, crowds, and value all in one score.</p>
+
+        <div class="hero-block">
+          <div class="hero-block-label">📍 Where are you starting from?</div>
+          <div class="location-row">
+            <div class="field field-grow">
+              <label for="originInput">Your starting location</label>
+              <input id="originInput" type="text" placeholder="City, town, or ZIP — e.g. Boston, MA" />
+            </div>
+            <button id="setLocation" class="btn btn-primary">Set</button>
+            <button id="detectLocation" class="btn btn-secondary">Use my location</button>
           </div>
-          <button id="setLocation" class="btn btn-primary">Set location</button>
-          <button id="detectLocation" class="btn btn-secondary">Use my location</button>
+          <div id="locationStatus" class="helper-text"></div>
         </div>
-        <div id="locationStatus" class="helper-text"></div>
+
+        <div class="hero-block">
+          <div class="hero-block-label">🔍 Search &amp; compare mountains</div>
+          <div class="field">
+            <label for="searchInput">Mountain name</label>
+            <input id="searchInput" type="text" autocomplete="off"
+                   placeholder="Type to search — click + Compare to build a side-by-side" />
+            <datalist id="resortSuggestions"></datalist>
+          </div>
+          <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
+        </div>
+
+        <div class="hero-actions">
+          <button id="jumpTomorrow" class="btn btn-primary">🎿 Where Should I Ski Tomorrow?</button>
+          <button id="jumpWeekend" class="btn btn-secondary">📅 Plan This Weekend</button>
+        </div>
       </div>
-      <div id="summaryCards" class="summary-grid"></div>
+
+      <div class="hero-right">
+        <div id="summaryCards" class="summary-grid"></div>
+      </div>
     </section>
 
-    <section id="verdictSection" class="verdict-section card hidden">
-      <div id="verdictCard"></div>
+    <!-- STEP 2: CUSTOMIZE YOUR SCORE -->
+    <section id="plannerSection" class="card panel">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Step 2 — Your Trip Style</div>
+          <h2>What matters most to you?</h2>
+          <p class="muted small">Pick a preset or fine-tune the sliders. The Planner Score re-ranks every mountain in real time — it's how we decide which mountain wins.</p>
+        </div>
+      </div>
+      <div class="preset-row">
+        <button class="preset-btn active" data-preset="balanced">⚖️ Balanced</button>
+        <button class="preset-btn" data-preset="powder">❄️ Powder Chaser</button>
+        <button class="preset-btn" data-preset="family">👨‍👩‍👧 Family Day</button>
+        <button class="preset-btn" data-preset="cheap">💰 Cheap &amp; Close</button>
+        <button class="preset-btn" data-preset="indy">🎫 Indy Pass</button>
+      </div>
+      <div id="weightSummary" class="weight-summary"></div>
+      <div class="score-grid">
+        <div class="score-control">
+          <label for="snowWeight">Fresh snow <span id="snowWeightVal"></span></label>
+          <input id="snowWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Raise this if you only go on powder days. Pulls in resorts with the most forecast snow.</div>
+        </div>
+        <div class="score-control">
+          <label for="driveWeight">Short drive <span id="driveWeightVal"></span></label>
+          <input id="driveWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Favors mountains closest to you. Use <strong>Max Drive</strong> in the filters below for a hard cutoff.</div>
+        </div>
+        <div class="score-control">
+          <label for="verticalWeight">Big mountain <span id="verticalWeightVal"></span></label>
+          <input id="verticalWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Rewards more vertical drop and terrain variety. Best for advanced skiers who want long, challenging runs.</div>
+        </div>
+        <div class="score-control">
+          <label for="priceWeight">Best value <span id="priceWeightVal"></span></label>
+          <input id="priceWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Strongly favors cheaper day tickets. Great for families, frequent skiers, or anyone without a season pass.</div>
+        </div>
+        <div class="score-control">
+          <label for="crowdWeight">Avoid crowds <span id="crowdWeightVal"></span></label>
+          <input id="crowdWeight" type="range" min="0" max="50" step="1">
+          <div class="score-desc">Penalizes busy mountains. Raises the rank of smaller, quieter hills — especially on holiday weekends.</div>
+        </div>
+      </div>
     </section>
 
+    <!-- STEP 3: FILTER & SORT -->
     <section class="toolbar card">
-      <div class="field field-search">
-        <label for="searchInput">Search resorts</label>
-        <input id="searchInput" list="resortSuggestions" type="text" placeholder="Search by mountain name" />
-        <datalist id="resortSuggestions"></datalist>
-      </div>
-      <div class="field">
-        <label for="maxDriveFilter">Max Drive</label>
-        <select id="maxDriveFilter">
-          <option value="0">Any distance</option>
-          <option value="90">Under 1.5 hrs</option>
-          <option value="120">Under 2 hrs</option>
-          <option value="180">Under 3 hrs</option>
-          <option value="240">Under 4 hrs</option>
-          <option value="300">Under 5 hrs</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="passFilter">Pass</label>
-        <select id="passFilter"></select>
-      </div>
-      <div class="field">
-        <label for="stateFilter">State</label>
-        <select id="stateFilter"></select>
-      </div>
-      <div class="field">
-        <label for="sortBy">Sort by</label>
-        <select id="sortBy">
-          <option value="planner">Planner Score</option>
-          <option value="storm">Storm Snow</option>
-          <option value="drive">Drive Time</option>
-          <option value="price">Ticket Price</option>
-          <option value="vertical">Vertical</option>
-          <option value="snowmaking">Snowmaking</option>
-          <option value="avgSnowfall">Avg Snowfall</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">Night Skiing Only</button>
-      </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <button id="resetFilters" class="btn btn-secondary">Reset Filters</button>
+      <div class="toolbar-row">
+        <span class="toolbar-label">🎛️ Filters</span>
+        <div class="toolbar-controls">
+          <div class="field">
+            <label for="maxDriveFilter">Max Drive</label>
+            <select id="maxDriveFilter">
+              <option value="0">Any distance</option>
+              <option value="90">Under 1.5 hrs</option>
+              <option value="120">Under 2 hrs</option>
+              <option value="180">Under 3 hrs</option>
+              <option value="240">Under 4 hrs</option>
+              <option value="300">Under 5 hrs</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="passFilter">Pass</label>
+            <select id="passFilter"></select>
+          </div>
+          <div class="field">
+            <label for="stateFilter">State</label>
+            <select id="stateFilter"></select>
+          </div>
+          <div class="field">
+            <label for="sortBy">Sort by</label>
+            <select id="sortBy">
+              <option value="planner">Planner Score</option>
+              <option value="storm">Storm Snow</option>
+              <option value="drive">Drive Time</option>
+              <option value="price">Ticket Price</option>
+              <option value="vertical">Vertical</option>
+              <option value="avgSnowfall">Avg Snowfall</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">🌙 Night Only</button>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="resetFilters" class="btn btn-secondary">✕ Reset</button>
+          </div>
+        </div>
       </div>
       <div id="activeFilters" class="active-filters"></div>
     </section>
 
-    <section id="plannerSection" class="card panel">
-      <div class="section-header">
-        <div>
-          <h2>Planner Score Controls</h2>
-          <p class="muted small">Planner Score is transparent. It combines forecast snow, drive time, snowmaking, vertical, ticket price, and a crowd penalty. Pick a preset or fine-tune the weights yourself.</p>
-        </div>
+    <!-- SHOULD I GO? -->
+    <section id="verdictSection" class="verdict-section card hidden">
+      <div class="verdict-header">
+        <div class="eyebrow">Live Conditions Report</div>
+        <h2>Should I Go This Weekend?</h2>
+        <p class="muted small">Based on your location, trip style, and live weather — a straight answer so you don't have to check five different sites.</p>
       </div>
-      <div class="preset-row">
-        <button class="preset-btn active" data-preset="balanced">Balanced</button>
-        <button class="preset-btn" data-preset="powder">Powder Chaser</button>
-        <button class="preset-btn" data-preset="family">Family Day</button>
-        <button class="preset-btn" data-preset="cheap">Cheap &amp; Close</button>
-        <button class="preset-btn" data-preset="indy">Indy Pass Day</button>
-      </div>
-      <div id="weightSummary" class="weight-summary"></div>
-      <div class="score-grid">
-        <div class="score-control"><label for="snowWeight">Forecast snow <span id="snowWeightVal"></span></label><input id="snowWeight" type="range" min="0" max="50" step="1"><div class="score-desc">How much upcoming snowfall matters. Raise this if you only ski powder days.</div></div>
-        <div class="score-control"><label for="driveWeight">Drive time <span id="driveWeightVal"></span></label><input id="driveWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Slide <strong>right</strong> to favor closer mountains. At 0, drive time has no influence on score — use the <strong>Max Drive</strong> filter in the toolbar to hard-cap by distance.</div></div>
-        <div class="score-control"><label for="snowmakingWeight">Snowmaking <span id="snowmakingWeightVal"></span></label><input id="snowmakingWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Rewards mountains with strong snowmaking capacity. Good for low-snow or early-season trips.</div></div>
-        <div class="score-control"><label for="verticalWeight">Vertical <span id="verticalWeightVal"></span></label><input id="verticalWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Rewards bigger mountains with more skiable vertical drop. Ideal for advanced skiers and long runs.</div></div>
-        <div class="score-control"><label for="priceWeight">Price / value <span id="priceWeightVal"></span></label><input id="priceWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Higher = strongly favor cheaper day tickets. Great for families or frequent skiers on a budget.</div></div>
-        <div class="score-control"><label for="crowdWeight">Crowd penalty <span id="crowdWeightVal"></span></label><input id="crowdWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Higher = more aggressively penalize busy mountains. Epic/Ikon resorts near cities score lower.</div></div>
-      </div>
+      <div id="verdictCard"></div>
     </section>
 
+    <!-- PICKS & PANELS -->
     <section class="feature-grid">
       <section id="tomorrowSection" class="card panel">
-        <div class="section-header"><div><h2>Where Should I Ski Tomorrow?</h2><p class="muted small">Top picks using your current Planner Score settings.</p></div></div>
+        <div class="section-header"><div>
+          <h2>🎿 Tomorrow's Top Picks</h2>
+          <p class="muted small">Best mountains for tomorrow based on your Planner Score settings.</p>
+        </div></div>
         <div id="tomorrowGrid" class="card-grid"></div>
       </section>
 
       <section id="weekendSection" class="card panel">
-        <div class="section-header"><div><h2>Where Should I Ski This Weekend?</h2><p class="muted small">Best options for the next two forecast days.</p></div></div>
+        <div class="section-header"><div>
+          <h2>📅 Weekend Plan</h2>
+          <p class="muted small">Best mountain for each day — chosen to avoid repeating the same resort.</p>
+        </div></div>
         <div id="weekendGrid" class="card-grid"></div>
       </section>
 
       <section id="stormSection" class="card panel">
-        <div class="section-header"><div><h2>Storm Chaser</h2><p class="muted small">Forecast snowfall leaderboard for the next 3 days.</p></div></div>
+        <div class="section-header"><div>
+          <h2>🌨️ Storm Chaser</h2>
+          <p class="muted small">Resorts with the most forecast snowfall in the next 3 days.</p>
+        </div></div>
         <div id="stormGrid" class="card-grid"></div>
       </section>
 
       <section class="card panel">
-        <div class="section-header"><div><h2>Hidden Gem Score</h2><p class="muted small">A mix of lower crowds, good value, decent terrain, and authentic mountain feel.</p></div></div>
+        <div class="section-header"><div>
+          <h2>💎 Hidden Gems</h2>
+          <p class="muted small">Lower crowds, good value, real terrain — the anti-resort picks.</p>
+        </div></div>
         <div id="hiddenGemGrid" class="card-grid"></div>
       </section>
 
       <section class="card panel">
-        <div class="section-header"><div><h2>Indy Pass Optimization</h2><p class="muted small">Top Indy options ranked by your current planner settings and estimated two-day value.</p></div></div>
+        <div class="section-header"><div>
+          <h2>🎫 Indy Pass Picks</h2>
+          <p class="muted small">Top Indy Pass mountains ranked by conditions and two-day value.</p>
+        </div></div>
         <div id="indyGrid" class="card-grid"></div>
       </section>
 
       <section class="card panel">
-        <div class="section-header"><div><h2>Pass Value Calculator</h2><p class="muted small">Quick estimate of day-ticket spend across the current filters.</p></div><div class="field field-mini"><label for="skiDays">Ski days</label><input id="skiDays" type="number" min="1" max="20" step="1" value="5"></div></div>
+        <div class="section-header">
+          <div>
+            <h2>💵 Pass Value Calculator</h2>
+            <p class="muted small">How much would you spend in day tickets vs. buying a season pass?</p>
+          </div>
+          <div class="field field-mini">
+            <label for="skiDays">Ski days / yr</label>
+            <input id="skiDays" type="number" min="1" max="20" step="1" value="5">
+          </div>
+        </div>
         <div id="passCalcGrid" class="card-grid"></div>
       </section>
     </section>
 
+    <!-- COMPARE TABLE -->
     <section id="compareSection" class="card panel">
       <div class="section-header">
         <div>
-          <h2>Compare Mountains</h2>
-          <p class="muted small">A true search-and-compare surface for the Northeast. Sort by Planner Score, storm snow, drive time, ticket price, vertical, and more.</p>
+          <div class="eyebrow">Full Mountain Database</div>
+          <h2>Compare All Mountains</h2>
+          <p class="muted small">Every mountain in the Northeast, fully sortable. Check the box on any row — or use the search above — to add mountains to the side-by-side panel.</p>
         </div>
-        <div id="resultCount" class="helper-text"></div>
+        <div id="resultCount" class="helper-text result-count"></div>
       </div>
       <div class="table-wrap">
         <table id="compareTable" class="comparison-table">
@@ -178,13 +254,12 @@
               <th scope="col">Name</th>
               <th scope="col">State</th>
               <th scope="col">Pass</th>
-              <th scope="col">Planner</th>
-              <th scope="col">Storm</th>
+              <th scope="col">Score</th>
+              <th scope="col">Storm 3d</th>
               <th scope="col" title="Snowfall in the past 7 days">7-Day ❄️</th>
               <th scope="col">Drive</th>
               <th scope="col">Vertical</th>
               <th scope="col">Trails</th>
-              <th scope="col">Snowmaking</th>
               <th scope="col">Day Ticket*</th>
               <th scope="col">Crowd</th>
             </tr>
@@ -199,8 +274,8 @@
       <div class="compare-tray-inner">
         <span class="tray-label">Comparing</span>
         <div id="comparePills" class="compare-pills"></div>
-        <button id="compareBtn" class="btn btn-primary">Open side-by-side</button>
-        <button id="clearCompare" class="btn btn-secondary">Clear</button>
+        <button id="compareBtn" class="btn btn-primary">Open side-by-side ↓</button>
+        <button id="clearCompare" class="btn btn-secondary">Clear all</button>
       </div>
     </div>
 
@@ -213,9 +288,10 @@
       <div id="detailCard"></div>
     </section>
 
+    <!-- MAP -->
     <section id="mapSection" class="card panel">
       <div class="section-header">
-        <div><h2>Northeast Map</h2><p class="muted small">Switch between drive-radius, storm, and pass-network views.</p></div>
+        <div><h2>🗺️ Northeast Map</h2><p class="muted small">Drive radius, storm intensity, or pass network.</p></div>
         <div class="map-mode-row">
           <button class="map-mode-btn active" data-map-mode="drive">Drive</button>
           <button class="map-mode-btn" data-map-mode="storm">Storm</button>
@@ -225,6 +301,7 @@
       <div class="map-legend" id="mapLegend"></div>
       <div id="leafletMap" class="leaflet-map"></div>
     </section>
+
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
