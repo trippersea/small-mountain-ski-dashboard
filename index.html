@@ -35,43 +35,45 @@
 
     <!-- STEP 1: FIND YOUR MOUNTAIN -->
     <section id="searchSection" class="hero card">
-      <div class="hero-copy">
+      <div class="hero-copy hero-copy-full">
         <div class="eyebrow">Northeast Ski Decision Engine</div>
         <h1>Find Your Perfect Mountain</h1>
         <p class="hero-text">Set your location, pick a trip style, and get a live ranked answer — today's snow, drive time, crowds, and value all in one score.</p>
 
-        <div class="hero-block">
-          <div class="hero-block-label">📍 Where are you starting from?</div>
-          <div class="location-row">
-            <div class="field field-grow">
-              <label for="originInput">Your starting location</label>
-              <input id="originInput" type="text" placeholder="City, town, or ZIP — e.g. Boston, MA" />
-            </div>
-            <button id="setLocation" class="btn btn-primary">Set</button>
-            <button id="detectLocation" class="btn btn-secondary">Use my location</button>
-          </div>
-          <div id="locationStatus" class="helper-text"></div>
+        <div class="hero-overview">
+          <div id="summaryCards" class="summary-grid summary-grid-compact"></div>
         </div>
 
-        <div class="hero-block">
-          <div class="hero-block-label">🔍 Search &amp; compare mountains</div>
-          <div class="field">
-            <label for="searchInput">Mountain name</label>
-            <input id="searchInput" type="text" autocomplete="off"
-                   placeholder="Type to search — click + Compare to build a side-by-side" />
-            <datalist id="resortSuggestions"></datalist>
+        <div class="hero-input-grid">
+          <div class="hero-block">
+            <div class="hero-block-label">📍 Set your location</div>
+            <div class="location-row">
+              <div class="field field-grow">
+                <label for="originInput">Your starting location</label>
+                <input id="originInput" type="text" placeholder="City, town, or ZIP — e.g. Boston, MA" />
+              </div>
+              <button id="setLocation" class="btn btn-primary">Set</button>
+              <button id="detectLocation" class="btn btn-secondary">Use my location</button>
+            </div>
+            <div id="locationStatus" class="helper-text"></div>
           </div>
-          <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
+
+          <div class="hero-block hero-block-search">
+            <div class="hero-block-label">🔍 Search &amp; compare mountains</div>
+            <div class="field">
+              <label for="searchInput">Mountain name</label>
+              <input id="searchInput" type="text" autocomplete="off"
+                     placeholder="Type to search — click + Compare to build a side-by-side" />
+              <datalist id="resortSuggestions"></datalist>
+            </div>
+            <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
+          </div>
         </div>
 
         <div class="hero-actions">
           <button id="jumpTomorrow" class="btn btn-primary">🎿 Where Should I Ski Tomorrow?</button>
           <button id="jumpWeekend" class="btn btn-secondary">📅 Plan This Weekend</button>
         </div>
-      </div>
-
-      <div class="hero-right">
-        <div id="summaryCards" class="summary-grid"></div>
       </div>
     </section>
 
