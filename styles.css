@@ -90,6 +90,8 @@ button{font:inherit}
 .score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .score-control{background:rgba(255,255,255,.72);border:1px solid var(--border);border-radius:14px;padding:12px}
 .score-control label{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;text-transform:none;letter-spacing:0;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);font-size:13px}
+.score-desc{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5;font-family:'DM Sans',system-ui,sans-serif;letter-spacing:0;text-transform:none;font-weight:400}
+.weight-summary strong{color:var(--text)}
 .weight-summary{font-size:13px;color:var(--muted);margin-bottom:14px}
 .preset-btn.active,.map-mode-btn.active{background:rgba(43,109,233,.12);border-color:rgba(43,109,233,.35);color:var(--accent)}
 .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
