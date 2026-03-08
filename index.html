@@ -95,28 +95,28 @@
       <div class="score-grid">
         <div class="score-control">
           <label for="snowWeight">Fresh snow <span id="snowWeightVal"></span></label>
-          <input id="snowWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Raise this if you only go on powder days. Pulls in resorts with the most forecast snow.</div>
+          <input id="snowWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">1–10 scale. A 10 puts the most weight on mountains with the most forecast snow.</div>
         </div>
         <div class="score-control">
           <label for="driveWeight">Short drive <span id="driveWeightVal"></span></label>
-          <input id="driveWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Favors mountains closest to you. Use <strong>Max Drive</strong> in the filters below for a hard cutoff.</div>
+          <input id="driveWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">1–10 scale. Per your request, a 10 favors the farthest driving distance, while <strong>Max Drive</strong> still works as a hard cutoff filter.</div>
         </div>
         <div class="score-control">
           <label for="verticalWeight">Big mountain <span id="verticalWeightVal"></span></label>
-          <input id="verticalWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Rewards more vertical drop and terrain variety. Best for advanced skiers who want long, challenging runs.</div>
+          <input id="verticalWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">1–10 scale. A 10 gives the most weight to mountains with the biggest vertical.</div>
         </div>
         <div class="score-control">
           <label for="priceWeight">Best value <span id="priceWeightVal"></span></label>
-          <input id="priceWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Strongly favors cheaper day tickets. Great for families, frequent skiers, or anyone without a season pass.</div>
+          <input id="priceWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">1–10 scale. Per your request, a 10 favors the most expensive lift tickets.</div>
         </div>
         <div class="score-control">
           <label for="crowdWeight">Avoid crowds <span id="crowdWeightVal"></span></label>
-          <input id="crowdWeight" type="range" min="0" max="50" step="1">
-          <div class="score-desc">Penalizes busy mountains. Raises the rank of smaller, quieter hills — especially on holiday weekends.</div>
+          <input id="crowdWeight" type="range" min="1" max="10" step="1">
+          <div class="score-desc">1–10 scale. Per your request, a 10 favors the busiest mountains.</div>
         </div>
       </div>
     </section>

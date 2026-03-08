@@ -70,19 +70,70 @@ body {
 }
 .btn-ghost:hover { background: #edf4ff; }
 
-/* ── Layout ─────────────────────────────────────────────────────────────── */
-.container {
-  width: min(1400px, calc(100vw - 24px));
+/* ── Split View Layout ── */
+.split-view {
+  display: flex;
+  min-height: calc(100vh - 54px); /* Accounts for your sticky top-nav */
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+/* ── Left Content Pane ── */
+.content-pane {
+  flex: 1;
+  width: 55%;
+  padding-bottom: 64px;
+}
+
+.container-inner {
+  padding: 20px 24px;
+  display: grid;
+  gap: 16px;
+  max-width: 1050px;
   margin: 0 auto;
-  padding: 20px 0 64px;
-  display: grid; gap: 16px;
 }
-.card {
-  background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(247,251,255,.98));
+
+/* ── Right Map Pane ── */
+.map-pane {
+  width: 45%;
+  position: sticky;
+  top: 54px; /* Docks right under the sticky nav */
+  height: calc(100vh - 54px);
+  border-left: 1px solid var(--border);
+  background: var(--panel);
+  z-index: 10;
+}
+
+.leaflet-map-full {
+  width: 100%;
+  height: 100%;
+  background: #e5e5e5;
+  z-index: 1;
+}
+
+/* ── Floating Map Controls ── */
+.map-overlay-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1000; /* Keeps controls above Leaflet layers */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.map-overlay-controls > * {
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 14px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
 }
+
 .panel { padding: 20px; }
 .section-header {
   display: flex; justify-content: space-between; align-items: flex-start;
@@ -407,7 +458,7 @@ button { font: inherit; }
 .map-legend { display: flex; flex-wrap: wrap; gap: 12px; padding-bottom: 12px; color: var(--muted); font-size: 12px; }
 .legend-chip { display: inline-flex; align-items: center; gap: 6px; }
 .legend-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
-.leaflet-map { height: 520px; border-radius: 16px; overflow: hidden; }
+
 
 /* ── Crowd colors ───────────────────────────────────────────────────────── */
 .crowd-low      { color: #12805f; font-weight: 700; }
@@ -438,6 +489,23 @@ button { font: inherit; }
 @media (max-width: 1200px) {
   .score-grid { grid-template-columns: repeat(3, 1fr); }
 }
+/* ── Mobile Adaptive View ── */
+@media (max-width: 980px) {
+  .split-view { flex-direction: column-reverse; }
+  .content-pane, .map-pane { width: 100%; }
+  
+  .map-pane {
+    height: 50vh; /* Map takes top half of screen on mobile */
+    position: relative;
+    top: 0;
+    border-left: none;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .container-inner { padding: 16px; }
+  .map-overlay-controls { align-items: flex-start; left: 16px; right: auto; }
+}
+
 @media (max-width: 1000px) {
   .hero { grid-template-columns: 1fr; }
   .hero-right { display: none; }  /* summary cards hide on small screens */
@@ -446,7 +514,6 @@ button { font: inherit; }
   .detail-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 760px) {
-  .container { width: calc(100vw - 14px); }
   .top-nav-inner { padding-inline: 6px; }
   .hero { padding: 18px; }
   .score-grid, .card-grid, .metric-grid, .summary-grid { grid-template-columns: 1fr; }
