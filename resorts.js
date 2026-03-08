@@ -628,9 +628,12 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
   const drive     = getDriveMins(resort.id);
   const crowd     = crowdForecast(resort);
 
+  const driveBucket = getDriveBucket(drive);
+  const driveBucketScore = { 1: 1.0, 2: 0.75, 3: 0.5, 4: 0.25, 5: 0.0 };
+
   const normalized = {
     snow:     Math.min(1, snowTotal / SCORING.SNOW_SCALE),
-    drive:    drive !== null ? Math.min(1, drive / SCORING.DRIVE_SCALE) : SCORING.DRIVE_DEFAULT,
+    drive:    drive !== null ? driveBucketScore[driveBucket] : SCORING.DRIVE_DEFAULT,
     vertical: Math.min(1, resort.vertical / SCORING.VERTICAL_MAX),
     price:    Math.max(0, Math.min(1, (resort.price - SCORING.PRICE_MIN) / (SCORING.PRICE_MAX - SCORING.PRICE_MIN))),
     crowd:    Math.min(1, crowd.score / SCORING.CROWD_SCALE),
@@ -864,13 +867,11 @@ function renderSummaryCards(resorts) {
   const closest    = withDrive[0];
 
   els.summaryCards.innerHTML = [
-    summaryHtml('Mountains', count),
+    summaryHtml('Mountains',   count),
     summaryHtml('Avg Vertical', `${avgVertical} ft`),
-    summaryHtml('Avg Ticket*', `$${avgPrice}`, 'directional estimate'),
-    summaryHtml('Epic', resorts.filter(r => r.passGroup === 'Epic').length),
-    summaryHtml('Ikon', resorts.filter(r => r.passGroup === 'Ikon').length),
-    summaryHtml('Indy', resorts.filter(r => r.passGroup === 'Indy').length),
-    summaryHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length),
+    summaryHtml('Avg Ticket*',  `$${avgPrice}`, 'directional estimate'),
+    summaryHtml('Epic',  resorts.filter(r => r.passGroup === 'Epic').length),
+    summaryHtml('Ikon',  resorts.filter(r => r.passGroup === 'Ikon').length),
     summaryHtml('Closest', closest ? esc(closest.r.name) : 'Set location', closest ? formatDrive(closest.r.id) : ''),
   ].join('');
 }
@@ -975,6 +976,7 @@ function _renderStorm(resorts, candidates) {
       <div class="planner-title">${esc(item.resort.name)}</div>
       <div class="planner-meta">${esc(item.resort.state)} · Storm total ${item.storm.toFixed(1)}" next 3 days</div>
       <div class="metric-chip">${formatDrive(item.resort.id)}</div>
+      <div class="metric-chip">Snowmaking: ${snowmakingDisplay(item.resort.snowmaking)}</div>
       <div class="metric-chip">${esc(item.resort.passGroup)}</div>
     </div>`).join('');
 }
@@ -1165,6 +1167,7 @@ function renderDetail() {
       <div class="metric-box"><div class="metric-label">Vertical</div><div class="metric-value">${resort.vertical} ft</div></div>
       <div class="metric-box"><div class="metric-label">Trails</div><div class="metric-value">${resort.trails}</div></div>
       <div class="metric-box"><div class="metric-label">Day Ticket*</div><div class="metric-value">$${resort.price}</div></div>
+      <div class="metric-box"><div class="metric-label">Snowmaking</div><div class="metric-value detail-sm">${snowmakingDisplay(resort.snowmaking)}</div></div>
       <div class="metric-box"><div class="metric-label">Drive</div><div class="metric-value">${formatDrive(resort.id)}</div></div>
       <div class="metric-box"><div class="metric-label">Crowd</div><div class="metric-value detail-sm">${crowd.label}</div></div>
     </div>
