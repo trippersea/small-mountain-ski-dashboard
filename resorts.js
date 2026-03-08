@@ -2,6 +2,7 @@ const RESORTS = [{"id":"mohawk-mountain","name":"Mohawk Mountain","state":"CT","
 
 // ─── Named scoring constants (audit #32) ─────────────────────────────────────
 const SCORING = Object.freeze({
+  SNOWMAKING_MAX:  65400, // Okemo — highest in dataset
   VERTICAL_MAX:    3430,  // Whiteface
   TRAILS_MAX:        110, // Whiteface — highest in dataset
   DRIVE_SCALE:       300, // minutes — 5 hrs = zero drive score
@@ -26,11 +27,11 @@ const DRIVE_RANGES = Object.freeze([
 const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 
 const PRESETS = {
-  balanced: { snow: 6, drive: 6, vertical: 6, price: 6, crowd: 6 },
-  powder:   { snow:10, drive: 3, vertical: 7, price: 2, crowd: 3 },
-  family:   { snow: 4, drive: 8, vertical: 4, price: 7, crowd: 8 },
-  cheap:    { snow: 2, drive: 9, vertical: 3, price:10, crowd: 5 },
-  indy:     { snow: 5, drive: 6, vertical: 6, price: 7, crowd: 6 },
+  balanced: { snow:7, drive:4, vertical:4, trails:4, price:3, crowd:3 },
+  powder:   { snow:10, drive:2, vertical:4, trails:3, price:2, crowd:2 },
+  family:   { snow:4, drive:5, vertical:2, trails:7, price:5, crowd:5 },
+  cheap:    { snow:3, drive:7, vertical:2, trails:3, price:8, crowd:2 },
+  indy:     { snow:6, drive:4, vertical:4, trails:4, price:3, crowd:4 },
 };
 
 // Pre-computed — RESORTS is a compile-time constant (audit #37)
@@ -53,15 +54,16 @@ const HIST_TTL = 24 * 60 * 60 * 1000; // 24 hours
 function loadSavedWeights() {        // audit #19 — safe localStorage read
   try {
     const raw = localStorage.getItem('ski-planner-weights');
-    if (!raw) return { ...PRESETS.balanced };
-    const parsed = JSON.parse(raw) || {};
-    return {
-      snow: Math.max(1, Math.min(10, Number(parsed.snow) || PRESETS.balanced.snow)),
-      drive: Math.max(1, Math.min(10, Number(parsed.drive) || PRESETS.balanced.drive)),
-      vertical: Math.max(1, Math.min(10, Number(parsed.vertical) || PRESETS.balanced.vertical)),
-      price: Math.max(1, Math.min(10, Number(parsed.price) || PRESETS.balanced.price)),
-      crowd: Math.max(1, Math.min(10, Number(parsed.crowd) || PRESETS.balanced.crowd)),
-    };
+    if (raw) {
+      const w = JSON.parse(raw);
+      // Migrate old format: had snowmaking key, no trails key, or was on 0-50 scale
+      if (w.snowmaking !== undefined || w.trails === undefined || w.snow > 10) {
+        localStorage.removeItem('ski-planner-weights');
+        return { ...PRESETS.balanced };
+      }
+      return w;
+    }
+    return { ...PRESETS.balanced };
   } catch (e) {
     localStorage.removeItem('ski-planner-weights');
     return { ...PRESETS.balanced };
@@ -90,9 +92,6 @@ const state = Object.seal({        // audit #4 — seal prevents silent property
   preset:       loadSavedPreset(),
   weights:      loadSavedWeights(),
   skiDays:      loadSavedSkiDays(),
-  tableSortKey: 'planner',
-  tableSortDir: 'desc',
-  showAllRows:  false,
 });
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -130,7 +129,6 @@ const els = {
   skiDays:             $('skiDays'),
   resultCount:         $('resultCount'),
   comparisonBody:      $('comparisonBody'),
-  toggleCompareRows:   $('toggleCompareRows'),
   compareTray:         $('compareTray'),
   comparePills:        $('comparePills'),
   compareBtn:          $('compareBtn'),
@@ -469,22 +467,26 @@ function savePlannerState() {
 
 function syncPlannerControls() {
   const KEYS = [
-    ['snow',        'snowWeight',        'snowWeightVal'],
-    ['drive',       'driveWeight',       'driveWeightVal'],
-    ['vertical',    'verticalWeight',    'verticalWeightVal'],
-    ['price',       'priceWeight',       'priceWeightVal'],
-    ['crowd',       'crowdWeight',       'crowdWeightVal'],
+    ['snow',     'snowWeight',     'snowWeightVal'],
+    ['drive',    'driveWeight',    'driveWeightVal'],
+    ['vertical', 'verticalWeight', 'verticalWeightVal'],
+    ['trails',   'trailsWeight',   'trailsWeightVal'],
+    ['price',    'priceWeight',    'priceWeightVal'],
+    ['crowd',    'crowdWeight',    'crowdWeightVal'],
   ];
   KEYS.forEach(([key, inputId, valueId]) => {
-    if (els[inputId])  els[inputId].value = state.weights[key];
-    if (els[valueId])  els[valueId].textContent = `${state.weights[key]}/10`;
+    if (els[inputId])  els[inputId].value = state.weights[key] ?? 1;
+    // Show raw 1-10 value — independent of other sliders, so changing one never affects others
+    if (els[valueId])  els[valueId].textContent = `${state.weights[key] ?? 1}/10`;
   });
   els.skiDays.value = state.skiDays;
 
+  const w = state.weights;
   els.weightSummary.innerHTML =
-    `<strong>Score weights:</strong> Fresh snow ${state.weights.snow}/10 · Drive Time ${state.weights.drive}/10 · ` +
-    `Big mountain ${state.weights.vertical}/10 · Best value ${state.weights.price}/10 · ` +
-    `Avoid crowds ${state.weights.crowd}/10`;
+    `<strong>Score settings:</strong> ` +
+    `Snow ${w.snow}/10 · Drive ${w.drive}/10 · Vertical ${w.vertical}/10 · ` +
+    `Trails ${w.trails}/10 · Value ${w.price}/10 · Crowd penalty ${w.crowd}/10 ` +
+    `<span style="color:var(--muted)">— each slider is independent (1 = low priority, 10 = must-have)</span>`;
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
@@ -634,19 +636,22 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     snow:         Math.min(1, snowTotal / SCORING.SNOW_SCALE),
     drive:        drive !== null ? Math.max(0, 1 - drive / SCORING.DRIVE_SCALE) : SCORING.DRIVE_DEFAULT,
     vertical:     Math.min(1, resort.vertical / SCORING.VERTICAL_MAX),
+    trails:       Math.min(1, resort.trails   / SCORING.TRAILS_MAX),
     price:        Math.max(0, Math.min(1, (SCORING.PRICE_MAX - resort.price) / (SCORING.PRICE_MAX - SCORING.PRICE_MIN))),
     crowdPenalty: Math.min(1, crowd.score / SCORING.CROWD_SCALE),
   };
 
   const components = {
-    snow:         normalized.snow * w.snow * 100,
-    drive:        normalized.drive * w.drive * 100,
-    vertical:     normalized.vertical * w.vertical * 100,
-    price:        normalized.price * w.price * 100,
-    crowdPenalty: normalized.crowdPenalty * w.crowd * 100,
+    snow:         normalized.snow         * (w.snow     || 0) * 100,
+    drive:        normalized.drive        * (w.drive    || 0) * 100,
+    vertical:     normalized.vertical     * (w.vertical || 0) * 100,
+    trails:       normalized.trails       * (w.trails   || 0) * 100,
+    price:        normalized.price        * (w.price    || 0) * 100,
+    crowdPenalty: normalized.crowdPenalty * (w.crowd    || 0) * 100,
   };
 
-  let score = components.snow + components.drive + components.vertical + components.price - components.crowdPenalty;
+  let score = components.snow + components.drive + components.vertical +
+              components.trails + components.price - components.crowdPenalty;
   if (state.preset === 'indy' && resort.passGroup === 'Indy') score += 8;
   if (state.nightOnly && resort.night) score += 4;
 
@@ -1058,50 +1063,32 @@ function renderPassCalc(sortedResorts) {
 
 // ─── Compare table ────────────────────────────────────────────────────────────
 function renderCompareTable(resorts) {
+  els.resultCount.textContent = `${resorts.length} mountains`;
+
+  // Schwartzian transform — compute breakdown once per resort, not in sort comparator (audit #6)
   const w = normalizedWeights();
   const decorated = resorts.map(resort => {
     const weather    = state.weatherCache[resort.id]?.data;
     const breakdown  = weather ? plannerScoreBreakdown(resort, weather, 0, w) : null;
     const stormTotal = weather ? (weather.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
     const hist       = historyCache.get(resort.id);
-    const crowd      = crowdForecast(resort);
-    return { resort, weather, breakdown, stormTotal, hist, crowd };
+    return { resort, weather, breakdown, stormTotal, hist };
   });
 
-  const key = state.tableSortKey || 'planner';
-  const dir = state.tableSortDir === 'asc' ? 1 : -1;
-  const textCmp = (a, b) => String(a).localeCompare(String(b));
-  const numCmp = (a, b) => (Number(a ?? -Infinity) - Number(b ?? -Infinity));
+  if (state.sortBy === 'planner') {
+    decorated.sort((a, b) => (b.breakdown?.score ?? -Infinity) - (a.breakdown?.score ?? -Infinity));
+  } else if (state.sortBy === 'storm') {
+    decorated.sort((a, b) => (b.stormTotal ?? -1) - (a.stormTotal ?? -1));
+  } else {
+    const order = new Map(staticSort(resorts).map((r, i) => [r.id, i]));
+    decorated.sort((a, b) => (order.get(a.resort.id) ?? 9999) - (order.get(b.resort.id) ?? 9999));
+  }
 
-  decorated.sort((a, b) => {
-    let cmp = 0;
-    switch (key) {
-      case 'name': cmp = textCmp(a.resort.name, b.resort.name); break;
-      case 'state': cmp = textCmp(a.resort.state, b.resort.state); break;
-      case 'pass': cmp = textCmp(a.resort.passGroup, b.resort.passGroup); break;
-      case 'planner': cmp = numCmp(a.breakdown?.score ?? -Infinity, b.breakdown?.score ?? -Infinity); break;
-      case 'storm': cmp = numCmp(a.stormTotal ?? -Infinity, b.stormTotal ?? -Infinity); break;
-      case 'hist': cmp = numCmp(a.hist?.total ?? -Infinity, b.hist?.total ?? -Infinity); break;
-      case 'drive': cmp = numCmp(getDriveMins(a.resort.id) ?? Infinity, getDriveMins(b.resort.id) ?? Infinity); break;
-      case 'vertical': cmp = numCmp(a.resort.vertical, b.resort.vertical); break;
-      case 'trails': cmp = numCmp(a.resort.trails, b.resort.trails); break;
-      case 'price': cmp = numCmp(a.resort.price, b.resort.price); break;
-      case 'crowd': cmp = numCmp(a.crowd.score, b.crowd.score); break;
-      default: cmp = numCmp(a.breakdown?.score ?? -Infinity, b.breakdown?.score ?? -Infinity); break;
-    }
-    if (cmp === 0) cmp = textCmp(a.resort.name, b.resort.name);
-    return cmp * dir;
-  });
-
-  const visible = state.showAllRows ? decorated : decorated.slice(0, 10);
-  els.resultCount.textContent = state.showAllRows
-    ? `${decorated.length} mountains`
-    : `${Math.min(10, decorated.length)} of ${decorated.length} mountains`;
-
-  els.comparisonBody.innerHTML = visible.map(({ resort, breakdown, stormTotal, hist, crowd }) => {
+  els.comparisonBody.innerHTML = decorated.map(({ resort, breakdown, stormTotal, hist }) => {
     const planner  = breakdown ? breakdown.score : '—';
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
+    const crowd    = crowdForecast(resort).label;
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
@@ -1115,23 +1102,13 @@ function renderCompareTable(resorts) {
         <td>${resort.vertical}</td>
         <td>${resort.trails}</td>
         <td>$${resort.price}</td>
-        <td class="${crowdClass(crowd.label)}">${crowd.label}</td>
+        <td class="${crowdClass(crowd)}">${crowd}</td>
       </tr>`;
   }).join('');
 
-  if (els.toggleCompareRows) {
-    const needsToggle = decorated.length > 10;
-    els.toggleCompareRows.classList.toggle('hidden', !needsToggle);
-    els.toggleCompareRows.textContent = state.showAllRows ? 'Show Top 10' : 'View All';
-  }
-
-  document.querySelectorAll('.sort-header').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.sort === key);
-    btn.setAttribute('aria-sort',
-      btn.dataset.sort !== key ? 'none' : (state.tableSortDir === 'asc' ? 'ascending' : 'descending'));
-  });
-
+  // Pass sorted list to passCalc so it reflects current sort order (audit #21)
   renderPassCalc(decorated.map(d => d.resort));
+  // Note: event listeners are wired once via delegation in wireEvents() — not attached here (audit #10)
 }
 
 function renderCompareTray() {
@@ -1442,7 +1419,6 @@ function wireEvents() {
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.nightOnly = false; state.maxDrive = 0;
-    state.tableSortKey = 'planner'; state.tableSortDir = 'desc'; state.showAllRows = false;
     els.searchInput.value    = '';
     els.passFilter.value     = 'All';
     els.stateFilter.value    = 'All';
@@ -1512,21 +1488,6 @@ function wireEvents() {
     else             state.compareSet.delete(box.dataset.compare);
     renderCompareTray();
   });
-  document.querySelectorAll('.sort-header').forEach(btn => btn.addEventListener('click', () => {
-    const key = btn.dataset.sort;
-    if (state.tableSortKey === key) state.tableSortDir = state.tableSortDir === 'asc' ? 'desc' : 'asc';
-    else {
-      state.tableSortKey = key;
-      state.tableSortDir = ['name', 'state', 'pass'].includes(key) ? 'asc' : 'desc';
-    }
-    state.showAllRows = false;
-    renderCompareTable(filteredResorts());
-  }));
-  els.toggleCompareRows?.addEventListener('click', () => {
-    state.showAllRows = !state.showAllRows;
-    renderCompareTable(filteredResorts());
-  });
-
   els.comparePills.addEventListener('click', e => {
     const btn = e.target.closest('[data-remove]');
     if (!btn) return;

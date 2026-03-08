@@ -90,7 +90,7 @@
         <button class="preset-btn" data-preset="powder">❄️ Powder Chaser</button>
         <button class="preset-btn" data-preset="family">👨‍👩‍👧 Family Day</button>
         <button class="preset-btn" data-preset="cheap">💰 Cheap &amp; Close</button>
-        
+        <button class="preset-btn" data-preset="indy">🎫 Indy Pass</button>
       </div>
       <div id="weightSummary" class="weight-summary"></div>
       <div class="score-grid">
@@ -219,9 +219,27 @@
         <div id="hiddenGemGrid" class="card-grid"></div>
       </section>
 
-      
+      <section class="card panel">
+        <div class="section-header"><div>
+          <h2>🎫 Indy Pass Picks</h2>
+          <p class="muted small">Top Indy Pass mountains ranked by conditions and two-day value.</p>
+        </div></div>
+        <div id="indyGrid" class="card-grid"></div>
+      </section>
 
-      
+      <section class="card panel">
+        <div class="section-header">
+          <div>
+            <h2>💵 Pass Value Calculator</h2>
+            <p class="muted small">How much would you spend in day tickets vs. buying a season pass?</p>
+          </div>
+          <div class="field field-mini">
+            <label for="skiDays">Ski days / yr</label>
+            <input id="skiDays" type="number" min="1" max="20" step="1" value="5">
+          </div>
+        </div>
+        <div id="passCalcGrid" class="card-grid"></div>
+      </section>
     </section>
 
     <!-- COMPARE TABLE -->
@@ -230,7 +248,7 @@
         <div>
           <div class="eyebrow">Full Mountain Database</div>
           <h2>Compare All Mountains</h2>
-          <p class="muted small">Compare or sort to find the right mountain for you day of skiing.</p>
+          <p class="muted small">Every mountain in the Northeast, fully sortable. Check the box on any row — or use the search above — to add mountains to the side-by-side panel.</p>
         </div>
         <div id="resultCount" class="helper-text result-count"></div>
       </div>
