@@ -34,6 +34,9 @@ const PRESETS = {
   indy:     { snow:6, drive:4, vertical:4, trails:4, price:3, crowd:4 },
 };
 
+// Table sort state — dir tracked separately from URL state
+let tableSort = { col: 'planner', dir: 'desc' };
+
 // Pre-computed — RESORTS is a compile-time constant (audit #37)
 const UNIQUE_STATES = Object.freeze(['All', ...new Set(RESORTS.map(r => r.state))].sort());
 const UNIQUE_PASSES = Object.freeze(['All', 'Epic', 'Ikon', 'Indy', 'Independent']);
@@ -99,8 +102,6 @@ const els = {
   verdictSection:      $('verdictSection'),
   verdictCard:         $('verdictCard'),
   summaryCards:        $('summaryCards'),
-  searchInput:         $('searchInput'),
-  resortSuggestions:   $('resortSuggestions'),
   passFilter:          $('passFilter'),
   stateFilter:         $('stateFilter'),
   maxDriveFilter:      $('maxDriveFilter'),
@@ -112,21 +113,17 @@ const els = {
   setLocation:         $('setLocation'),
   detectLocation:      $('detectLocation'),
   locationStatus:      $('locationStatus'),
-  jumpTomorrow:        $('jumpTomorrow'),
-  jumpWeekend:         $('jumpWeekend'),
   weightSummary:       $('weightSummary'),
   snowWeight:          $('snowWeight'),       driveWeight:       $('driveWeight'),
-  snowmakingWeight:    $('snowmakingWeight'), verticalWeight:    $('verticalWeight'),
+  verticalWeight:    $('verticalWeight'),
   trailsWeight:        $('trailsWeight'),
   priceWeight:         $('priceWeight'),      crowdWeight:       $('crowdWeight'),
   snowWeightVal:       $('snowWeightVal'),    driveWeightVal:    $('driveWeightVal'),
-  snowmakingWeightVal: $('snowmakingWeightVal'), verticalWeightVal: $('verticalWeightVal'),
+  verticalWeightVal: $('verticalWeightVal'),
   trailsWeightVal:     $('trailsWeightVal'),
   priceWeightVal:      $('priceWeightVal'),   crowdWeightVal:    $('crowdWeightVal'),
   tomorrowGrid:        $('tomorrowGrid'),     weekendGrid:       $('weekendGrid'),
   stormGrid:           $('stormGrid'),        hiddenGemGrid:     $('hiddenGemGrid'),
-  indyGrid:            $('indyGrid'),         passCalcGrid:      $('passCalcGrid'),
-  skiDays:             $('skiDays'),
   resultCount:         $('resultCount'),
   comparisonBody:      $('comparisonBody'),
   compareTray:         $('compareTray'),
@@ -362,7 +359,6 @@ function computeVerdict(candidates) {
   const warmCaution = sLo > 28 && !rainLikely;
   const coldSnow    = sLo <= 24;
 
-  const smRating  = snowmakingRating(resort.snowmaking);
   const drive     = getDriveMins(resort.id);
   const driveText = drive !== null ? formatDrive(resort.id) : '';
 
@@ -378,25 +374,25 @@ function computeVerdict(candidates) {
       : `${stormTotal.toFixed(1)}" forecast over the next 3 days. This is what you wait all season for.`;
     if (coldSnow) subPoints.push('Temperatures are ideal — light, dry snow expected');
     if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week, so the base is deep`);
-  } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6) || smRating >= 65) {
+  } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6)) {
     tier = 'good'; icon = '⛷️'; headline = 'Decent conditions — worth the trip';
     if (stormTotal >= 2) {
       detail = `${stormTotal.toFixed(1)}" in the 3-day forecast at ${esc(resort.name)}. Not a powder day, but fresh snow makes a real difference.`;
     } else if (histTotal !== null && histTotal >= 6) {
       detail = `${histTotal}" fell in the past week at ${esc(resort.name)}. Expect a solid, well-consolidated base even without new snow this weekend.`;
     } else {
-      detail = `Light natural snow, but ${esc(resort.name)} has strong snowmaking capacity (${smRating}/100) and temperatures are cold enough to run the guns overnight.`;
+      detail = `Decent base at ${esc(resort.name)} with no major storm in the forecast — groomed trails should be in good shape.`;
     }
     if (warmCaution) subPoints.push('Snow may be dense/wet — get out early for the best runs');
-  } else if (stormTotal >= 0.5 || smRating >= 40) {
+  } else if (stormTotal >= 0.5) {
     tier = 'marginal'; icon = '🤔'; headline = 'Marginal — manage your expectations';
     detail = stormTotal >= 0.5
       ? `Only ${stormTotal.toFixed(1)}" in the forecast at ${esc(resort.name)}. You're mostly working with the existing base — groomed runs will be fine, off-piste less so.`
-      : `No new snow expected. Conditions at ${esc(resort.name)} depend entirely on snowmaking — it rates ${smRating}/100 for capacity.`;
+      : `No new snow expected at ${esc(resort.name)}. Conditions will depend on the existing groomed base.`;
     subPoints.push('Stick to groomed trails, get out early, avoid south-facing terrain');
   } else {
     tier = 'bad'; icon = '❌'; headline = 'Probably skip this one';
-    detail = `Less than half an inch forecast and limited recent snowfall. ${smRating < 25 ? 'Snowmaking coverage is also thin.' : "You'd be skiing mostly man-made snow on a thin natural base."}`;
+    detail = `Less than half an inch forecast and limited recent snowfall at ${esc(resort.name)}. Not a great weekend for conditions.`;
   }
 
   return {
@@ -479,7 +475,6 @@ function syncPlannerControls() {
     // Show raw 1-10 value — independent of other sliders, so changing one never affects others
     if (els[valueId])  els[valueId].textContent = `${state.weights[key] ?? 1}/10`;
   });
-  els.skiDays.value = state.skiDays;
 
   const w = state.weights;
   els.weightSummary.innerHTML =
@@ -704,19 +699,25 @@ function filteredResorts() {
 
 function staticSort(resorts) {
   const sorted = [...resorts];
+  const dir = tableSort.dir === 'asc' ? 1 : -1;
   sorted.sort((a, b) => {
+    let cmp;
     switch (state.sortBy) {
-      // Pre-extract drive mins to avoid double lookup per comparison (audit #12)
       case 'drive': {
         const da = getDriveMins(a.id) ?? 9999, db = getDriveMins(b.id) ?? 9999;
-        return da - db;
+        cmp = da - db; break;
       }
-      case 'price':       return a.price      - b.price;
-      case 'vertical':    return b.vertical   - a.vertical;
-      case 'snowmaking':  return b.snowmaking  - a.snowmaking;
-      case 'avgSnowfall': return b.avgSnowfall - a.avgSnowfall;
-      default:            return a.name.localeCompare(b.name);
+      case 'price':       cmp = a.price      - b.price; break;
+      case 'vertical':    cmp = b.vertical   - a.vertical; break;
+      case 'trails':      cmp = b.trails     - a.trails; break;
+      case 'avgSnowfall': cmp = b.avgSnowfall - a.avgSnowfall; break;
+      case 'crowd':       cmp = crowdForecast(b).score - crowdForecast(a).score; break;
+      case 'state':       cmp = a.state.localeCompare(b.state); break;
+      case 'pass':        cmp = a.passGroup.localeCompare(b.passGroup); break;
+      case 'name':
+      default:            cmp = a.name.localeCompare(b.name); break;
     }
+    return cmp * dir;
   });
   return sorted;
 }
@@ -912,7 +913,6 @@ async function renderAsyncPanels(resorts) {
   _renderTomorrow(resorts, candidates);
   _renderWeekend(resorts, candidates);
   _renderStorm(resorts, candidates);
-  _renderIndy(resorts, candidates);
 
   // Fetch last-7-days historical data in parallel — re-render verdict + detail when ready
   ensureHistory(candidates.slice(0, 50)).then(() => {
@@ -985,36 +985,10 @@ function _renderStorm(resorts, candidates) {
       <div class="planner-title">${esc(item.resort.name)}</div>
       <div class="planner-meta">${esc(item.resort.state)} · Storm total ${item.storm.toFixed(1)}" next 3 days</div>
       <div class="metric-chip">${formatDrive(item.resort.id)}</div>
-      <div class="metric-chip">Snowmaking: ${snowmakingDisplay(item.resort.snowmaking)}</div>
       <div class="metric-chip">${esc(item.resort.passGroup)}</div>
     </div>`).join('');
 }
 
-function _renderIndy(resorts, candidates) {
-  const w = normalizedWeights();
-  const indyCandidates = candidates.filter(r => r.passGroup === 'Indy');
-  if (!indyCandidates.length) {
-    els.indyGrid.innerHTML = '<div class="planner-card">No Indy mountains match the current filters.</div>';
-    return;
-  }
-  const enriched = indyCandidates.map(resort => {
-    const wx         = state.weatherCache[resort.id]?.data;
-    const breakdown  = plannerScoreBreakdown(resort, wx, 0, w);
-    const twoDayValue = resort.price * 2;
-    return { resort, breakdown, twoDayValue };
-  }).sort((a, b) =>
-    (b.breakdown.score + b.twoDayValue / 25) - (a.breakdown.score + a.twoDayValue / 25)
-  ).slice(0, 3);
-
-  els.indyGrid.innerHTML = enriched.map(item => `
-    <div class="planner-card">
-      <div class="planner-title">${esc(item.resort.name)}</div>
-      <div class="planner-meta">Estimated 2-day value $${item.twoDayValue} · Planner score ${item.breakdown.score}</div>
-      <div class="metric-chip">${item.breakdown.drive !== null ? formatDrive(item.breakdown.resortId) : 'Set location'}</div>
-      <div class="metric-chip">❄️ ${item.breakdown.snowTotal.toFixed(1)}"</div>
-      ${cardBreakdown(item.breakdown)}
-    </div>`).join('');
-}
 
 // ─── Sync render functions ────────────────────────────────────────────────────
 function renderHiddenGems(resorts) {
@@ -1037,33 +1011,10 @@ function renderHiddenGems(resorts) {
     </div>`).join('');
 }
 
-// Takes the already-sorted list from renderCompareTable (audit #21)
-function renderPassCalc(sortedResorts) {
-  const top = sortedResorts.slice(0, 6);
-  els.passCalcGrid.innerHTML = top.map(resort => {
-    const total = resort.price * state.skiDays;
-    let verdict = 'Day tickets likely best';
-    const passPrice = PASS_PRICES[resort.passGroup];
-    if (passPrice) {
-      const breakeven = Math.ceil(passPrice / resort.price);
-      verdict = state.skiDays >= breakeven
-        ? `${resort.passGroup} pass likely saves ~$${Math.max(0, total - passPrice)}`
-        : `${Math.max(0, breakeven - state.skiDays)} more day(s) to break even on ${resort.passGroup}`;
-    }
-    return `<div class="planner-card">
-      <div class="planner-title">${esc(resort.name)}</div>
-      <div class="planner-meta">${esc(resort.passGroup)} · Ticket* $${resort.price}</div>
-      <div class="breakdown">
-        <div>${state.skiDays} ski days: <strong>$${total}</strong></div>
-        <div>Recommendation: <strong>${verdict}</strong></div>
-      </div>
-    </div>`;
-  }).join('');
-}
 
 // ─── Compare table ────────────────────────────────────────────────────────────
 function renderCompareTable(resorts) {
-  els.resultCount.textContent = `${resorts.length} mountains`;
+  // resultCount shown after top10 slice
 
   // Schwartzian transform — compute breakdown once per resort, not in sort comparator (audit #6)
   const w = normalizedWeights();
@@ -1075,16 +1026,36 @@ function renderCompareTable(resorts) {
     return { resort, weather, breakdown, stormTotal, hist };
   });
 
+  const dir = tableSort.dir === 'asc' ? 1 : -1;
   if (state.sortBy === 'planner') {
-    decorated.sort((a, b) => (b.breakdown?.score ?? -Infinity) - (a.breakdown?.score ?? -Infinity));
+    decorated.sort((a, b) => dir * ((a.breakdown?.score ?? -Infinity) - (b.breakdown?.score ?? -Infinity)));
   } else if (state.sortBy === 'storm') {
-    decorated.sort((a, b) => (b.stormTotal ?? -1) - (a.stormTotal ?? -1));
+    decorated.sort((a, b) => dir * ((a.stormTotal ?? -1) - (b.stormTotal ?? -1)));
+  } else if (state.sortBy === 'hist7day') {
+    decorated.sort((a, b) => dir * ((a.hist?.total ?? -1) - (b.hist?.total ?? -1)));
   } else {
     const order = new Map(staticSort(resorts).map((r, i) => [r.id, i]));
     decorated.sort((a, b) => (order.get(a.resort.id) ?? 9999) - (order.get(b.resort.id) ?? 9999));
   }
 
-  els.comparisonBody.innerHTML = decorated.map(({ resort, breakdown, stormTotal, hist }) => {
+  // Top 10 only
+  const top10 = decorated.slice(0, 10);
+  els.resultCount.textContent = `Top ${top10.length} of ${resorts.length} mountains`;
+
+  // Update sort indicators on column headers
+  document.querySelectorAll('.sortable-th').forEach(th => {
+    const ind = th.querySelector('.sort-indicator');
+    if (!ind) return;
+    if (th.dataset.sort === state.sortBy) {
+      ind.textContent = tableSort.dir === 'asc' ? ' ▲' : ' ▼';
+      th.classList.add('sort-active');
+    } else {
+      ind.textContent = '';
+      th.classList.remove('sort-active');
+    }
+  });
+
+  els.comparisonBody.innerHTML = top10.map(({ resort, breakdown, stormTotal, hist }) => {
     const planner  = breakdown ? breakdown.score : '—';
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
@@ -1107,7 +1078,6 @@ function renderCompareTable(resorts) {
   }).join('');
 
   // Pass sorted list to passCalc so it reflects current sort order (audit #21)
-  renderPassCalc(decorated.map(d => d.resort));
   // Note: event listeners are wired once via delegation in wireEvents() — not attached here (audit #10)
 }
 
@@ -1133,7 +1103,6 @@ function renderComparePanel() {
     ['Pass',            r => esc(r.passGroup)],
     ['Vertical',        r => `${r.vertical} ft`],
     ['Trails',          r => r.trails],
-    ['Snowmaking',      r => snowmakingDisplay(r.snowmaking)],
     ['Avg snowfall',    r => `${r.avgSnowfall}"`],
     ['Day ticket*',     r => `$${r.price}`],
     ['Drive',           r => formatDrive(r.id)],
@@ -1176,7 +1145,6 @@ function renderDetail() {
       <div class="metric-box"><div class="metric-label">Vertical</div><div class="metric-value">${resort.vertical} ft</div></div>
       <div class="metric-box"><div class="metric-label">Trails</div><div class="metric-value">${resort.trails}</div></div>
       <div class="metric-box"><div class="metric-label">Day Ticket*</div><div class="metric-value">$${resort.price}</div></div>
-      <div class="metric-box"><div class="metric-label">Snowmaking</div><div class="metric-value detail-sm">${snowmakingDisplay(resort.snowmaking)}</div></div>
       <div class="metric-box"><div class="metric-label">Drive</div><div class="metric-value">${formatDrive(resort.id)}</div></div>
       <div class="metric-box"><div class="metric-label">Crowd</div><div class="metric-value detail-sm">${crowd.label}</div></div>
     </div>
@@ -1288,7 +1256,7 @@ function renderAllCards(resorts) {
   renderSummaryCards(resorts);
   renderActiveFilters();
   renderHiddenGems(resorts);
-  renderCompareTable(resorts);   // also calls renderPassCalc with sorted list
+  renderCompareTable(resorts);
   renderCompareTray();
   renderDetail();
   updateMap(resorts);
@@ -1298,7 +1266,6 @@ function renderAllCards(resorts) {
   els.tomorrowGrid.innerHTML = '<div class="planner-card">Loading tomorrow\'s picks…</div>';
   els.weekendGrid.innerHTML  = '<div class="planner-card">Loading weekend picks…</div>';
   els.stormGrid.innerHTML    = '<div class="planner-card">Loading storm outlook…</div>';
-  els.indyGrid.innerHTML     = '<div class="planner-card">Loading Indy options…</div>';
   // Single async pipeline — fire and forget
   renderAsyncPanels(resorts);
 }
@@ -1311,96 +1278,24 @@ function render() {
 const debouncedRender = debounce(render, 150); // audit #7, #8
 
 function wireEvents() {
-  // Search — syncPlannerControls/renderActiveFilters immediately, defer full render
-  // ── Search with live suggest panel ──────────────────────────────────────
-  const suggestPanel = $('searchSuggestPanel');
-
-  function renderSuggestPanel(q) {
-    if (!q || q.length < 2) {
-      suggestPanel?.classList.add('hidden');
-      return;
-    }
-    const matches = RESORTS.filter(r =>
-      r.name.toLowerCase().includes(q) || r.state.toLowerCase().includes(q)
-    ).slice(0, 6);
-
-    if (!matches.length) { suggestPanel?.classList.add('hidden'); return; }
-
-    suggestPanel.innerHTML = matches.map(r => {
-      const inCompare  = state.compareSet.has(r.id);
-      const drive      = getDriveMins(r.id);
-      const driveChip  = drive !== null ? `<span class="sg-drive">${formatDrive(r.id)}</span>` : '';
-      return `
-        <div class="sg-row" data-id="${r.id}" role="option">
-          <div class="sg-info">
-            <span class="sg-name">${esc(r.name)}</span>
-            <span class="sg-meta">${esc(r.state)} · <span class="sg-pass sg-pass-${r.passGroup.toLowerCase().replace(' ','')}">${esc(r.passGroup)}</span> ${driveChip}</span>
-          </div>
-          <div class="sg-actions">
-            <button class="sg-btn sg-view" data-view="${r.id}">View</button>
-            <button class="sg-btn sg-compare ${inCompare ? 'sg-compare-active' : ''}"
-                    data-compare="${r.id}">${inCompare ? '✓ Added' : '+ Compare'}</button>
-          </div>
-        </div>`;
-    }).join('');
-    suggestPanel.classList.remove('hidden');
-  }
-
-  els.searchInput.addEventListener('input', e => {
-    state.search = e.target.value;
-    const q = e.target.value.trim().toLowerCase();
-    const exactMatch = RESORTS.find(r => r.name.toLowerCase() === q ||
-      (r.name + ', ' + r.state).toLowerCase() === q);
-    if (exactMatch) state.selectedId = exactMatch.id;
-    renderSuggestPanel(q);
-    renderActiveFilters();
-    debouncedRender();
-  });
-
-  els.searchInput.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      suggestPanel?.classList.add('hidden');
-      els.searchInput.value = '';
-      state.search = '';
-      renderActiveFilters();
-      debouncedRender();
-    }
-  });
-
-  // Delegate clicks inside the suggest panel
-  suggestPanel?.addEventListener('click', e => {
-    const viewBtn    = e.target.closest('[data-view]');
-    const compareBtn = e.target.closest('[data-compare]');
-    if (viewBtn) {
-      state.selectedId = viewBtn.dataset.view;
-      suggestPanel.classList.add('hidden');
-      els.searchInput.value = '';
-      state.search = '';
-      renderDetail();
-      $('detailSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    if (compareBtn) {
-      const id = compareBtn.dataset.compare;
-      if (state.compareSet.has(id)) {
-        state.compareSet.delete(id);
-        compareBtn.textContent = '+ Compare';
-        compareBtn.classList.remove('sg-compare-active');
+  // ── Sortable column headers ─────────────────────────────────────────────
+  document.querySelectorAll('.sortable-th').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (state.sortBy === col) {
+        tableSort.dir = tableSort.dir === 'desc' ? 'asc' : 'desc';
       } else {
-        if (state.compareSet.size >= 4) { showToast('Max 4 mountains at once'); return; }
-        state.compareSet.add(id);
-        compareBtn.textContent = '✓ Added';
-        compareBtn.classList.add('sg-compare-active');
-        showToast(`${RESORTS.find(r => r.id === id)?.name} added — open Compare below`, 2800);
+        state.sortBy = col;
+        tableSort.col = col;
+        // Default direction: ascending for price/drive/name/state/pass, descending for others
+        tableSort.dir = ['price','drive','name','state','pass'].includes(col) ? 'asc' : 'desc';
+        if (els.sortBy && [...els.sortBy.options].some(o => o.value === col)) {
+          els.sortBy.value = col;
+        }
       }
-      renderCompareTray();
-    }
-  });
-
-  // Close panel on outside click
-  document.addEventListener('click', e => {
-    if (!els.searchInput.contains(e.target) && !suggestPanel?.contains(e.target)) {
-      suggestPanel?.classList.add('hidden');
-    }
+      pushUrlDebounced();
+      render();
+    });
   });
 
   els.passFilter.addEventListener('change',     e => { state.passFilter  = e.target.value; pushUrlDebounced(); render(); });
@@ -1419,7 +1314,7 @@ function wireEvents() {
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.nightOnly = false; state.maxDrive = 0;
-    els.searchInput.value    = '';
+    tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
     els.stateFilter.value    = 'All';
     els.maxDriveFilter.value = '0';
@@ -1427,9 +1322,6 @@ function wireEvents() {
     els.toggleNight.setAttribute('aria-pressed', 'false');
     pushUrlDebounced(); render();
   });
-
-  els.jumpTomorrow.addEventListener('click', () => $('tomorrowSection').scrollIntoView({ behavior: 'smooth' }));
-  els.jumpWeekend.addEventListener('click',  () => $('weekendSection').scrollIntoView({ behavior: 'smooth' }));
 
   els.compareBtn.addEventListener('click', renderComparePanel);
   els.clearCompare.addEventListener('click', () => {
@@ -1462,15 +1354,6 @@ function wireEvents() {
     updateMap(current);
     mapModeBtns().forEach(b => b.classList.toggle('active', b.dataset.mapMode === state.mapMode));
   }));
-
-  els.skiDays.addEventListener('input', e => {
-    state.skiDays = Math.max(1, Number(e.target.value || 5));
-    savePlannerState();
-    // Only re-render pass calc — no need for full render (audit #7)
-    const decorated = [...filteredResorts()];   // same order as current table
-    renderPassCalc(decorated);
-  });
-
   // ── Event delegation for compare table and pills (audit #10) ──────────────
   els.comparisonBody.addEventListener('click', e => {
     const row = e.target.closest('tr[data-id]');
@@ -1546,8 +1429,6 @@ function wireEvents() {
 
 // ─── Initialize ───────────────────────────────────────────────────────────────
 function initialize() {
-  // Populate datalist with "Name, ST" so state is visible in suggestions (audit #28)
-  els.resortSuggestions.innerHTML = RESORTS.map(r => `<option value="${esc(r.name)}, ${esc(r.state)}"></option>`).join('');
   els.passFilter.innerHTML  = UNIQUE_PASSES.map(v => `<option value="${v}">${v}</option>`).join('');
   els.stateFilter.innerHTML = UNIQUE_STATES.map(v => `<option value="${v}">${v}</option>`).join('');
 

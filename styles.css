@@ -474,3 +474,24 @@ button { font: inherit; }
   .comparison-table th,
   .comparison-table td { font-size: 12px; padding: 9px 7px; }
 }
+
+/* ─── Sortable Table Headers ─────────────────────────────────────────────── */
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+}
+.sortable-th:hover {
+  color: var(--accent);
+  background: rgba(43, 109, 233, 0.06);
+}
+.sortable-th.sort-active {
+  color: var(--accent);
+}
+.sort-indicator {
+  font-size: 0.7em;
+  opacity: 0.8;
+  display: inline-block;
+  min-width: 12px;
+}

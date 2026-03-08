@@ -20,8 +20,6 @@
       <a href="#searchSection">Search</a>
       <a href="#plannerSection">Planner</a>
       <a href="#verdictSection" class="nav-verdict">Should I Go?</a>
-      <a href="#tomorrowSection">Tomorrow</a>
-      <a href="#weekendSection">Weekend</a>
       <a href="#stormSection">Storm</a>
       <a href="#compareSection">Compare</a>
       <a href="#mapSection">Map</a>
@@ -56,22 +54,6 @@
             <button id="detectLocation" class="btn btn-secondary">Use my location</button>
           </div>
           <div id="locationStatus" class="helper-text"></div>
-        </div>
-
-        <div class="hero-block">
-          <div class="hero-block-label">🔍 Search &amp; compare mountains</div>
-          <div class="field">
-            <label for="searchInput">Mountain name</label>
-            <input id="searchInput" type="text" autocomplete="off"
-                   placeholder="Type to search — click + Compare to build a side-by-side" />
-            <datalist id="resortSuggestions"></datalist>
-          </div>
-          <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
-        </div>
-
-        <div class="hero-actions">
-          <button id="jumpTomorrow" class="btn btn-primary">🎿 Where Should I Ski Tomorrow?</button>
-          <button id="jumpWeekend" class="btn btn-secondary">📅 Plan This Weekend</button>
         </div>
       </div>
     </section>
@@ -185,6 +167,55 @@
       <div id="verdictCard"></div>
     </section>
 
+
+    <!-- COMPARE TABLE -->
+    <section id="compareSection" class="card panel">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Full Mountain Database</div>
+          <h2>Compare All Mountains</h2>
+          <p class="muted small">Top 10 mountains based on your filters and sort. Check the box on any row to add mountains to the side-by-side panel. Click any column header to sort.</p>
+        </div>
+        <div id="resultCount" class="helper-text result-count"></div>
+      </div>
+      <div class="table-wrap">
+        <table id="compareTable" class="comparison-table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col" class="sortable-th" data-sort="name">Name <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="state">State <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="pass">Pass <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="planner">Score <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="storm">Storm 3d <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="hist7day" title="Snowfall in the past 7 days">7-Day ❄️ <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="drive">Drive <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="vertical">Vertical <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="trails">Trails <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="price">Day Ticket* <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="crowd">Crowd <span class="sort-indicator"></span></th>
+            </tr>
+          </thead>
+          <tbody id="comparisonBody"></tbody>
+        </table>
+      </div>
+      <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
+    </section>
+
+    <div id="compareTray" class="compare-tray hidden">
+      <div class="compare-tray-inner">
+        <span class="tray-label">Comparing</span>
+        <div id="comparePills" class="compare-pills"></div>
+        <button id="compareBtn" class="btn btn-primary">Open side-by-side ↓</button>
+        <button id="clearCompare" class="btn btn-secondary">Clear all</button>
+      </div>
+    </div>
+
+    <section id="comparePanel" class="card panel hidden">
+      <div class="section-header"><h2>Side-by-Side Comparison</h2><button id="closeCompare" class="btn btn-secondary">Close</button></div>
+      <div id="compareContent"></div>
+    </section>
+
     <!-- PICKS & PANELS -->
     <section class="feature-grid">
       <section id="tomorrowSection" class="card panel">
@@ -218,76 +249,6 @@
         </div></div>
         <div id="hiddenGemGrid" class="card-grid"></div>
       </section>
-
-      <section class="card panel">
-        <div class="section-header"><div>
-          <h2>🎫 Indy Pass Picks</h2>
-          <p class="muted small">Top Indy Pass mountains ranked by conditions and two-day value.</p>
-        </div></div>
-        <div id="indyGrid" class="card-grid"></div>
-      </section>
-
-      <section class="card panel">
-        <div class="section-header">
-          <div>
-            <h2>💵 Pass Value Calculator</h2>
-            <p class="muted small">How much would you spend in day tickets vs. buying a season pass?</p>
-          </div>
-          <div class="field field-mini">
-            <label for="skiDays">Ski days / yr</label>
-            <input id="skiDays" type="number" min="1" max="20" step="1" value="5">
-          </div>
-        </div>
-        <div id="passCalcGrid" class="card-grid"></div>
-      </section>
-    </section>
-
-    <!-- COMPARE TABLE -->
-    <section id="compareSection" class="card panel">
-      <div class="section-header">
-        <div>
-          <div class="eyebrow">Full Mountain Database</div>
-          <h2>Compare All Mountains</h2>
-          <p class="muted small">Every mountain in the Northeast, fully sortable. Check the box on any row — or use the search above — to add mountains to the side-by-side panel.</p>
-        </div>
-        <div id="resultCount" class="helper-text result-count"></div>
-      </div>
-      <div class="table-wrap">
-        <table id="compareTable" class="comparison-table">
-          <thead>
-            <tr>
-              <th scope="col"></th>
-              <th scope="col">Name</th>
-              <th scope="col">State</th>
-              <th scope="col">Pass</th>
-              <th scope="col">Score</th>
-              <th scope="col">Storm 3d</th>
-              <th scope="col" title="Snowfall in the past 7 days">7-Day ❄️</th>
-              <th scope="col">Drive</th>
-              <th scope="col">Vertical</th>
-              <th scope="col">Trails</th>
-              <th scope="col">Day Ticket*</th>
-              <th scope="col">Crowd</th>
-            </tr>
-          </thead>
-          <tbody id="comparisonBody"></tbody>
-        </table>
-      </div>
-      <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
-    </section>
-
-    <div id="compareTray" class="compare-tray hidden">
-      <div class="compare-tray-inner">
-        <span class="tray-label">Comparing</span>
-        <div id="comparePills" class="compare-pills"></div>
-        <button id="compareBtn" class="btn btn-primary">Open side-by-side ↓</button>
-        <button id="clearCompare" class="btn btn-secondary">Clear all</button>
-      </div>
-    </div>
-
-    <section id="comparePanel" class="card panel hidden">
-      <div class="section-header"><h2>Side-by-Side Comparison</h2><button id="closeCompare" class="btn btn-secondary">Close</button></div>
-      <div id="compareContent"></div>
     </section>
 
     <section id="detailSection" class="card panel hidden">
