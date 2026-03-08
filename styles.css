@@ -99,36 +99,19 @@ h3 { font-size: 15px; margin: 0; }
 p, .muted, .helper-text { color: var(--muted); margin: 0; }
 .small { font-size: 13px; }
 
-/* ── Stats bar (top of page) ─────────────────────────────────────────────── */
-.stats-bar { padding: 6px 20px; }
-.stats-strip {
-  display: flex; flex-wrap: wrap; align-items: stretch; gap: 0;
-}
-.stats-strip .summary-card {
-  flex: 1; min-width: 80px;
-  border-radius: 0; border: none;
-  border-right: 1px solid var(--border);
-  box-shadow: none; background: transparent;
-  padding: 7px 12px; text-align: center;
-}
-.stats-strip .summary-card:last-child { border-right: none; }
-.stats-strip .summary-label { font-size: 9px; margin-bottom: 2px; }
-.stats-strip .summary-value { font-size: 15px; }
-.stats-strip .summary-sub   { font-size: 10px; }
-
 /* ── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  padding: 26px 28px;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 28px;
+  padding: 28px;
   background:
     radial-gradient(ellipse at 90% 0%, rgba(43,109,233,.1), transparent 50%),
     radial-gradient(ellipse at 10% 95%, rgba(34,179,138,.07), transparent 42%),
     linear-gradient(180deg, rgba(255,255,255,.99), rgba(244,249,255,.98));
 }
 .hero-copy { display: flex; flex-direction: column; gap: 18px; }
-.hero-text  { font-size: 14px; line-height: 1.6; max-width: 640px; }
+.hero-text  { font-size: 14px; line-height: 1.6; max-width: 480px; }
 
 /* step blocks inside hero */
 .hero-block {
@@ -243,7 +226,7 @@ button { font: inherit; }
 .preset-btn.active { background: rgba(43,109,233,.12); border-color: rgba(43,109,233,.4); color: var(--accent); }
 .weight-summary { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
 .weight-summary strong { color: var(--text); }
-.score-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.score-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .score-control {
   background: rgba(255,255,255,.8); border: 1px solid var(--border);
   border-radius: 14px; padding: 13px 14px;
@@ -367,6 +350,26 @@ button { font: inherit; }
 }
 .comparison-table tbody tr:hover  { background: #f4f8ff; cursor: pointer; }
 .comparison-table tbody tr.active-row { background: #eef5ff; }
+ .sort-header {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+}
+.sort-header:hover { color: var(--accent); }
+.sort-header.active { color: var(--accent); }
+.compare-table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
 .row-name { font-weight: 700; }
 .hist-cell { font-variant-numeric: tabular-nums; font-weight: 700; color: #1d4ed8; }
 .result-count { font-size: 13px; font-weight: 700; }
@@ -452,11 +455,12 @@ button { font: inherit; }
 .helper-text { font-size: 12px; color: var(--muted); }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
   .score-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 1000px) {
   .hero { grid-template-columns: 1fr; }
+  .hero-right { display: none; }  /* summary cards hide on small screens */
   .feature-grid { grid-template-columns: 1fr; }
   .score-grid { grid-template-columns: repeat(2, 1fr); }
   .detail-grid { grid-template-columns: 1fr 1fr; }
@@ -465,9 +469,7 @@ button { font: inherit; }
   .container { width: calc(100vw - 14px); }
   .top-nav-inner { padding-inline: 6px; }
   .hero { padding: 18px; }
-  .score-grid, .card-grid, .metric-grid { grid-template-columns: 1fr; }
-  .stats-strip { flex-wrap: wrap; }
-  .stats-strip .summary-card { min-width: calc(25% - 1px); }
+  .score-grid, .card-grid, .metric-grid, .summary-grid { grid-template-columns: 1fr; }
   .toolbar-controls { gap: 8px; }
   .toolbar-controls .field { min-width: calc(50% - 4px); }
   .detail-grid { grid-template-columns: 1fr; }
