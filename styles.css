@@ -67,7 +67,7 @@ h2{font-size:20px;line-height:1.15;margin:0}
 .summary-value{font-size:22px;font-weight:800}
 .summary-sub{font-size:12px;color:var(--muted)}
 .toolbar{
-  display:grid;grid-template-columns:1.6fr .8fr .8fr .9fr auto auto;gap:12px;padding:16px
+  display:grid;grid-template-columns:1.4fr .7fr .7fr .7fr .8fr auto auto;gap:12px;padding:16px
 }
 .field{display:flex;flex-direction:column}
 .field-grow{flex:1}
@@ -142,4 +142,22 @@ button{font:inherit}
   .toolbar,.score-grid,.card-grid,.metric-grid,.summary-grid{grid-template-columns:1fr}
   .top-nav-inner{padding-inline:8px}
   .comparison-table th,.comparison-table td{font-size:12px;padding:10px 8px}
+}
+
+/* ── Utility classes (audit #45) ── */
+.hidden { display: none !important; }
+
+/* ── aria-pressed visual state for toggle button (audit #27) ── */
+.btn-secondary[aria-pressed="true"] {
+  background: rgba(43,109,233,.12);
+  border-color: rgba(43,109,233,.35);
+  color: var(--accent);
+}
+
+/* ── Detail card metric value — smaller text for long strings (audit #41) ── */
+.metric-value.detail-sm { font-size: 15px; line-height: 1.3; }
+
+/* ── Intermediate toolbar breakpoint — smooth 7→4 col transition (audit #44) ── */
+@media (max-width:1280px) and (min-width:1101px) {
+  .toolbar { grid-template-columns: 1.4fr .7fr .7fr .8fr auto; }
 }

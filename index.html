@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="toast" class="toast" aria-live="polite"></div>
+  <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
 
   <nav class="top-nav">
     <div class="top-nav-inner">
@@ -56,6 +56,17 @@
         <label for="searchInput">Search resorts</label>
         <input id="searchInput" list="resortSuggestions" type="text" placeholder="Search by mountain name" />
         <datalist id="resortSuggestions"></datalist>
+      </div>
+      <div class="field">
+        <label for="maxDriveFilter">Max Drive</label>
+        <select id="maxDriveFilter">
+          <option value="0">Any distance</option>
+          <option value="90">Under 1.5 hrs</option>
+          <option value="120">Under 2 hrs</option>
+          <option value="180">Under 3 hrs</option>
+          <option value="240">Under 4 hrs</option>
+          <option value="300">Under 5 hrs</option>
+        </select>
       </div>
       <div class="field">
         <label for="passFilter">Pass</label>
@@ -105,7 +116,7 @@
       <div id="weightSummary" class="weight-summary"></div>
       <div class="score-grid">
         <div class="score-control"><label for="snowWeight">Forecast snow <span id="snowWeightVal"></span></label><input id="snowWeight" type="range" min="0" max="50" step="1"><div class="score-desc">How much upcoming snowfall matters. Raise this if you only ski powder days.</div></div>
-        <div class="score-control"><label for="driveWeight">Drive time <span id="driveWeightVal"></span></label><input id="driveWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Higher = favor mountains closer to your starting location. Needs a location set above.</div></div>
+        <div class="score-control"><label for="driveWeight">Drive time <span id="driveWeightVal"></span></label><input id="driveWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Slide <strong>right</strong> to favor closer mountains. At 0, drive time has no influence on score — use the <strong>Max Drive</strong> filter in the toolbar to hard-cap by distance.</div></div>
         <div class="score-control"><label for="snowmakingWeight">Snowmaking <span id="snowmakingWeightVal"></span></label><input id="snowmakingWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Rewards mountains with strong snowmaking capacity. Good for low-snow or early-season trips.</div></div>
         <div class="score-control"><label for="verticalWeight">Vertical <span id="verticalWeightVal"></span></label><input id="verticalWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Rewards bigger mountains with more skiable vertical drop. Ideal for advanced skiers and long runs.</div></div>
         <div class="score-control"><label for="priceWeight">Price / value <span id="priceWeightVal"></span></label><input id="priceWeight" type="range" min="0" max="50" step="1"><div class="score-desc">Higher = strongly favor cheaper day tickets. Great for families or frequent skiers on a budget.</div></div>
@@ -157,18 +168,18 @@
         <table id="compareTable" class="comparison-table">
           <thead>
             <tr>
-              <th></th>
-              <th>Name</th>
-              <th>State</th>
-              <th>Pass</th>
-              <th>Planner</th>
-              <th>Storm</th>
-              <th>Drive</th>
-              <th>Vertical</th>
-              <th>Trails</th>
-              <th>Snowmaking</th>
-              <th>Day Ticket*</th>
-              <th>Crowd</th>
+              <th scope="col"></th>
+              <th scope="col">Name</th>
+              <th scope="col">State</th>
+              <th scope="col">Pass</th>
+              <th scope="col">Planner</th>
+              <th scope="col">Storm</th>
+              <th scope="col">Drive</th>
+              <th scope="col">Vertical</th>
+              <th scope="col">Trails</th>
+              <th scope="col">Snowmaking</th>
+              <th scope="col">Day Ticket*</th>
+              <th scope="col">Crowd</th>
             </tr>
           </thead>
           <tbody id="comparisonBody"></tbody>
@@ -177,7 +188,7 @@
       <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
     </section>
 
-    <div id="compareTray" class="compare-tray" style="display:none">
+    <div id="compareTray" class="compare-tray hidden">
       <div class="compare-tray-inner">
         <span class="tray-label">Comparing</span>
         <div id="comparePills" class="compare-pills"></div>
@@ -186,12 +197,12 @@
       </div>
     </div>
 
-    <section id="comparePanel" class="card panel" style="display:none">
+    <section id="comparePanel" class="card panel hidden">
       <div class="section-header"><h2>Side-by-Side Comparison</h2><button id="closeCompare" class="btn btn-secondary">Close</button></div>
       <div id="compareContent"></div>
     </section>
 
-    <section id="detailSection" class="card panel" style="display:none">
+    <section id="detailSection" class="card panel hidden">
       <div id="detailCard"></div>
     </section>
 
