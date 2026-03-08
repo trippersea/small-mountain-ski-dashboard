@@ -347,8 +347,9 @@ function summitTempF(baseTempF, baseElevFt, summitElevFt) {
   return baseTempF - ((summitElevFt - baseElevFt) / 1000) * 3.5;
 }
 
-function computeVerdict(candidates) {
-  const withWx = candidates.filter(r => state.weatherCache[r.id]?.data);
+function computeVerdict(resorts) {
+  // Score from the full filtered set — same pool as the table, so #1 always matches
+  const withWx = resorts.filter(r => state.weatherCache[r.id]?.data);
   if (!withWx.length) return null;
 
   const w      = normalizedWeights();
@@ -419,9 +420,9 @@ function computeVerdict(candidates) {
   };
 }
 
-function renderVerdict(candidates) {
+function renderVerdict(resorts) {
   if (!els.verdictSection) return;
-  const v = computeVerdict(candidates);
+  const v = computeVerdict(resorts);
   if (!v) { els.verdictSection.classList.add('hidden'); return; }
   els.verdictSection.classList.remove('hidden');
 
@@ -973,23 +974,27 @@ function crowdClass(label) { return `crowd-${label.toLowerCase()}`; }
 // ─── Async render panels ──────────────────────────────────────────────────────
 // Single shared pipeline — compute candidates & weather once, pass to all panels (audit #2)
 async function renderAsyncPanels(resorts) {
+  // plannerCandidates scopes weather fetching to the most relevant resorts —
+  // we don't need live weather for all 120 mountains to build the panels.
   const candidates = plannerCandidates(resorts);
   await ensureWeather(candidates);
 
-  // Render everything that only needs forecast weather
+  // Render everything that needs forecast weather.
+  // renderVerdict gets the full filtered "resorts" set — same pool as the table —
+  // so the verdict #1 always matches the table #1.
   renderCompareTable(resorts);
   updateMap(resorts);
   renderDetail();
-  renderVerdict(candidates);       // first pass — history chips may be missing
+  renderVerdict(resorts);          // first pass — use full filtered set
   _renderTomorrow(resorts, candidates);
   _renderWeekend(resorts, candidates);
   _renderStorm(resorts, candidates);
 
-  // Fetch last-7-days historical data in parallel — re-render verdict + detail when ready
+  // Fetch last-7-days historical data in parallel — re-render when ready
   ensureHistory(candidates.slice(0, 50)).then(() => {
-    renderVerdict(candidates);     // re-render with histTotal chips now populated
-    renderDetail();                // re-render detail card with sparkline
-    renderCompareTable(resorts);   // re-render to populate 7-Day column
+    renderVerdict(resorts);        // re-render with histTotal chips now populated
+    renderDetail();
+    renderCompareTable(resorts);
   });
 }
 
@@ -1336,10 +1341,11 @@ function renderAllCards(resorts) {
   // If weather is already cached, re-render immediately so weight slider changes
   // take effect instantly without hiding the verdict or showing loading placeholders.
   const candidates = plannerCandidates(resorts);
-  const hasWeather = candidates.some(r => state.weatherCache[r.id]?.data);
+  const hasWeather = resorts.some(r => state.weatherCache[r.id]?.data);
 
   if (hasWeather) {
-    renderVerdict(candidates);
+    // Pass full filtered resorts to verdict so its #1 = table #1
+    renderVerdict(resorts);
     _renderTomorrow(resorts, candidates);
     _renderWeekend(resorts, candidates);
     _renderStorm(resorts, candidates);
