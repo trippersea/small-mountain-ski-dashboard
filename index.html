@@ -60,13 +60,8 @@
     <section id="plannerSection" class="card panel planner-collapsed">
       <div class="planner-summary-row">
         <div class="planner-summary-left">
-          <div class="eyebrow">Step 2 — Your Trip Profile</div>
           <div class="planner-summary-title">What makes the perfect ski day?</div>
         </div>
-        <button id="plannerToggle" class="planner-toggle-btn" aria-expanded="false" aria-controls="plannerDetails">
-          <span class="planner-toggle-label">Customize</span>
-          <span class="planner-toggle-icon">✏️</span>
-        </button>
       </div>
       <div class="preset-row">
         <button class="preset-btn active" data-preset="balanced">⚖️ Balanced</button>
@@ -74,7 +69,13 @@
         <button class="preset-btn" data-preset="family">👨‍👩‍👧 Family Day</button>
         <button class="preset-btn" data-preset="cheap">💰 Cheap &amp; Close</button>
       </div>
-      <div id="weightSummary" class="weight-summary"></div>
+      <div class="weight-summary-row">
+        <div id="weightSummary" class="weight-summary"></div>
+        <button id="plannerToggle" class="planner-toggle-btn" aria-expanded="false" aria-controls="plannerDetails">
+          <span class="planner-toggle-label">Customize</span>
+          <span class="planner-toggle-icon">✏️</span>
+        </button>
+      </div>
 
       <div id="plannerDetails" class="planner-details" hidden>
         <div class="score-grid">

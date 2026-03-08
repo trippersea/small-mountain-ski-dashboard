@@ -810,3 +810,25 @@ button { font: inherit; }
 @media (max-width: 480px) {
   .hero-compact-label { flex-direction: column; gap: 2px; }
 }
+
+/* ─── Weight summary + Customize button row ──────────────────────────────── */
+.weight-summary-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 6px;
+}
+.weight-summary-row .weight-summary {
+  flex: 1;
+  margin-bottom: 0;
+}
+.weight-summary-row .planner-toggle-btn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+/* Remove the old margin-left: auto now that button is in the summary row */
+.planner-summary-row .planner-toggle-btn {
+  margin-left: 0;
+}
