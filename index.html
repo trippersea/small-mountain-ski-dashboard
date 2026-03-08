@@ -17,12 +17,14 @@
   <nav class="top-nav">
     <div class="top-nav-inner">
       <span class="nav-brand">⛷️ SkiNE</span>
-      <a href="#searchSection">Search</a>
-      <a href="#plannerSection">Planner</a>
-      <a href="#verdictSection" class="nav-verdict">Should I Go?</a>
-      <a href="#stormSection">Storm</a>
-      <a href="#compareSection">Compare</a>
-      <a href="#mapSection">Map</a>
+      <div class="nav-divider"></div>
+      <a href="#verdictSection" class="nav-cta" id="navVerdictLink">🏆 Should I Go?</a>
+      <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">🗄️ Mountain Database</a>
+      <div class="nav-divider"></div>
+      <a href="#searchSection" class="nav-secondary">📍 Location</a>
+      <a href="#plannerSection" class="nav-secondary">⚙️ Planner</a>
+      <a href="#stormSection" class="nav-secondary">🌨️ Storm</a>
+      <a href="#mapSection" class="nav-secondary">🗺️ Map</a>
       <button class="btn-ghost nav-share" onclick="copyShareLink()">🔗 Share</button>
     </div>
   </nav>
@@ -59,13 +61,16 @@
     </section>
 
     <!-- STEP 2: CUSTOMIZE YOUR SCORE -->
-    <section id="plannerSection" class="card panel">
-      <div class="section-header">
-        <div>
+    <section id="plannerSection" class="card panel planner-collapsed">
+      <div class="planner-summary-row">
+        <div class="planner-summary-left">
           <div class="eyebrow">Step 2 — Your Trip Profile</div>
-          <h2>What makes the perfect ski day?</h2>
-          <p class="muted small">Pick a preset or fine-tune below. Every adjustment re-ranks all mountains in real time.</p>
+          <div class="planner-summary-title">What makes the perfect ski day?</div>
         </div>
+        <button id="plannerToggle" class="planner-toggle-btn" aria-expanded="false" aria-controls="plannerDetails">
+          <span class="planner-toggle-label">Customize</span>
+          <span class="planner-toggle-icon">✏️</span>
+        </button>
       </div>
       <div class="preset-row">
         <button class="preset-btn active" data-preset="balanced">⚖️ Balanced</button>
@@ -75,60 +80,62 @@
       </div>
       <div id="weightSummary" class="weight-summary"></div>
 
-      <div class="score-grid">
+      <div id="plannerDetails" class="planner-details" hidden>
+        <div class="score-grid">
 
-        <div class="score-control">
-          <label for="snowWeight">❄️ Snow Quality <span id="snowWeightVal"></span></label>
-          <input id="snowWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">Blends <strong>live forecast snow</strong> (60%) with each mountain's <strong>historical avg snowfall</strong> (40%). At 10, you only go when conditions are exceptional — powder days or mountains with proven snow reliability.</div>
-        </div>
-
-        <div class="score-control">
-          <label for="driveWeight">🚗 Drive Time <span id="driveWeightVal"></span></label>
-          <input id="driveWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">Higher scores favor mountains closest to your location. Use the <strong>Drive Time filter</strong> above the table for a hard range cutoff. This slider softly nudges rankings.</div>
-        </div>
-
-        <div class="score-control">
-          <label for="sizeWeight">🏔️ Mountain Size <span id="sizeWeightVal"></span></label>
-          <input id="sizeWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">A composite of <strong>vertical drop</strong> (50%), <strong>skiable acres</strong> (35%), and <strong>longest run</strong> (15%). At 10, only big destination mountains like Killington, Whiteface, or Stowe will rank highly.</div>
-        </div>
-
-        <div class="score-control">
-          <label for="valueWeight">💰 Best Value <span id="valueWeightVal"></span></label>
-          <input id="valueWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">Strongly rewards cheaper day ticket prices. At 10, smaller independents like McIntyre ($45) beat Killington ($179) regardless of size. Best for budget-conscious days or when you don't have a season pass.</div>
-        </div>
-
-        <div class="score-control">
-          <label for="crowdWeight">👥 Avoid Crowds <span id="crowdWeightVal"></span></label>
-          <input id="crowdWeight" type="range" min="1" max="10" step="1">
-          <div class="score-desc">Penalizes mountains that tend to be busy — based on pass network size, proximity to population centers, and day ticket price. At 10, quiet independent mountains rise to the top.</div>
-        </div>
-
-        <div class="score-control skill-control">
-          <label>🎯 Skill Level <span class="skill-label-sub muted small">— always applied to score</span></label>
-          <div class="skill-btn-row">
-            <button class="skill-btn" data-skill="beginner">🟢 Beginner</button>
-            <button class="skill-btn active" data-skill="mixed">🔵 All Levels</button>
-            <button class="skill-btn" data-skill="advanced">⚫ Advanced</button>
+          <div class="score-control">
+            <label for="snowWeight">❄️ Snow Quality <span id="snowWeightVal"></span></label>
+            <input id="snowWeight" type="range" min="1" max="10" step="1">
+            <div class="score-desc">Blends <strong>live forecast snow</strong> (60%) with each mountain's <strong>historical avg snowfall</strong> (40%). At 10, you only go when conditions are exceptional — powder days or mountains with proven snow reliability.</div>
           </div>
-          <div class="score-desc">Matches mountains to your ability. <strong>Beginner</strong> rewards gentle, well-groomed terrain. <strong>Advanced</strong> rewards steep expert terrain + long vertical. <strong>All Levels</strong> rewards balanced mountains good for mixed groups.</div>
-        </div>
 
-        <div class="score-control skill-control">
-          <label>🎫 My Pass <span class="skill-label-sub muted small">— boosts mountains on your pass by +10 pts</span></label>
-          <div class="skill-btn-row pass-pref-row">
-            <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
-            <button class="pass-pref-btn epic-btn"  data-pass="Epic">Epic</button>
-            <button class="pass-pref-btn ikon-btn"  data-pass="Ikon">Ikon</button>
-            <button class="pass-pref-btn indy-btn"  data-pass="Indy">Indy</button>
-            <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
+          <div class="score-control">
+            <label for="driveWeight">🚗 Drive Time <span id="driveWeightVal"></span></label>
+            <input id="driveWeight" type="range" min="1" max="10" step="1">
+            <div class="score-desc">Higher scores favor mountains closest to your location. Use the <strong>Drive Time filter</strong> above the table for a hard range cutoff. This slider softly nudges rankings.</div>
           </div>
-          <div class="score-desc">Select your season pass to give a <strong>+10 point bonus</strong> to every mountain included on it. Mountains not on your pass still appear — they just rank lower. Combine with the <strong>Pass filter</strong> above the table to hide other passes entirely.</div>
-        </div>
 
+          <div class="score-control">
+            <label for="sizeWeight">🏔️ Mountain Size <span id="sizeWeightVal"></span></label>
+            <input id="sizeWeight" type="range" min="1" max="10" step="1">
+            <div class="score-desc">A composite of <strong>vertical drop</strong> (50%), <strong>skiable acres</strong> (35%), and <strong>longest run</strong> (15%). At 10, only big destination mountains like Killington, Whiteface, or Stowe will rank highly.</div>
+          </div>
+
+          <div class="score-control">
+            <label for="valueWeight">💰 Best Value <span id="valueWeightVal"></span></label>
+            <input id="valueWeight" type="range" min="1" max="10" step="1">
+            <div class="score-desc">Strongly rewards cheaper day ticket prices. At 10, smaller independents like McIntyre ($45) beat Killington ($179) regardless of size. Best for budget-conscious days or when you don't have a season pass.</div>
+          </div>
+
+          <div class="score-control">
+            <label for="crowdWeight">👥 Avoid Crowds <span id="crowdWeightVal"></span></label>
+            <input id="crowdWeight" type="range" min="1" max="10" step="1">
+            <div class="score-desc">Penalizes mountains that tend to be busy — based on pass network size, proximity to population centers, and day ticket price. At 10, quiet independent mountains rise to the top.</div>
+          </div>
+
+          <div class="score-control skill-control">
+            <label>🎯 Skill Level <span class="skill-label-sub muted small">— always applied to score</span></label>
+            <div class="skill-btn-row">
+              <button class="skill-btn" data-skill="beginner">🟢 Beginner</button>
+              <button class="skill-btn active" data-skill="mixed">🔵 All Levels</button>
+              <button class="skill-btn" data-skill="advanced">⚫ Advanced</button>
+            </div>
+            <div class="score-desc">Matches mountains to your ability. <strong>Beginner</strong> rewards gentle, well-groomed terrain. <strong>Advanced</strong> rewards steep expert terrain + long vertical. <strong>All Levels</strong> rewards balanced mountains good for mixed groups.</div>
+          </div>
+
+          <div class="score-control skill-control">
+            <label>🎫 My Pass <span class="skill-label-sub muted small">— boosts mountains on your pass</span></label>
+            <div class="skill-btn-row pass-pref-row">
+              <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
+              <button class="pass-pref-btn epic-btn"  data-pass="Epic">Epic</button>
+              <button class="pass-pref-btn ikon-btn"  data-pass="Ikon">Ikon</button>
+              <button class="pass-pref-btn indy-btn"  data-pass="Indy">Indy</button>
+              <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
+            </div>
+            <div class="score-desc">Select your season pass to give a <strong>+200 point bonus</strong> to every mountain included on it. Mountains not on your pass still appear — they just rank lower. Combine with the <strong>Pass filter</strong> above the table to hide other passes entirely.</div>
+          </div>
+
+        </div>
       </div>
     </section>
 

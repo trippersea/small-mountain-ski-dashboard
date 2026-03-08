@@ -137,6 +137,9 @@ const els = {
   toggleNight:         $('toggleNight'),
   toggleDaytrip:        $('toggleDaytrip'),
   resetFilters:        $('resetFilters'),
+  plannerToggle:       $('plannerToggle'),
+  plannerDetails:      $('plannerDetails'),
+  plannerSection:      $('plannerSection'),
   activeFilters:       $('activeFilters'),
   originInput:         $('originInput'),
   setLocation:         $('setLocation'),
@@ -1412,6 +1415,38 @@ function wireEvents() {
     pushUrlDebounced();
     debouncedRender();
   });
+
+  // Planner collapse/expand toggle
+  if (els.plannerToggle && els.plannerDetails) {
+    els.plannerToggle.addEventListener('click', () => {
+      const isExpanded = els.plannerToggle.getAttribute('aria-expanded') === 'true';
+      const opening = !isExpanded;
+      els.plannerToggle.setAttribute('aria-expanded', String(opening));
+      els.plannerDetails.hidden = !opening;
+      els.plannerSection.classList.toggle('planner-collapsed', !opening);
+      const lbl = els.plannerToggle.querySelector('.planner-toggle-label');
+      if (lbl) lbl.textContent = opening ? 'Collapse' : 'Customize';
+    });
+  }
+
+  // Sticky nav: highlight active section on scroll
+  (function initNavHighlight() {
+    const sectionIds = ['searchSection','plannerSection','verdictSection','compareSection','stormSection','mapSection'];
+    const navLinks   = document.querySelectorAll('.top-nav a[href^="#"]');
+    function onScroll() {
+      let current = '';
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= 80) current = id;
+      }
+      navLinks.forEach(a => {
+        const target = a.getAttribute('href').slice(1);
+        a.classList.toggle('nav-active', target === current);
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.nightOnly = false; state.daytripOnly = false; state.maxDrive = 0;
