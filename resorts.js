@@ -130,7 +130,7 @@ function crowdForecast(resort) {
   if (resort.vertical > 1400) score += 10;
   if (resort.passGroup === 'Epic' || resort.passGroup === 'Ikon') score += 15;
   if (resort.passGroup === 'Indy') score += 8;
-  const drive = state.driveCache[resort.id];
+  const drive = getDriveMins(resort.id);
   if (drive !== undefined && drive !== null) {
     if (drive < 90) score += 22;
     else if (drive < 150) score += 14;
@@ -145,7 +145,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null) {
   const forecast = weather?.forecast || [];
   const picks = forecastIndex === null ? forecast : (forecast[forecastIndex] ? [forecast[forecastIndex]] : []);
   const snowTotal = picks.reduce((sum, f) => sum + (f.snow || 0), 0);
-  const drive = state.driveCache[resort.id];
+  const drive = getDriveMins(resort.id);
   const crowd = crowdForecast(resort);
 
   const normalized = {
@@ -173,6 +173,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null) {
     score: Math.round(score * 10) / 10,
     snowTotal,
     drive,
+    resortId: resort.id,
     crowdLabel: crowd.label,
     components,
   };
@@ -189,13 +190,35 @@ function hiddenGemScore(resort) {
   return Math.round(score);
 }
 
-function formatDrive(mins) {
+// driveCache entries are either:
+//   { mins, estimated: true, km }  — haversine estimate (phase 1)
+//   Number                          — confirmed OSRM minutes (phase 2)
+//   null                            — explicitly failed
+function getDriveMins(id) {
+  const v = state.driveCache[id];
+  if (v === undefined || v === null) return null;
+  return typeof v === 'object' ? v.mins : v;
+}
+function isDriveEstimated(id) {
+  const v = state.driveCache[id];
+  return v !== null && typeof v === 'object' && v.estimated;
+}
+function formatDrive(id_or_mins) {
+  // Called with a resort id (string) or a raw minutes value (number/null)
+  let mins, estimated = false;
+  if (typeof id_or_mins === 'string') {
+    mins = getDriveMins(id_or_mins);
+    estimated = isDriveEstimated(id_or_mins);
+  } else {
+    mins = id_or_mins;
+  }
   if (mins === undefined || mins === null) return '—';
+  const prefix = estimated ? '~' : '';
   if (mins >= 60) {
     const h = Math.floor(mins / 60), m = mins % 60;
-    return m ? `${h}h ${m}m` : `${h}h`;
+    return m ? `${prefix}${h}h ${m}m` : `${prefix}${h}h`;
   }
-  return `${mins}m`;
+  return `${prefix}${mins}m`;
 }
 
 // snowmaking values are raw capacity numbers (max ~65,400 in dataset)
@@ -245,7 +268,7 @@ function staticSort(resorts) {
   const sorted = [...resorts];
   sorted.sort((a, b) => {
     switch (state.sortBy) {
-      case 'drive': return (state.driveCache[a.id] ?? 9999) - (state.driveCache[b.id] ?? 9999);
+      case 'drive': return (getDriveMins(a.id) ?? 9999) - (getDriveMins(b.id) ?? 9999);
       case 'price': return a.price - b.price;
       case 'vertical': return b.vertical - a.vertical;
       case 'snowmaking': return b.snowmaking - a.snowmaking;
@@ -294,36 +317,87 @@ async function ensureWeather(resorts) {
   await Promise.all(workers);
 }
 
-async function fetchDriveTime(resort) {
+// --- Haversine straight-line distance (km) ---
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Convert straight-line km to estimated drive minutes.
+// Northeast has winding mountain roads — use 65 km/h avg and add 15 min base overhead.
+function haversineToDriveMinutes(km) {
+  return Math.round(km / 65 * 60 + 15);
+}
+
+// Phase 1: instantly populate driveCache for ALL resorts using haversine math.
+// Marks each entry with { mins, estimated: true } so the UI can show a "~" prefix.
+function applyHaversineEstimates() {
+  if (!state.origin) return;
+  RESORTS.forEach(resort => {
+    // Don't overwrite a confirmed OSRM result
+    if (state.driveCache[resort.id] !== undefined && !state.driveCache[resort.id]?.estimated) return;
+    const km = haversineKm(state.origin.lat, state.origin.lon, resort.lat, resort.lon);
+    state.driveCache[resort.id] = { mins: haversineToDriveMinutes(km), estimated: true, km };
+  });
+}
+
+// Phase 2: fetch real OSRM times for the N closest resorts only.
+const OSRM_LIMIT = 40;
+const OSRM_CONCURRENCY = 8;
+
+async function fetchOsrmTime(resort) {
   if (!state.origin) return null;
-  if (state.driveCache[resort.id] !== undefined) return state.driveCache[resort.id];
+  const existing = state.driveCache[resort.id];
+  if (existing !== undefined && existing !== null && !existing?.estimated) return existing;
   try {
     const url = `https://router.project-osrm.org/route/v1/driving/${state.origin.lon},${state.origin.lat};${resort.lon},${resort.lat}?overview=false`;
     const res = await fetch(url);
     const data = await res.json();
     if (!data.routes || !data.routes[0]) throw new Error('No route');
     const mins = Math.round(data.routes[0].duration / 60);
-    state.driveCache[resort.id] = mins;
+    state.driveCache[resort.id] = mins; // confirmed — no .estimated flag
     return mins;
   } catch (e) {
-    state.driveCache[resort.id] = null;
-    return null;
+    // Keep haversine estimate on failure rather than nulling it
+    return state.driveCache[resort.id]?.mins ?? null;
   }
 }
 
 async function loadDriveTimes(resorts) {
   if (!state.origin) return;
-  showToast('Calculating drive times…', 3600);
-  const queue = [...resorts];
-  const workers = Array.from({ length: 4 }, async () => {
+
+  // Phase 1 — instant haversine estimates, render right away
+  applyHaversineEstimates();
+  render();
+  showToast('Refining drive times with routing data…', 5000);
+
+  // Phase 2 — OSRM for the OSRM_LIMIT closest resorts by straight-line distance
+  const closest = [...RESORTS]
+    .filter(r => state.driveCache[r.id]?.km !== undefined)
+    .sort((a, b) => state.driveCache[a.id].km - state.driveCache[b.id].km)
+    .slice(0, OSRM_LIMIT);
+
+  const queue = [...closest];
+  let fetchCount = 0;
+
+  const workers = Array.from({ length: OSRM_CONCURRENCY }, async () => {
     while (queue.length) {
       const resort = queue.shift();
       if (!resort) break;
-      await fetchDriveTime(resort);
+      await fetchOsrmTime(resort);
+      fetchCount++;
+      // Re-render every 8 confirmed results so the UI updates progressively
+      if (fetchCount % 8 === 0) render();
     }
   });
+
   await Promise.all(workers);
   render();
+  showToast('Drive times ready', 1800);
 }
 
 async function geocodeOrigin(query) {
@@ -364,14 +438,14 @@ function renderSummaryCards(resorts) {
   const count = resorts.length;
   const avgVertical = count ? Math.round(resorts.reduce((s, r) => s + r.vertical, 0) / count) : 0;
   const avgPrice = count ? Math.round(resorts.reduce((s, r) => s + r.price, 0) / count) : 0;
-  const closest = [...resorts].filter(r => state.driveCache[r.id] !== undefined && state.driveCache[r.id] !== null).sort((a, b) => state.driveCache[a.id] - state.driveCache[b.id])[0];
+  const closest = [...resorts].filter(r => getDriveMins(r.id) !== null).sort((a, b) => getDriveMins(a.id) - getDriveMins(b.id))[0];
   els.summaryCards.innerHTML = [
     summaryHtml('Mountains', count),
     summaryHtml('Avg Vertical', `${avgVertical} ft`),
     summaryHtml('Avg Ticket*', `$${avgPrice}`, 'directional estimate'),
     summaryHtml('Epic', resorts.filter(r => r.passGroup === 'Epic').length),
     summaryHtml('Ikon', resorts.filter(r => r.passGroup === 'Ikon').length),
-    summaryHtml('Closest', closest ? closest.name : 'Set location', closest ? formatDrive(state.driveCache[closest.id]) : '')
+    summaryHtml('Closest', closest ? closest.name : 'Set location', closest ? formatDrive(closest.id) : '')
   ].join('');
 }
 
@@ -417,7 +491,7 @@ async function renderTomorrow(resorts) {
     <div class="planner-card ${i===0 ? 'top' : ''}">
       <div class="planner-title">${item.resort.name}</div>
       <div class="planner-meta">${item.resort.state} · ${item.resort.passGroup} · Planner score ${item.breakdown.score}</div>
-      <div class="metric-chip">${item.breakdown.drive !== undefined && item.breakdown.drive !== null ? formatDrive(item.breakdown.drive) : 'Set location'}</div>
+      <div class="metric-chip">${item.breakdown.drive !== null ? formatDrive(item.breakdown.resortId) : 'Set location'}</div>
       <div class="metric-chip">❄️ ${item.breakdown.snowTotal.toFixed(1)}" tomorrow</div>
       <div class="metric-chip">Crowd: <span class="${crowdClass(item.breakdown.crowdLabel)}">${item.breakdown.crowdLabel}</span></div>
       ${cardBreakdown(item.breakdown)}
@@ -461,14 +535,14 @@ async function renderStorm(resorts) {
   const enriched = sample.map(resort => {
     const wx = state.weatherCache[resort.id]?.data;
     const storm = (wx?.forecast || []).reduce((sum, f) => sum + (f.snow || 0), 0);
-    return { resort, storm, drive: state.driveCache[resort.id] };
+    return { resort, storm, drive: getDriveMins(resort.id) };
   }).sort((a, b) => b.storm - a.storm).slice(0, 3);
 
   els.stormGrid.innerHTML = enriched.map(item => `
     <div class="planner-card">
       <div class="planner-title">${item.resort.name}</div>
       <div class="planner-meta">${item.resort.state} · Storm total ${item.storm.toFixed(1)}" next 3 days</div>
-      <div class="metric-chip">${item.drive !== undefined && item.drive !== null ? formatDrive(item.drive) : 'Set location'}</div>
+      <div class="metric-chip">${item.drive !== null ? formatDrive(item.resort.id) : 'Set location'}</div>
       <div class="metric-chip">Snowmaking: ${snowmakingDisplay(item.resort.snowmaking)}</div>
       <div class="metric-chip">${item.resort.passGroup}</div>
     </div>`).join('');
@@ -504,7 +578,7 @@ async function renderIndy(resorts) {
     <div class="planner-card">
       <div class="planner-title">${item.resort.name}</div>
       <div class="planner-meta">Estimated 2-day value $${item.twoDayValue} · Planner score ${item.breakdown.score}</div>
-      <div class="metric-chip">${item.breakdown.drive !== undefined && item.breakdown.drive !== null ? formatDrive(item.breakdown.drive) : 'Set location'}</div>
+      <div class="metric-chip">${item.breakdown.drive !== null ? formatDrive(item.breakdown.resortId) : 'Set location'}</div>
       <div class="metric-chip">❄️ ${item.breakdown.snowTotal.toFixed(1)}"</div>
       ${cardBreakdown(item.breakdown)}
     </div>`).join('') || '<div class="planner-card">No Indy mountains match the current filters.</div>';
@@ -552,7 +626,7 @@ function renderCompareTable(resorts) {
     const weather = state.weatherCache[resort.id]?.data;
     const planner = weather ? plannerScoreBreakdown(resort, weather, 0).score : '—';
     const storm = weather ? (weather.forecast || []).reduce((s, f) => s + (f.snow || 0), 0).toFixed(1) + '"' : '…';
-    const drive = state.driveCache[resort.id];
+    const drive = getDriveMins(resort.id);
     const crowd = crowdForecast(resort).label;
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
@@ -620,7 +694,7 @@ function renderComparePanel() {
     ['Snowmaking', r => snowmakingDisplay(r.snowmaking)],
     ['Avg snowfall', r => `${r.avgSnowfall}"`],
     ['Day ticket*', r => `$${r.price}`],
-    ['Drive', r => formatDrive(state.driveCache[r.id])],
+    ['Drive', r => formatDrive(r.id)],
     ['Tomorrow Planner', r => {
       const wx = state.weatherCache[r.id]?.data;
       return wx ? plannerScoreBreakdown(r, wx, 0).score : '—';
@@ -666,7 +740,7 @@ function renderDetail() {
       <div class="metric-box"><div class="metric-label">Trails</div><div class="metric-value">${resort.trails}</div></div>
       <div class="metric-box"><div class="metric-label">Day Ticket*</div><div class="metric-value">$${resort.price}</div></div>
       <div class="metric-box"><div class="metric-label">Snowmaking</div><div class="metric-value" style="font-size:15px">${snowmakingDisplay(resort.snowmaking)}</div></div>
-      <div class="metric-box"><div class="metric-label">Drive</div><div class="metric-value">${formatDrive(state.driveCache[resort.id])}</div></div>
+      <div class="metric-box"><div class="metric-label">Drive</div><div class="metric-value">${formatDrive(resort.id)}</div></div>
       <div class="metric-box"><div class="metric-label">Crowd</div><div class="metric-value" style="font-size:16px">${crowd.label}</div></div>
     </div>
     <div class="detail-grid" style="margin-top:16px">
@@ -752,7 +826,7 @@ function updateMap(resorts) {
     const wx = state.weatherCache[resort.id]?.data;
     const storm = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
     let color = passColor(resort.passGroup);
-    if (state.mapMode === 'drive' && state.driveCache[resort.id] !== undefined && state.driveCache[resort.id] !== null) color = driveColor(state.driveCache[resort.id]);
+    if (state.mapMode === 'drive' && getDriveMins(resort.id) !== null) color = driveColor(getDriveMins(resort.id));
     if (state.mapMode === 'storm') color = stormColor(storm);
     const size = selected ? 16 : 10;
     const opacity = inFilter ? 1 : 0.22;
