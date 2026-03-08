@@ -52,6 +52,22 @@
           </div>
           <div id="locationStatus" class="helper-text"></div>
         </div>
+
+        <div class="hero-block">
+          <div class="hero-block-label">🔍 Search &amp; compare mountains</div>
+          <div class="field">
+            <label for="searchInput">Mountain name</label>
+            <input id="searchInput" type="text" autocomplete="off"
+                   placeholder="Type to search — click + Compare to build a side-by-side" />
+            <datalist id="resortSuggestions"></datalist>
+          </div>
+          <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
+        </div>
+
+        <div class="hero-actions">
+          <button id="jumpTomorrow" class="btn btn-primary">🎿 Where Should I Ski Tomorrow?</button>
+          <button id="jumpWeekend" class="btn btn-secondary">📅 Plan This Weekend</button>
+        </div>
       </div>
 
       <div class="hero-right">
@@ -105,62 +121,11 @@
       </div>
     </section>
 
-    <!-- COMPARE TABLE -->
-    <section id="compareSection" class="card panel">
-      <div class="section-header">
-        <div>
-          <div class="eyebrow">Full Mountain Database</div>
-          <h2>Compare All Mountains</h2>
-          <p class="muted small">Every mountain in the Northeast, fully sortable. Ranked results appear here immediately after you change Trip Style.</p>
-        </div>
-        <div id="resultCount" class="helper-text result-count"></div>
-      </div>
-      <div class="table-wrap">
-        <table id="compareTable" class="comparison-table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Resort</th>
-              <th>State</th>
-              <th>Pass</th>
-              <th>Planner</th>
-              <th>Storm</th>
-              <th>7-Day❄️</th>
-              <th>Drive</th>
-              <th>Vertical</th>
-              <th>Trails</th>
-              <th>Ticket*</th>
-              <th>Crowd</th>
-            </tr>
-          </thead>
-          <tbody id="comparisonBody"></tbody>
-        </table>
-      </div>
-      <p class="table-note muted small">🟩 = best in column &nbsp;·&nbsp; 7-Day❄️ = live snowfall via Open-Meteo</p>
-      <p class="price-disclaimer muted small">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
-    </section>
-
-    <!-- SHOULD I GO? -->
-    <section id="verdictSection" class="verdict-section card hidden">
-      <div class="verdict-header">
-        <div class="eyebrow">Live Conditions Report</div>
-        <h2>Should I Go This Weekend?</h2>
-        <p class="muted small">Based on your location, trip style, and live weather — a straight answer so you don't have to check five different sites.</p>
-      </div>
-      <div id="verdictCard"></div>
-    </section>
-
     <!-- STEP 3: FILTER & SORT -->
     <section class="toolbar card">
       <div class="toolbar-row">
         <span class="toolbar-label">🎛️ Filters</span>
         <div class="toolbar-controls">
-          <div class="field field-searchwide">
-            <label for="searchInput">Mountain name</label>
-            <input id="searchInput" type="text" autocomplete="off" placeholder="Type to search — click + Compare to build a side-by-side" />
-            <datalist id="resortSuggestions"></datalist>
-            <div id="searchSuggestPanel" class="search-suggest-panel hidden" role="listbox"></div>
-          </div>
           <div class="field">
             <label for="maxDriveFilter">Max Drive</label>
             <select id="maxDriveFilter">
@@ -202,6 +167,16 @@
         </div>
       </div>
       <div id="activeFilters" class="active-filters"></div>
+    </section>
+
+    <!-- SHOULD I GO? -->
+    <section id="verdictSection" class="verdict-section card hidden">
+      <div class="verdict-header">
+        <div class="eyebrow">Live Conditions Report</div>
+        <h2>Should I Go This Weekend?</h2>
+        <p class="muted small">Based on your location, trip style, and live weather — a straight answer so you don't have to check five different sites.</p>
+      </div>
+      <div id="verdictCard"></div>
     </section>
 
     <!-- PICKS & PANELS -->
@@ -259,6 +234,40 @@
         </div>
         <div id="passCalcGrid" class="card-grid"></div>
       </section>
+    </section>
+
+    <!-- COMPARE TABLE -->
+    <section id="compareSection" class="card panel">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Full Mountain Database</div>
+          <h2>Compare All Mountains</h2>
+          <p class="muted small">Every mountain in the Northeast, fully sortable. Check the box on any row — or use the search above — to add mountains to the side-by-side panel.</p>
+        </div>
+        <div id="resultCount" class="helper-text result-count"></div>
+      </div>
+      <div class="table-wrap">
+        <table id="compareTable" class="comparison-table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Name</th>
+              <th scope="col">State</th>
+              <th scope="col">Pass</th>
+              <th scope="col">Score</th>
+              <th scope="col">Storm 3d</th>
+              <th scope="col" title="Snowfall in the past 7 days">7-Day ❄️</th>
+              <th scope="col">Drive</th>
+              <th scope="col">Vertical</th>
+              <th scope="col">Trails</th>
+              <th scope="col">Day Ticket*</th>
+              <th scope="col">Crowd</th>
+            </tr>
+          </thead>
+          <tbody id="comparisonBody"></tbody>
+        </table>
+      </div>
+      <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
     </section>
 
     <div id="compareTray" class="compare-tray hidden">
