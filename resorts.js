@@ -652,7 +652,7 @@ async function renderSelectedResort(resort) {
   els.selectedResort.innerHTML = `
     <div class="resort-detail-header">
       <div>
-        <div class="eyebrow">Selected Resort</div>
+        <div class="eyebrow">Live Conditions Report</div>
         <div class="resort-detail-name">${resort.name}</div>
         <div class="resort-detail-meta">${resort.state} · ${resort.pass} pass · ${resort.owner} · Season: ${resort.seasonOpen}–${resort.seasonClose}</div>
       </div>
@@ -1004,7 +1004,17 @@ function wireLocation() {
 }
 
 // ─── Main event wiring ────────────────────────────────────────────────────────
-function wireEvents() {  els.randomResort.addEventListener('click', () => {
+function wireEvents() {
+  els.searchInput.addEventListener('input', e => { state.search = e.target.value; render(); });
+  els.stateFilter.addEventListener('change', e => { state.stateFilter = e.target.value; render(); });
+  els.passFilter.addEventListener('change', e => { state.pass = e.target.value; render(); });
+  els.sortBy.addEventListener('change', e => { state.sortCol = e.target.value; state.sortDir = 'desc'; render(); });
+  els.toggleNight.addEventListener('click', () => {
+    state.nightOnly = !state.nightOnly;
+    els.toggleNight.setAttribute('aria-pressed', state.nightOnly?'true':'false');
+    render();
+  });
+  els.randomResort.addEventListener('click', () => {
     const resorts = filteredResorts();
     if (!resorts.length) return;
     const pick = resorts[Math.floor(Math.random()*resorts.length)];
@@ -1027,16 +1037,6 @@ function wireEvents() {  els.randomResort.addEventListener('click', () => {
 }
 
 // ─── Main render ──────────────────────────────────────────────────────────────
-
-function focusResultsIfNeeded() {
-  const section = $('compareSection');
-  if (!section) return;
-  const rect = section.getBoundingClientRect();
-  if (rect.top > window.innerHeight * 0.75) {
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
 function render() {
   const resorts = filteredResorts();
   renderSummaryCards(resorts);

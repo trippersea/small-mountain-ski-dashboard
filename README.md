@@ -48,3 +48,10 @@ trailMapPage: 'https://example.com/trail-map/'
 
 ## Notes
 Some resorts block direct image embedding for webcams or trail maps. In those cases, leave `webcamImage` or `trailMapImage` blank and just use the page link.
+
+
+## Latest UI flow
+- Trip Style appears near the top
+- Ranked results appear immediately below Trip Style
+- Live Conditions Report appears immediately below results
+- Filters are placed after conditions for easier shopping-style refinement

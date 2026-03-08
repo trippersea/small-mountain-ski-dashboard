@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New England Small Mountain Ski Dashboard</title>
+  <title>New England Find the Right Mountain Faster</title>
   <meta name="description" content="Real-time ski conditions, weather, drive times, and resort comparison for New England small mountains." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,9 +18,9 @@
     <!-- HERO -->
     <section class="hero card">
       <div class="hero-text">
-        <div class="eyebrow">New England · Small Mountain Guide</div>
-        <h1>Small Mountain Ski Dashboard</h1>
-        <p>Live conditions, weather, drive times, and side-by-side resort comparison for New England's best small mountains.</p>
+        <div class="eyebrow">Northeast Ski Decision Engine</div>
+        <h1>Find the Right Mountain Faster</h1>
+        <p>Choose your trip style first, then browse the ranked results immediately below. Live conditions and filters come next so the decision stays fast and easy.</p>
         <div class="location-row">
           <div class="field" style="flex:1;max-width:320px">
             <label for="originInput">📍 Your starting location</label>
@@ -32,9 +32,9 @@
       <div id="summaryCards" class="summary-grid"></div>
     </section>
 
-    <!-- QUICK FILTERS -->
+    <!-- TRIP STYLE -->
     <section class="quick-filters card">
-      <span class="quick-label">Best for:</span>
+      <span class="quick-label">Step 2 — Your Trip Style</span>
       <button class="qf-btn" data-qf="beginners">🟢 Beginners</button>
       <button class="qf-btn" data-qf="steeps">⚫ Steeps</button>
       <button class="qf-btn" data-qf="night">🌙 Night Skiing</button>
@@ -46,8 +46,7 @@
     </section>
 
     <!-- TOOLBAR -->
-    <section id="toolbarSection" class="toolbar card">
-      <div class="eyebrow toolbar-eyebrow">Refine the results</div>
+    <section class="toolbar card">
       <div class="field field-wide">
         <label for="searchInput">Search resorts</label>
         <input id="searchInput" type="text" placeholder="Search name, state, pass, tags, or notes" />
@@ -86,24 +85,17 @@
     </section>
 
     <!-- MAIN LAYOUT -->
-    <section class="layout">
-      <aside class="card sidebar">
-        <div class="section-header">
-          <h2>Resorts</h2>
-          <span id="resultCount" class="muted">0 resorts</span>
-        </div>
-        <div id="resortList" class="resort-list"></div>
-      </aside>
-
+    <section class="layout results-first-layout">
       <main class="main-content">
 
-        <!-- COMPARISON TABLE -->
-        <section class="card panel">
+        <!-- PRIMARY RESULTS -->
+        <section id="compareSection" class="card panel primary-results-panel">
           <div class="section-header">
             <div>
-              <h2>Compare Resorts</h2>
-              <p class="muted small">Click a column header to sort · click a row to select.</p>
+              <h2>Top Results</h2>
+              <p class="muted small">These ranked results update immediately when the user changes Trip Style. This is the primary shopping surface.</p>
             </div>
+            <span id="resultCount" class="muted"></span>
           </div>
           <div class="chart-table-wrap">
             <table id="comparisonTable" class="comparison-table">
@@ -118,7 +110,7 @@
                   <th data-col="longestRun"  class="sortable col-num">Longest Run <span class="sort-icon"></span></th>
                   <th data-col="snowfall"    class="sortable col-num">Avg Snow <span class="sort-icon"></span></th>
                   <th data-col="snowmaking"  class="sortable col-num">Snowmaking <span class="sort-icon"></span></th>
-                  <th data-col="price"       class="sortable col-num">Day Ticket <span class="sort-icon"></span></th>
+                  <th data-col="price"       class="sortable col-num">Day Ticket* <span class="sort-icon"></span></th>
                   <th data-col="drive"       class="sortable col-num">Drive <span class="sort-icon"></span></th>
                   <th data-col="night"       class="sortable col-center">Night <span class="sort-icon"></span></th>
                   <th data-col="terrainPark" class="sortable col-center">Park <span class="sort-icon"></span></th>
@@ -127,14 +119,62 @@
               <tbody id="comparisonBody"></tbody>
             </table>
           </div>
+          <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
         </section>
 
-        <!-- SELECTED RESORT (full width, shown when selected) -->
+        <!-- LIVE CONDITIONS REPORT -->
         <section id="selectedResortSection" class="selected-resort-section" style="display:none">
           <div id="selectedResort" class="card panel"></div>
         </section>
 
-        <!-- COMPARE TRAY -->
+        <!-- FILTERS -->
+        <section id="toolbarSection" class="toolbar card browse-toolbar">
+          <div class="field field-wide">
+            <label for="searchInput">Search mountains</label>
+            <input id="searchInput" type="text" placeholder="Search name, state, pass, tags, or notes" />
+          </div>
+          <div class="field">
+            <label for="stateFilter">State</label>
+            <select id="stateFilter"></select>
+          </div>
+          <div class="field">
+            <label for="passFilter">Pass</label>
+            <select id="passFilter"></select>
+          </div>
+          <div class="field">
+            <label for="sortBy">Sort by</label>
+            <select id="sortBy">
+              <option value="vertical">Vertical</option>
+              <option value="trails">Trails</option>
+              <option value="lifts">Lifts</option>
+              <option value="acres">Acres</option>
+              <option value="longestRun">Longest Run</option>
+              <option value="snowfall">Avg Snowfall</option>
+              <option value="snowmaking">Snowmaking</option>
+              <option value="drive">Drive Time</option>
+              <option value="price">Ticket Price</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">🌙 Night Only</button>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="randomResort" class="btn btn-primary">✦ Surprise Me</button>
+          </div>
+          <div id="activeFilters" class="active-filters"></div>
+        </section>
+
+        <!-- SECONDARY RESEARCH -->
+        <section id="comparePanel" class="card panel" style="display:none">
+          <div class="section-header">
+            <h2>Side-by-Side Comparison</h2>
+            <button id="closeCompare" class="btn btn-secondary btn-sm">✕ Close</button>
+          </div>
+          <div id="compareContent"></div>
+        </section>
+
         <div id="compareTray" class="compare-tray" style="display:none">
           <div class="compare-tray-inner">
             <span class="compare-tray-label">Comparing:</span>
@@ -144,16 +184,15 @@
           </div>
         </div>
 
-        <!-- SIDE-BY-SIDE COMPARE PANEL -->
-        <section id="comparePanel" class="card panel" style="display:none">
-          <div class="section-header">
-            <h2>Side-by-Side Comparison</h2>
-            <button id="closeCompare" class="btn btn-secondary btn-sm">✕ Close</button>
-          </div>
-          <div id="compareContent"></div>
-        </section>
-
       </main>
+
+      <aside class="card sidebar sidebar-secondary">
+        <div class="section-header">
+          <h2>Mountain Index</h2>
+          <span class="muted">Quick scan</span>
+        </div>
+        <div id="resortList" class="resort-list"></div>
+      </aside>
     </section>
 
     <!-- FULL-WIDTH MAP -->
