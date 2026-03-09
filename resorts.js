@@ -445,7 +445,9 @@ function renderVerdict(resorts) {
           resort, breakdown, driveText,
           tomorrowIn, stormTotal, histTotal, histDays } = v;
 
-  const picks = findPrimaryAndBackup(resorts);
+  const brief = buildDecisionBrief(resorts);
+  const { context, backup, top5 } = brief;
+  const primaryItem = brief.primary;
 
   const histChip  = histTotal !== null
     ? `<span class="metric-chip">📅 ${histTotal}" last 7 days</span>` : '';
@@ -457,22 +459,39 @@ function renderVerdict(resorts) {
   const noOrigin  = !state.origin
     ? `<p class="verdict-no-origin">📍 Set your starting location for drive times and distance-weighted picks.</p>` : '';
 
-  const backupHtml = picks?.backup ? (() => {
-    const b = picks.backup;
-    const reason = backupReason(picks.primary, b);
-    const bDrive = formatDrive(b.resort.id);
+  // Editorial reasons for the top pick
+  const reasons = primaryItem ? primaryReasons(primaryItem) : [];
+  const reasonsHtml = reasons.length
+    ? `<div class="verdict-reasons">${reasons.map(r => `<span class="verdict-reason-chip">✓ ${esc(r)}</span>`).join('')}</div>`
+    : '';
+
+  // Backup mountain block
+  const backupHtml = backup ? (() => {
+    const reason = backupReason(primaryItem, backup);
+    const bDrive = formatDrive(backup.resort.id);
     return `<div class="verdict-backup">
       <div class="verdict-backup-label">Also consider</div>
-      <div class="verdict-backup-name">${esc(b.resort.name)}</div>
-      <div class="verdict-backup-meta">${esc(b.resort.state)} · Ski Score ${b.skis.skiScore} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
+      <div class="verdict-backup-name">${esc(backup.resort.name)}</div>
+      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
     </div>`;
   })() : '';
+
+  // Top-5 strip (skip #1 — it's already shown as top pick)
+  const top5Html = top5.length > 1
+    ? `<div class="verdict-top5">
+        <div class="verdict-top5-label">Also in the running</div>
+        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
+          `<span class="metric-chip">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</span>`
+        ).join('')}</div>
+      </div>`
+    : '';
 
   els.verdictCard.innerHTML = `
     <div class="verdict-inner verdict-${tier}">
       <div class="verdict-left">
         <div class="verdict-icon" aria-hidden="true">${icon}</div>
         <div class="verdict-body">
+          <div class="verdict-context-headline">${esc(context.headline)}</div>
           <div class="verdict-headline">${headline}</div>
           <div class="verdict-detail">${detail}</div>
           ${subList}
@@ -485,6 +504,7 @@ function renderVerdict(resorts) {
           <div class="verdict-pick-name">${esc(resort.name)}</div>
           <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Ski Score ${breakdown.score}</div>
         </div>
+        ${reasonsHtml}
         ${spark ? `<div class="verdict-spark-wrap"><span class="verdict-spark-label">Last 7 days</span>${spark}</div>` : ''}
         <div class="verdict-chips">
           <span class="metric-chip">❄️ ${tomorrowIn.toFixed(1)}" tomorrow</span>
@@ -493,6 +513,7 @@ function renderVerdict(resorts) {
           ${driveChip}
         </div>
         ${backupHtml}
+        ${top5Html}
         <button class="btn btn-secondary verdict-share-btn" id="verdictShareBtn">&#127920; Share this pick</button>
       </div>
     </div>`;
@@ -658,9 +679,13 @@ function crowdForecast(resort) {
 
   // Day-of-week effect
   const day = new Date().getDay(); // 0=Sun, 6=Sat
-  if (day === 6)      { score += 20; reasons.push('Saturday — busiest ski day'); }
-  else if (day === 0) { score += 12; reasons.push('Sunday traffic'); }
-  else if (day === 5) { score += 6;  reasons.push('Friday arrivals'); }
+  if (day === 6)                { score += 20; reasons.push('Saturday — busiest ski day'); }
+  else if (day === 0)           { score += 12; reasons.push('Sunday traffic'); }
+  else if (day === 5)           { score += 6;  reasons.push('Friday arrivals'); }
+  else if (day >= 1 && day <= 4){ score -= 12; reasons.push('Midweek traffic drop'); }
+
+  // Night-only filter draws after-work crowds
+  if (state.nightOnly) { score += 8; reasons.push('After-work night crowd'); }
 
   // Drive distance
   const drive = getDriveMins(resort.id);
@@ -794,39 +819,119 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
 // ─── Primary + Backup mountain picker ────────────────────────────────────────
 // Selects the top pick plus a "safer" backup (lower crowds, shorter drive,
 // lower weather risk, or better value) for display in the verdict card.
-function backupReason(primary, backup) {
-  if (backup.crowd.score < primary.crowd.score - 8) return 'lighter crowds expected';
-  if (backup.drive       < primary.drive - 20)      return 'shorter drive';
-  if (backup.risk        < primary.risk)             return 'lower weather risk';
-  if (backup.resort.price < primary.resort.price - 10) return 'better value';
-  return 'solid alternative';
+// ─── Decision context (time/day/trip-type aware) ──────────────────────────────
+function getDecisionContext() {
+  const now  = new Date();
+  const day  = now.getDay();   // 0 Sun … 6 Sat
+  const hour = now.getHours();
+
+  const hasNight   = state.nightOnly   === true;
+  const hasDayTrip = state.daytripOnly === true;
+  const hasOrigin  = !!state.origin;
+
+  let timeframe;
+  if (hasNight) {
+    timeframe = 'tonight';
+  } else if (day >= 1 && day <= 4) {
+    timeframe = hour < 15 ? 'today' : 'tomorrow';
+  } else if (day === 5) {
+    timeframe = hour < 15 ? 'today' : 'this weekend';
+  } else {
+    timeframe = 'today';
+  }
+
+  const tripType = hasNight ? 'night ski' : hasDayTrip ? 'day trip' : 'ski';
+  const audience = hasOrigin && state.origin.label ? state.origin.label : null;
+
+  return {
+    timeframe,
+    tripType,
+    audience,
+    headline: `Best places to ${tripType} ${timeframe}`,
+    subhead: audience
+      ? `Ranked from ${audience} using live conditions, drive time, crowds, and your score settings.`
+      : `Ranked using live conditions, crowds, and your score settings. Add your location for drive-based picks.`,
+  };
 }
 
-function findPrimaryAndBackup(resorts) {
+// ─── Weather risk score (0–100) ───────────────────────────────────────────────
+function weatherRiskScore(wx) {
+  if (!wx) return 50;
+  let risk = 0;
+  const wind  = wx.wind  || 0;
+  const temp  = wx.temp  || 30;
+  const storm = (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
+  if (wind >= 30)  risk += 30;
+  else if (wind >= 20) risk += 15;
+  if (temp >= 38)  risk += 20;
+  else if (temp >= 34) risk += 10;
+  if (storm <= 1)  risk += 5;
+  return Math.max(0, Math.min(100, risk));
+}
+
+// ─── Backup reason ────────────────────────────────────────────────────────────
+function backupReason(primary, backup) {
+  if (!primary || !backup) return 'solid fallback';
+  if (backup.crowd.score     < primary.crowd.score - 8)  return 'lighter crowds';
+  if ((backup.drive ?? 999)  < (primary.drive ?? 999) - 20) return 'shorter drive';
+  if (backup.risk            < primary.risk - 10)         return 'lower weather risk';
+  if (backup.resort.price    < primary.resort.price - 10) return 'better value';
+  return 'strong alternate if plans change';
+}
+
+// ─── Editorial reasons for the primary pick ───────────────────────────────────
+function primaryReasons(item) {
+  if (!item) return [];
+  const reasons = [];
+  const storm = item.storm || 0;
+
+  if (item.ski.skiScore >= 85) reasons.push(`Elite Ski Score (${item.ski.skiScore})`);
+  else                          reasons.push(`Strong Ski Score (${item.ski.skiScore})`);
+
+  if (storm >= 6) reasons.push(`${storm.toFixed(1)}" forecast over 3 days`);
+  const drive = item.drive;
+  if (drive !== null && drive !== undefined && drive <= 120)
+    reasons.push(`Easy drive at ${formatDrive(item.resort.id)}`);
+  const cLabel = item.crowd?.label || '';
+  if (cLabel === 'Light' || cLabel === 'Light-Moderate')
+    reasons.push('Lighter crowd outlook');
+  if (state.nightOnly && item.resort.night)
+    reasons.push('Night skiing available');
+  if (state.passPreference && state.passPreference !== 'All' &&
+      item.resort.passGroup === state.passPreference)
+    reasons.push(`${item.resort.passGroup} pass access`);
+
+  return reasons.slice(0, 3);
+}
+
+// ─── Decision brief (replaces findPrimaryAndBackup, adds context + top5) ─────
+function buildDecisionBrief(resorts) {
+  const context = getDecisionContext();
+
   const scored = resorts
     .map(resort => {
       const wx = state.weatherCache[resort.id]?.data;
       if (!wx) return null;
-      const skis  = skiScoreBreakdown(resort, wx, 0);
+      const ski   = skiScoreBreakdown(resort, wx, 0);
       const crowd = crowdForecast(resort);
-      const drive = getDriveMins(resort.id) ?? 999;
+      const drive = getDriveMins(resort.id) ?? null;
+      const risk  = weatherRiskScore(wx);
       const storm = (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-      const risk  = (wx.wind >= 25 ? 1 : 0) + (wx.temp >= 36 ? 1 : 0);
-      return { resort, wx, skis, crowd, drive, storm, risk };
+      return { resort, wx, ski, crowd, drive, risk, storm };
     })
     .filter(Boolean)
-    .sort((a, b) => b.skis.skiScore - a.skis.skiScore);
+    .sort((a, b) => b.ski.skiScore - a.ski.skiScore);
 
-  if (!scored.length) return null;
+  if (!scored.length) return { context, primary: null, backup: null, top5: [] };
 
   const primary = scored[0];
   const backup  = scored.slice(1).find(x =>
-    x.crowd.score <= primary.crowd.score ||
-    x.drive       <= primary.drive       ||
-    x.risk        <  primary.risk
+    x.crowd.score      <= primary.crowd.score      ||
+    (x.drive ?? 999)   <= (primary.drive ?? 999)   ||
+    x.risk             <  primary.risk
   ) || scored[1] || null;
 
-  return { primary, backup };
+  return { context, primary, backup, top5: scored.slice(0, 5) };
 }
 
 function hiddenGemScore(resort) {

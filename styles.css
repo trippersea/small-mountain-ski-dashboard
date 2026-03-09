@@ -1430,3 +1430,48 @@ button { font: inherit; }
   opacity: .75;
   margin-top: 2px;
 }
+
+/* ─── Verdict: context headline + reason chips + top-5 strip ─────────────────── */
+.verdict-context-headline {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  opacity: .6;
+  margin-bottom: 4px;
+}
+
+.verdict-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.verdict-reason-chip {
+  font-size: 11px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.verdict-top5 {
+  margin-top: 12px;
+}
+.verdict-top5-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  opacity: .55;
+  margin-bottom: 6px;
+}
+.verdict-top5-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.verdict-top5-chips .metric-chip {
+  font-size: 11px;
+  opacity: .85;
+}
