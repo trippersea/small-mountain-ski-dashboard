@@ -315,7 +315,7 @@ button { font: inherit; }
 .verdict-right {
   display: flex; flex-direction: column; gap: 12px;
   padding: 22px 24px;
-  background: rgba(248,250,252,.9);
+  background: linear-gradient(160deg, #f0f6ff 0%, #e8f1fd 100%);
   border-left: 1px solid var(--border);
 }
 @media (max-width: 700px) {
@@ -1444,17 +1444,34 @@ button { font: inherit; }
 
 .verdict-reasons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 12px;
 }
 .verdict-reason-chip {
-  font-size: 13px;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 999px;
-  padding: 4px 11px;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(22,163,74,.08);
+  border: 1.5px solid rgba(22,163,74,.22);
+  border-radius: 10px;
+  padding: 8px 13px;
+  white-space: normal;
+  line-height: 1.3;
+}
+.verdict-reason-chip::before {
+  content: '✓';
+  font-size: 14px;
+  font-weight: 900;
+  color: #16a34a;
+  flex-shrink: 0;
+}
+/* Override the JS-injected "✓ " text so we don't double-render */
+.verdict-reason-chip .chip-text {
+  flex: 1;
 }
 
 .verdict-top5 {
@@ -1817,4 +1834,79 @@ button { font: inherit; }
   min-width: 0;
   text-align: center;
   justify-content: center;
+}
+
+/* ─── Live Conditions sub-card ───────────────────────────────────────────────── */
+.conditions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.cond-stat {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.cond-stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text);
+}
+.cond-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-top: 3px;
+}
+.cond-surface {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.cond-notes {
+  font-style: italic;
+  line-height: 1.5;
+}
+.cond-date {
+  opacity: .6;
+}
+
+/* Loading spinner */
+.conditions-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.conditions-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Conditions badge under resort name in table */
+.cond-table-badge {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+@media (max-width: 700px) {
+  .conditions-grid { grid-template-columns: repeat(2, 1fr); }
 }
