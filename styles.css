@@ -1735,3 +1735,86 @@ button { font: inherit; }
   align-items: center;
   gap: 5px;
 }
+
+/* ─── Filter micro-copy ──────────────────────────────────────────────────────── */
+.filter-hint {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  opacity: .75;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+/* Toggle buttons: Off / On states */
+.field-toggle .btn[aria-pressed="true"] {
+  background: rgba(43,109,233,.12);
+  border-color: rgba(43,109,233,.4);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ─── Prominent Quick Settings cards ─────────────────────────────────────────── */
+.quick-settings {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.qs-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 13px;
+}
+
+.qs-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.qs-card-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.qs-card-desc {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.qs-card-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* Buttons inside qs-cards — slightly larger than old qs-btns */
+.qs-card-btns .skill-btn {
+  font-size: 12px;
+  padding: 5px 12px;
+  height: auto;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  justify-content: center;
+}
+
+.qs-card-btns .pass-pref-btn {
+  font-size: 12px;
+  padding: 5px 10px;
+  height: auto;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  justify-content: center;
+}

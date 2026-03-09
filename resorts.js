@@ -100,6 +100,7 @@ const state = Object.seal({
   nightOnly:    false,
   daytripOnly:  false,
   maxDrive:     0,
+  maxPrice:     0,
   selectedId:   null,
   origin:       null,
   driveCache:   {},
@@ -123,6 +124,7 @@ const els = {
   passFilter:          $('passFilter'),
   stateFilter:         $('stateFilter'),
   maxDriveFilter:      $('maxDriveFilter'),
+  maxPriceFilter:      $('maxPriceFilter'),
   sortBy:              $('sortBy'),
   toggleNight:         $('toggleNight'),
   toggleDaytrip:        $('toggleDaytrip'),
@@ -205,6 +207,7 @@ function serializeState() {
   if (state.nightOnly)                 p.set('night', '1');
   if (state.daytripOnly)               p.set('daytrip', '1');
   if (state.maxDrive > 0)              p.set('drive', state.maxDrive);
+  if (state.maxPrice > 0)              p.set('price', state.maxPrice);
   if (state.skiDays  !== 5)            p.set('days',  state.skiDays);
   if (state.origin) {
     p.set('lat', state.origin.lat.toFixed(4));
@@ -240,6 +243,7 @@ function applyUrlState() {
   if (p.has('night'))   state.nightOnly   = true;
   if (p.has('daytrip')) state.daytripOnly = true;
   if (p.has('drive')) state.maxDrive  = Number(p.get('drive')) || 0;
+  if (p.has('price')) state.maxPrice  = Number(p.get('price')) || 0;
   if (p.has('days'))  state.skiDays   = Math.max(1, Number(p.get('days')) || 5);
   if (p.has('skill') && ['beginner','mixed','advanced'].includes(p.get('skill'))) state.skillLevel = p.get('skill');
 
@@ -958,6 +962,7 @@ function activeFilters() {
   const filters = [];
   if (state.search.trim())     filters.push(`Search: "${esc(state.search.trim())}"`);
   if (state.maxDrive > 0)      filters.push(`Drive: ${DRIVE_RANGES[state.maxDrive]?.label ?? ''}${state.origin ? '' : ' (set location to activate)'}`);
+  if (state.maxPrice > 0)      filters.push(`Max ticket: $${state.maxPrice}`);
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
   if (state.nightOnly)         filters.push('Night only');
@@ -980,6 +985,7 @@ function filteredResorts() {
       const mins = getDriveMins(r.id);
       if (mins !== null && mins > 150) return false;
     }
+    if (state.maxPrice > 0 && r.price > state.maxPrice) return false;
     if (state.maxDrive > 0 && state.origin) {
       const range = DRIVE_RANGES[state.maxDrive];
       if (range) {
@@ -1909,7 +1915,7 @@ function wireEvents() {
     tipEl.style.top  = (rect.bottom + window.scrollY + 8) + 'px';
     tipEl.classList.add('visible');
     clearTimeout(tipTimeout);
-    tipTimeout = setTimeout(() => tipEl.classList.remove('visible'), 4000);
+    tipTimeout = setTimeout(() => tipEl.classList.remove('visible'), 8000);
   });
 
   // ── AI Chat ──────────────────────────────────────────────────────────────────
@@ -1997,15 +2003,21 @@ function wireEvents() {
     if (state.maxDrive > 0 && !state.origin) showToast('Set a starting location to use the Drive Time filter');
     pushUrlDebounced(); render();
   });
+  if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
+    state.maxPrice = Number(e.target.value);
+    pushUrlDebounced(); render();
+  });
   els.sortBy.addEventListener('change', e => { state.sortBy = e.target.value; pushUrlDebounced(); render(); });
   els.toggleNight.addEventListener('click', () => {
     state.nightOnly = !state.nightOnly;
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
+    els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
     pushUrlDebounced(); render();
   });
   if (els.toggleDaytrip) els.toggleDaytrip.addEventListener('click', () => {
     state.daytripOnly = !state.daytripOnly;
     els.toggleDaytrip.setAttribute('aria-pressed', String(state.daytripOnly));
+    els.toggleDaytrip.textContent = state.daytripOnly ? '✓ On' : 'Off';
     savePlannerState();
     pushUrlDebounced();
     debouncedRender();
@@ -2054,15 +2066,18 @@ function wireEvents() {
   })();
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
-    state.sortBy = 'planner'; state.nightOnly = false; state.daytripOnly = false; state.maxDrive = 0;
+    state.sortBy = 'planner'; state.nightOnly = false; state.daytripOnly = false;
+    state.maxDrive = 0; state.maxPrice = 0;
     state.skillLevel = 'mixed'; state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
     els.stateFilter.value    = 'All';
     els.maxDriveFilter.value = '0';
+    if (els.maxPriceFilter) els.maxPriceFilter.value = '0';
     els.sortBy.value         = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false');
-    if (els.toggleDaytrip) els.toggleDaytrip.setAttribute('aria-pressed', 'false');
+    els.toggleNight.textContent = 'Off';
+    if (els.toggleDaytrip) { els.toggleDaytrip.setAttribute('aria-pressed', 'false'); els.toggleDaytrip.textContent = 'Off'; }
     if (els.tableSearch) els.tableSearch.value = '';
     pushUrlDebounced(); render();
   });
@@ -2231,8 +2246,13 @@ function initialize() {
     els.stateFilter.value    = state.stateFilter;
     els.sortBy.value         = state.sortBy;
     els.maxDriveFilter.value = String(state.maxDrive);
+    if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.maxPrice);
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
-    if (els.toggleDaytrip) els.toggleDaytrip.setAttribute('aria-pressed', String(state.daytripOnly));
+    els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
+    if (els.toggleDaytrip) {
+      els.toggleDaytrip.setAttribute('aria-pressed', String(state.daytripOnly));
+      els.toggleDaytrip.textContent = state.daytripOnly ? '✓ On' : 'Off';
+    }
   }
 
   syncPlannerControls();
