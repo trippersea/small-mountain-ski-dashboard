@@ -832,3 +832,64 @@ button { font: inherit; }
 .planner-summary-row .planner-toggle-btn {
   margin-left: 0;
 }
+
+/* ─── Zip code hint ───────────────────────────────────────────────────────── */
+.location-best-results {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+  padding: 6px 10px;
+  background: rgba(43,109,233,.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+.location-best-results strong { color: var(--accent); }
+
+/* ─── Customize button — left-aligned ────────────────────────────────────── */
+.weight-summary-row {
+  justify-content: flex-start;
+}
+.weight-summary-row .planner-toggle-btn {
+  margin-left: 0;
+  margin-right: auto;
+  order: -1; /* appears before the summary text */
+}
+.weight-summary-row .weight-summary {
+  order: 1;
+}
+
+/* ─── AI compare box ──────────────────────────────────────────────────────── */
+.compare-ai-box {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(43,109,233,.3);
+  position: relative;
+  overflow: hidden;
+}
+.compare-ai-box::before {
+  content: '🤖 AI Pick';
+  position: absolute;
+  top: 12px; right: 16px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+  font-family: 'DM Mono', monospace;
+}
+.ai-thinking {
+  color: rgba(255,255,255,.6);
+  font-size: 14px;
+  font-style: italic;
+}
+.ai-verdict-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ai-verdict-text {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #e2eaf8;
+  font-weight: 400;
+}

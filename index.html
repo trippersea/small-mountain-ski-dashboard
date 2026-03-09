@@ -24,6 +24,7 @@
       <a href="#searchSection" class="nav-secondary">📍 Location</a>
       <a href="#plannerSection" class="nav-secondary">⚙️ Planner</a>
       <a href="#stormSection" class="nav-secondary">🌨️ Storm</a>
+      <a href="#hiddenGemSection" class="nav-secondary">💎 Hidden Gems</a>
       <a href="#mapSection" class="nav-secondary">🗺️ Map</a>
       <button class="btn-ghost nav-share" onclick="copyShareLink()">🔗 Share</button>
     </div>
@@ -52,12 +53,13 @@
           <button id="setLocation" class="btn btn-primary">Set</button>
           <button id="detectLocation" class="btn btn-secondary">📡 Locate me</button>
         </div>
+        <div class="location-best-results"><strong>💡 For best results, enter your ZIP code</strong> — drive times and the Day Trip filter only work with a precise location.</div>
         <div id="locationStatus" class="helper-text"></div>
       </div>
     </section>
 
     <!-- STEP 2: CUSTOMIZE YOUR SCORE -->
-    <section id="plannerSection" class="card panel planner-collapsed">
+    <section id="plannerSection" class="card panel">
       <div class="planner-summary-row">
         <div class="planner-summary-left">
           <div class="planner-summary-title">What makes the perfect ski day?</div>
@@ -71,13 +73,13 @@
       </div>
       <div class="weight-summary-row">
         <div id="weightSummary" class="weight-summary"></div>
-        <button id="plannerToggle" class="planner-toggle-btn" aria-expanded="false" aria-controls="plannerDetails">
-          <span class="planner-toggle-label">Customize</span>
+        <button id="plannerToggle" class="planner-toggle-btn" aria-expanded="true" aria-controls="plannerDetails">
+          <span class="planner-toggle-label">Customize Your Settings</span>
           <span class="planner-toggle-icon">✏️</span>
         </button>
       </div>
 
-      <div id="plannerDetails" class="planner-details" hidden>
+      <div id="plannerDetails" class="planner-details">
         <div class="score-grid">
 
           <div class="score-control">
@@ -148,7 +150,6 @@
     <!-- SHOULD I GO? -->
     <section id="verdictSection" class="verdict-section card hidden">
       <div class="verdict-header">
-        <div class="eyebrow">Live Conditions Report</div>
         <h2>Should I Go This Weekend?</h2>
         <p class="muted small">Based on your location, trip style, and live weather — a straight answer so you don't have to check five different sites.</p>
       </div>
@@ -273,7 +274,7 @@
         <div id="stormGrid" class="card-grid"></div>
       </section>
 
-      <section class="card panel">
+      <section id="hiddenGemSection" class="card panel">
         <div class="section-header"><div>
           <h2>💎 Hidden Gems</h2>
           <p class="muted small">Lower crowds, good value, real terrain — the anti-resort picks.</p>
@@ -294,6 +295,7 @@
           <button class="map-mode-btn active" data-map-mode="drive">Drive</button>
           <button class="map-mode-btn" data-map-mode="storm">Storm</button>
           <button class="map-mode-btn" data-map-mode="pass">Pass</button>
+          <button class="map-mode-btn" data-map-mode="vertical">Vertical</button>
         </div>
       </div>
       <div class="map-legend" id="mapLegend"></div>

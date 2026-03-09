@@ -1197,6 +1197,9 @@ function renderComparePanel() {
     ['Base / summit',   r => `${r.baseElevation} / ${r.summitElevation} ft`],
   ];
   els.compareContent.innerHTML = `
+    <div id="compareAiBox" class="compare-ai-box">
+      <div class="ai-thinking">🤖 Loading AI recommendation…</div>
+    </div>
     <div class="table-wrap">
       <table class="comparison-table">
         <thead><tr><th scope="col">Metric</th>${resorts.map(r => `<th scope="col">${esc(r.name)}</th>`).join('')}</tr></thead>
@@ -1205,6 +1208,39 @@ function renderComparePanel() {
         ).join('')}</tbody>
       </table>
     </div>`;
+  // AI recommendation — build prompt and call Claude API
+  const aiBox = document.getElementById('compareAiBox');
+  if (aiBox) {
+    aiBox.innerHTML = '<div class="ai-thinking">🤖 Analyzing your mountains…</div>';
+    const resortSummaries = resorts.map(r => {
+      const wx  = state.weatherCache[r.id]?.data;
+      const sc  = wx ? plannerScoreBreakdown(r, wx, 0, w).score : null;
+      const drv = getDriveMins(r.id);
+      return `${r.name} (${r.state}): vertical ${r.vertical}ft, ${r.trails} trails, $${r.price} ticket, ` +
+             `${r.avgSnowfall}" avg snow, ${crowdForecast(r).label} crowds, ` +
+             `${drv !== null ? drv + ' min drive' : 'unknown drive'}, pass: ${r.passGroup}` +
+             (sc !== null ? `, planner score: ${sc}` : '');
+    }).join('
+');
+    const prompt = `You're a witty, opinionated ski expert helping a skier choose between these New England mountains:
+
+${resortSummaries}
+
+In 3–4 punchy sentences, recommend ONE of them and explain why — be specific, reference actual stats, and have a personality. End with one sentence on who the runner-up is best suited for. Sign off as "— SkiNE AI 🤖"`;
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
+    })
+    .then(r => r.json())
+    .then(data => {
+      const text = (data.content || []).find(b => b.type === 'text')?.text || 'Could not generate recommendation.';
+      aiBox.innerHTML = `<div class="ai-verdict-inner"><div class="ai-verdict-text">${text.replace(/
+/g,'<br>')}</div></div>`;
+    })
+    .catch(() => { aiBox.innerHTML = '<div class="ai-thinking muted">AI recommendation unavailable.</div>'; });
+  }
+
   els.comparePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1283,6 +1319,14 @@ let map = null, markers = {};
 function passColor(g)  { return { Epic:'#2b6de9', Ikon:'#8a4dff', Indy:'#22b38a', Independent:'#90a4be' }[g] || '#90a4be'; }
 function driveColor(m) { return m <= 90 ? '#22b38a' : m <= 150 ? '#8ccf57' : m <= 210 ? '#f0b44c' : '#e07a5f'; }
 function stormColor(t) { return t >= 8 ? '#1d4ed8' : t >= 5 ? '#3b82f6' : t >= 2 ? '#93c5fd' : '#cbd5e1'; }
+function verticalColor(v) {
+  // 5 tiers by vertical drop
+  if (v >= 2500) return '#1d2d6e'; // Navy  — big destination (Whiteface 3430, Killington 3050…)
+  if (v >= 1800) return '#2b6de9'; // Blue  — large regional (Stowe, Loon, Cannon…)
+  if (v >= 1200) return '#22b38a'; // Teal  — solid mid-size (Gunstock, Bretton, Jiminy…)
+  if (v >= 700)  return '#f0b44c'; // Amber — smaller hill (Pats Peak, Whaleback…)
+  return '#e07a5f';                // Coral — beginner / small (McIntyre, Bradford…)
+}
 
 function renderMapLegend() {
   const html = state.mapMode === 'drive' ? `
@@ -1295,6 +1339,12 @@ function renderMapLegend() {
     <span class="legend-chip"><i class="legend-dot" style="background:#3b82f6"></i> 5–8&quot;</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#93c5fd"></i> 2–5&quot;</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#cbd5e1"></i> under 2&quot;</span>`
+    : state.mapMode === 'vertical' ? `
+    <span class="legend-chip"><i class="legend-dot" style="background:#1d2d6e"></i> 2,500+ ft</span>
+    <span class="legend-chip"><i class="legend-dot" style="background:#2b6de9"></i> 1,800–2,499 ft</span>
+    <span class="legend-chip"><i class="legend-dot" style="background:#22b38a"></i> 1,200–1,799 ft</span>
+    <span class="legend-chip"><i class="legend-dot" style="background:#f0b44c"></i> 700–1,199 ft</span>
+    <span class="legend-chip"><i class="legend-dot" style="background:#e07a5f"></i> under 700 ft</span>`
     : `
     <span class="legend-chip"><i class="legend-dot" style="background:#2b6de9"></i> Epic</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#8a4dff"></i> Ikon</span>
@@ -1322,6 +1372,7 @@ function updateMap(resorts) {
     let color = passColor(resort.passGroup);
     if (state.mapMode === 'drive' && driveMins !== null) color = driveColor(driveMins);
     if (state.mapMode === 'storm') color = stormColor(storm);
+    if (state.mapMode === 'vertical') color = verticalColor(resort.vertical);
     const size = selected ? 16 : 10;
     const icon = L.divIcon({
       className: '',
@@ -1418,14 +1469,19 @@ function wireEvents() {
 
   // Planner collapse/expand toggle
   if (els.plannerToggle && els.plannerDetails) {
+    // Start expanded (details visible by default)
+    els.plannerToggle.setAttribute('aria-expanded', 'true');
+    els.plannerDetails.hidden = false;
+    els.plannerSection && els.plannerSection.classList.remove('planner-collapsed');
+
     els.plannerToggle.addEventListener('click', () => {
       const isExpanded = els.plannerToggle.getAttribute('aria-expanded') === 'true';
       const opening = !isExpanded;
       els.plannerToggle.setAttribute('aria-expanded', String(opening));
       els.plannerDetails.hidden = !opening;
-      els.plannerSection.classList.toggle('planner-collapsed', !opening);
+      els.plannerSection && els.plannerSection.classList.toggle('planner-collapsed', !opening);
       const lbl = els.plannerToggle.querySelector('.planner-toggle-label');
-      if (lbl) lbl.textContent = opening ? 'Collapse' : 'Customize';
+      if (lbl) lbl.textContent = opening ? 'Customize Your Settings' : 'Customize Your Settings';
     });
   }
 
