@@ -34,11 +34,6 @@
 
   <div class="container">
 
-    <!-- STATS BAR — compact summary of all mountains in current filter -->
-    <section class="stats-bar card">
-      <div id="summaryCards" class="stats-strip"></div>
-    </section>
-
     <!-- STEP 1: FIND YOUR MOUNTAIN -->
     <section id="searchSection" class="hero card hero-compact">
       <div class="hero-compact-inner">
@@ -300,6 +295,12 @@
       </div>
       <div class="map-legend" id="mapLegend"></div>
       <div id="leafletMap" class="leaflet-map"></div>
+    </section>
+
+    <!-- DATABASE SUMMARY — site footer stats -->
+    <section class="db-summary-section">
+      <div class="db-summary-label">⛷️ What's in the database</div>
+      <div id="summaryCards" class="db-summary-grid"></div>
     </section>
 
   </div>

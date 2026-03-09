@@ -893,3 +893,62 @@ button { font: inherit; }
   color: #e2eaf8;
   font-weight: 400;
 }
+
+/* ─── Database summary footer ─────────────────────────────────────────────── */
+.db-summary-section {
+  margin-top: 8px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(43,109,233,.2);
+}
+.db-summary-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  margin-bottom: 18px;
+}
+.db-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+.db-stat {
+  padding: 0 20px 0 0;
+  border-right: 1px solid rgba(255,255,255,.08);
+  margin-right: 20px;
+}
+.db-stat:last-child {
+  border-right: none;
+  margin-right: 0;
+  padding-right: 0;
+}
+.db-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+.db-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,.65);
+  margin-top: 3px;
+}
+.db-stat-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,.35);
+  margin-top: 1px;
+}
+
+@media (max-width: 900px) {
+  .db-summary-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .db-stat { border-right: none; margin-right: 0; padding-right: 0; }
+}
+@media (max-width: 500px) {
+  .db-summary-grid { grid-template-columns: repeat(2, 1fr); }
+}

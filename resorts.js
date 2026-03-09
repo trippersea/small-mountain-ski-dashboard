@@ -956,20 +956,23 @@ function renderSummaryCards(resorts) {
   const avgVertical = count ? Math.round(resorts.reduce((s, r) => s + r.vertical, 0) / count) : 0;
   const avgPrice    = count ? Math.round(resorts.reduce((s, r) => s + r.price, 0) / count) : 0;
 
-  const withDrive  = resorts.map(r => ({ r, m: getDriveMins(r.id) })).filter(x => x.m !== null);
-  withDrive.sort((a, b) => a.m - b.m);
-  const closest    = withDrive[0];
-
   els.summaryCards.innerHTML = [
-    summaryHtml('Mountains',    count),
-    summaryHtml('Epic',         resorts.filter(r => r.passGroup === 'Epic').length),
-    summaryHtml('Ikon',         resorts.filter(r => r.passGroup === 'Ikon').length),
-    summaryHtml('Indy',         resorts.filter(r => r.passGroup === 'Indy').length),
-    summaryHtml('Independent',  resorts.filter(r => r.passGroup === 'Independent').length),
-    summaryHtml('Avg Vertical', `${avgVertical} ft`),
-    summaryHtml('Avg Ticket*',  `$${avgPrice}`, 'est.'),
-    summaryHtml('Closest',      closest ? esc(closest.r.name) : '—', closest ? formatDrive(closest.r.id) : 'Set location'),
+    dbStatHtml('Mountains',   count,                                          'in New England'),
+    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
+    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,        'resorts'),
+    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,        'resorts'),
+    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length, 'resorts'),
+    dbStatHtml('Avg Vertical', `${avgVertical} ft`,                           'across all mountains'),
+    dbStatHtml('Avg Ticket',   `$${avgPrice}`,                                'day ticket est.'),
   ].join('');
+}
+
+function dbStatHtml(label, value, sub) {
+  return `<div class="db-stat">
+    <div class="db-stat-value">${value}</div>
+    <div class="db-stat-label">${label}</div>
+    ${sub ? `<div class="db-stat-sub">${sub}</div>` : ''}
+  </div>`;
 }
 
 // ─── Card templates ───────────────────────────────────────────────────────────
