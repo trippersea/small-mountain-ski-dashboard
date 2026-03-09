@@ -16,6 +16,7 @@
 </head>
 <body>
   <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+  <div id="sliderTooltip" class="slider-tooltip" role="tooltip"></div>
 
   <nav class="top-nav">
     <div class="top-nav-inner">
@@ -123,27 +124,27 @@
           <div class="score-grid">
 
             <div class="score-control">
-              <label for="snowWeight">&#10052;&#65039; Snow <span id="snowWeightVal"></span></label>
+              <label for="snowWeight">&#10052;&#65039; Snow <span id="snowWeightVal"></span><button class="slider-info-btn" data-tip="snow" aria-label="Snow quality info">?</button></label>
               <input id="snowWeight" type="range" min="1" max="10" step="1">
             </div>
 
             <div class="score-control">
-              <label for="driveWeight">&#128664; Drive <span id="driveWeightVal"></span></label>
+              <label for="driveWeight">&#128664; Drive <span id="driveWeightVal"></span><button class="slider-info-btn" data-tip="drive" aria-label="Drive time info">?</button></label>
               <input id="driveWeight" type="range" min="1" max="10" step="1">
             </div>
 
             <div class="score-control">
-              <label for="sizeWeight">&#127956;&#65039; Size <span id="sizeWeightVal"></span></label>
+              <label for="sizeWeight">&#127956;&#65039; Size <span id="sizeWeightVal"></span><button class="slider-info-btn" data-tip="size" aria-label="Mountain size info">?</button></label>
               <input id="sizeWeight" type="range" min="1" max="10" step="1">
             </div>
 
             <div class="score-control">
-              <label for="valueWeight">&#128176; Value <span id="valueWeightVal"></span></label>
+              <label for="valueWeight">&#128176; Value <span id="valueWeightVal"></span><button class="slider-info-btn" data-tip="value" aria-label="Value info">?</button></label>
               <input id="valueWeight" type="range" min="1" max="10" step="1">
             </div>
 
             <div class="score-control">
-              <label for="crowdWeight">&#128101; Crowds <span id="crowdWeightVal"></span></label>
+              <label for="crowdWeight">&#128101; Crowds <span id="crowdWeightVal"></span><button class="slider-info-btn" data-tip="crowds" aria-label="Crowd info">?</button></label>
               <input id="crowdWeight" type="range" min="1" max="10" step="1">
             </div>
 

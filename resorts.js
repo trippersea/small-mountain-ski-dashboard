@@ -519,7 +519,10 @@ function renderVerdict(resorts) {
         </div>
         ${backupHtml}
         ${top5Html}
-        <button class="btn btn-secondary verdict-share-btn" id="verdictShareBtn">&#127920; Share this pick</button>
+        <div class="verdict-action-row">
+          <button class="btn btn-secondary verdict-share-btn" id="verdictShareBtn">&#127920; Share this pick</button>
+          <a href="#compareSection" class="btn btn-primary verdict-compare-btn">&#128228; Compare Mountains</a>
+        </div>
       </div>
     </div>`;
 
@@ -1884,6 +1887,31 @@ function render() {
 const debouncedRender = debounce(render, 50);
 
 function wireEvents() {
+  // ── Slider info tooltips ──────────────────────────────────────────────────────
+  const SLIDER_TIPS = {
+    snow:   'Blends live forecast snow (60%) with each mountain\'s historical avg snowfall (40%). Higher = only go when conditions are exceptional.',
+    drive:  'Softly nudges rankings toward closer mountains. Use the Drive Time filter for a hard cutoff. Higher = distance matters more.',
+    size:   'Composite of vertical drop (50%), skiable acres (35%), and longest run (15%). Higher = only big destination mountains rank well.',
+    value:  'Rewards cheaper day ticket prices. Higher = budget-friendly independents beat expensive resorts regardless of size.',
+    crowds: 'Penalizes busy mountains based on pass network, proximity to cities, and ticket price. Higher = quiet independents rise to the top.',
+  };
+  const tipEl = document.getElementById('sliderTooltip');
+  let tipTimeout;
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.slider-info-btn');
+    if (!btn) { if (tipEl) { tipEl.classList.remove('visible'); } return; }
+    e.stopPropagation();
+    const key = btn.dataset.tip;
+    if (!tipEl || !key || !SLIDER_TIPS[key]) return;
+    const rect = btn.getBoundingClientRect();
+    tipEl.textContent = SLIDER_TIPS[key];
+    tipEl.style.left = Math.min(rect.left + window.scrollX, window.innerWidth - 260) + 'px';
+    tipEl.style.top  = (rect.bottom + window.scrollY + 8) + 'px';
+    tipEl.classList.add('visible');
+    clearTimeout(tipTimeout);
+    tipTimeout = setTimeout(() => tipEl.classList.remove('visible'), 4000);
+  });
+
   // ── AI Chat ──────────────────────────────────────────────────────────────────
   if (els.aiChatBtn) {
     els.aiChatBtn.addEventListener('click', () => {
