@@ -1199,27 +1199,31 @@ function renderComparePanel() {
   const aiBox = document.getElementById('compareAiBox');
   if (aiBox) {
     aiBox.innerHTML = '<div class="ai-thinking">🤖 Analyzing your mountains…</div>';
-    const resortSummaries = resorts.map(r => {
-      const wx  = state.weatherCache[r.id]?.data;
-      const sc  = wx ? plannerScoreBreakdown(r, wx, 0, w).score : null;
-      const drv = getDriveMins(r.id);
-      return `${r.name} (${r.state}): vertical ${r.vertical}ft, ${r.trails} trails, $${r.price} ticket, ` +
-             `${r.avgSnowfall}" avg snow, ${crowdForecast(r).label} crowds, ` +
-             `${drv !== null ? drv + ' min drive' : 'unknown drive'}, pass: ${r.passGroup}` +
-             (sc !== null ? `, planner score: ${sc}` : '');
-    }).join('\n');
-    const prompt = "You're a witty, opinionated ski expert helping a skier choose between these New England mountains:\n\n" + resortSummaries + "\n\nIn 3-4 punchy sentences, recommend ONE of them and explain why — be specific, reference actual stats, and have a personality. End with one sentence on who the runner-up is best suited for. Sign off as '— SkiNE AI 🤖'";
-    fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    // Build a clean payload for the server-side proxy — no API key on the client
+    const payload = resorts.map(r => ({
+      name:         r.name,
+      state:        r.state,
+      vertical:     r.vertical,
+      trails:       r.trails,
+      price:        r.price,
+      avgSnowfall:  r.avgSnowfall,
+      crowds:       crowdForecast(r).label,
+      drive:        getDriveMins(r.id),
+      passGroup:    r.passGroup,
+      plannerScore: (() => { const wx = state.weatherCache[r.id]?.data; return wx ? plannerScoreBreakdown(r, wx, 0, w).score : null; })(),
+    }));
+    fetch('/api/recommend', {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
+      body:    JSON.stringify({ resorts: payload }),
     })
     .then(r => r.json())
     .then(data => {
-      const text = (data.content || []).find(b => b.type === 'text')?.text || 'Could not generate recommendation.';
+      if (data.error) throw new Error(data.error);
+      const text = data.recommendation || 'No recommendation returned.';
       aiBox.innerHTML = '<div class="ai-verdict-inner"><div class="ai-verdict-text">' + text.replace(/\n/g, '<br>') + '</div></div>';
     })
-    .catch(() => { aiBox.innerHTML = '<div class="ai-thinking muted">AI recommendation unavailable.</div>'; });
+    .catch(err => { aiBox.innerHTML = '<div class="ai-thinking muted">AI recommendation unavailable — ' + err.message + '</div>'; });
   }
 
   els.comparePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
