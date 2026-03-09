@@ -99,104 +99,108 @@
       </div>
     </section>
 
-    <!-- PLANNER -->
-    <section id="plannerSection" class="card panel">
-      <div class="planner-summary-row">
-        <div class="planner-summary-left">
-          <div class="planner-summary-title">What makes the perfect ski day?</div>
+    <!-- PLANNER + VERDICT: two-column layout -->
+    <div class="planner-verdict-row">
+
+      <!-- LEFT: Planner controls -->
+      <section id="plannerSection" class="card panel planner-col">
+
+        <div class="planner-col-header">
+          <div class="planner-summary-title">&#9881;&#65039; What makes your perfect ski day?</div>
+          <div id="weightSummary" class="weight-summary"></div>
         </div>
-      </div>
-      <div class="preset-row">
-        <button class="preset-btn active" data-preset="balanced">&#9878;&#65039; Balanced</button>
-        <button class="preset-btn" data-preset="powder">&#10052;&#65039; Powder Chaser</button>
-        <button class="preset-btn" data-preset="family">&#128106; Family Day</button>
-        <button class="preset-btn" data-preset="cheap">&#128176; Cheap &amp; Close</button>
-      </div>
-      <div class="weight-summary-row">
-        <div id="weightSummary" class="weight-summary"></div>
-        <button id="plannerToggle" class="planner-toggle-btn" aria-expanded="true" aria-controls="plannerDetails">
-          <span class="planner-toggle-label">Customize Your Settings</span>
-          <span class="planner-toggle-icon">&#9999;&#65039;</span>
-        </button>
-      </div>
 
-      <div id="plannerDetails" class="planner-details">
-        <div class="score-grid">
+        <!-- Presets -->
+        <div class="preset-row">
+          <button class="preset-btn active" data-preset="balanced">&#9878;&#65039; Balanced</button>
+          <button class="preset-btn" data-preset="powder">&#10052;&#65039; Powder</button>
+          <button class="preset-btn" data-preset="family">&#128106; Family</button>
+          <button class="preset-btn" data-preset="cheap">&#128176; Budget</button>
+        </div>
 
-          <div class="score-control">
-            <label for="snowWeight">&#10052;&#65039; Snow Quality <span id="snowWeightVal"></span></label>
-            <input id="snowWeight" type="range" min="1" max="10" step="1">
-            <div class="score-desc">Blends <strong>live forecast snow</strong> (60%) with each mountain's <strong>historical avg snowfall</strong> (40%). At 10, you only go when conditions are exceptional &mdash; powder days or mountains with proven snow reliability.</div>
-          </div>
+        <!-- Sliders (2-col grid inside narrow column) -->
+        <div id="plannerDetails" class="planner-details">
+          <div class="score-grid">
 
-          <div class="score-control">
-            <label for="driveWeight">&#128664; Drive Time <span id="driveWeightVal"></span></label>
-            <input id="driveWeight" type="range" min="1" max="10" step="1">
-            <div class="score-desc">Higher scores favor mountains closest to your location. Use the <strong>Drive Time filter</strong> above the table for a hard range cutoff. This slider softly nudges rankings.</div>
-          </div>
-
-          <div class="score-control">
-            <label for="sizeWeight">&#127956;&#65039; Mountain Size <span id="sizeWeightVal"></span></label>
-            <input id="sizeWeight" type="range" min="1" max="10" step="1">
-            <div class="score-desc">A composite of <strong>vertical drop</strong> (50%), <strong>skiable acres</strong> (35%), and <strong>longest run</strong> (15%). At 10, only big destination mountains like Killington, Whiteface, or Stowe will rank highly.</div>
-          </div>
-
-          <div class="score-control">
-            <label for="valueWeight">&#128176; Best Value <span id="valueWeightVal"></span></label>
-            <input id="valueWeight" type="range" min="1" max="10" step="1">
-            <div class="score-desc">Strongly rewards cheaper day ticket prices. At 10, smaller independents like McIntyre ($45) beat Killington ($179) regardless of size. Best for budget-conscious days or when you don't have a season pass.</div>
-          </div>
-
-          <div class="score-control">
-            <label for="crowdWeight">&#128101; Avoid Crowds <span id="crowdWeightVal"></span></label>
-            <input id="crowdWeight" type="range" min="1" max="10" step="1">
-            <div class="score-desc">Penalizes mountains that tend to be busy &mdash; based on pass network size, proximity to population centers, and day ticket price. At 10, quiet independent mountains rise to the top.</div>
-          </div>
-
-          <div class="score-control skill-control">
-            <label>&#127919; Skill Level <span class="skill-label-sub muted small">&mdash; always applied to score</span></label>
-            <div class="skill-btn-row">
-              <button class="skill-btn" data-skill="beginner">&#128994; Beginner</button>
-              <button class="skill-btn active" data-skill="mixed">&#128309; All Levels</button>
-              <button class="skill-btn" data-skill="advanced">&#9899; Advanced</button>
+            <div class="score-control">
+              <label for="snowWeight">&#10052;&#65039; Snow <span id="snowWeightVal"></span></label>
+              <input id="snowWeight" type="range" min="1" max="10" step="1">
             </div>
-            <div class="score-desc">Matches mountains to your ability. <strong>Beginner</strong> rewards gentle, well-groomed terrain. <strong>Advanced</strong> rewards steep expert terrain + long vertical. <strong>All Levels</strong> rewards balanced mountains good for mixed groups.</div>
+
+            <div class="score-control">
+              <label for="driveWeight">&#128664; Drive <span id="driveWeightVal"></span></label>
+              <input id="driveWeight" type="range" min="1" max="10" step="1">
+            </div>
+
+            <div class="score-control">
+              <label for="sizeWeight">&#127956;&#65039; Size <span id="sizeWeightVal"></span></label>
+              <input id="sizeWeight" type="range" min="1" max="10" step="1">
+            </div>
+
+            <div class="score-control">
+              <label for="valueWeight">&#128176; Value <span id="valueWeightVal"></span></label>
+              <input id="valueWeight" type="range" min="1" max="10" step="1">
+            </div>
+
+            <div class="score-control">
+              <label for="crowdWeight">&#128101; Crowds <span id="crowdWeightVal"></span></label>
+              <input id="crowdWeight" type="range" min="1" max="10" step="1">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Quick Settings: Skill / Pass / Day Trip as compact rows -->
+        <div class="quick-settings">
+
+          <div class="qs-row">
+            <span class="qs-label">&#127919; Skill</span>
+            <div class="qs-btns">
+              <button class="skill-btn" data-skill="beginner">Beginner</button>
+              <button class="skill-btn active" data-skill="mixed">All Levels</button>
+              <button class="skill-btn" data-skill="advanced">Advanced</button>
+            </div>
           </div>
 
-          <div class="score-control skill-control">
-            <label>&#127915; My Pass <span class="skill-label-sub muted small">&mdash; boosts mountains on your pass</span></label>
-            <div class="skill-btn-row pass-pref-row">
-              <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
+          <div class="qs-row">
+            <span class="qs-label">&#127915; Pass</span>
+            <div class="qs-btns pass-pref-row">
+              <button class="pass-pref-btn active" data-pass="any">Any</button>
               <button class="pass-pref-btn epic-btn"  data-pass="Epic">Epic</button>
               <button class="pass-pref-btn ikon-btn"  data-pass="Ikon">Ikon</button>
               <button class="pass-pref-btn indy-btn"  data-pass="Indy">Indy</button>
-              <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
+              <button class="pass-pref-btn indep-btn" data-pass="Independent">Indep.</button>
             </div>
-            <div class="score-desc">Select your season pass to give a <strong>+200 point bonus</strong> to every mountain included on it. Mountains not on your pass still appear &mdash; they just rank lower. Combine with the <strong>Pass filter</strong> above the table to hide other passes entirely.</div>
           </div>
 
-          <div class="score-control skill-control">
-            <label>&#128664; Day Trip Mode <span class="skill-label-sub muted small">&mdash; filters to within 150 min</span></label>
-            <div class="skill-btn-row">
+          <div class="qs-row">
+            <span class="qs-label">&#128664; Day Trip</span>
+            <div class="qs-btns">
               <button id="plannerDaytripToggle" class="skill-btn" data-daytrip="off">Off</button>
               <button class="skill-btn" data-daytrip="on" style="display:none"></button>
             </div>
-            <div class="score-desc">When on, hides any resort more than <strong>150 minutes</strong> from your location &mdash; close enough to leave after breakfast and be home for dinner. Requires your location to be set.</div>
+            <span class="qs-hint">&#8804;150 min &middot; needs location</span>
           </div>
 
         </div>
-      </div>
-    </section>
 
-    <!-- SHOULD I GO? -->
-    <section id="verdictSection" class="verdict-section card hidden">
-      <div class="verdict-header">
-        <h2>Should I Go This Weekend?</h2>
-        <p class="muted small">Based on your location, trip style, and live weather &mdash; a straight answer so you don't have to check five different sites.</p>
-      </div>
-      <div id="verdictCard"></div>
-    </section>
+      </section>
 
+      <!-- RIGHT: Should I Go? verdict -->
+      <section id="verdictSection" class="verdict-section card verdict-col">
+        <div class="verdict-header">
+          <h2>&#127942; Should I Go?</h2>
+          <p class="muted small">Live weather + your settings = a straight answer.</p>
+        </div>
+        <div id="verdictCard">
+          <div class="verdict-placeholder">
+            <div class="verdict-placeholder-icon">&#128205;</div>
+            <div class="verdict-placeholder-text">Set your location above to get your ranked pick</div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /planner-verdict-row -->
     <!-- BEST DAY TO GO -->
     <section id="bestDaySection" class="card panel hidden">
       <div class="section-header">

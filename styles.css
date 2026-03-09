@@ -1475,3 +1475,185 @@ button { font: inherit; }
   font-size: 11px;
   opacity: .85;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   TWO-COLUMN PLANNER + VERDICT LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.planner-verdict-row {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Left column — planner */
+.planner-col {
+  padding: 20px 22px 18px;
+}
+
+.planner-col-header {
+  margin-bottom: 14px;
+}
+
+.planner-col .planner-summary-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.planner-col .weight-summary {
+  font-size: 11px;
+  margin-bottom: 0;
+}
+
+.planner-col .preset-row {
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.planner-col .preset-btn {
+  font-size: 11px;
+  padding: 5px 10px;
+}
+
+/* Sliders — 2-col inside left panel */
+.planner-col .score-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-bottom: 0;
+}
+
+.planner-col .score-control label {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+/* Hide slider description text in compact mode */
+.planner-col .score-desc { display: none; }
+
+/* Quick Settings rows */
+.quick-settings {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.qs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qs-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.qs-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.qs-btns .skill-btn,
+.qs-btns .pass-pref-btn {
+  font-size: 11px;
+  padding: 4px 9px;
+  height: auto;
+}
+
+.qs-hint {
+  font-size: 10px;
+  color: var(--muted);
+  opacity: .7;
+}
+
+/* Right column — verdict */
+.verdict-col {
+  padding: 20px 22px;
+  position: sticky;
+  top: 60px; /* clears sticky nav */
+}
+
+.verdict-col .verdict-header {
+  padding: 0;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.verdict-col .verdict-header h2 {
+  font-size: 17px;
+  margin: 0 0 3px;
+}
+
+.verdict-col .verdict-header p {
+  margin: 0;
+}
+
+/* Verdict inner adapts to column width */
+.verdict-col .verdict-inner {
+  grid-template-columns: 1fr;
+}
+
+.verdict-col .verdict-left {
+  padding-right: 0;
+}
+
+.verdict-col .verdict-right {
+  border-left: none;
+  border-top: 1px solid rgba(255,255,255,.1);
+  padding-left: 0;
+  padding-top: 14px;
+  margin-top: 10px;
+}
+
+/* Placeholder state */
+.verdict-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.verdict-placeholder-icon {
+  font-size: 2rem;
+  opacity: .5;
+}
+
+.verdict-placeholder-text {
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 220px;
+}
+
+/* Collapse to single column on narrower screens */
+@media (max-width: 900px) {
+  .planner-verdict-row {
+    grid-template-columns: 1fr;
+  }
+  .verdict-col {
+    position: static;
+  }
+  .planner-col .score-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .planner-col .score-grid {
+    grid-template-columns: 1fr;
+  }
+}

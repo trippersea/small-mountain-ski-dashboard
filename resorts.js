@@ -436,10 +436,15 @@ function computeVerdict(resorts) {
 }
 
 function renderVerdict(resorts) {
-  if (!els.verdictSection) return;
+  if (!els.verdictSection || !els.verdictCard) return;
   const v = computeVerdict(resorts);
-  if (!v) { els.verdictSection.classList.add('hidden'); return; }
-  els.verdictSection.classList.remove('hidden');
+  if (!v) {
+    els.verdictCard.innerHTML = `<div class="verdict-placeholder">
+      <div class="verdict-placeholder-icon">⏳</div>
+      <div class="verdict-placeholder-text">Loading weather for your top picks…</div>
+    </div>`;
+    return;
+  }
 
   const { tier, icon, headline, detail, subPoints,
           resort, breakdown, driveText,
@@ -1858,14 +1863,12 @@ function renderAllCards(resorts) {
   const hasWeather = resorts.some(r => state.weatherCache[r.id]?.data);
 
   if (hasWeather) {
-    // Pass full filtered resorts to verdict so its #1 = table #1
     renderVerdict(resorts);
     renderBestDay(resorts);
     _renderStorm(resorts);
   } else {
-    // First load — show placeholders until the async fetch completes
-    if (els.verdictSection)  els.verdictSection.classList.add('hidden');
-    if (els.bestDaySection)  els.bestDaySection.classList.add('hidden');
+    // First load — verdict col shows placeholder, other panels show loading
+    if (els.bestDaySection) els.bestDaySection.classList.add('hidden');
     els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data…</div>';
   }
 
@@ -1980,23 +1983,8 @@ function wireEvents() {
     debouncedRender();
   });
 
-  // Planner collapse/expand toggle
-  if (els.plannerToggle && els.plannerDetails) {
-    // Start expanded (details visible by default)
-    els.plannerToggle.setAttribute('aria-expanded', 'true');
-    els.plannerDetails.hidden = false;
-    els.plannerSection && els.plannerSection.classList.remove('planner-collapsed');
-
-    els.plannerToggle.addEventListener('click', () => {
-      const isExpanded = els.plannerToggle.getAttribute('aria-expanded') === 'true';
-      const opening = !isExpanded;
-      els.plannerToggle.setAttribute('aria-expanded', String(opening));
-      els.plannerDetails.hidden = !opening;
-      els.plannerSection && els.plannerSection.classList.toggle('planner-collapsed', !opening);
-      const lbl = els.plannerToggle.querySelector('.planner-toggle-label');
-      if (lbl) lbl.textContent = opening ? 'Customize Your Settings' : 'Customize Your Settings';
-    });
-  }
+  // plannerDetails always visible in new two-column layout
+  if (els.plannerDetails) els.plannerDetails.hidden = false;
 
   // In-planner Daytrip toggle (mirrors toolbar toggleDaytrip)
   function syncPlannerDaytripBtn() {
