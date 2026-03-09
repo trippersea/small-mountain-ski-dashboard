@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
     r.crowds + ' crowds',
     r.drive ? r.drive + ' min drive' : null,
     'Pass: ' + r.passGroup,
-    r.plannerScore != null ? 'Planner score: ' + r.plannerScore : null,
+    r.skiScore != null ? 'Ski Score: ' + r.skiScore : null,
   ].filter(Boolean).join(' · ')).join('\n');
 
   const prompt =
