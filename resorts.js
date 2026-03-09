@@ -1234,7 +1234,7 @@ function renderComparePanel() {
   els.comparePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function renderDetail() {
+function renderDetail({ scroll = false } = {}) {
   const resort = RESORTS.find(r => r.id === state.selectedId);
   if (!resort) { els.detailSection.classList.add('hidden'); return; }
   els.detailSection.classList.remove('hidden');
@@ -1300,7 +1300,7 @@ function renderDetail() {
         })()}
       </div>
     </div>`;
-  els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (scroll) els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   // Update URL hash + document title for SEO / shareable deep-links (Priority 5)
   // Preserve any existing query params (preset, filters etc.) when adding the hash.
@@ -1381,7 +1381,7 @@ function updateMap(resorts) {
     const marker = L.marker([resort.lat, resort.lon], { icon })
       .addTo(map)
       .bindPopup(`<strong>${esc(resort.name)}</strong><br>${esc(resort.state)} · ${esc(resort.passGroup)}<br>Vertical ${resort.vertical} ft<br>Ticket* $${resort.price}`);
-    marker.on('click', () => { state.selectedId = resort.id; renderDetail(); });
+    marker.on('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
     markers[resort.id] = marker;
   });
 }
@@ -1453,21 +1453,15 @@ async function askAI(query) {
         (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
     }
 
-    // Highlight the resort in the table
+    // Highlight the resort in the table — no page scroll, user is reading the AI result
     if (matched) {
       state.selectedId = matched.id;
       renderDetail();
-      // Scroll the compare section into view after a short delay
       setTimeout(() => {
         const row = document.querySelector(`tr[data-id="${matched.id}"]`);
         if (row) {
-          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
           row.classList.add('ai-highlight');
           setTimeout(() => row.classList.remove('ai-highlight'), 2500);
-        } else {
-          // Resort may be off-screen — scroll to compare section
-          const sec = document.getElementById('compareSection');
-          if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 300);
     }
@@ -1687,7 +1681,7 @@ function wireEvents() {
       if (!btn) return;
       const id = btn.dataset.resortId;
       state.selectedId = id;
-      renderDetail();
+      renderDetail(); // no scroll — we're scrolling to the table row below
       const row = document.querySelector(`tr[data-id="${id}"]`);
       if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
       else {
@@ -1704,18 +1698,14 @@ function wireEvents() {
       const detailBtn = e.target.closest('[data-mob-detail]');
       if (detailBtn) {
         state.selectedId = detailBtn.dataset.mobDetail;
-        renderDetail();
-        const detSec = document.getElementById('detailSection');
-        if (detSec) detSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        renderDetail({ scroll: true });
         return;
       }
       // Card tap (not checkbox, not button)
       const card = e.target.closest('.mob-card[data-mob-id]');
       if (!card || e.target.closest('input') || e.target.closest('button')) return;
       state.selectedId = card.dataset.mobId;
-      renderDetail();
-      const detSec2 = document.getElementById('detailSection');
-      if (detSec2) detSec2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      renderDetail({ scroll: true });
     });
     els.mobileCardGrid.addEventListener('change', e => {
       const box = e.target.closest('input[data-compare]');
@@ -1914,7 +1904,7 @@ function wireEvents() {
     const row = e.target.closest('tr[data-id]');
     if (!row || e.target.closest('input')) return;
     state.selectedId = row.dataset.id;
-    renderDetail();
+    renderDetail({ scroll: true });
     // Highlight the row
     [...els.comparisonBody.querySelectorAll('tr')].forEach(r =>
       r.classList.toggle('active-row', r.dataset.id === state.selectedId));
