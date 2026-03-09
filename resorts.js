@@ -50,6 +50,9 @@ const PRESET_SKILLS = {
 // Table sort state — dir tracked separately from URL state
 let tableSort = { col: 'planner', dir: 'desc' };
 
+// AI chat loading state — not in sealed state, only needed locally
+let aiChatLoading = false;
+
 // Pre-computed — RESORTS is a compile-time constant (audit #37)
 const UNIQUE_STATES = Object.freeze(['All', ...new Set(RESORTS.map(r => r.state))].sort());
 const UNIQUE_PASSES = Object.freeze(['All', 'Epic', 'Ikon', 'Indy', 'Independent']);
@@ -141,6 +144,7 @@ const els = {
   tableSearch:         $('tableSearch'),      tableViewAllBtn:   $('tableViewAllBtn'),
   resultCount:         $('resultCount'),
   comparisonBody:      $('comparisonBody'),
+  mobileCardGrid:      $('mobileCardGrid'),
   compareTray:         $('compareTray'),
   comparePills:        $('comparePills'),
   compareBtn:          $('compareBtn'),
@@ -153,6 +157,14 @@ const els = {
   mapLegend:           $('mapLegend'),
   backToTop:           $('backToTop'),
   toast:               $('toast'),
+  // AI Chat
+  aiChatInput:         $('aiChatInput'),
+  aiChatBtn:           $('aiChatBtn'),
+  aiChatResult:        $('aiChatResult'),
+  // Best Day section
+  bestDaySection:      $('bestDaySection'),
+  bestDayGrid:         $('bestDayGrid'),
+  bestDayLastUpdated:  $('bestDayLastUpdated'),
 };
 
 // Cached querySelectorAll results — avoid re-querying on every syncPlannerControls (audit #14)
@@ -241,9 +253,10 @@ function applyUrlState() {
 }
 
 const pushUrlDebounced = debounce(() => {
-  const p = serializeState();
-  const url = p.toString() ? `${location.pathname}?${p}` : location.pathname;
-  history.replaceState(null, '', url);
+  const p    = serializeState();
+  const hash = location.hash || '';           // preserve #resort-xxx if present
+  const base = p.toString() ? `${location.pathname}?${p}` : location.pathname;
+  history.replaceState(null, '', base + hash);
 }, 600);
 
 function copyShareLink() {
@@ -466,11 +479,12 @@ function renderVerdict(resorts) {
           ${histChip}
           ${driveChip}
         </div>
-        <button class="btn btn-secondary verdict-share-btn" id="verdictShareBtn">🔗 Share this plan</button>
+        <button class="btn btn-secondary verdict-share-btn" id="verdictShareBtn">&#127920; Share this pick</button>
       </div>
     </div>`;
 
-  $('verdictShareBtn')?.addEventListener('click', copyShareLink);
+  const _shareBtn = $('verdictShareBtn');
+  if (_shareBtn) _shareBtn.addEventListener('click', () => shareVerdict(resort, v));
 }
 
 function savePlannerState() {
@@ -565,21 +579,6 @@ function formatDriveMins(mins, estimated = false) {
 }
 function formatDrive(resortId) {               // always pass a resort ID (audit #16, #33)
   return formatDriveMins(getDriveMins(resortId), isDriveEstimated(resortId));
-}
-
-// ─── Snowmaking helpers ───────────────────────────────────────────────────────
-function snowmakingRating(val) { return Math.round(val / SCORING.SNOWMAKING_MAX * 100); }
-function snowmakingLabel(val) {
-  const p = snowmakingRating(val);
-  if (p === 0) return 'None';
-  if (p < 10)  return 'Low';
-  if (p < 30)  return 'Moderate';
-  if (p < 60)  return 'High';
-  return 'Very High';
-}
-function snowmakingDisplay(val) {
-  if (val === 0) return 'None';
-  return `${snowmakingLabel(val)} (${snowmakingRating(val)}/100)`;
 }
 
 // ─── Haversine / drive estimates ─────────────────────────────────────────────
@@ -926,7 +925,7 @@ async function geocodeOrigin(query) {
 // ─── Planner candidates ───────────────────────────────────────────────────────
 function plannerCandidates(resorts) {
   const MAX = 80;
-  const qualityScore = r => (r.avgSnowfall / 300) * 40 + (r.vertical / 3500) * 35 + (r.snowmaking / SCORING.SNOWMAKING_MAX) * 25;
+  const qualityScore = r => (r.avgSnowfall / 300) * 55 + (r.vertical / 3500) * 45;
 
   if (state.origin) {
     const byDistance = [...resorts]
@@ -979,11 +978,11 @@ function dbStatHtml(label, value, sub) {
 function cardBreakdown(b) {
   const c = b.components;
   return `<div class="breakdown">
-    <div>Snow forecast: <strong>+${c.snow.toFixed(1)}</strong></div>
+    <div>Snow quality: <strong>+${c.snow.toFixed(1)}</strong></div>
     <div>Drive time: <strong>+${c.drive.toFixed(1)}</strong></div>
-    <div>Vertical: <strong>+${c.vertical.toFixed(1)}</strong></div>
-    <div>Trails: <strong>+${c.trails.toFixed(1)}</strong></div>
-    <div>Price / value: <strong>+${c.price.toFixed(1)}</strong></div>
+    <div>Mountain size: <strong>+${c.size.toFixed(1)}</strong></div>
+    <div>Skill match: <strong>+${c.skillMatch.toFixed(1)}</strong></div>
+    <div>Value: <strong>+${c.value.toFixed(1)}</strong></div>
     <div>Crowd penalty: <strong>-${c.crowdPenalty.toFixed(1)}</strong></div>
   </div>`;
 }
@@ -1004,11 +1003,13 @@ async function renderAsyncPanels(resorts) {
   updateMap(resorts);
   renderDetail();
   renderVerdict(resorts);          // first pass — use full filtered set
+  renderBestDay(resorts);
   _renderStorm(resorts);
 
   // Fetch last-7-days historical data in parallel — re-render when ready
   ensureHistory(candidates.slice(0, 50)).then(() => {
     renderVerdict(resorts);        // re-render with histTotal chips now populated
+    renderBestDay(resorts);
     renderDetail();
     renderCompareTable(resorts);
   });
@@ -1155,6 +1156,7 @@ function renderCompareTable(resorts) {
 
   // Pass sorted list to passCalc so it reflects current sort order (audit #21)
   // Note: event listeners are wired once via delegation in wireEvents() — not attached here (audit #10)
+  renderMobileCards(displayed);
 }
 
 function renderCompareTray() {
@@ -1299,6 +1301,14 @@ function renderDetail() {
       </div>
     </div>`;
   els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Update URL hash + document title for SEO / shareable deep-links (Priority 5)
+  // Preserve any existing query params (preset, filters etc.) when adding the hash.
+  if (resort) {
+    const qp = location.search; // preserve ?preset=...&pass=... etc.
+    history.replaceState(null, '', qp + '#resort-' + resort.id);
+    document.title = resort.name + ' — SkiNE | New England Ski Decision Engine';
+  }
 }
 
 // ─── Map ──────────────────────────────────────────────────────────────────────
@@ -1376,6 +1386,244 @@ function updateMap(resorts) {
   });
 }
 
+// ─── AI Natural Language Chat ─────────────────────────────────────────────────
+// Calls /api/chat with user's free-text query + pre-ranked resort data.
+// On success: highlights the matching resort in the table and scrolls to it.
+async function askAI(query) {
+  if (!query.trim() || aiChatLoading) return;
+  aiChatLoading = true;
+
+  if (els.aiChatBtn)   els.aiChatBtn.disabled = true;
+  if (els.aiChatResult) {
+    els.aiChatResult.className = 'ai-chat-result ai-chat-loading';
+    els.aiChatResult.innerHTML = '<span class="ai-spinner"></span> Analyzing 120 mountains for you…';
+  }
+
+  // Build a compact payload: top 25 resorts with all available data
+  const current = filteredResorts();
+  const w = normalizedWeights();
+  const payload = current.slice(0, 25).map(r => {
+    const wx = state.weatherCache[r.id]?.data;
+    const snow3d = wx ? (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+    const bd = wx ? plannerScoreBreakdown(r, wx, 0, w) : null;
+    return {
+      id:           r.id,
+      name:         r.name,
+      state:        r.state,
+      vertical:     r.vertical,
+      trails:       r.trails,
+      price:        r.price,
+      passGroup:    r.passGroup,
+      avgSnowfall:  r.avgSnowfall,
+      drive:        getDriveMins(r.id),
+      crowd:        crowdForecast(r).label,
+      snow3d:       snow3d !== null ? Math.round(snow3d * 10) / 10 : null,
+      plannerScore: bd ? bd.score : null,
+      beginner:     r.terrainBreakdown?.beginner ?? null,
+    };
+  });
+
+  try {
+    const res  = await fetch('/api/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ query, resorts: payload }),
+    });
+    const data = await res.json();
+
+    if (data.error || !data.resortName) throw new Error(data.error || 'No resort returned');
+
+    // Find the matching resort by name (case-insensitive partial match)
+    const nameLower = data.resortName.toLowerCase();
+    const matched = RESORTS.find(r =>
+      r.name.toLowerCase() === nameLower ||
+      r.name.toLowerCase().includes(nameLower) ||
+      nameLower.includes(r.name.toLowerCase())
+    );
+
+    const resortLink = matched
+      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">&#128269; View ${esc(data.resortName)} in table</button>`
+      : '';
+
+    if (els.aiChatResult) {
+      els.aiChatResult.className = 'ai-chat-result ai-chat-success';
+      els.aiChatResult.innerHTML =
+        `<div class="ai-result-header"><strong>&#129302; AI Pick: ${esc(data.resortName)}</strong></div>` +
+        `<div class="ai-result-text">${esc(data.explanation)}</div>` +
+        (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
+    }
+
+    // Highlight the resort in the table
+    if (matched) {
+      state.selectedId = matched.id;
+      renderDetail();
+      // Scroll the compare section into view after a short delay
+      setTimeout(() => {
+        const row = document.querySelector(`tr[data-id="${matched.id}"]`);
+        if (row) {
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          row.classList.add('ai-highlight');
+          setTimeout(() => row.classList.remove('ai-highlight'), 2500);
+        } else {
+          // Resort may be off-screen — scroll to compare section
+          const sec = document.getElementById('compareSection');
+          if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+
+  } catch (err) {
+    if (els.aiChatResult) {
+      els.aiChatResult.className = 'ai-chat-result ai-chat-error';
+      els.aiChatResult.innerHTML =
+        `<span>&#9888;&#65039; ${esc(err.message || 'AI unavailable — try again shortly')}</span>`;
+    }
+  } finally {
+    aiChatLoading = false;
+    if (els.aiChatBtn) els.aiChatBtn.disabled = false;
+  }
+}
+
+// ─── Best Day To Go ───────────────────────────────────────────────────────────
+// Shows the 3-day forecast breakdown for the top 3 resorts and highlights the
+// highest-quality day at each (based on snow + cold temperature scoring).
+function renderBestDay(resorts) {
+  if (!els.bestDaySection || !els.bestDayGrid) return;
+
+  const withWx = resorts.filter(r => state.weatherCache[r.id]?.data);
+  if (!withWx.length) {
+    els.bestDaySection.classList.add('hidden');
+    return;
+  }
+
+  const w    = normalizedWeights();
+  const top3 = withWx
+    .map(r => ({
+      resort: r,
+      wx:     state.weatherCache[r.id].data,
+      bd:     plannerScoreBreakdown(r, state.weatherCache[r.id].data, 0, w),
+    }))
+    .sort((a, b) => b.bd.score - a.bd.score)
+    .slice(0, 3);
+
+  if (!top3.length) { els.bestDaySection.classList.add('hidden'); return; }
+
+  els.bestDaySection.classList.remove('hidden');
+  if (els.bestDayLastUpdated) {
+    els.bestDayLastUpdated.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  els.bestDayGrid.innerHTML = top3.map(({ resort, wx, bd }) => {
+    const forecast = wx.forecast || [];
+    if (!forecast.length) return '';
+
+    // Score each day: snow is king, cold temps add quality bonus
+    const dayScores = forecast.map(f => {
+      let s = Math.min(50, f.snow * 8);                              // snow: up to 50pts
+      if (f.lo <= 24) s += 15; else if (f.lo <= 30) s += 8;        // powder cold bonus
+      if (f.hi <= 32) s += 8;  else if (f.hi <= 38) s += 4;        // cold hi bonus
+      if (f.hi > 45)  s -= 10;                                       // warm/slushy penalty
+      return { ...f, dayScore: s };
+    });
+    const bestIdx = dayScores.reduce((bi, d, i) => d.dayScore > dayScores[bi].dayScore ? i : bi, 0);
+
+    const drive = formatDrive(resort.id);
+
+    return `<div class="best-day-card${bd.score > 0 ? '' : ''}">
+      <div class="best-day-resort-row">
+        <div>
+          <div class="best-day-resort">${esc(resort.name)}</div>
+          <div class="best-day-meta">${esc(resort.state)} &middot; ${esc(resort.passGroup)} &middot; Score ${bd.score}</div>
+        </div>
+        ${drive !== '—' ? `<div class="best-day-drive"><span class="metric-chip">&#128664; ${drive}</span></div>` : ''}
+      </div>
+      <div class="best-day-days">
+        ${dayScores.map((f, i) => `
+          <div class="best-day-day${i === bestIdx ? ' best' : ''}">
+            ${i === bestIdx ? '<div class="bdd-best-badge">&#9733; Best</div>' : ''}
+            <div class="bdd-day-name">${f.day}</div>
+            <div class="bdd-snow">${f.snow > 0 ? '&#10052;&#65039; ' + f.snow.toFixed(1) + '"' : '<span class="bdd-no-snow">No snow</span>'}</div>
+            <div class="bdd-temps">${f.lo}&deg;&ndash;${f.hi}&deg;F</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Mobile Card Grid ─────────────────────────────────────────────────────────
+// Renders a compact card grid for mobile screens (< 760px).
+// Called from renderCompareTable with the same already-decorated array.
+function renderMobileCards(decorated) {
+  if (!els.mobileCardGrid) return;
+  const items = decorated.slice(0, state.tableViewAll ? decorated.length : 10);
+  els.mobileCardGrid.innerHTML = items.map(({ resort, breakdown, stormTotal }) => {
+    const score  = breakdown ? breakdown.score : null;
+    const storm  = stormTotal !== null ? stormTotal.toFixed(1) + '"' : '…';
+    const drive  = formatDrive(resort.id);
+    const crowd  = crowdForecast(resort).label;
+    const passColors = { Epic:'#1a4fa8', Ikon:'#c8a84b', Indy:'#2d7a3a', Independent:'#6b5e7a' };
+    const passColor  = passColors[resort.passGroup] || '#90a4be';
+    const isSelected = resort.id === state.selectedId;
+    return `<div class="mob-card${isSelected ? ' mob-card-selected' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
+      <div class="mob-card-top">
+        <div class="mob-card-name">${esc(resort.name)}</div>
+        ${score !== null ? `<div class="mob-card-score">${score}</div>` : ''}
+      </div>
+      <div class="mob-card-chips">
+        <span class="mob-chip" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
+        <span class="mob-chip">${esc(resort.state)}</span>
+        ${drive !== '—' ? `<span class="mob-chip">&#128664; ${drive}</span>` : ''}
+        <span class="mob-chip">&#10052;&#65039; ${storm}</span>
+      </div>
+      <div class="mob-card-stats">
+        <div><span class="mob-stat-label">Vertical</span><span class="mob-stat-val">${resort.vertical} ft</span></div>
+        <div><span class="mob-stat-label">Trails</span><span class="mob-stat-val">${resort.trails}</span></div>
+        <div><span class="mob-stat-label">Ticket</span><span class="mob-stat-val">$${resort.price}</span></div>
+        <div><span class="mob-stat-label">Crowd</span><span class="mob-stat-val ${crowdClass(crowd)}">${crowd}</span></div>
+      </div>
+      <div class="mob-card-footer">
+        <label class="mob-compare-label">
+          <input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} />
+          Compare
+        </label>
+        <button class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details &rarr;</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Enhanced Share (Priority 6) ─────────────────────────────────────────────
+// Uses Web Share API on mobile; falls back to clipboard copy on desktop.
+// Produces a richer text than the plain URL share.
+function shareVerdict(resort, verdictData) {
+  const { stormTotal, driveText } = verdictData;
+  const snowText  = stormTotal > 0 ? `${stormTotal.toFixed(1)}" forecast` : 'solid groomed conditions';
+  const driveInfo = driveText ? ` · ${driveText} drive` : '';
+  const shareText =
+    `I'm skiing ${resort.name} (${resort.state}) this weekend — ${snowText}${driveInfo}. ` +
+    `Pass: ${resort.passGroup}. Find your mountain →`;
+  const p   = serializeState();
+  const url = `${location.origin}${location.pathname}${p.toString() ? '?' + p : ''}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: `Ski day at ${resort.name} — SkiNE`,
+      text:  shareText,
+      url,
+    }).catch(() => {}); // user cancelled — silent
+  } else {
+    const full = `${shareText} ${url}`;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(full)
+        .then(() => showToast('🎿 Ski plan copied — share it with your crew!', 3200))
+        .catch(() => fallbackCopy(full));
+    } else {
+      fallbackCopy(full);
+    }
+  }
+}
+
 // ─── Top-level render ─────────────────────────────────────────────────────────
 function renderAllCards(resorts) {
   renderSummaryCards(resorts);
@@ -1395,11 +1643,13 @@ function renderAllCards(resorts) {
   if (hasWeather) {
     // Pass full filtered resorts to verdict so its #1 = table #1
     renderVerdict(resorts);
+    renderBestDay(resorts);
     _renderStorm(resorts);
   } else {
     // First load — show placeholders until the async fetch completes
-    if (els.verdictSection) els.verdictSection.classList.add('hidden');
-    els.stormGrid.innerHTML    = '<div class="planner-card">Loading storm data…</div>';
+    if (els.verdictSection)  els.verdictSection.classList.add('hidden');
+    if (els.bestDaySection)  els.bestDaySection.classList.add('hidden');
+    els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data…</div>';
   }
 
   // Always run async pipeline to catch any missing weather/history and stay fresh
@@ -1414,6 +1664,68 @@ function render() {
 const debouncedRender = debounce(render, 50);
 
 function wireEvents() {
+  // ── AI Chat ──────────────────────────────────────────────────────────────────
+  if (els.aiChatBtn) {
+    els.aiChatBtn.addEventListener('click', () => {
+      const q = els.aiChatInput?.value?.trim();
+      if (q) askAI(q);
+    });
+  }
+  if (els.aiChatInput) {
+    els.aiChatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const q = els.aiChatInput.value?.trim();
+        if (q) askAI(q);
+      }
+    });
+  }
+  // Jump-to-resort button rendered inside AI result
+  if (els.aiChatResult) {
+    els.aiChatResult.addEventListener('click', e => {
+      const btn = e.target.closest('[data-resort-id]');
+      if (!btn) return;
+      const id = btn.dataset.resortId;
+      state.selectedId = id;
+      renderDetail();
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      else {
+        const sec = document.getElementById('compareSection');
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+
+  // ── Mobile card grid delegation ───────────────────────────────────────────
+  if (els.mobileCardGrid) {
+    els.mobileCardGrid.addEventListener('click', e => {
+      // Detail button
+      const detailBtn = e.target.closest('[data-mob-detail]');
+      if (detailBtn) {
+        state.selectedId = detailBtn.dataset.mobDetail;
+        renderDetail();
+        const detSec = document.getElementById('detailSection');
+        if (detSec) detSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      // Card tap (not checkbox, not button)
+      const card = e.target.closest('.mob-card[data-mob-id]');
+      if (!card || e.target.closest('input') || e.target.closest('button')) return;
+      state.selectedId = card.dataset.mobId;
+      renderDetail();
+      const detSec2 = document.getElementById('detailSection');
+      if (detSec2) detSec2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    els.mobileCardGrid.addEventListener('change', e => {
+      const box = e.target.closest('input[data-compare]');
+      if (!box) return;
+      if (box.checked) state.compareSet.add(box.dataset.compare);
+      else             state.compareSet.delete(box.dataset.compare);
+      renderCompareTray();
+    });
+  }
+
   // ── Sortable column headers ─────────────────────────────────────────────
   document.querySelectorAll('.sortable-th').forEach(th => {
     th.addEventListener('click', () => {
@@ -1702,6 +2014,25 @@ function initialize() {
   if (hadUrlState && state.origin) {
     applyHaversineEstimates();
     loadDriveTimes();
+  }
+
+  // Hash-based routing — restore selected resort from URL hash (#resort-<id>)
+  // This enables shareable deep-links to individual resort detail cards (Priority 5).
+  const hash = window.location.hash;
+  const hashMatch = hash.match(/^#resort-(.+)$/);
+  if (hashMatch) {
+    const resortId = hashMatch[1];
+    const found = RESORTS.find(r => r.id === resortId);
+    if (found) {
+      state.selectedId = resortId;
+      document.title = found.name + ' — SkiNE | New England Ski Decision Engine';
+      // Scroll to detail section after render completes
+      setTimeout(() => {
+        renderDetail();
+        const sec = document.getElementById('detailSection');
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 600);
+    }
   }
 
   setTimeout(() => initMap(), 100);
