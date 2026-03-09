@@ -1,56 +1,42 @@
 /**
- * /api/recommend
+ * /api/recommend  — Vercel serverless function (Node.js)
  *
- * Vercel serverless function — proxies mountain comparison prompts to the
- * Anthropic API. The ANTHROPIC_API_KEY env var lives only on the server;
- * it is never exposed to the browser.
- *
- * Expected request body (POST, JSON):
- *   { resorts: [ { name, state, vertical, trails, price, avgSnowfall,
- *                  crowds, drive, passGroup, plannerScore? }, … ] }
- *
- * Response body (JSON):
- *   { recommendation: "<string>" }   — on success
- *   { error: "<message>" }           — on failure
+ * Receives resort comparison data from the browser, builds a prompt,
+ * calls the Anthropic API server-side, and returns the recommendation.
+ * The ANTHROPIC_API_KEY env var never touches the client.
  */
 
-export const config = { runtime: 'edge' };   // Edge runtime = faster cold starts
+module.exports = async function handler(req, res) {
+  // CORS headers so the browser can call this from any origin during dev
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-export default async function handler(req) {
-  // ── 1. Method guard ────────────────────────────────────────────────────────
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // ── 2. Parse body ──────────────────────────────────────────────────────────
-  let resorts;
-  try {
-    const body = await req.json();
-    resorts = body.resorts;
-    if (!Array.isArray(resorts) || resorts.length < 2) throw new Error('Need ≥2 resorts');
-  } catch (err) {
-    return new Response(JSON.stringify({ error: 'Invalid request body: ' + err.message }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  // ── Parse body ─────────────────────────────────────────────────────────────
+  const { resorts } = req.body || {};
+  if (!Array.isArray(resorts) || resorts.length < 2) {
+    return res.status(400).json({ error: 'Need at least 2 resorts to compare' });
   }
 
-  // ── 3. Check API key ───────────────────────────────────────────────────────
+  // ── Check API key ──────────────────────────────────────────────────────────
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured on server' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' });
   }
 
-  // ── 4. Build prompt ────────────────────────────────────────────────────────
+  // ── Build prompt ───────────────────────────────────────────────────────────
   const resortList = resorts.map(r => {
-    const parts = [
-      r.name + ' (' + r.state + ')',
+    return [
+      '• ' + r.name + ' (' + r.state + ')',
       r.vertical + 'ft vertical',
       r.trails + ' trails',
       '$' + r.price + ' ticket',
@@ -59,57 +45,47 @@ export default async function handler(req) {
       r.drive ? r.drive + ' min drive' : null,
       'Pass: ' + r.passGroup,
       r.plannerScore != null ? 'Planner score: ' + r.plannerScore : null,
-    ].filter(Boolean);
-    return '• ' + parts.join(' · ');
+    ].filter(Boolean).join(' · ');
   }).join('\n');
 
   const prompt =
     "You're a witty, opinionated New England ski expert helping someone choose where to ski. " +
     "Here are the mountains being compared:\n\n" +
     resortList + "\n\n" +
-    "In 3–4 punchy sentences: pick ONE clear winner and explain why using the actual stats. " +
-    "Be specific — name the numbers that clinch it. Have personality. Don't be bland. " +
+    "In 3-4 punchy sentences: pick ONE clear winner and explain why using the actual stats. " +
+    "Be specific — name the numbers that clinch it. Have personality, don't be bland. " +
     "End with one sentence on who the runner-up is best suited for. " +
     "Sign off as '— SkiNE AI 🤖'";
 
-  // ── 5. Call Anthropic ──────────────────────────────────────────────────────
+  // ── Call Anthropic ─────────────────────────────────────────────────────────
   try {
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Content-Type':         'application/json',
-        'x-api-key':            apiKey,
-        'anthropic-version':    '2023-06-01',
+        'Content-Type':      'application/json',
+        'x-api-key':         apiKey,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'claude-sonnet-4-6',
         max_tokens: 350,
         messages:   [{ role: 'user', content: prompt }],
       }),
     });
 
-    if (!anthropicRes.ok) {
-      const errText = await anthropicRes.text();
-      throw new Error('Anthropic ' + anthropicRes.status + ': ' + errText);
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('[/api/recommend] Anthropic error:', response.status, errText);
+      return res.status(502).json({ error: 'Anthropic API error: ' + response.status });
     }
 
-    const data = await anthropicRes.json();
+    const data = await response.json();
     const recommendation = (data.content || []).find(b => b.type === 'text')?.text || '';
 
-    return new Response(JSON.stringify({ recommendation }), {
-      status: 200,
-      headers: {
-        'Content-Type':                'application/json',
-        'Cache-Control':               'no-store',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    return res.status(200).json({ recommendation });
 
   } catch (err) {
-    console.error('[/api/recommend]', err);
-    return new Response(JSON.stringify({ error: 'AI service unavailable' }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    console.error('[/api/recommend] Unexpected error:', err);
+    return res.status(502).json({ error: 'AI service unavailable' });
   }
-}
+};
