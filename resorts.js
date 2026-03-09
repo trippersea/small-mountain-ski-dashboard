@@ -68,35 +68,22 @@ const HIST_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 // ─── State ───────────────────────────────────────────────────────────────────
 function loadSavedWeights() {
-  try {
-    const raw = localStorage.getItem('ski-planner-weights');
-    if (raw) {
-      const w = JSON.parse(raw);
-      // Migrate old format: had vertical/trails keys instead of size, or old scale
-      if (w.vertical !== undefined || w.trails !== undefined || w.size === undefined || w.snow > 10) {
-        localStorage.removeItem('ski-planner-weights');
-        return { ...PRESETS.balanced };
-      }
-      return w;
-    }
-    return { ...PRESETS.balanced };
-  } catch (e) {
-    localStorage.removeItem('ski-planner-weights');
-    return { ...PRESETS.balanced };
-  }
+  // Always start with balanced defaults — do not restore from localStorage
+  try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
+  return { ...PRESETS.balanced };
 }
 
 function loadSavedSkillLevel() {
-  try { return localStorage.getItem('ski-skill-level') || 'mixed'; } catch (e) { return 'mixed'; }
+  // Always default to mixed — do not restore from localStorage
+  return 'mixed';
 }
 function loadSavedPassPreference() {
-  try {
-    const v = localStorage.getItem('ski-pass-pref');
-    return ['any','Epic','Ikon','Indy','Independent'].includes(v) ? v : 'any';
-  } catch (e) { return 'any'; }
+  // Always default to any — do not restore from localStorage
+  return 'any';
 }
 function loadSavedPreset() {
-  try { return localStorage.getItem('ski-planner-preset') || 'balanced'; } catch (e) { return 'balanced'; }
+  // Always default to balanced — do not restore from localStorage
+  return 'balanced';
 }
 function loadSavedSkiDays() {
   try { return Number(localStorage.getItem('ski-ski-days') || 5); } catch (e) { return 5; }
