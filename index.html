@@ -10,8 +10,7 @@
   <meta property="og:type" content="website" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -21,20 +20,18 @@
 
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <span class="nav-brand">
-        <span class="nav-brand-icon"><i class="bi bi-snow2"></i></span>
-        Let's Go Skiing!
-      </span>
-      <a href="#verdictSection" class="nav-cta" id="navVerdictLink"><i class="bi bi-check-circle"></i> Should I Go?</a>
-      <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink"><i class="bi bi-table"></i> Mountain Database</a>
+      <span class="nav-brand">&#9973;&#65039; SkiNE</span>
       <div class="nav-divider"></div>
-      <a href="#searchSection" class="nav-secondary"><i class="bi bi-geo-alt"></i> Location</a>
-      <a href="#aiChatSection" class="nav-secondary"><i class="bi bi-person-standing"></i> AI Ask</a>
-      <a href="#plannerSection" class="nav-secondary"><i class="bi bi-sliders"></i> Planner</a>
-      <a href="#stormSection" class="nav-secondary"><i class="bi bi-cloud-snow"></i> Storm</a>
-      <a href="#hiddenGemSection" class="nav-secondary"><i class="bi bi-gem"></i> Hidden Gems</a>
-      <a href="#mapSection" class="nav-secondary"><i class="bi bi-map"></i> Map</a>
-      <button class="btn-ghost nav-share" onclick="copyShareLink()"><i class="bi bi-share"></i> Share</button>
+      <a href="#verdictSection" class="nav-cta" id="navVerdictLink">&#127942; Should I Go?</a>
+      <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">&#128228; Mountain Database</a>
+      <div class="nav-divider"></div>
+      <a href="#searchSection" class="nav-secondary">&#128205; Location</a>
+      <a href="#aiChatSection" class="nav-secondary">&#129302; AI Ask</a>
+      <a href="#plannerSection" class="nav-secondary">&#9881;&#65039; Planner</a>
+      <a href="#stormSection" class="nav-secondary">&#127784;&#65039; Storm</a>
+      <a href="#hiddenGemSection" class="nav-secondary">&#128142; Hidden Gems</a>
+      <a href="#mapSection" class="nav-secondary">&#128506;&#65039; Map</a>
+      <button class="btn-ghost nav-share" onclick="copyShareLink()">&#128279; Share</button>
     </div>
   </nav>
 
@@ -55,17 +52,17 @@
         <!-- How it works - 3 steps -->
         <div class="how-it-works">
           <div class="how-step">
-            <span class="how-icon"><i class="bi bi-geo-alt-fill"></i></span>
+            <span class="how-icon">&#128205;</span>
             <span class="how-label">Set your location</span>
           </div>
-          <span class="how-arrow" aria-hidden="true"><i class="bi bi-arrow-right"></i></span>
+          <span class="how-arrow" aria-hidden="true">&rarr;</span>
           <div class="how-step">
-            <span class="how-icon"><i class="bi bi-sliders"></i></span>
+            <span class="how-icon">&#9881;&#65039;</span>
             <span class="how-label">Pick your style</span>
           </div>
-          <span class="how-arrow" aria-hidden="true"><i class="bi bi-arrow-right"></i></span>
+          <span class="how-arrow" aria-hidden="true">&rarr;</span>
           <div class="how-step">
-            <span class="how-icon"><i class="bi bi-triangle"></i></span>
+            <span class="how-icon">&#127942;</span>
             <span class="how-label">Get your mountain</span>
           </div>
         </div>
@@ -73,18 +70,18 @@
         <!-- Location input -->
         <div class="location-row">
           <div class="field field-grow">
-            <input id="originInput" type="text" placeholder="City, town, or ZIP — e.g. Boston, MA or 02101" />
+            <input id="originInput" type="text" placeholder="&#128205; City, town, or ZIP &mdash; e.g. Boston, MA or 02101" />
           </div>
-          <button id="setLocation" class="btn btn-primary">Set Location</button>
-          <button id="detectLocation" class="btn btn-secondary"><i class="bi bi-crosshair"></i> Locate me</button>
+          <button id="setLocation" class="btn btn-primary">Set</button>
+          <button id="detectLocation" class="btn btn-secondary">&#128225; Locate me</button>
         </div>
-        <div class="location-best-results"><i class="bi bi-info-circle" style="color:var(--accent)"></i> <strong>For best results, enter your ZIP code</strong> &mdash; drive times and the Day Trip filter only work with a precise location.</div>
+        <div class="location-best-results"><strong>&#128161; For best results, enter your ZIP code</strong> &mdash; drive times and the Day Trip filter only work with a precise location.</div>
         <div id="locationStatus" class="helper-text"></div>
 
         <!-- AI Natural Language Chat Widget -->
         <div class="ai-chat-widget" id="aiChatSection">
           <div class="ai-chat-header">
-            <span class="ai-chat-label"><i class="bi bi-person-standing"></i> Or just describe what you want &mdash; AI will pick for you:</span>
+            <span class="ai-chat-label">&#129302; Or just describe what you want &mdash; AI will pick for you:</span>
             <span class="ai-chat-hint">Uses live data &middot; No account needed</span>
           </div>
           <div class="ai-chat-row">
@@ -110,16 +107,16 @@
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
-          <div class="planner-summary-title"><i class="bi bi-sliders" style="color:var(--accent)"></i> What makes your perfect ski day?</div>
+          <div class="planner-summary-title">&#9881;&#65039; What makes your perfect ski day?</div>
           <div id="weightSummary" class="weight-summary"></div>
         </div>
 
         <!-- Presets -->
         <div class="preset-row">
-          <button class="preset-btn active" data-preset="balanced">Balanced</button>
-          <button class="preset-btn" data-preset="powder">Powder</button>
-          <button class="preset-btn" data-preset="family">Family</button>
-          <button class="preset-btn" data-preset="cheap">Budget</button>
+          <button class="preset-btn active" data-preset="balanced">&#9878;&#65039; Balanced</button>
+          <button class="preset-btn" data-preset="powder">&#10052;&#65039; Powder</button>
+          <button class="preset-btn" data-preset="family">&#128106; Family</button>
+          <button class="preset-btn" data-preset="cheap">&#128176; Budget</button>
         </div>
 
         <!-- Sliders (2-col grid inside narrow column) -->
@@ -127,33 +124,28 @@
           <div class="score-grid">
 
             <div class="score-control">
-              <label for="snowWeight">Snow <span id="snowWeightVal"></span><button class="slider-info-btn" data-tip="snow" aria-label="Snow quality info">?</button></label>
+              <label for="snowWeight">&#10052;&#65039; Snow <span id="snowWeightVal"></span><button class="slider-info-btn" data-tip="snow" aria-label="Snow quality info">?</button></label>
               <input id="snowWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = only go when conditions are exceptional</div>
             </div>
 
             <div class="score-control">
-              <label for="driveWeight">Drive <span id="driveWeightVal"></span><button class="slider-info-btn" data-tip="drive" aria-label="Drive time info">?</button></label>
+              <label for="driveWeight">&#128664; Drive <span id="driveWeightVal"></span><button class="slider-info-btn" data-tip="drive" aria-label="Drive time info">?</button></label>
               <input id="driveWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = favor closer mountains heavily</div>
             </div>
 
             <div class="score-control">
-              <label for="sizeWeight">Size <span id="sizeWeightVal"></span><button class="slider-info-btn" data-tip="size" aria-label="Mountain size info">?</button></label>
+              <label for="sizeWeight">&#127956;&#65039; Size <span id="sizeWeightVal"></span><button class="slider-info-btn" data-tip="size" aria-label="Mountain size info">?</button></label>
               <input id="sizeWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = strongly prefer larger mountains</div>
             </div>
 
             <div class="score-control">
-              <label for="valueWeight">Value <span id="valueWeightVal"></span><button class="slider-info-btn" data-tip="value" aria-label="Value info">?</button></label>
+              <label for="valueWeight">&#128176; Value <span id="valueWeightVal"></span><button class="slider-info-btn" data-tip="value" aria-label="Value info">?</button></label>
               <input id="valueWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = price & value is the top priority</div>
             </div>
 
             <div class="score-control">
-              <label for="crowdWeight">Crowds <span id="crowdWeightVal"></span><button class="slider-info-btn" data-tip="crowds" aria-label="Crowd info">?</button></label>
+              <label for="crowdWeight">&#128101; Crowds <span id="crowdWeightVal"></span><button class="slider-info-btn" data-tip="crowds" aria-label="Crowd info">?</button></label>
               <input id="crowdWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = strongly favor smaller, quieter mountains</div>
             </div>
 
           </div>
@@ -164,19 +156,19 @@
 
           <div class="qs-card">
             <div class="qs-card-header">
-              <span class="qs-card-title">Skill Level</span>
+              <span class="qs-card-title">&#127919; Skill Level</span>
               <span class="qs-card-desc">Ranks mountains to match your ability</span>
             </div>
             <div class="qs-card-btns">
-              <button class="skill-btn" data-skill="beginner">Beginner</button>
-              <button class="skill-btn active" data-skill="mixed">All Levels</button>
-              <button class="skill-btn" data-skill="advanced">Advanced</button>
+              <button class="skill-btn" data-skill="beginner">&#128994; Beginner</button>
+              <button class="skill-btn active" data-skill="mixed">&#128309; All Levels</button>
+              <button class="skill-btn" data-skill="advanced">&#9899; Advanced</button>
             </div>
           </div>
 
           <div class="qs-card">
             <div class="qs-card-header">
-              <span class="qs-card-title">My Pass</span>
+              <span class="qs-card-title">&#127915; My Pass</span>
               <span class="qs-card-desc">Boosts mountains on your season pass</span>
             </div>
             <div class="qs-card-btns pass-pref-row">
@@ -190,7 +182,7 @@
 
           <div class="qs-card">
             <div class="qs-card-header">
-              <span class="qs-card-title">Day Trip Mode</span>
+              <span class="qs-card-title">&#128664; Day Trip Mode</span>
               <span class="qs-card-desc">Hides mountains more than 150 min away</span>
             </div>
             <div class="qs-card-btns">
@@ -206,7 +198,7 @@
       <!-- RIGHT: Should I Go? verdict -->
       <section id="verdictSection" class="verdict-section card verdict-col">
         <div class="verdict-header">
-          <h2><i class="bi bi-person-standing" style="color:var(--accent)"></i> Should I Go? <i class="bi bi-person-snowboarding" style="color:var(--accent)"></i></h2>
+          <h2>&#127942; Should I Go?</h2>
           <p class="muted small">Live weather + your settings = a straight answer.</p>
         </div>
         <div id="verdictCard">
@@ -223,7 +215,7 @@
       <div class="section-header">
         <div>
           <div class="eyebrow">Forecast Breakdown</div>
-          <h2><i class="bi bi-calendar3" style="color:var(--accent)"></i> Best Day to Go</h2>
+          <h2>&#128197; Best Day to Go</h2>
           <p class="muted small">3-day forecast for your top picks &mdash; see which day gives you the best conditions.</p>
         </div>
         <div id="bestDayLastUpdated" class="helper-text"></div>
@@ -234,10 +226,10 @@
     <!-- FILTERS -->
     <section class="toolbar card">
       <div class="toolbar-row">
-        <span class="toolbar-label"><i class="bi bi-funnel"></i> Filters</span>
+        <span class="toolbar-label">&#127923; Filters</span>
         <div class="toolbar-controls">
           <div class="field">
-            <label for="maxDriveFilter">Drive Time</label>
+            <label for="maxDriveFilter">&#128664; Drive Time</label>
             <span class="filter-hint">Hard cutoff by distance</span>
             <select id="maxDriveFilter">
               <option value="0">Any distance</option>
@@ -249,7 +241,7 @@
             </select>
           </div>
           <div class="field">
-            <label for="maxPriceFilter">Max Ticket</label>
+            <label for="maxPriceFilter">&#128176; Max Ticket</label>
             <span class="filter-hint">Hide pricier day tickets</span>
             <select id="maxPriceFilter">
               <option value="0">Any price</option>
@@ -260,17 +252,17 @@
             </select>
           </div>
           <div class="field">
-            <label for="passFilter">Pass</label>
+            <label for="passFilter">&#127915; Pass</label>
             <span class="filter-hint">Show only one pass network</span>
             <select id="passFilter"></select>
           </div>
           <div class="field">
-            <label for="stateFilter">State</label>
+            <label for="stateFilter">&#128205; State</label>
             <span class="filter-hint">Narrow to one state</span>
             <select id="stateFilter"></select>
           </div>
           <div class="field">
-            <label for="sortBy">Sort by</label>
+            <label for="sortBy">&#8645; Sort by</label>
             <span class="filter-hint">Change table ranking</span>
             <select id="sortBy">
               <option value="planner">Ski Score</option>
@@ -282,19 +274,19 @@
             </select>
           </div>
           <div class="field field-toggle">
-            <label>Night Only</label>
+            <label>&#127769; Night Only</label>
             <span class="filter-hint">Has night skiing</span>
             <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">Off</button>
           </div>
           <div class="field field-toggle">
-            <label>Day Trip</label>
+            <label>&#128664; Day Trip</label>
             <span class="filter-hint">Within 150 min of you</span>
             <button id="toggleDaytrip" class="btn btn-secondary" aria-pressed="false">Off</button>
           </div>
           <div class="field field-toggle">
             <label>&nbsp;</label>
             <span class="filter-hint">&nbsp;</span>
-            <button id="resetFilters" class="btn btn-secondary"><i class="bi bi-x-lg"></i> Reset</button>
+            <button id="resetFilters" class="btn btn-secondary">&#10005; Reset</button>
           </div>
         </div>
       </div>
@@ -366,9 +358,7 @@
     <section class="feature-grid">
       <section id="stormSection" class="card panel">
         <div class="section-header"><div>
-          <h2>&#127784;&#65039; Storm Chaser <span class="info-tooltip" data-tooltip="Storm Chaser ranks mountains by total forecast snowfall over the next 3 days — useful when an active storm is arriving and you want to find the best powder.
-
-The 'Snow' weight in your planner uses a blend of forecast + historical snowfall."><i class="bi bi-info-circle" style="font-size:13px;color:var(--muted);vertical-align:middle;cursor:pointer"></i></span></h2>
+          <h2>&#127784;&#65039; Storm Chaser</h2>
           <p class="muted small">Resorts with the most forecast snowfall in the next 3 days.</p>
         </div></div>
         <div id="stormGrid" class="card-grid"></div>
