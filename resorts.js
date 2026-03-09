@@ -391,16 +391,24 @@ async function fetchConditions(resort) {
 }
 
 async function ensureConditions(resorts) {
-  // Only fetch resorts not already cached
   const queue = resorts.filter(r => r.website && !conditionsCache.has(r.id));
   if (!queue.length) return;
-  // Concurrency = 3 (API calls chain: us → resort page + us → Claude)
-  await Promise.all(Array.from({ length: 3 }, async () => {
+  // Concurrency = 5: each call is I/O-bound (network), not CPU
+  await Promise.all(Array.from({ length: 5 }, async () => {
     while (queue.length) {
       const r = queue.shift();
       if (r) await fetchConditions(r);
     }
   }));
+}
+
+// Priority fetch for a single resort — called immediately on detail card open
+// Re-renders detail card as soon as its own data arrives, no waiting for others
+async function fetchConditionsForDetail(resort) {
+  if (!resort?.website) return;
+  if (conditionsCache.get(resort.id)?.data) return; // already have it
+  await fetchConditions(resort);
+  renderDetail(); // re-render detail card only — quiet, no full re-render
 }
 
 // ── Conditions quality index (0–1) for scoring ──────────────────────────────
@@ -1323,8 +1331,16 @@ function crowdClass(label) { return `crowd-${label.toLowerCase()}`; }
 
 // ─── Async render panels ──────────────────────────────────────────────────────
 // Single shared pipeline — compute candidates & weather once, pass to all panels (audit #2)
+// Single shared pipeline — compute candidates & weather once, pass to all panels
 async function renderAsyncPanels(resorts) {
   const candidates = plannerCandidates(resorts);
+
+  // Start conditions fetch for top 5 immediately — don't wait for weather
+  // These are most likely what the user will click; we want them ready fast
+  const top5 = candidates.slice(0, 5);
+  const conditionsEarlyPromise = ensureConditions(top5);
+
+  // Weather and conditions run in parallel
   await ensureWeather(candidates);
 
   renderCompareTable(resorts);
@@ -1334,7 +1350,15 @@ async function renderAsyncPanels(resorts) {
   renderBestDay(resorts);
   _renderStorm(resorts);
 
-  // Fetch 7-day history in parallel
+  // When top-5 conditions arrive, re-render immediately — this is the fast path
+  conditionsEarlyPromise.then(() => {
+    renderCompareTable(resorts);
+    renderVerdict(resorts);
+    renderBestDay(resorts);
+    renderDetail();
+  });
+
+  // History fetch in parallel
   ensureHistory(candidates.slice(0, 50)).then(() => {
     renderVerdict(resorts);
     renderBestDay(resorts);
@@ -1342,17 +1366,17 @@ async function renderAsyncPanels(resorts) {
     renderCompareTable(resorts);
   });
 
-  // Fetch live conditions for top candidates via /api/conditions → Claude
-  // Re-render once data arrives so scores and detail card update
-  ensureConditions(candidates.slice(0, 20)).then(() => {
-    renderCompareTable(resorts);
-    renderVerdict(resorts);
-    renderBestDay(resorts);
-    renderDetail();
-    // Show a subtle toast so users know conditions data arrived
-    const loaded = candidates.slice(0, 20).filter(r => conditionsCache.get(r.id)?.data);
-    if (loaded.length > 0) showToast(`Live conditions loaded for ${loaded.length} mountains ⛷️`, 3000);
-  });
+  // Lazy-load conditions for resorts 6–20 in the background after main render
+  // Higher concurrency is fine here since it's background work
+  const rest = candidates.slice(5, 20);
+  if (rest.length) {
+    ensureConditions(rest).then(() => {
+      renderCompareTable(resorts);
+      renderVerdict(resorts);
+      const loaded = candidates.slice(0, 20).filter(r => conditionsCache.get(r.id)?.data);
+      if (loaded.length > 0) showToast(`Live conditions loaded for ${loaded.length} mountains ⛷️`, 3000);
+    });
+  }
 }
 
 
@@ -1784,7 +1808,7 @@ function updateMap(resorts) {
     const marker = L.marker([resort.lat, resort.lon], { icon })
       .addTo(map)
       .bindPopup(`<strong>${esc(resort.name)}</strong><br>${esc(resort.state)} · ${esc(resort.passGroup)}<br>Vertical ${resort.vertical} ft<br>Ticket* $${resort.price}${resort.website ? `<br><a href="${resort.website}" target="_blank" rel="noopener">Visit website ↗</a>` : ''}`);
-    marker.on('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+    marker.on('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); fetchConditionsForDetail(resort); });
     markers[resort.id] = marker;
   });
 }
@@ -2128,6 +2152,8 @@ function wireEvents() {
       if (detailBtn) {
         state.selectedId = detailBtn.dataset.mobDetail;
         renderDetail({ scroll: true });
+        const r = RESORTS.find(r => r.id === state.selectedId);
+        if (r) fetchConditionsForDetail(r);
         return;
       }
       // Card tap (not checkbox, not button)
@@ -2135,6 +2161,8 @@ function wireEvents() {
       if (!card || e.target.closest('input') || e.target.closest('button')) return;
       state.selectedId = card.dataset.mobId;
       renderDetail({ scroll: true });
+      const r = RESORTS.find(r => r.id === state.selectedId);
+      if (r) fetchConditionsForDetail(r);
     });
     els.mobileCardGrid.addEventListener('change', e => {
       const box = e.target.closest('input[data-compare]');
@@ -2328,10 +2356,22 @@ function wireEvents() {
     if (!row || e.target.closest('input')) return;
     state.selectedId = row.dataset.id;
     renderDetail({ scroll: true });
-    // Highlight the row
+    // Priority-fetch this resort's conditions immediately if not yet loaded
+    const resort = RESORTS.find(r => r.id === state.selectedId);
+    if (resort) fetchConditionsForDetail(resort);
     [...els.comparisonBody.querySelectorAll('tr')].forEach(r =>
       r.classList.toggle('active-row', r.dataset.id === state.selectedId));
   });
+
+  // Prefetch conditions on hover — by the time user clicks, fetch is already in flight
+  els.comparisonBody.addEventListener('mouseenter', e => {
+    const row = e.target.closest('tr[data-id]');
+    if (!row) return;
+    const resort = RESORTS.find(r => r.id === row.dataset.id);
+    if (resort && resort.website && !conditionsCache.has(resort.id)) {
+      fetchConditionsForDetail(resort); // fire-and-forget
+    }
+  }, true);
   els.comparisonBody.addEventListener('change', e => {
     const box = e.target.closest('input[data-compare]');
     if (!box) return;
