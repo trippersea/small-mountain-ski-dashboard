@@ -1140,7 +1140,7 @@ function renderCompareTable(resorts) {
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
-        <td><div class="row-name">${resort.website ? `<a class="resort-link" href="${resort.website}" target="_blank" rel="noopener">${esc(resort.name)}</a>` : esc(resort.name)}</div></td>
+        <td><div class="row-name">${esc(resort.name)}</div></td>
         <td>${esc(resort.state)}</td>
         <td>${esc(resort.passGroup)}</td>
         <td>${planner}</td>
