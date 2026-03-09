@@ -52,7 +52,7 @@ module.exports = async function handler(req, res) {
       r.drive       ? r.drive + ' min drive'           : null,
       r.snow3d != null ? r.snow3d + '" forecast snow'  : null,
       r.crowd       ? r.crowd + ' crowds'               : null,
-      r.skiScore != null ? 'Score: ' + r.skiScore : null,
+      r.plannerScore != null ? 'Score: ' + r.plannerScore : null,
       r.beginner    != null ? Math.round(r.beginner * 100) + '% beginner terrain' : null,
     ].filter(Boolean);
     return parts.join(' · ');
@@ -61,7 +61,7 @@ module.exports = async function handler(req, res) {
   const prompt =
     'You are a witty, opinionated New England ski expert. A skier just said:\n' +
     '"' + query.trim() + '"\n\n' +
-    'Here are up to 25 ranked mountains (already sorted by ski score for this person):\n\n' +
+    'Here are up to 25 ranked mountains (already sorted by planner score for this person):\n\n' +
     resortList + '\n\n' +
     'Based on exactly what they said, pick the ONE mountain that fits best. ' +
     'Factor in any pass they mentioned, skill level, driving distance, day of week, or companions. ' +
