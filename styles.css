@@ -1405,3 +1405,28 @@ button { font: inherit; }
   flex-shrink: 0;
 }
 .mob-website-btn:hover { background: #deeaff; }
+
+/* ─── Verdict backup mountain ────────────────────────────────────────────────── */
+.verdict-backup {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+}
+.verdict-backup-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  opacity: .65;
+  margin-bottom: 2px;
+}
+.verdict-backup-name {
+  font-weight: 700;
+  font-size: 15px;
+}
+.verdict-backup-meta {
+  font-size: 12px;
+  opacity: .75;
+  margin-top: 2px;
+}
