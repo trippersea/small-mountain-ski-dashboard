@@ -1705,9 +1705,9 @@ function renderDetail({ scroll = false } = {}) {
       <div class="metric-box"><div class="metric-label">Drive</div><div class="metric-value">${formatDrive(resort.id)}</div></div>
       <div class="metric-box"><div class="metric-label">Crowd</div><div class="metric-value detail-sm">${crowd.label}</div></div>
     </div>
-    <div class="detail-grid" style="margin-top:16px">
+    <div class="detail-grid" style="margin-top:12px">
       <div class="sub-card">
-        <h3 style="margin:0 0 10px">Terrain Breakdown</h3>
+        <h3 class="sub-card-title">Terrain Breakdown</h3>
         <div class="bar-row"><div>Beginner</div><div class="bar"><div class="bar-fill" style="width:${tb.beginner*100}%"></div></div><div>${Math.round(tb.beginner*100)}%</div></div>
         <div class="bar-row"><div>Intermediate</div><div class="bar"><div class="bar-fill" style="width:${tb.intermediate*100}%"></div></div><div>${Math.round(tb.intermediate*100)}%</div></div>
         <div class="bar-row"><div>Advanced</div><div class="bar"><div class="bar-fill" style="width:${tb.advanced*100}%"></div></div><div>${Math.round(tb.advanced*100)}%</div></div>
@@ -1719,7 +1719,7 @@ function renderDetail({ scroll = false } = {}) {
         </div>
       </div>
       <div class="sub-card">
-        <h3 style="margin:0 0 10px">Ski Score Breakdown</h3>
+        <h3 class="sub-card-title">Ski Score Breakdown</h3>
         ${skis ? `
         <div class="breakdown">
           <div>Snow quality: <strong>${skis.factors.snow}</strong></div>
@@ -1733,7 +1733,7 @@ function renderDetail({ scroll = false } = {}) {
         </div>` : '<div class="muted">Weather loading…</div>'}
       </div>
       <div class="sub-card sub-card-conditions">
-        <h3 style="margin:0 0 10px">Live Conditions</h3>
+        <h3 class="sub-card-title">Live Conditions</h3>
         ${(() => {
           const c = conditionsCache.get(resort.id)?.data;
           if (!c) {
@@ -1771,7 +1771,7 @@ function renderDetail({ scroll = false } = {}) {
         })()}
       </div>
       <div class="sub-card">
-        <h3 style="margin:0 0 10px">Crowd Forecast</h3>
+        <h3 class="sub-card-title">Crowd Forecast</h3>
         <div class="breakdown">
           <div>Expected traffic: <strong>${crowd.label}</strong></div>
           <div>Confidence: <strong>${crowd.confidence}</strong></div>
@@ -1779,7 +1779,7 @@ function renderDetail({ scroll = false } = {}) {
         </div>
       </div>
       <div class="sub-card">
-        <h3 style="margin:0 0 10px">Snow History &amp; Forecast</h3>
+        <h3 class="sub-card-title">Snow History &amp; Forecast</h3>
         ${(() => {
           const hist = historyCache.get(resort.id);
           const spark = hist ? snowSparkline(hist.days) : null;

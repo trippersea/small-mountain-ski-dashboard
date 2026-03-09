@@ -254,6 +254,7 @@ button { font: inherit; }
   color: var(--text); font-size: 13px; font-weight: 700;
 }
 .score-desc { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.5; font-weight: 400; }
+.slider-hint { font-size: 10px; color: var(--muted); margin-top: 5px; line-height: 1.4; font-style: italic; }
 
 /* ── Toolbar (filters only) ─────────────────────────────────────────────── */
 .toolbar { padding: 14px 18px; }
@@ -390,8 +391,9 @@ button { font: inherit; }
 .compare-pill button { border: none; background: none; cursor: pointer; color: rgba(255,255,255,.7); font-size: 13px; }
 
 /* ── Detail card ────────────────────────────────────────────────────────── */
-.detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.sub-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: start; }
+.sub-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px 13px; }
+.sub-card-title { margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
 .metric-box { background: #fff; border: 1px solid var(--border); border-radius: 13px; padding: 12px; }
 .metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 5px; }
@@ -1022,21 +1024,12 @@ button { font: inherit; }
 .ai-chat-widget {
   margin-top: 6px;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3563 100%);
+  background: #EEF2F7;
   border-radius: 14px;
-  border: 1px solid rgba(43,109,233,.3);
+  border: 1px solid var(--border);
   position: relative;
-  overflow: hidden;
 }
-.ai-chat-widget::after {
-  content: '';
-  position: absolute;
-  top: -30px; right: -30px;
-  width: 120px; height: 120px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(43,109,233,.18), transparent 70%);
-  pointer-events: none;
-}
+
 .ai-chat-header {
   display: flex;
   align-items: baseline;
@@ -1047,11 +1040,11 @@ button { font: inherit; }
 .ai-chat-label {
   font-size: 13px;
   font-weight: 700;
-  color: #e2eaf8;
+  color: var(--text);
 }
 .ai-chat-hint {
   font-size: 11px;
-  color: rgba(255,255,255,.4);
+  color: var(--muted);
   font-family: 'DM Mono', monospace;
   letter-spacing: .04em;
 }
@@ -1062,17 +1055,17 @@ button { font: inherit; }
 }
 .ai-chat-input {
   flex: 1;
-  background: rgba(255,255,255,.09);
-  border: 1px solid rgba(255,255,255,.18);
+  background: #fff;
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 14px;
-  color: #e2eaf8;
+  color: var(--text);
   font: inherit;
   font-size: 13px;
   transition: border-color .14s, background .14s;
   min-width: 0;
 }
-.ai-chat-input::placeholder { color: rgba(255,255,255,.35); }
+.ai-chat-input::placeholder { color: var(--muted); }
 .ai-chat-input:focus {
   outline: none;
   border-color: rgba(43,109,233,.7);
@@ -1103,8 +1096,8 @@ button { font: inherit; }
   transition: all .2s;
 }
 .ai-chat-loading {
-  background: rgba(255,255,255,.07);
-  color: rgba(255,255,255,.6);
+  background: rgba(0,0,0,.04);
+  color: var(--muted);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1910,3 +1903,28 @@ button { font: inherit; }
 @media (max-width: 700px) {
   .conditions-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ─── Info tooltip (Storm Chaser etc.) ──────────────────────────────────── */
+.info-tooltip { position: relative; display: inline-block; }
+.info-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1E293B;
+  color: #E2E8F0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  width: 260px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+.info-tooltip:hover::after { opacity: 1; }

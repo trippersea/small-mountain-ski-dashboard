@@ -20,7 +20,7 @@
 
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <span class="nav-brand">&#9973;&#65039; SkiNE</span>
+      <span class="nav-brand">&#9973;&#65039; Let's Go Skiing!</span>
       <div class="nav-divider"></div>
       <a href="#verdictSection" class="nav-cta" id="navVerdictLink">&#127942; Should I Go?</a>
       <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">&#128228; Mountain Database</a>
@@ -62,7 +62,7 @@
           </div>
           <span class="how-arrow" aria-hidden="true">&rarr;</span>
           <div class="how-step">
-            <span class="how-icon">&#127942;</span>
+            <span class="how-icon">&#127956;&#65039;</span>
             <span class="how-label">Get your mountain</span>
           </div>
         </div>
@@ -81,7 +81,7 @@
         <!-- AI Natural Language Chat Widget -->
         <div class="ai-chat-widget" id="aiChatSection">
           <div class="ai-chat-header">
-            <span class="ai-chat-label">&#129302; Or just describe what you want &mdash; AI will pick for you:</span>
+            <span class="ai-chat-label">&#9975;&#65039; Or just describe what you want &mdash; AI will pick for you:</span>
             <span class="ai-chat-hint">Uses live data &middot; No account needed</span>
           </div>
           <div class="ai-chat-row">
@@ -126,26 +126,31 @@
             <div class="score-control">
               <label for="snowWeight">&#10052;&#65039; Snow <span id="snowWeightVal"></span><button class="slider-info-btn" data-tip="snow" aria-label="Snow quality info">?</button></label>
               <input id="snowWeight" type="range" min="1" max="10" step="1">
+              <div class="slider-hint">10 = only go when conditions are exceptional</div>
             </div>
 
             <div class="score-control">
               <label for="driveWeight">&#128664; Drive <span id="driveWeightVal"></span><button class="slider-info-btn" data-tip="drive" aria-label="Drive time info">?</button></label>
               <input id="driveWeight" type="range" min="1" max="10" step="1">
+              <div class="slider-hint">10 = favor closer mountains heavily</div>
             </div>
 
             <div class="score-control">
               <label for="sizeWeight">&#127956;&#65039; Size <span id="sizeWeightVal"></span><button class="slider-info-btn" data-tip="size" aria-label="Mountain size info">?</button></label>
               <input id="sizeWeight" type="range" min="1" max="10" step="1">
+              <div class="slider-hint">10 = strongly prefer larger mountains</div>
             </div>
 
             <div class="score-control">
               <label for="valueWeight">&#128176; Value <span id="valueWeightVal"></span><button class="slider-info-btn" data-tip="value" aria-label="Value info">?</button></label>
               <input id="valueWeight" type="range" min="1" max="10" step="1">
+              <div class="slider-hint">10 = price &amp; value is the top priority</div>
             </div>
 
             <div class="score-control">
               <label for="crowdWeight">&#128101; Crowds <span id="crowdWeightVal"></span><button class="slider-info-btn" data-tip="crowds" aria-label="Crowd info">?</button></label>
               <input id="crowdWeight" type="range" min="1" max="10" step="1">
+              <div class="slider-hint">10 = strongly favor smaller, quieter mountains</div>
             </div>
 
           </div>
@@ -156,7 +161,7 @@
 
           <div class="qs-card">
             <div class="qs-card-header">
-              <span class="qs-card-title">&#127919; Skill Level</span>
+              <span class="qs-card-title">Skill Level</span>
               <span class="qs-card-desc">Ranks mountains to match your ability</span>
             </div>
             <div class="qs-card-btns">
@@ -168,7 +173,7 @@
 
           <div class="qs-card">
             <div class="qs-card-header">
-              <span class="qs-card-title">&#127915; My Pass</span>
+              <span class="qs-card-title">My Pass</span>
               <span class="qs-card-desc">Boosts mountains on your season pass</span>
             </div>
             <div class="qs-card-btns pass-pref-row">
@@ -182,7 +187,7 @@
 
           <div class="qs-card">
             <div class="qs-card-header">
-              <span class="qs-card-title">&#128664; Day Trip Mode</span>
+              <span class="qs-card-title">Day Trip Mode</span>
               <span class="qs-card-desc">Hides mountains more than 150 min away</span>
             </div>
             <div class="qs-card-btns">
@@ -198,7 +203,7 @@
       <!-- RIGHT: Should I Go? verdict -->
       <section id="verdictSection" class="verdict-section card verdict-col">
         <div class="verdict-header">
-          <h2>&#127942; Should I Go?</h2>
+          <h2>&#9975;&#65039; Should I Go? &#127938;&#65039;</h2>
           <p class="muted small">Live weather + your settings = a straight answer.</p>
         </div>
         <div id="verdictCard">
@@ -358,7 +363,9 @@
     <section class="feature-grid">
       <section id="stormSection" class="card panel">
         <div class="section-header"><div>
-          <h2>&#127784;&#65039; Storm Chaser</h2>
+          <h2>&#127784;&#65039; Storm Chaser <span class="info-tooltip" data-tooltip="Storm Chaser ranks mountains by total forecast snowfall over the next 3 days — useful when an active storm is arriving and you want to find the best powder.
+
+The 'Snow' weight in your planner blends forecast + historical snowfall."><svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='currentColor' style='color:var(--muted);vertical-align:middle;cursor:pointer;margin-left:2px'><path d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16'/><path d='m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0'/></svg></span></h2>
           <p class="muted small">Resorts with the most forecast snowfall in the next 3 days.</p>
         </div></div>
         <div id="stormGrid" class="card-grid"></div>
