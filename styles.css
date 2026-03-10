@@ -333,6 +333,15 @@ button { font: inherit; }
 }
 .verdict-drive-off-btn:hover { opacity: 0.75; }
 
+/* Pass bonus badge — shown next to backup score when pass preference is active */
+.pass-bonus-badge {
+  display: inline-block;
+  background: #dbeafe; color: #1d4ed8;
+  font-size: 0.68rem; font-weight: 600;
+  padding: 1px 5px; border-radius: 3px;
+  vertical-align: middle; margin-left: 2px;
+}
+
 .verdict-right {
   display: flex; flex-direction: column; gap: 12px;
   padding: 22px 24px;

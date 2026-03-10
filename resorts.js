@@ -33,6 +33,15 @@ const DRIVE_RANGES = Object.freeze([
   { label: '301+ min',       min: 301, max: Infinity },
 ]);
 
+// Ticket price filter ranges — index stored in state.priceRange (0 = any)
+const PRICE_RANGES = Object.freeze([
+  { label: 'Any price',      min: 0,   max: Infinity },
+  { label: 'Under $100',     min: 0,   max: 99       },
+  { label: '$100 – $150',    min: 100, max: 150       },
+  { label: '$150 – $200',    min: 151, max: 200       },
+  { label: '$200+',          min: 201, max: Infinity  },
+]);
+
 // Pass break-even prices (audit #39)
 const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 
@@ -142,7 +151,8 @@ const state = Object.seal({
   nightOnly:    false,
   daytripOnly:  false,
   maxDrive:     0,
-  maxPrice:     0,
+  maxPrice:     0,        // legacy — kept for URL compat
+  priceRange:   0,        // index into PRICE_RANGES (0 = any)
   selectedId:   null,
   origin:       null,
   driveCache:   {},
@@ -286,7 +296,7 @@ function applyUrlState() {
   if (p.has('night'))   state.nightOnly   = true;
   if (p.has('daytrip')) state.daytripOnly = true;
   if (p.has('drive')) state.maxDrive  = Number(p.get('drive')) || 0;
-  if (p.has('price')) state.maxPrice  = Number(p.get('price')) || 0;
+  if (p.has('price')) { state.maxPrice = Number(p.get('price')) || 0; state.priceRange = 0; } // legacy URL compat
   if (p.has('days'))  state.skiDays   = Math.max(1, Number(p.get('days')) || 5);
   if (p.has('skill') && ['beginner','mixed','advanced'].includes(p.get('skill'))) state.skillLevel = p.get('skill');
 
@@ -687,7 +697,7 @@ function renderVerdict(resorts) {
     return `<div class="verdict-backup">
       <div class="verdict-backup-label">Also consider</div>
       <div class="verdict-backup-name">${esc(backup.resort.name)}</div>
-      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
+      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
     </div>`;
   })() : '';
 
@@ -718,7 +728,7 @@ function renderVerdict(resorts) {
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
           <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Ski Score ${breakdown.score}</div>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Ski Score ${breakdown.baseScore}</div>
         </div>
         ${reasonsHtml}
         ${spark ? `<div class="verdict-spark-wrap"><span class="verdict-spark-label">Last 7 days</span>${spark}</div>` : ''}
@@ -731,8 +741,8 @@ function renderVerdict(resorts) {
         ${backupHtml}
         ${top5Html}
         <div class="verdict-action-row">
+          <button class="btn btn-primary verdict-compare-btn" id="verdictCompareBtn">&#128228; Compare Mountains</button>
           <button class="btn btn-secondary verdict-share-btn" id="verdictShareBtn">&#127920; Share this pick</button>
-          <button class="btn btn-secondary verdict-compare-btn" id="verdictCompareBtn">&#128228; Compare Mountains</button>
         </div>
       </div>
     </div>`;
@@ -747,6 +757,15 @@ function renderVerdict(resorts) {
   });
   const _compareBtn = $('verdictCompareBtn');
   if (_compareBtn) _compareBtn.addEventListener('click', () => {
+    // Activate Day Trip mode so the compare table matches the 3h verdict pool
+    if (state.origin && !state.daytripOnly) {
+      state.daytripOnly = true;
+      if (els.toggleDaytrip) {
+        els.toggleDaytrip.setAttribute('aria-pressed', 'true');
+        els.toggleDaytrip.textContent = '✓ On';
+      }
+      renderCompareTable(filteredResorts());
+    }
     const sec = document.getElementById('compareSection');
     if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
@@ -1032,11 +1051,14 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
   const condIdx = conditionsIndex(resort);
   const condBonus = condIdx !== null ? (condIdx - 0.5) * 80 : 0; // -40 to +40
   score += condBonus;
-  // Pass preference bonus — +200 for mountains on your pass (~10% of typical max score)
-  if (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) score += 60;
+  // Pass preference bonus — boosts ranking but NOT the displayed score
+  const passBonus = (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) ? 60 : 0;
   if (state.nightOnly && resort.night) score += 4;
 
-  return { score: Math.round(score * 10) / 10, snowTotal, drive, resortId: resort.id, crowdLabel: crowd.label, normalized, components, condIdx, condBonus };
+  const baseScore = Math.round(score * 10) / 10;  // score without pass bonus — shown in UI
+  const fullScore = Math.round((score + passBonus) * 10) / 10;  // score with pass bonus — used for ranking only
+
+  return { score: fullScore, baseScore, passBonus, snowTotal, drive, resortId: resort.id, crowdLabel: crowd.label, normalized, components, condIdx, condBonus };
 }
 
 // ─── Ski Score (public-facing wrapper around plannerScoreBreakdown) ────────────
@@ -1046,7 +1068,9 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
   const base = plannerScoreBreakdown(resort, weather, forecastIndex, w);
   return {
     ...base,
-    skiScore: Math.round(base.score),
+    skiScore: Math.round(base.baseScore),   // display score — no pass bonus
+    skiScoreRanking: Math.round(base.score), // ranking score — includes pass bonus
+    passBonus: base.passBonus || 0,
     factors: {
       snow:         Math.round(base.components.snow),
       drive:        Math.round(base.components.drive),
@@ -1127,8 +1151,9 @@ function primaryReasons(item) {
   const reasons = [];
   const storm = item.storm || 0;
 
-  if (item.ski.skiScore >= 85) reasons.push(`Elite Ski Score (${item.ski.skiScore})`);
-  else                          reasons.push(`Strong Ski Score (${item.ski.skiScore})`);
+  const displayScore = item.ski.skiScore; // already baseScore after skiScoreBreakdown fix
+  if (displayScore >= 85) reasons.push(`Elite Ski Score (${displayScore})`);
+  else                    reasons.push(`Strong Ski Score (${displayScore})`);
 
   if (storm >= 6) reasons.push(`${storm.toFixed(1)}" forecast over 3 days`);
   // Re-read drive at render time — item.drive may be a stale haversine estimate
@@ -1213,7 +1238,7 @@ function activeFilters() {
   const filters = [];
   if (state.search.trim())     filters.push(`Search: "${esc(state.search.trim())}"`);
   if (state.maxDrive > 0)      filters.push(`Drive: ${DRIVE_RANGES[state.maxDrive]?.label ?? ''}${state.origin ? '' : ' (set location to activate)'}`);
-  if (state.maxPrice > 0)      filters.push(`Max ticket: $${state.maxPrice}`);
+  if (state.priceRange > 0)    filters.push(`Ticket: ${PRICE_RANGES[state.priceRange]?.label ?? ''}`);
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
   if (state.nightOnly)         filters.push('Night only');
@@ -1236,7 +1261,10 @@ function filteredResorts() {
       const mins = getDriveMins(r.id);
       if (mins !== null && mins > 150) return false;
     }
-    if (state.maxPrice > 0 && r.price > state.maxPrice) return false;
+    if (state.priceRange > 0) {
+      const pr = PRICE_RANGES[state.priceRange];
+      if (pr && (r.price < pr.min || r.price > pr.max)) return false;
+    }
     if (state.maxDrive > 0 && state.origin) {
       const range = DRIVE_RANGES[state.maxDrive];
       if (range) {
@@ -1676,7 +1704,7 @@ function renderComparePanel() {
     ['Avg snowfall',    r => `${r.avgSnowfall}"`],
     ['Day ticket*',     r => `$${r.price}`],
     ['Drive',           r => formatDrive(r.id)],
-    ['Ski Score', r => { const wx = state.weatherCache[r.id]?.data; return wx ? plannerScoreBreakdown(r, wx, 0, w).score : '—'; }],
+    ['Ski Score', r => { const wx = state.weatherCache[r.id]?.data; if (!wx) return '—'; const bd = plannerScoreBreakdown(r, wx, 0, w); return bd.baseScore + (bd.passBonus ? ' (+pass)' : ''); }],
     ['Crowd',           r => crowdForecast(r).label],
     ['Base / summit',   r => `${r.baseElevation} / ${r.summitElevation} ft`],
   ];
@@ -2325,7 +2353,8 @@ function wireEvents() {
     pushUrlDebounced(); render();
   });
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
-    state.maxPrice = Number(e.target.value);
+    state.priceRange = Number(e.target.value);
+    state.maxPrice = 0; // keep legacy field cleared
     pushUrlDebounced(); render();
   });
   els.sortBy.addEventListener('change', e => { state.sortBy = e.target.value; pushUrlDebounced(); render(); });
@@ -2388,13 +2417,13 @@ function wireEvents() {
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.nightOnly = false; state.daytripOnly = false;
-    state.maxDrive = 0; state.maxPrice = 0;
+    state.maxDrive = 0; state.maxPrice = 0; state.priceRange = 0;
     state.skillLevel = 'mixed'; state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
     els.stateFilter.value    = 'All';
     els.maxDriveFilter.value = '0';
-    if (els.maxPriceFilter) els.maxPriceFilter.value = '0';
+    if (els.maxPriceFilter) els.maxPriceFilter.value = '0'; state.priceRange = 0;
     els.sortBy.value         = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false');
     els.toggleNight.textContent = 'Off';
@@ -2580,7 +2609,7 @@ function initialize() {
     els.stateFilter.value    = state.stateFilter;
     els.sortBy.value         = state.sortBy;
     els.maxDriveFilter.value = String(state.maxDrive);
-    if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.maxPrice);
+    if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.priceRange);
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
     els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
     if (els.toggleDaytrip) {
