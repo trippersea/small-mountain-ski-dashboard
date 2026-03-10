@@ -55,7 +55,7 @@ const PRESETS = {
 
 // Skill presets per named preset
 const PRESET_SKILLS = {
-  balanced: 'mixed', powder: 'advanced', family: 'beginner', cheap: 'mixed',
+  balanced: 'mixed', powder: 'mixed', family: 'beginner', cheap: 'mixed',
 };
 
 // Table sort state — dir tracked separately from URL state
@@ -298,7 +298,7 @@ function applyUrlState() {
   if (p.has('drive')) state.maxDrive  = Number(p.get('drive')) || 0;
   if (p.has('price')) { state.maxPrice = Number(p.get('price')) || 0; state.priceRange = 0; } // legacy URL compat
   if (p.has('days'))  state.skiDays   = Math.max(1, Number(p.get('days')) || 5);
-  if (p.has('skill') && ['beginner','mixed','advanced'].includes(p.get('skill'))) state.skillLevel = p.get('skill');
+  if (p.has('skill') && ['beginner','mixed'].includes(p.get('skill'))) state.skillLevel = p.get('skill');
 
   const lat = parseFloat(p.get('lat'));
   const lon = parseFloat(p.get('lon'));
@@ -811,7 +811,9 @@ function syncPlannerControls() {
   });
 
   const w = state.weights;
-  const skillLabel = { beginner: 'Beginner', mixed: 'All Levels', advanced: 'Advanced' }[state.skillLevel] || 'All Levels';
+  // Guard: if legacy 'advanced' skill level somehow persists, normalize to 'mixed'
+  if (state.skillLevel === 'advanced') state.skillLevel = 'mixed';
+  const skillLabel = { beginner: 'Beginner (≤800ft)', mixed: 'All Levels' }[state.skillLevel] || 'All Levels';
   const passLabel  = state.passPreference === 'any' ? 'Any' : `${state.passPreference} (+10 pts)`;
   els.weightSummary.innerHTML =
     `<strong>Active profile:</strong> ` +
@@ -998,23 +1000,19 @@ function snowQualityIndex(resort, snowTotal) {
 
 // ─── Skill Match Index ────────────────────────────────────────────────────────
 // Scores how well a mountain's terrain mix matches the user's skill level.
-// beginners want gentle runs; advanced want expert terrain; mixed wants balance.
+// Skill match based on vertical drop — objective and data-reliable.
+// Beginner: mountains ≤800ft score 1.0; larger mountains decay down to 0.2.
+// All Levels (mixed): neutral — every mountain scores 1.0 so skill doesn’t affect ranking.
 function skillMatchIndex(resort) {
-  const tb = resort.terrainBreakdown;
   const skill = state.skillLevel || 'mixed';
   if (skill === 'beginner') {
-    // Reward high beginner% + intermediate%; penalize heavy-expert mountains
-    return Math.min(1, (tb.beginner || 0) * 1.2 + (tb.intermediate || 0) * 0.5);
-  } else if (skill === 'advanced') {
-    // Reward advanced% + steep intermediate%; also factor in vertical
-    const terrainScore = Math.min(1, (tb.advanced || 0) * 1.4 + (tb.intermediate || 0) * 0.3);
-    const vertBonus    = Math.min(0.2, resort.vertical / SCORING.VERTICAL_CEILING * 0.2);
-    return Math.min(1, terrainScore + vertBonus);
-  } else { // mixed / all-levels
-    // Reward balanced mountains — high in all tiers, penalize extreme single-tier
-    const balance = 1 - Math.abs((tb.beginner||0) - (tb.advanced||0));
-    return Math.max(0.3, balance); // floor of 0.3 — no mountain is totally wrong for mixed
+    const BEGINNER_CEIL = 800; // ft — at or below this = perfect beginner mountain
+    if (resort.vertical <= BEGINNER_CEIL) return 1.0;
+    // Linear decay: 800ft → 1.0, 2500ft+ → 0.2
+    return Math.max(0.2, 1.0 - (resort.vertical - BEGINNER_CEIL) / (2500 - BEGINNER_CEIL) * 0.8);
   }
+  // All Levels — neutral, does not favor any mountain size
+  return 1.0;
 }
 
 function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) {
