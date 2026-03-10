@@ -896,7 +896,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 /* ─── Compact hero ────────────────────────────────────────────────────────── */
 /* ── Centered search hero (Google-style) ───────────────────────────────── */
 .hero-search {
-  padding: 48px 24px 40px !important;
+  padding: 32px 24px 28px !important;
   background:
     radial-gradient(ellipse at 60% 0%, rgba(43,109,233,.07), transparent 60%),
     linear-gradient(180deg, rgba(255,255,255,1), rgba(244,249,255,.98)) !important;
@@ -915,7 +915,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 .hero-search-inner .hero-subhead {
   font-size: 14px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   max-width: 420px;
 }
 
@@ -993,8 +993,8 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 /* AI chat — quiet secondary row below the main bar */
 .hero-ai-row {
-  margin-top: 28px;
-  padding-top: 24px;
+  margin-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
   width: 100%;
   max-width: 560px;
@@ -1816,9 +1816,38 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 .planner-col .planner-summary-title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* "from [city]" label within the title */
+#plannerFromLabel {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+/* Small pencil edit button */
+.planner-edit-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1.4;
+  transition: border-color .12s, color .12s;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+.planner-edit-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .planner-col .weight-summary {

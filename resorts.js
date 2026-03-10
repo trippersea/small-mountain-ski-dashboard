@@ -205,6 +205,8 @@ const els = {
   plannerToggle:       $('plannerToggle'),
   plannerDetails:      $('plannerDetails'),
   plannerSection:      $('plannerSection'),
+  plannerFromLabel:    $('plannerFromLabel'),
+  plannerEditLocation: $('plannerEditLocation'),
   activeFilters:       $('activeFilters'),
   originInput:         $('originInput'),
   setLocation:         $('setLocation'),
@@ -830,6 +832,18 @@ function normalizeWeightsToPriority() {
   ['snow', 'size', 'value', 'crowd'].forEach(k => {
     state.weights[k] = snapToPriority(state.weights[k]);
   });
+}
+
+// Update "What makes your perfect ski day from [city]?" label + edit btn visibility
+function updatePlannerOriginLabel() {
+  if (!els.plannerFromLabel) return;
+  if (state.origin && state.origin.label) {
+    els.plannerFromLabel.textContent = ' from ' + state.origin.label;
+    if (els.plannerEditLocation) els.plannerEditLocation.hidden = false;
+  } else {
+    els.plannerFromLabel.textContent = '';
+    if (els.plannerEditLocation) els.plannerEditLocation.hidden = true;
+  }
 }
 
 function syncPlannerControls() {
@@ -2550,7 +2564,12 @@ function wireEvents() {
     const loc = await geocodeOrigin(q);
     if (loc) {
       state.origin = loc; state.driveCache = {};
-      els.locationStatus.textContent = `Location set to ${loc.label}`;
+      els.locationStatus.textContent = `\u2713 Location set to ${loc.label}`;
+      updatePlannerOriginLabel();
+      // Scroll to planner so user sees their results, not the hero
+      if (els.plannerSection) {
+        setTimeout(() => els.plannerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      }
       if (isRememberChecked()) saveOrigin(loc); else clearSavedOrigin();
       pushUrlDebounced();
       await loadDriveTimes();
@@ -2572,6 +2591,13 @@ function wireEvents() {
   }
 
   els.setLocation.addEventListener('click', applyLocation);
+  if (els.plannerEditLocation) {
+    els.plannerEditLocation.addEventListener('click', () => {
+      const heroSection = document.getElementById('searchSection');
+      if (heroSection) heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => { if (els.originInput) { els.originInput.focus(); els.originInput.select(); } }, 350);
+    });
+  }
   els.originInput.addEventListener('keydown', async e => { if (e.key === 'Enter') { e.preventDefault(); await applyLocation(); } });
   els.detectLocation.addEventListener('click', () => {
     if (!navigator.geolocation) { showToast('Geolocation not supported'); return; }
@@ -2582,7 +2608,11 @@ function wireEvents() {
       if (isRememberChecked()) saveOrigin(state.origin); else clearSavedOrigin();
       pushUrlDebounced();
       await loadDriveTimes();
-      els.locationStatus.textContent = 'Using your location';
+      els.locationStatus.textContent = '\u2713 Using your location';
+      updatePlannerOriginLabel();
+      if (els.plannerSection) {
+        setTimeout(() => els.plannerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      }
     }, () => { els.locationStatus.textContent = 'Could not get location'; });
   });
 
@@ -2612,6 +2642,7 @@ function initialize() {
   // Apply URL state before syncing controls — URL wins over localStorage
   const hadUrlState = applyUrlState();
   normalizeWeightsToPriority(); // snap any loaded weights to Low/Medium/High
+  updatePlannerOriginLabel(); // show "from [city]" if origin already set
   if (hadUrlState && state.origin) {
     // Restore UI inputs to match URL-decoded state
     els.originInput.value    = state.origin.label;
