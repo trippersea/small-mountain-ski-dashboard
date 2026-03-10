@@ -314,9 +314,10 @@ button { font: inherit; }
 .verdict-no-origin { margin: 10px 0 0; font-size: 0.82rem; color: #9ca3af; font-style: italic; }
 
 /* Drive-cap notice banner */
+/* Verdict card — How Far Will You Go? banner */
 .verdict-drive-banner {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 16px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 9px 16px;
   background: #eff6ff; border-bottom: 1px solid #bfdbfe;
   font-size: 0.80rem; color: #1e40af;
   border-radius: 10px 10px 0 0;
@@ -325,13 +326,28 @@ button { font: inherit; }
   background: #fefce8; border-bottom-color: #fde68a; color: #92400e;
 }
 .verdict-drive-banner i { font-size: 0.85rem; flex-shrink: 0; }
-.verdict-drive-off-btn {
-  margin-left: auto; flex-shrink: 0;
-  background: none; border: 1px solid currentColor; border-radius: 4px;
-  padding: 2px 8px; font-size: 0.76rem; color: inherit; cursor: pointer;
-  white-space: nowrap;
+.vdb-label { font-weight: 600; white-space: nowrap; }
+.vdb-tiers { display: flex; gap: 4px; margin-left: auto; }
+.vdb-tier-btn {
+  background: none; border: 1px solid currentColor;
+  border-radius: 20px; padding: 2px 10px;
+  font-size: 0.74rem; font-weight: 500; color: inherit;
+  cursor: pointer; opacity: 0.6; white-space: nowrap;
+  transition: opacity 0.15s, background 0.15s;
 }
-.verdict-drive-off-btn:hover { opacity: 0.75; }
+.vdb-tier-btn:hover { opacity: 0.85; }
+.vdb-tier-btn.active {
+  opacity: 1; background: currentColor;
+}
+.vdb-tier-btn.active span,
+.vdb-tier-btn.active { color: #fff; }
+/* active btn inside blue banner → blue bg; inside amber → amber bg */
+.verdict-drive-banner:not(.verdict-drive-banner--off) .vdb-tier-btn.active {
+  background: #1e40af; border-color: #1e40af; color: #fff;
+}
+.verdict-drive-banner--off .vdb-tier-btn.active {
+  background: #92400e; border-color: #92400e; color: #fff;
+}
 
 /* Pass bonus badge — shown next to backup score when pass preference is active */
 .pass-bonus-badge {

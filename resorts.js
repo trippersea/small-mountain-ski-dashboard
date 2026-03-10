@@ -23,15 +23,15 @@ const SCORING = Object.freeze({
   CROWD_SCALE:           85,
 });
 
-// Drive filter ranges — index stored in state.maxDrive (0 = any)
-const DRIVE_RANGES = Object.freeze([
-  { label: 'Any distance',   min: 0,   max: Infinity },
-  { label: 'Under 90 min',   min: 0,   max: 90       },
-  { label: '90 – 150 min',   min: 90,  max: 150      },
-  { label: '151 – 210 min',  min: 151, max: 210      },
-  { label: '211 – 300 min',  min: 211, max: 300      },
-  { label: '301+ min',       min: 301, max: Infinity },
+// How Far Will You Go? — three tiers used in both verdict card and toolbar
+// index stored in state.howFar (0=daytrip 3h, 1=weekend 6h, 2=all)
+const HOW_FAR_TIERS = Object.freeze([
+  { label: 'Day Trip',  cap: 180,      hint: '≤3h drive'   },
+  { label: 'Weekend',   cap: 360,      hint: '≤6h drive'   },
+  { label: 'All',       cap: Infinity, hint: 'any distance' },
 ]);
+// Keep DRIVE_RANGES as alias so any stray references don’t break
+const DRIVE_RANGES = HOW_FAR_TIERS;
 
 // Ticket price filter ranges — index stored in state.priceRange (0 = any)
 const PRICE_RANGES = Object.freeze([
@@ -149,8 +149,9 @@ const state = Object.seal({
   stateFilter:  'All',
   sortBy:       'planner',
   nightOnly:    false,
-  daytripOnly:  false,
-  maxDrive:     0,
+  daytripOnly:  false,   // legacy — kept for compat, ignored by new filter
+  maxDrive:     0,        // legacy — ignored by new filter
+  howFar:       0,        // index into HOW_FAR_TIERS (0=DayTrip, 1=Weekend, 2=All)
   maxPrice:     0,        // legacy — kept for URL compat
   priceRange:   0,        // index into PRICE_RANGES (0 = any)
   selectedId:   null,
@@ -166,7 +167,7 @@ const state = Object.seal({
   skiDays:      loadSavedSkiDays(),
   tableSearch:     '',
   tableViewAll:    false,
-  verdictDriveOff: false,
+  verdictDriveOff: false,  // legacy — superseded by state.howFar
 });
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -258,8 +259,8 @@ function serializeState() {
   if (state.stateFilter !== 'All')     p.set('st',    state.stateFilter);
   if (state.sortBy      !== 'planner') p.set('sort',  state.sortBy);
   if (state.nightOnly)                 p.set('night', '1');
-  if (state.daytripOnly)               p.set('daytrip', '1');
-  if (state.maxDrive > 0)              p.set('drive', state.maxDrive);
+  if (state.howFar > 0)                p.set('howfar', state.howFar);
+  // maxDrive legacy URL param removed
   if (state.maxPrice > 0)              p.set('price', state.maxPrice);
   if (state.skiDays  !== 5)            p.set('days',  state.skiDays);
   if (state.origin) {
@@ -294,8 +295,8 @@ function applyUrlState() {
   if (p.has('st')    && UNIQUE_STATES.includes(p.get('st')))    state.stateFilter = p.get('st');
   if (p.has('sort'))  state.sortBy    = p.get('sort');
   if (p.has('night'))   state.nightOnly   = true;
-  if (p.has('daytrip')) state.daytripOnly = true;
-  if (p.has('drive')) state.maxDrive  = Number(p.get('drive')) || 0;
+  if (p.has('howfar'))  state.howFar = Math.min(2, Number(p.get('howfar')) || 0);
+  // maxDrive legacy URL param — ignored, howFar takes precedence
   if (p.has('price')) { state.maxPrice = Number(p.get('price')) || 0; state.priceRange = 0; } // legacy URL compat
   if (p.has('days'))  state.skiDays   = Math.max(1, Number(p.get('days')) || 5);
   if (p.has('skill') && ['beginner','mixed'].includes(p.get('skill'))) state.skillLevel = p.get('skill');
@@ -565,10 +566,10 @@ function summitTempF(baseTempF, baseElevFt, summitElevFt) {
 
 function computeVerdict(resorts) {
   // Score from the full filtered set — same pool as the table, so #1 always matches
-  // When origin is set and verdict drive filter is active, cap pool at 3 hours (180 min)
-  const VERDICT_DRIVE_CAP = 180;
-  const verdictPool = (state.origin && !state.verdictDriveOff)
-    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= VERDICT_DRIVE_CAP; })
+  // Cap verdict pool by How Far tier — day trip (180 min) by default
+  const verdictCap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
+  const verdictPool = (state.origin && verdictCap < Infinity)
+    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= verdictCap; })
     : resorts;
   const withWx = verdictPool.filter(r => state.weatherCache[r.id]?.data);
   if (!withWx.length) return null;
@@ -669,18 +670,17 @@ function renderVerdict(resorts) {
   const spark     = histDays ? snowSparkline(histDays) : '';
   const noOrigin  = !state.origin
     ? `<p class="verdict-no-origin"><i class="bi bi-geo-alt"></i> Set your starting location for drive times and distance-weighted picks.</p>` : '';
-  // Drive-cap notice: shown when origin is set and the 3h cap is active
-  const driveBanner = state.origin && !state.verdictDriveOff
-    ? `<div class="verdict-drive-banner">
-        <i class="bi bi-geo-alt-fill"></i>
-        Mountains within 3 hour drive of your location
-        <button class="verdict-drive-off-btn" id="verdictDriveOffBtn">Show all distances</button>
-       </div>`
-    : state.origin && state.verdictDriveOff
-    ? `<div class="verdict-drive-banner verdict-drive-banner--off">
-        <i class="bi bi-globe"></i>
-        Showing all distances — best mountain may be far away
-        <button class="verdict-drive-off-btn" id="verdictDriveOffBtn">Limit to 3h drive</button>
+  // How Far Will You Go? tier banner
+  const _tierLabels = ['Day Trip (≤3h)', 'Weekend (≤6h)', 'All Distances'];
+  const _tierWarning = state.howFar === 2 ? ' — best pick may be far away' : '';
+  const driveBanner = state.origin
+    ? `<div class="verdict-drive-banner${state.howFar === 2 ? ' verdict-drive-banner--off' : ''}">
+        <span class="vdb-label"><i class="bi bi-geo-alt-fill"></i> How Far Will You Go?</span>
+        <span class="vdb-tiers">
+          ${[0,1,2].map(i =>
+            `<button class="vdb-tier-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}">${_tierLabels[i]}</button>`
+          ).join('')}
+        </span>
        </div>`
     : '';
 
@@ -757,23 +757,22 @@ function renderVerdict(resorts) {
   });
   const _compareBtn = $('verdictCompareBtn');
   if (_compareBtn) _compareBtn.addEventListener('click', () => {
-    // Activate Day Trip mode so the compare table matches the 3h verdict pool
-    if (state.origin && !state.daytripOnly) {
-      state.daytripOnly = true;
-      if (els.toggleDaytrip) {
-        els.toggleDaytrip.setAttribute('aria-pressed', 'true');
-        els.toggleDaytrip.textContent = '✓ On';
-      }
-      renderCompareTable(filteredResorts());
-    }
+    // howFar already applied to filteredResorts — no extra activation needed
     const sec = document.getElementById('compareSection');
     if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-  const _driveOffBtn = $('verdictDriveOffBtn');
-  if (_driveOffBtn) _driveOffBtn.addEventListener('click', () => {
-    state.verdictDriveOff = !state.verdictDriveOff;
-    const resorts = filteredResorts();
-    renderVerdict(resorts);
+  // Wire How Far tier buttons in verdict banner
+  [0,1,2].forEach(i => {
+    const btn = document.querySelector(`.vdb-tier-btn[data-tier="${i}"]`);
+    if (btn) btn.addEventListener('click', () => {
+      state.howFar = i;
+      // Keep toolbar in sync
+      const tb = document.getElementById('howFarFilter');
+      if (tb) tb.value = String(i);
+      const resorts = filteredResorts();
+      renderVerdict(resorts);
+      renderCompareTable(resorts);
+    });
   });
 }
 
@@ -823,6 +822,10 @@ function syncPlannerControls() {
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
+
+  // Sync How Far toolbar dropdown
+  const _hfEl = document.getElementById('howFarFilter');
+  if (_hfEl) _hfEl.value = String(state.howFar);
 }
 
 function applyPreset(name) {
@@ -1188,10 +1191,10 @@ function primaryReasons(item) {
 function buildDecisionBrief(resorts) {
   const context = getDecisionContext();
 
-  // Mirror the verdict drive cap so top5/backup are from the same pool
-  const VERDICT_DRIVE_CAP = 180;
-  const pool = (state.origin && !state.verdictDriveOff)
-    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= VERDICT_DRIVE_CAP; })
+  // Mirror verdict How Far tier so top5/backup come from same pool
+  const verdictCap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
+  const pool = (state.origin && verdictCap < Infinity)
+    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= verdictCap; })
     : resorts;
 
   const scored = pool
@@ -1235,12 +1238,12 @@ function hiddenGemScore(resort) {
 function activeFilters() {
   const filters = [];
   if (state.search.trim())     filters.push(`Search: "${esc(state.search.trim())}"`);
-  if (state.maxDrive > 0)      filters.push(`Drive: ${DRIVE_RANGES[state.maxDrive]?.label ?? ''}${state.origin ? '' : ' (set location to activate)'}`);
+  if (state.howFar > 0)        filters.push(`How Far: ${HOW_FAR_TIERS[state.howFar]?.label ?? ''}${state.origin ? '' : ' (set location to activate)'}`);
   if (state.priceRange > 0)    filters.push(`Ticket: ${PRICE_RANGES[state.priceRange]?.label ?? ''}`);
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
   if (state.nightOnly)         filters.push('Night only');
-  if (state.daytripOnly)        filters.push('Day trip (≤150 min)' + (state.origin ? '' : ' — set location to activate'));
+  // daytripOnly legacy display removed — howFar handles this
   return filters;
 }
 
@@ -1255,21 +1258,19 @@ function filteredResorts() {
     if (state.passFilter !== 'All'  && r.passGroup !== state.passFilter)  return false;
     if (state.stateFilter !== 'All' && r.state     !== state.stateFilter) return false;
     if (state.nightOnly && !r.night) return false;
-    if (state.daytripOnly && state.origin) {
-      const mins = getDriveMins(r.id);
-      if (mins !== null && mins > 150) return false;
+    // How Far filter — applies to both verdict and table
+    if (state.origin) {
+      const cap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
+      if (cap < Infinity) {
+        const mins = getDriveMins(r.id);
+        if (mins !== null && mins > cap) return false;
+      }
     }
     if (state.priceRange > 0) {
       const pr = PRICE_RANGES[state.priceRange];
       if (pr && (r.price < pr.min || r.price > pr.max)) return false;
     }
-    if (state.maxDrive > 0 && state.origin) {
-      const range = DRIVE_RANGES[state.maxDrive];
-      if (range) {
-        const mins = getDriveMins(r.id);
-        if (mins !== null && (mins < range.min || mins > range.max)) return false;
-      }
-    }
+    // maxDrive legacy filter removed — now handled by howFar above
     return true;
   });
 }
@@ -1447,7 +1448,7 @@ function renderSummaryCards(resorts) {
   const avgPrice    = count ? Math.round(resorts.reduce((s, r) => s + r.price, 0) / count) : 0;
 
   els.summaryCards.innerHTML = [
-    dbStatHtml('Mountains',   count,                                          'in New England'),
+    dbStatHtml('Mountains',   count,                                          'across 34 states'),
     dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
     dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,        'resorts'),
     dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,        'resorts'),
@@ -1884,7 +1885,7 @@ function renderDetail({ scroll = false } = {}) {
   if (resort) {
     const qp = location.search; // preserve ?preset=...&pass=... etc.
     history.replaceState(null, '', qp + '#resort-' + resort.id);
-    document.title = resort.name + ' — SkiNE | New England Ski Decision Engine';
+    document.title = resort.name + ' — Where To Ski?!';
   }
 }
 
@@ -1973,7 +1974,7 @@ async function askAI(query) {
   if (els.aiChatBtn)   els.aiChatBtn.disabled = true;
   if (els.aiChatResult) {
     els.aiChatResult.className = 'ai-chat-result ai-chat-loading';
-    els.aiChatResult.innerHTML = '<span class="ai-spinner"></span> Analyzing 120 mountains for you…';
+    els.aiChatResult.innerHTML = `<span class="ai-spinner"></span> Analyzing ${RESORTS.length} mountains for you…`;
   }
 
   // Build a compact payload: top 25 resorts with all available data
@@ -2182,7 +2183,7 @@ function shareVerdict(resort, verdictData) {
 
   if (navigator.share) {
     navigator.share({
-      title: `Ski day at ${resort.name} — SkiNE`,
+      title: `Ski day at ${resort.name} — Where To Ski?!`,
       text:  shareText,
       url,
     }).catch(() => {}); // user cancelled — silent
@@ -2345,7 +2346,18 @@ function wireEvents() {
 
   els.passFilter.addEventListener('change',     e => { state.passFilter  = e.target.value; pushUrlDebounced(); render(); });
   els.stateFilter.addEventListener('change',    e => { state.stateFilter = e.target.value; pushUrlDebounced(); render(); });
+  // How Far Will You Go? toolbar dropdown
+  const _howFarFilterEl = document.getElementById('howFarFilter');
+  if (_howFarFilterEl) _howFarFilterEl.addEventListener('change', e => {
+    state.howFar = Number(e.target.value);
+    if (state.howFar < 2 && !state.origin) showToast('Set a starting location for distance filtering');
+    // sync verdict tier buttons
+    document.querySelectorAll('.vdb-tier-btn').forEach((b,i) => b.classList.toggle('active', i === state.howFar));
+    render();
+  });
+
   els.maxDriveFilter.addEventListener('change', e => {
+    // legacy — maxDriveFilter DOM element now maps to howFar
     state.maxDrive = Number(e.target.value);
     if (state.maxDrive > 0 && !state.origin) showToast('Set a starting location to use the Drive Time filter');
     pushUrlDebounced(); render();
@@ -2363,6 +2375,7 @@ function wireEvents() {
     pushUrlDebounced(); render();
   });
   if (els.toggleDaytrip) els.toggleDaytrip.addEventListener('click', () => {
+    // legacy toggleDaytrip — now handled by howFar; keeping element reference for compat
     state.daytripOnly = !state.daytripOnly;
     els.toggleDaytrip.setAttribute('aria-pressed', String(state.daytripOnly));
     els.toggleDaytrip.textContent = state.daytripOnly ? '✓ On' : 'Off';
@@ -2374,7 +2387,8 @@ function wireEvents() {
   // plannerDetails always visible in new two-column layout
   if (els.plannerDetails) els.plannerDetails.hidden = false;
 
-  // In-planner Daytrip toggle (mirrors toolbar toggleDaytrip)
+  // plannerDaytripToggle removed — Day Trip Mode card removed
+
   function syncPlannerDaytripBtn() {
     const btn = document.getElementById('plannerDaytripToggle');
     if (!btn) return;
@@ -2415,17 +2429,20 @@ function wireEvents() {
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.nightOnly = false; state.daytripOnly = false;
-    state.maxDrive = 0; state.maxPrice = 0; state.priceRange = 0;
+    state.maxDrive = 0; state.maxPrice = 0; state.priceRange = 0; state.howFar = 0;
     state.skillLevel = 'mixed'; state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
     els.stateFilter.value    = 'All';
     els.maxDriveFilter.value = '0';
+    const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '0';
+    // sync verdict tier buttons
+    document.querySelectorAll('.vdb-tier-btn').forEach((b,i) => b.classList.toggle('active', i===0));
     if (els.maxPriceFilter) els.maxPriceFilter.value = '0'; state.priceRange = 0;
     els.sortBy.value         = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false');
     els.toggleNight.textContent = 'Off';
-    if (els.toggleDaytrip) { els.toggleDaytrip.setAttribute('aria-pressed', 'false'); els.toggleDaytrip.textContent = 'Off'; }
+    // toggleDaytrip legacy removed
     if (els.tableSearch) els.tableSearch.value = '';
     pushUrlDebounced(); render();
   });
@@ -2607,6 +2624,7 @@ function initialize() {
     els.stateFilter.value    = state.stateFilter;
     els.sortBy.value         = state.sortBy;
     els.maxDriveFilter.value = String(state.maxDrive);
+    const _hfSync = document.getElementById('howFarFilter'); if (_hfSync) _hfSync.value = String(state.howFar);
     if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.priceRange);
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
     els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
@@ -2635,7 +2653,7 @@ function initialize() {
     const found = RESORTS.find(r => r.id === resortId);
     if (found) {
       state.selectedId = resortId;
-      document.title = found.name + ' — SkiNE | New England Ski Decision Engine';
+      document.title = found.name + ' — Where To Ski?!';
       // Scroll to detail section after render completes
       setTimeout(() => {
         renderDetail();
