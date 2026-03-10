@@ -256,19 +256,36 @@ button { font: inherit; }
 .preset-btn.active { background: rgba(43,109,233,.12); border-color: rgba(43,109,233,.4); color: var(--accent); }
 .weight-summary { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
 .weight-summary strong { color: var(--text); }
-.score-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .score-control {
   background: rgba(255,255,255,.8); border: 1px solid var(--border);
   border-radius: 14px; padding: 13px 14px;
 }
-.score-control label {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 10px; text-transform: none; letter-spacing: 0;
+.score-control-label {
   font-family: 'DM Sans', system-ui, sans-serif;
   color: var(--text); font-size: 13px; font-weight: 700;
+  margin-bottom: 10px;
 }
 .score-desc { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.5; font-weight: 400; }
-.slider-hint { font-size: 10px; color: var(--muted); margin-top: 5px; line-height: 1.4; font-style: italic; }
+.slider-hint { font-size: 10px; color: var(--muted); margin-top: 7px; line-height: 1.4; font-style: italic; }
+
+/* Priority buttons — Low / Medium / High */
+.priority-btns {
+  display: flex; gap: 4px;
+}
+.priority-btn {
+  flex: 1; padding: 5px 0; border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: #fff; color: var(--muted);
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+.priority-btn:hover { border-color: var(--accent); color: var(--accent); }
+.priority-btn.active {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff;
+}
 
 /* ── Toolbar (filters only) ─────────────────────────────────────────────── */
 .toolbar { padding: 14px 18px; }
@@ -518,7 +535,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 1400px) {
-  .score-grid { grid-template-columns: repeat(3, 1fr); }
+  .score-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 1000px) {
   .hero { grid-template-columns: 1fr; }
@@ -1642,7 +1659,8 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   margin-bottom: 0;
 }
 
-.planner-col .score-control label {
+.planner-col .score-control label,
+.planner-col .score-control-label {
   font-size: 12px;
   margin-bottom: 4px;
 }

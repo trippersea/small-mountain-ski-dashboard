@@ -124,38 +124,48 @@
           <button class="preset-btn" data-preset="cheap">&#128176; Budget</button>
         </div>
 
-        <!-- Sliders (2-col grid inside narrow column) -->
+        <!-- Priority pickers (Option B: 3-state Low/Medium/High, Option C: Drive removed) -->
         <div id="plannerDetails" class="planner-details">
           <div class="score-grid">
 
             <div class="score-control">
-              <label for="snowWeight">&#10052;&#65039; Snow <span id="snowWeightVal"></span><button class="slider-info-btn" data-tip="snow" aria-label="Snow quality info">?</button></label>
-              <input id="snowWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = only go when conditions are exceptional</div>
+              <div class="score-control-label">&#10052;&#65039; Snow</div>
+              <div class="priority-btns" data-key="snow">
+                <button class="priority-btn" data-val="1">Low</button>
+                <button class="priority-btn" data-val="5">Medium</button>
+                <button class="priority-btn" data-val="10">High</button>
+              </div>
+              <div class="slider-hint">How much fresh snow affects your pick</div>
             </div>
 
             <div class="score-control">
-              <label for="driveWeight">&#128664; Drive <span id="driveWeightVal"></span><button class="slider-info-btn" data-tip="drive" aria-label="Drive time info">?</button></label>
-              <input id="driveWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = favor closer mountains heavily</div>
+              <div class="score-control-label">&#127956;&#65039; Mountain Size</div>
+              <div class="priority-btns" data-key="size">
+                <button class="priority-btn" data-val="1">Low</button>
+                <button class="priority-btn" data-val="5">Medium</button>
+                <button class="priority-btn" data-val="10">High</button>
+              </div>
+              <div class="slider-hint">Vertical, acres, and run length</div>
             </div>
 
             <div class="score-control">
-              <label for="sizeWeight">&#127956;&#65039; Size <span id="sizeWeightVal"></span><button class="slider-info-btn" data-tip="size" aria-label="Mountain size info">?</button></label>
-              <input id="sizeWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = strongly prefer larger mountains</div>
+              <div class="score-control-label">&#128176; Price</div>
+              <div class="priority-btns" data-key="value">
+                <button class="priority-btn" data-val="1">Low</button>
+                <button class="priority-btn" data-val="5">Medium</button>
+                <button class="priority-btn" data-val="10">High</button>
+              </div>
+              <div class="slider-hint">How much ticket price matters</div>
             </div>
 
             <div class="score-control">
-              <label for="valueWeight">&#128176; Price <span id="valueWeightVal"></span><button class="slider-info-btn" data-tip="value" aria-label="Price info">?</button></label>
-              <input id="valueWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = price &amp; value is the top priority</div>
-            </div>
-
-            <div class="score-control">
-              <label for="crowdWeight">&#128101; Avoid Crowds <span id="crowdWeightVal"></span><button class="slider-info-btn" data-tip="crowds" aria-label="Avoid crowds info">?</button></label>
-              <input id="crowdWeight" type="range" min="1" max="10" step="1">
-              <div class="slider-hint">10 = strongly favor smaller, quieter mountains</div>
+              <div class="score-control-label">&#128101; Avoid Crowds</div>
+              <div class="priority-btns" data-key="crowd">
+                <button class="priority-btn" data-val="1">Low</button>
+                <button class="priority-btn" data-val="5">Medium</button>
+                <button class="priority-btn" data-val="10">High</button>
+              </div>
+              <div class="slider-hint">Favors quieter, less-trafficked mountains</div>
             </div>
 
           </div>

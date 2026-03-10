@@ -46,11 +46,12 @@ const PRICE_RANGES = Object.freeze([
 const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 
 const PRESETS = {
-  // weights: snow, drive, size (vertical+acres), value, crowd — skill stored separately
-  balanced: { snow:6, drive:4, size:5, value:4, crowd:3 },
-  powder:   { snow:10, drive:2, size:4, value:2, crowd:2 },
-  family:   { snow:4, drive:6, size:3, value:6, crowd:5 },
-  cheap:    { snow:3, drive:8, size:2, value:9, crowd:2 },
+  // snow/size/value/crowd: 1=Low, 5=Medium, 10=High (user-adjustable)
+  // drive: kept for scoring continuity, not exposed in UI (Option C)
+  balanced: { snow:5, drive:4, size:5, value:5, crowd:5  },
+  powder:   { snow:10, drive:4, size:5, value:1, crowd:1  },
+  family:   { snow:5, drive:4, size:1, value:5, crowd:10  },
+  cheap:    { snow:5, drive:4, size:1, value:10, crowd:1  },
 };
 
 // Skill presets per named preset
@@ -210,10 +211,7 @@ const els = {
   detectLocation:      $('detectLocation'),
   locationStatus:      $('locationStatus'),
   weightSummary:       $('weightSummary'),
-  snowWeight:    $('snowWeight'),    driveWeight:  $('driveWeight'),
-  sizeWeight:    $('sizeWeight'),    valueWeight:  $('valueWeight'),   crowdWeight: $('crowdWeight'),
-  snowWeightVal: $('snowWeightVal'), driveWeightVal: $('driveWeightVal'),
-  sizeWeightVal: $('sizeWeightVal'), valueWeightVal: $('valueWeightVal'), crowdWeightVal: $('crowdWeightVal'),
+  // Priority buttons are queried dynamically via querySelectorAll — no individual els refs needed
   stormGrid:           $('stormGrid'),        hiddenGemGrid:     $('hiddenGemGrid'),
   tableSearch:         $('tableSearch'),      tableViewAllBtn:   $('tableViewAllBtn'),
   resultCount:         $('resultCount'),
@@ -270,7 +268,7 @@ function serializeState() {
   if (state.preset !== 'balanced')  p.set('preset', state.preset);
   if (state.preset === 'custom') {
     const w = state.weights;
-    p.set('w', [w.snow, w.drive, w.size, w.value, w.crowd].join(','));
+    p.set('w', [w.snow, w.size, w.value, w.crowd].join(','));
     if (state.skillLevel && state.skillLevel !== 'mixed') p.set('skill', state.skillLevel);
   }
   if (state.passFilter  !== 'All')     p.set('pass',  state.passFilter);
@@ -303,9 +301,13 @@ function applyUrlState() {
     const wStr = p.get('w');
     if (wStr) {
       const parts = wStr.split(',').map(Number);
-      const [snow, drive, size, value, crowd] = parts;
-      if (parts.length >= 5 && parts.every(n => !isNaN(n) && n >= 0)) {
-        state.weights = { snow, drive, size, value, crowd };
+      if (parts.length === 5 && parts.every(n => !isNaN(n) && n >= 0)) {
+        // Legacy 5-part URL [snow, drive, size, value, crowd] — drop drive
+        const [snow, , size, value, crowd] = parts;
+        state.weights = { ...state.weights, snow, size, value, crowd };
+      } else if (parts.length === 4 && parts.every(n => !isNaN(n) && n >= 0)) {
+        const [snow, size, value, crowd] = parts;
+        state.weights = { ...state.weights, snow, size, value, crowd };
       }
     }
   }
@@ -816,17 +818,31 @@ function savePlannerState() {
   } catch (e) { /* quota exceeded — silent */ }
 }
 
+// Snap a weight value to nearest valid priority (1=Low, 5=Medium, 10=High)
+function snapToPriority(v) {
+  const n = Number(v) || 1;
+  if (n <= 2) return 1;
+  if (n <= 7) return 5;
+  return 10;
+}
+
+// Normalize all user-adjustable weights to priority scale (called after loading from URL/localStorage)
+function normalizeWeightsToPriority() {
+  ['snow', 'size', 'value', 'crowd'].forEach(k => {
+    state.weights[k] = snapToPriority(state.weights[k]);
+  });
+}
+
 function syncPlannerControls() {
-  const KEYS = [
-    ['snow',  'snowWeight',  'snowWeightVal'],
-    ['drive', 'driveWeight', 'driveWeightVal'],
-    ['size',  'sizeWeight',  'sizeWeightVal'],
-    ['value', 'valueWeight', 'valueWeightVal'],
-    ['crowd', 'crowdWeight', 'crowdWeightVal'],
-  ];
-  KEYS.forEach(([key, inputId, valueId]) => {
-    if (els[inputId])  els[inputId].value = state.weights[key] ?? 1;
-    if (els[valueId])  els[valueId].textContent = `${state.weights[key] ?? 1}/10`;
+  // Sync priority-btn active state for snow, size, value, crowd
+  // Drive is not user-adjustable (removed per Option C) — held at preset value
+  ['snow', 'size', 'value', 'crowd'].forEach(key => {
+    const group = document.querySelector(`.priority-btns[data-key="${key}"]`);
+    if (!group) return;
+    const val = state.weights[key] ?? 1;
+    group.querySelectorAll('.priority-btn').forEach(btn => {
+      btn.classList.toggle('active', Number(btn.dataset.val) === val);
+    });
   });
 
   // Sync skill buttons
@@ -843,12 +859,15 @@ function syncPlannerControls() {
   // Guard: if legacy 'advanced' skill level somehow persists, normalize to 'mixed'
   if (state.skillLevel === 'advanced') state.skillLevel = 'mixed';
   const skillLabel = { beginner: 'Beginner (≤800ft)', mixed: 'All Levels' }[state.skillLevel] || 'All Levels';
-  const passLabel  = state.passPreference === 'any' ? 'Any' : `${state.passPreference} (+10 pts)`;
+  const passLabel  = state.passPreference === 'any' ? 'Any' : state.passPreference;
+  const priorityLabel = v => v <= 1 ? 'Low' : v >= 10 ? 'High' : 'Medium';
   els.weightSummary.innerHTML =
-    `<strong>Active profile:</strong> ` +
-    `Snow ${w.snow}/10 · Drive ${w.drive}/10 · Size ${w.size}/10 · ` +
-    `Value ${w.value}/10 · Crowds ${w.crowd}/10 · Skill: ${skillLabel} · Pass: ${passLabel} ` +
-    `<span style="color:var(--muted)">— sliders are independent (1 = low priority, 10 = must-have)</span>`;
+    `Snow: <strong>${priorityLabel(w.snow)}</strong> · ` +
+    `Size: <strong>${priorityLabel(w.size)}</strong> · ` +
+    `Price: <strong>${priorityLabel(w.value)}</strong> · ` +
+    `Crowds: <strong>${priorityLabel(w.crowd)}</strong> · ` +
+    `Skill: <strong>${skillLabel}</strong>` +
+    (state.passPreference !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
@@ -2264,11 +2283,10 @@ const debouncedRender = debounce(render, 50);
 function wireEvents() {
   // ── Slider info tooltips ──────────────────────────────────────────────────────
   const SLIDER_TIPS = {
-    snow:   'Blends live forecast snow (60%) with each mountain\'s historical avg snowfall (40%). Higher = only go when conditions are exceptional.',
-    drive:  'Softly nudges rankings toward closer mountains. Use the Drive Time filter for a hard cutoff. Higher = distance matters more.',
-    size:   'Composite of vertical drop (50%), skiable acres (35%), and longest run (15%). Higher = only big destination mountains rank well.',
-    value:  'Rewards lower ticket prices. Higher = budget-friendly mountains rank above expensive ones regardless of size.',
-    crowds: 'Penalizes busy mountains based on pass network, proximity to cities, and ticket price. Higher = quiet independents rise to the top.',
+    snow:   'Blends live forecast snow with historical avg snowfall. High = only mountains with genuinely good conditions rank well.',
+    size:   'Composite of vertical drop, skiable acres, and longest run. High = big destination mountains rank above small hills.',
+    value:  'Rewards lower ticket prices. High = budget-friendly independents outrank expensive resorts regardless of snow.',
+    crowds: 'Penalizes busy mountains based on pass network, city proximity, and price. High = quiet independents rise to the top.',
   };
   const tipEl = document.getElementById('sliderTooltip');
   let tipTimeout;
@@ -2498,12 +2516,12 @@ function wireEvents() {
   });
   els.closeCompare.addEventListener('click', () => els.comparePanel.classList.add('hidden'));
 
-  // Weight sliders — sync UI instantly, debounce the expensive render
-  [['snow','snowWeight'],['drive','driveWeight'],
-   ['size','sizeWeight'],['value','valueWeight'],['crowd','crowdWeight']].forEach(([key, id]) => {
-    if (!els[id]) return;
-    els[id].addEventListener('input', e => {
-      state.weights[key] = Number(e.target.value);
+  // Priority buttons (Low/Medium/High) — replace 1-10 sliders
+  document.querySelectorAll('.priority-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.closest('.priority-btns')?.dataset.key;
+      if (!key) return;
+      state.weights[key] = Number(btn.dataset.val);
       state.preset = 'custom';
       savePlannerState();
       syncPlannerControls();
@@ -2654,6 +2672,7 @@ function initialize() {
 
   // Apply URL state before syncing controls — URL wins over localStorage
   const hadUrlState = applyUrlState();
+  normalizeWeightsToPriority(); // snap any loaded weights to Low/Medium/High
   if (hadUrlState && state.origin) {
     // Restore UI inputs to match URL-decoded state
     els.originInput.value    = state.origin.label;
