@@ -1744,6 +1744,7 @@ button { font: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  /* matches btn-secondary — no blue override */
 }
 
 /* ─── Filter micro-copy ──────────────────────────────────────────────────────── */
@@ -1928,3 +1929,23 @@ button { font: inherit; }
   box-shadow: 0 4px 12px rgba(0,0,0,.2);
 }
 .info-tooltip:hover::after { opacity: 1; }
+
+/* ─── Verdict top-pick name — clickable to jump to Selected Mountain ─────── */
+.verdict-pick-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--accent);
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color .15s, color .15s;
+}
+.verdict-pick-link:hover {
+  text-decoration-color: var(--accent);
+}

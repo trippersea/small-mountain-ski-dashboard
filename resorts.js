@@ -694,7 +694,7 @@ function renderVerdict(resorts) {
       <div class="verdict-right">
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
-          <div class="verdict-pick-name">${esc(resort.name)}</div>
+          <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
           <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Ski Score ${breakdown.score}</div>
         </div>
         ${reasonsHtml}
@@ -709,13 +709,24 @@ function renderVerdict(resorts) {
         ${top5Html}
         <div class="verdict-action-row">
           <button class="btn btn-secondary verdict-share-btn" id="verdictShareBtn">&#127920; Share this pick</button>
-          <a href="#compareSection" class="btn btn-primary verdict-compare-btn">&#128228; Compare Mountains</a>
+          <button class="btn btn-secondary verdict-compare-btn" id="verdictCompareBtn">&#128228; Compare Mountains</button>
         </div>
       </div>
     </div>`;
 
   const _shareBtn = $('verdictShareBtn');
   if (_shareBtn) _shareBtn.addEventListener('click', () => shareVerdict(resort, v));
+  const _pickBtn = $('verdictPickBtn');
+  if (_pickBtn) _pickBtn.addEventListener('click', () => {
+    state.selectedId = resort.id;
+    renderDetail({ scroll: true });
+    fetchConditionsForDetail(resort);
+  });
+  const _compareBtn = $('verdictCompareBtn');
+  if (_compareBtn) _compareBtn.addEventListener('click', () => {
+    const sec = document.getElementById('compareSection');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 function savePlannerState() {
