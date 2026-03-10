@@ -313,6 +313,26 @@ button { font: inherit; }
 .verdict-points li { margin-bottom: 3px; }
 .verdict-no-origin { margin: 10px 0 0; font-size: 0.82rem; color: #9ca3af; font-style: italic; }
 
+/* Drive-cap notice banner */
+.verdict-drive-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  background: #eff6ff; border-bottom: 1px solid #bfdbfe;
+  font-size: 0.80rem; color: #1e40af;
+  border-radius: 10px 10px 0 0;
+}
+.verdict-drive-banner--off {
+  background: #fefce8; border-bottom-color: #fde68a; color: #92400e;
+}
+.verdict-drive-banner i { font-size: 0.85rem; flex-shrink: 0; }
+.verdict-drive-off-btn {
+  margin-left: auto; flex-shrink: 0;
+  background: none; border: 1px solid currentColor; border-radius: 4px;
+  padding: 2px 8px; font-size: 0.76rem; color: inherit; cursor: pointer;
+  white-space: nowrap;
+}
+.verdict-drive-off-btn:hover { opacity: 0.75; }
+
 .verdict-right {
   display: flex; flex-direction: column; gap: 12px;
   padding: 22px 24px;

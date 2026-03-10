@@ -154,8 +154,9 @@ const state = Object.seal({
   skillLevel:   loadSavedSkillLevel(),
   passPreference: loadSavedPassPreference(),
   skiDays:      loadSavedSkiDays(),
-  tableSearch:  '',
-  tableViewAll: false,
+  tableSearch:     '',
+  tableViewAll:    false,
+  verdictDriveOff: false,
 });
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -554,7 +555,12 @@ function summitTempF(baseTempF, baseElevFt, summitElevFt) {
 
 function computeVerdict(resorts) {
   // Score from the full filtered set — same pool as the table, so #1 always matches
-  const withWx = resorts.filter(r => state.weatherCache[r.id]?.data);
+  // When origin is set and verdict drive filter is active, cap pool at 3 hours (180 min)
+  const VERDICT_DRIVE_CAP = 180;
+  const verdictPool = (state.origin && !state.verdictDriveOff)
+    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= VERDICT_DRIVE_CAP; })
+    : resorts;
+  const withWx = verdictPool.filter(r => state.weatherCache[r.id]?.data);
   if (!withWx.length) return null;
 
   const w      = normalizedWeights();
@@ -653,6 +659,20 @@ function renderVerdict(resorts) {
   const spark     = histDays ? snowSparkline(histDays) : '';
   const noOrigin  = !state.origin
     ? `<p class="verdict-no-origin"><i class="bi bi-geo-alt"></i> Set your starting location for drive times and distance-weighted picks.</p>` : '';
+  // Drive-cap notice: shown when origin is set and the 3h cap is active
+  const driveBanner = state.origin && !state.verdictDriveOff
+    ? `<div class="verdict-drive-banner">
+        <i class="bi bi-geo-alt-fill"></i>
+        Mountains within 3 hour drive of your location
+        <button class="verdict-drive-off-btn" id="verdictDriveOffBtn">Show all distances</button>
+       </div>`
+    : state.origin && state.verdictDriveOff
+    ? `<div class="verdict-drive-banner verdict-drive-banner--off">
+        <i class="bi bi-globe"></i>
+        Showing all distances — best mountain may be far away
+        <button class="verdict-drive-off-btn" id="verdictDriveOffBtn">Limit to 3h drive</button>
+       </div>`
+    : '';
 
   // Editorial reasons for the top pick
   const reasons = primaryItem ? primaryReasons(primaryItem) : [];
@@ -683,6 +703,7 @@ function renderVerdict(resorts) {
 
   els.verdictCard.innerHTML = `
     <div class="verdict-inner verdict-${tier}">
+      ${driveBanner}
       <div class="verdict-left">
         <div class="verdict-icon" aria-hidden="true">${icon}</div>
         <div class="verdict-body">
@@ -728,6 +749,12 @@ function renderVerdict(resorts) {
   if (_compareBtn) _compareBtn.addEventListener('click', () => {
     const sec = document.getElementById('compareSection');
     if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  const _driveOffBtn = $('verdictDriveOffBtn');
+  if (_driveOffBtn) _driveOffBtn.addEventListener('click', () => {
+    state.verdictDriveOff = !state.verdictDriveOff;
+    const resorts = filteredResorts();
+    renderVerdict(resorts);
   });
 }
 
@@ -1104,9 +1131,13 @@ function primaryReasons(item) {
   else                          reasons.push(`Strong Ski Score (${item.ski.skiScore})`);
 
   if (storm >= 6) reasons.push(`${storm.toFixed(1)}" forecast over 3 days`);
-  const drive = item.drive;
-  if (drive !== null && drive !== undefined && drive <= 120)
+  // Re-read drive at render time — item.drive may be a stale haversine estimate
+  // if OSRM confirmed a longer route since the brief was built
+  const liveDrive = getDriveMins(item.resort.id);
+  if (liveDrive !== null && liveDrive <= 120 && !isDriveEstimated(item.resort.id))
     reasons.push(`Easy drive at ${formatDrive(item.resort.id)}`);
+  else if (liveDrive !== null && liveDrive <= 120)
+    reasons.push(`Close by at ${formatDrive(item.resort.id)}`);
   const cLabel = item.crowd?.label || '';
   if (cLabel === 'Light' || cLabel === 'Light-Moderate')
     reasons.push('Lighter crowd outlook');
@@ -1134,7 +1165,13 @@ function primaryReasons(item) {
 function buildDecisionBrief(resorts) {
   const context = getDecisionContext();
 
-  const scored = resorts
+  // Mirror the verdict drive cap so top5/backup are from the same pool
+  const VERDICT_DRIVE_CAP = 180;
+  const pool = (state.origin && !state.verdictDriveOff)
+    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= VERDICT_DRIVE_CAP; })
+    : resorts;
+
+  const scored = pool
     .map(resort => {
       const wx = state.weatherCache[resort.id]?.data;
       if (!wx) return null;
