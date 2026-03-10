@@ -143,6 +143,24 @@ function loadSavedSkiDays() {
   try { return Number(localStorage.getItem('ski-ski-days') || 5); } catch (e) { return 5; }
 }
 
+// ── Location remember helpers ────────────────────────────────────────────────
+function getSavedOrigin() {
+  try {
+    const raw = localStorage.getItem('ski-saved-origin');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function saveOrigin(origin) {
+  try { localStorage.setItem('ski-saved-origin', JSON.stringify(origin)); } catch (e) {}
+}
+function clearSavedOrigin() {
+  try { localStorage.removeItem('ski-saved-origin'); } catch (e) {}
+}
+function isRememberChecked() {
+  const cb = document.getElementById('rememberLocation');
+  return cb ? cb.checked : false;
+}
+
 const state = Object.seal({
   search:       '',
   passFilter:   'All',
@@ -2567,6 +2585,7 @@ function wireEvents() {
     const q = els.originInput.value.trim();
     if (!q) {
       state.origin = null; state.driveCache = {};
+      clearSavedOrigin();
       els.locationStatus.textContent = '';
       render(); return;
     }
@@ -2575,6 +2594,7 @@ function wireEvents() {
     if (loc) {
       state.origin = loc; state.driveCache = {};
       els.locationStatus.textContent = `Location set to ${loc.label}`;
+      if (isRememberChecked()) saveOrigin(loc); else clearSavedOrigin();
       pushUrlDebounced();
       await loadDriveTimes();
     } else {
@@ -2582,6 +2602,18 @@ function wireEvents() {
       showToast('Could not find that ZIP or location');
     }
   };
+  // Remember my location checkbox
+  const _rememberCb = document.getElementById('rememberLocation');
+  if (_rememberCb) {
+    // Restore checkbox state from localStorage
+    const _hadSaved = !!getSavedOrigin();
+    _rememberCb.checked = _hadSaved;
+    _rememberCb.addEventListener('change', () => {
+      if (_rememberCb.checked && state.origin) saveOrigin(state.origin);
+      else clearSavedOrigin();
+    });
+  }
+
   els.setLocation.addEventListener('click', applyLocation);
   els.originInput.addEventListener('keydown', async e => { if (e.key === 'Enter') { e.preventDefault(); await applyLocation(); } });
   els.detectLocation.addEventListener('click', () => {
@@ -2590,6 +2622,7 @@ function wireEvents() {
     navigator.geolocation.getCurrentPosition(async pos => {
       state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
       els.originInput.value = 'Your location';
+      if (isRememberChecked()) saveOrigin(state.origin); else clearSavedOrigin();
       pushUrlDebounced();
       await loadDriveTimes();
       els.locationStatus.textContent = 'Using your location';
@@ -2625,6 +2658,16 @@ function initialize() {
     // Restore UI inputs to match URL-decoded state
     els.originInput.value    = state.origin.label;
     els.locationStatus.textContent = `Location set to ${state.origin.label}`;
+  } else if (!state.origin) {
+    // No URL origin — check if user previously saved their location
+    const _saved = getSavedOrigin();
+    if (_saved) {
+      state.origin = _saved;
+      els.originInput.value = _saved.label;
+      els.locationStatus.textContent = `Location restored: ${_saved.label}`;
+      const _cb = document.getElementById('rememberLocation');
+      if (_cb) _cb.checked = true;
+    }
   }
   if (hadUrlState) {
     els.passFilter.value     = state.passFilter;
@@ -2645,8 +2688,8 @@ function initialize() {
   wireEvents();
   render();
 
-  // If origin was restored from URL, kick off drive time loading
-  if (hadUrlState && state.origin) {
+  // Kick off drive time loading if origin came from URL or saved localStorage
+  if (state.origin) {
     applyHaversineEstimates();
     loadDriveTimes();
   }

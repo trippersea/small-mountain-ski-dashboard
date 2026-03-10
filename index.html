@@ -75,7 +75,16 @@
           <button id="setLocation" class="btn btn-primary">Set</button>
           <button id="detectLocation" class="btn btn-secondary">&#128225; Locate me</button>
         </div>
-        <div class="location-best-results"><strong>&#128161; For best results, enter your ZIP code</strong> &mdash; drive times and the Day Trip filter only work with a precise location.</div>
+        <div class="location-meta-row">
+          <div class="location-best-results"><strong>&#128161; For best results, enter your ZIP code</strong> &mdash; drive times only work with a precise location.</div>
+          <label class="remember-location-label" id="rememberLocationLabel">
+            <input type="checkbox" id="rememberLocation" />
+            Remember my location
+            <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">&#9432;
+              <span class="location-privacy-tooltip">Your location is saved only in <strong>your browser</strong> &mdash; never sent to our servers or shared with anyone.</span>
+            </span>
+          </label>
+        </div>
         <div id="locationStatus" class="helper-text"></div>
 
         <!-- AI Natural Language Chat Widget -->
