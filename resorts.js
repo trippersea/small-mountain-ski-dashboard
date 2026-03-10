@@ -735,10 +735,9 @@ function renderVerdict(resorts) {
     <div class="verdict-inner verdict-${tier}">
       ${driveBanner}
       <div class="verdict-left">
-        <div class="verdict-icon" aria-hidden="true">${icon}</div>
         <div class="verdict-body">
           <div class="verdict-context-headline">${esc(context.headline)}</div>
-          <div class="verdict-headline">${headline}</div>
+          <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
           <div class="verdict-detail">${detail}</div>
           ${subList}
           ${noOrigin}
@@ -748,7 +747,7 @@ function renderVerdict(resorts) {
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
           <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Ski Score ${breakdown.baseScore}</div>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
         </div>
         ${reasonsHtml}
         ${spark ? `<div class="verdict-spark-wrap"><span class="verdict-spark-label">Last 7 days</span>${spark}</div>` : ''}
@@ -761,8 +760,8 @@ function renderVerdict(resorts) {
         ${backupHtml}
         ${top5Html}
         <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare Mountains</button>
-          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share This Pick</button>
+          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
+          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
       </div>
     </div>`;

@@ -40,66 +40,59 @@
     <section id="searchSection" class="hero card hero-compact">
       <div class="hero-compact-inner">
 
-        <!-- Value proposition -->
-        <div class="hero-value-prop">
-          <div class="hero-headline">The fastest way to decide where to ski next.</div>
-          <div class="hero-subhead">Find the best mountain for your next ski day &mdash; based on snow, drive time, price, and your style.</div>
+        <!-- LEFT: headline + steps + location -->
+        <div class="hero-left-col">
+          <div class="hero-value-prop">
+            <div class="hero-headline">The fastest way to decide where to ski next.</div>
+            <div class="hero-subhead">Find the best mountain for your next ski day &mdash; based on snow, drive time, price, and your style.</div>
+          </div>
+
+          <div class="how-it-works">
+            <div class="how-step"><span class="how-label">Set your location</span></div>
+            <span class="how-arrow" aria-hidden="true">&rarr;</span>
+            <div class="how-step"><span class="how-label">Tell us what matters most</span></div>
+            <span class="how-arrow" aria-hidden="true">&rarr;</span>
+            <div class="how-step"><span class="how-label">See your best match</span></div>
+          </div>
+
+          <div class="location-row">
+            <div class="field field-grow">
+              <input id="originInput" type="text" placeholder="City, town, or ZIP &mdash; e.g. Boston, MA or 02101" />
+            </div>
+            <button id="setLocation" class="btn btn-primary">Set</button>
+            <button id="detectLocation" class="btn btn-secondary">Locate me</button>
+          </div>
+          <div class="location-meta-row">
+            <div class="location-best-results">Enter your ZIP code for accurate drive times and trip-distance filtering.</div>
+            <label class="remember-location-label" id="rememberLocationLabel">
+              <input type="checkbox" id="rememberLocation" />
+              Remember my location
+              <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">&#9432;
+                <span class="location-privacy-tooltip">Your location is saved only in <strong>your browser</strong> &mdash; never sent to our servers or shared with anyone.</span>
+              </span>
+            </label>
+          </div>
+          <div id="locationStatus" class="helper-text"></div>
         </div>
 
-        <!-- How it works - 3 steps -->
-        <div class="how-it-works">
-          <div class="how-step">
-            <span class="how-icon">&#128205;</span>
-            <span class="how-label">Set your location</span>
+        <!-- RIGHT: AI chat -->
+        <div class="hero-right-col">
+          <div class="ai-chat-widget" id="aiChatSection">
+            <div class="ai-chat-header">
+              <span class="ai-chat-label">Not sure where to start? Describe your ideal ski day and we&rsquo;ll recommend a mountain.</span>
+            </div>
+            <div class="ai-chat-row">
+              <input
+                id="aiChatInput"
+                type="text"
+                class="ai-chat-input"
+                placeholder='e.g. "Ikon pass, skiing with my 8-year-old, within 2 hrs of Boston, Saturday"'
+                aria-label="Describe your ideal ski day"
+              />
+              <button id="aiChatBtn" class="btn btn-ai">Ask AI &rarr;</button>
+            </div>
+            <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
           </div>
-          <span class="how-arrow" aria-hidden="true">&rarr;</span>
-          <div class="how-step">
-            <span class="how-icon">&#9881;&#65039;</span>
-            <span class="how-label">Tell us what matters most</span>
-          </div>
-          <span class="how-arrow" aria-hidden="true">&rarr;</span>
-          <div class="how-step">
-            <span class="how-icon">&#127956;&#65039;</span>
-            <span class="how-label">See your best match</span>
-          </div>
-        </div>
-
-        <!-- Location input -->
-        <div class="location-row">
-          <div class="field field-grow">
-            <input id="originInput" type="text" placeholder="&#128205; City, town, or ZIP &mdash; e.g. Boston, MA or 02101" />
-          </div>
-          <button id="setLocation" class="btn btn-primary">Set</button>
-          <button id="detectLocation" class="btn btn-secondary">&#128225; Locate me</button>
-        </div>
-        <div class="location-meta-row">
-          <div class="location-best-results">Enter your ZIP code for accurate drive times and trip-distance filtering.</div>
-          <label class="remember-location-label" id="rememberLocationLabel">
-            <input type="checkbox" id="rememberLocation" />
-            Remember my location
-            <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">&#9432;
-              <span class="location-privacy-tooltip">Your location is saved only in <strong>your browser</strong> &mdash; never sent to our servers or shared with anyone.</span>
-            </span>
-          </label>
-        </div>
-        <div id="locationStatus" class="helper-text"></div>
-
-        <!-- AI Natural Language Chat Widget -->
-        <div class="ai-chat-widget" id="aiChatSection">
-          <div class="ai-chat-header">
-            <span class="ai-chat-label">Not sure where to start? Describe your ideal ski day and we'll recommend a mountain.</span>
-          </div>
-          <div class="ai-chat-row">
-            <input
-              id="aiChatInput"
-              type="text"
-              class="ai-chat-input"
-              placeholder='e.g. "Ikon pass, skiing with my 8-year-old, within 2 hrs of Boston, Saturday"'
-              aria-label="Describe your ideal ski day"
-            />
-            <button id="aiChatBtn" class="btn btn-ai">Ask AI &rarr;</button>
-          </div>
-          <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
         </div>
 
       </div>
