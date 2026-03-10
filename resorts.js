@@ -5,8 +5,8 @@ const RESORTS = [...RESORTS_NE, ...(typeof RESORTS_NATIONAL !== 'undefined' ? RE
 // ─── Named scoring constants (audit #32) ─────────────────────────────────────
 const SCORING = Object.freeze({
   // Mountain Size index — ceilings set at p80 of dataset so ~20% of mountains reach max
-  VERTICAL_CEILING:    2000,  // p80 — 18 mountains at or above this
-  ACRES_CEILING:        800,  // p80 — 19 mountains at or above this
+  VERTICAL_CEILING:    3000,  // normalization ceiling — 3000ft = world-class, full credit
+  ACRES_CEILING:       2500,  // normalization ceiling — national p80
   LONGEST_RUN_CEILING:  4.0,  // miles — Killington 6mi gets capped, fair spread
   // Snow — live forecast + historical reliability blend
   SNOW_SCALE:             8,  // inches — 8"+ = max live forecast score
@@ -17,8 +17,8 @@ const SCORING = Object.freeze({
   DRIVE_SCALE:          300,  // minutes — 5 hrs = zero drive score
   DRIVE_DEFAULT:        0.5,  // fallback when no origin set
   // Value
-  PRICE_MAX:            179,  // Killington
-  PRICE_MIN:             45,  // McIntyre (realistic floor)
+  PRICE_MAX:            299,  // Aspen/Beaver Creek — national ceiling
+  PRICE_MIN:             40,  // Anthony Lakes OR — national floor
   // Crowd
   CROWD_SCALE:           85,
 });
@@ -1006,7 +1006,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
   const condBonus = condIdx !== null ? (condIdx - 0.5) * 80 : 0; // -40 to +40
   score += condBonus;
   // Pass preference bonus — +200 for mountains on your pass (~10% of typical max score)
-  if (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) score += 200;
+  if (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) score += 60;
   if (state.nightOnly && resort.night) score += 4;
 
   return { score: Math.round(score * 10) / 10, snowTotal, drive, resortId: resort.id, crowdLabel: crowd.label, normalized, components, condIdx, condBonus };
