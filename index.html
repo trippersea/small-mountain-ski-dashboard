@@ -37,62 +37,54 @@
   <div class="container">
 
     <!-- HERO: value prop + location + AI chat -->
-    <section id="searchSection" class="hero card hero-compact">
-      <div class="hero-compact-inner">
+    <section id="searchSection" class="hero card hero-search">
+      <div class="hero-search-inner">
 
-        <!-- LEFT: headline + steps + location -->
-        <div class="hero-left-col">
-          <div class="hero-value-prop">
-            <div class="hero-headline">The fastest way to decide where to ski next.</div>
-            <div class="hero-subhead">Find the best mountain for your next ski day &mdash; based on snow, drive time, price, and your style.</div>
-          </div>
+        <div class="hero-headline">Where are you skiing from?</div>
+        <div class="hero-subhead">Enter your ZIP code or city and we&rsquo;ll find your best mountain.</div>
 
-          <div class="how-it-works">
-            <div class="how-step"><span class="how-label">Set your location</span></div>
-            <span class="how-arrow" aria-hidden="true">&rarr;</span>
-            <div class="how-step"><span class="how-label">Tell us what matters most</span></div>
-            <span class="how-arrow" aria-hidden="true">&rarr;</span>
-            <div class="how-step"><span class="how-label">See your best match</span></div>
-          </div>
-
-          <div class="location-row">
-            <div class="field field-grow">
-              <input id="originInput" type="text" placeholder="City, town, or ZIP &mdash; e.g. Boston, MA or 02101" />
-            </div>
-            <button id="setLocation" class="btn btn-primary">Set</button>
-            <button id="detectLocation" class="btn btn-secondary">Locate me</button>
-          </div>
-          <div class="location-meta-row">
-            <div class="location-best-results">Enter your ZIP code for accurate drive times and trip-distance filtering.</div>
-            <label class="remember-location-label" id="rememberLocationLabel">
-              <input type="checkbox" id="rememberLocation" />
-              Remember my location
-              <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">&#9432;
-                <span class="location-privacy-tooltip">Your location is saved only in <strong>your browser</strong> &mdash; never sent to our servers or shared with anyone.</span>
-              </span>
-            </label>
-          </div>
-          <div id="locationStatus" class="helper-text"></div>
+        <!-- Big pill search bar -->
+        <div class="hero-search-bar">
+          <input
+            id="originInput"
+            type="text"
+            class="hero-search-input"
+            placeholder="ZIP code or city &mdash; e.g. 02101 or Boston, MA"
+            autocomplete="off"
+            autofocus
+          />
+          <button id="setLocation" class="hero-search-btn">Find My Mountain</button>
         </div>
 
-        <!-- RIGHT: AI chat -->
-        <div class="hero-right-col">
-          <div class="ai-chat-widget" id="aiChatSection">
-            <div class="ai-chat-header">
-              <span class="ai-chat-label">Not sure where to start? Describe your ideal ski day and we&rsquo;ll recommend a mountain.</span>
-            </div>
-            <div class="ai-chat-row">
-              <input
-                id="aiChatInput"
-                type="text"
-                class="ai-chat-input"
-                placeholder='e.g. "Ikon pass, skiing with my 8-year-old, within 2 hrs of Boston, Saturday"'
-                aria-label="Describe your ideal ski day"
-              />
-              <button id="aiChatBtn" class="btn btn-ai">Ask AI &rarr;</button>
-            </div>
-            <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
+        <!-- Secondary actions -->
+        <div class="hero-search-meta">
+          <button id="detectLocation" class="hero-locate-link">&#128225; Use my location</button>
+          <span class="hero-meta-divider" aria-hidden="true">·</span>
+          <label class="remember-location-label" id="rememberLocationLabel">
+            <input type="checkbox" id="rememberLocation" />
+            Remember this location
+            <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">&#9432;
+              <span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span>
+            </span>
+          </label>
+        </div>
+
+        <div id="locationStatus" class="helper-text hero-location-status"></div>
+
+        <!-- AI chat — quiet secondary -->
+        <div class="hero-ai-row">
+          <span class="hero-ai-label">Not sure? Describe your ideal ski day</span>
+          <div class="hero-ai-input-row">
+            <input
+              id="aiChatInput"
+              type="text"
+              class="ai-chat-input hero-ai-input"
+              placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
+              aria-label="Describe your ideal ski day"
+            />
+            <button id="aiChatBtn" class="btn btn-ai">Ask AI &rarr;</button>
           </div>
+          <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
         </div>
 
       </div>
@@ -212,18 +204,7 @@
       </section>
 
     </div><!-- /planner-verdict-row -->
-    <!-- BEST DAY TO GO -->
-    <section id="bestDaySection" class="card panel hidden">
-      <div class="section-header">
-        <div>
-          <div class="eyebrow">Why This Mountain Wins</div>
-          <h2>&#128197; Best Day to Go</h2>
-          <p class="muted small">See the best day this week for your top mountain options.</p>
-        </div>
-        <div id="bestDayLastUpdated" class="helper-text"></div>
-      </div>
-      <div id="bestDayGrid" class="best-day-grid"></div>
-    </section>
+
 
     <!-- FILTERS -->
     <section class="toolbar card">

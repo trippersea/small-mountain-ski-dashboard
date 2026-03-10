@@ -735,15 +735,6 @@ function renderVerdict(resorts) {
     <div class="verdict-inner verdict-${tier}">
       ${driveBanner}
       <div class="verdict-left">
-        <div class="verdict-body">
-          <div class="verdict-context-headline">${esc(context.headline)}</div>
-          <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
-          <div class="verdict-detail">${detail}</div>
-          ${subList}
-          ${noOrigin}
-        </div>
-      </div>
-      <div class="verdict-right">
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
           <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
@@ -762,6 +753,15 @@ function renderVerdict(resorts) {
         <div class="verdict-action-row">
           <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
           <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+        </div>
+      </div>
+      <div class="verdict-right">
+        <div class="verdict-body">
+          <div class="verdict-context-headline">${esc(context.headline)}</div>
+          <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
+          <div class="verdict-detail">${detail}</div>
+          ${subList}
+          ${noOrigin}
         </div>
       </div>
     </div>`;
@@ -2102,7 +2102,8 @@ async function askAI(query) {
 // ─── Best Day To Go ───────────────────────────────────────────────────────────
 // Shows the 3-day forecast breakdown for the top 3 resorts and highlights the
 // highest-quality day at each (based on snow + cold temperature scoring).
-function renderBestDay(resorts) {
+function renderBestDay(resorts) { return; // removed — verdict card is the primary pick surface
+  if (false) {
   if (!els.bestDaySection || !els.bestDayGrid) return;
 
   const withWx = resorts.filter(r => state.weatherCache[r.id]?.data);
@@ -2264,7 +2265,7 @@ function renderAllCards(resorts) {
     _renderStorm(resorts);
   } else {
     // First load — verdict col shows placeholder, other panels show loading
-    if (els.bestDaySection) els.bestDaySection.classList.add('hidden');
+    // bestDaySection removed
     els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data…</div>';
   }
 
