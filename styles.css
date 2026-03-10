@@ -228,6 +228,20 @@ button { font: inherit; }
 .btn-primary:hover { opacity: .9; }
 .btn-secondary { background: #fff; }
 .btn-secondary:hover { background: #f0f6ff; border-color: var(--accent); color: var(--accent); }
+.btn-outline {
+  background: #fff; color: var(--text); border: 1.5px solid #d1d5db;
+  font-weight: 500;
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); background: #f0f6ff; }
+/* Resort name links in Also Consider / Also in the Running */
+.verdict-resort-link {
+  background: none; border: none; padding: 0; margin: 0;
+  font: inherit; text-align: left; cursor: pointer;
+  color: var(--accent); text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s;
+}
+.verdict-resort-link:hover { text-decoration-color: currentColor; }
 .btn-secondary[aria-pressed="true"] {
   background: rgba(43,109,233,.1); border-color: rgba(43,109,233,.4); color: var(--accent);
 }
@@ -278,6 +292,11 @@ button { font: inherit; }
   background: rgba(43,109,233,.08); color: var(--accent);
   font-size: 12px; font-weight: 700;
 }
+button.metric-chip {
+  border: none; cursor: pointer; font: inherit;
+  transition: background 0.15s, opacity 0.15s;
+}
+button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 /* ── Verdict / Should I Go ──────────────────────────────────────────────── */
 .verdict-section { overflow: hidden; }

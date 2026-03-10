@@ -192,7 +192,7 @@
       <!-- RIGHT: Should I Go? verdict -->
       <section id="verdictSection" class="verdict-section card verdict-col">
         <div class="verdict-header">
-          <h2>&#9975;&#65039; My Mountain Pick &#127938;&#65039;</h2>
+          <h2>My Mountain Pick</h2>
           <p class="muted small">Live weather + your settings = a straight answer.</p>
         </div>
         <div id="verdictCard">
@@ -220,10 +220,10 @@
     <!-- FILTERS -->
     <section class="toolbar card">
       <div class="toolbar-row">
-        <span class="toolbar-label">&#127923; Filters</span>
+        <span class="toolbar-label">Filters</span>
         <div class="toolbar-controls">
           <div class="field">
-            <label for="howFarFilter">&#128664; How Far Will You Go?</label>
+            <label for="howFarFilter">How Far Will You Go?</label>
             <span class="filter-hint">Distance cap for the database</span>
             <select id="howFarFilter">
               <option value="0">Day Trip (&le;3h)</option>
@@ -234,7 +234,7 @@
           <!-- keep legacy hidden element so JS els.maxDriveFilter reference doesn't throw -->
           <select id="maxDriveFilter" style="display:none"><option value="0">0</option></select>
           <div class="field">
-            <label for="maxPriceFilter">&#128176; Ticket Price</label>
+            <label for="maxPriceFilter">Ticket Price</label>
             <span class="filter-hint">Filter by day ticket range</span>
             <select id="maxPriceFilter">
               <option value="0">Any price</option>
@@ -245,17 +245,17 @@
             </select>
           </div>
           <div class="field">
-            <label for="passFilter">&#127915; Pass</label>
+            <label for="passFilter">Pass</label>
             <span class="filter-hint">Show only one pass network</span>
             <select id="passFilter"></select>
           </div>
           <div class="field">
-            <label for="stateFilter">&#128205; State</label>
+            <label for="stateFilter">State</label>
             <span class="filter-hint">Narrow to one state</span>
             <select id="stateFilter"></select>
           </div>
           <div class="field">
-            <label for="sortBy">&#8645; Sort by</label>
+            <label for="sortBy">Sort by</label>
             <span class="filter-hint">Change table ranking</span>
             <select id="sortBy">
               <option value="planner">Ski Score</option>
@@ -267,7 +267,7 @@
             </select>
           </div>
           <div class="field field-toggle">
-            <label>&#127769; Night Only</label>
+            <label>Night Only</label>
             <span class="filter-hint">Has night skiing</span>
             <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">Off</button>
           </div>
@@ -286,7 +286,6 @@
     <section id="compareSection" class="card panel">
       <div class="section-header">
         <div>
-          <div class="eyebrow">Full Mountain Database</div>
           <h2>Compare All Mountains</h2>
           <p class="muted small">Ranked by your score settings. Search by name, state, or pass. Click any column to sort.</p>
         </div>
@@ -385,7 +384,7 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
 
     <!-- DATABASE SUMMARY FOOTER -->
     <section class="db-summary-section">
-      <div class="db-summary-label">&#9973;&#65039; What's in the database</div>
+      <div class="db-summary-label" style="text-align:center">What's in the database</div>
       <div id="summaryCards" class="db-summary-grid"></div>
     </section>
 

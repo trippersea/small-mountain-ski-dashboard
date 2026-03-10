@@ -696,7 +696,7 @@ function renderVerdict(resorts) {
     const bDrive = formatDrive(backup.resort.id);
     return `<div class="verdict-backup">
       <div class="verdict-backup-label">Also consider</div>
-      <div class="verdict-backup-name">${esc(backup.resort.name)}</div>
+      <button class="verdict-backup-name verdict-resort-link" data-resort-id="${backup.resort.id}">${esc(backup.resort.name)}</button>
       <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
     </div>`;
   })() : '';
@@ -706,7 +706,7 @@ function renderVerdict(resorts) {
     ? `<div class="verdict-top5">
         <div class="verdict-top5-label">Also in the running</div>
         <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
-          `<span class="metric-chip">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</span>`
+          `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</button>`
         ).join('')}</div>
       </div>`
     : '';
@@ -741,8 +741,8 @@ function renderVerdict(resorts) {
         ${backupHtml}
         ${top5Html}
         <div class="verdict-action-row">
-          <button class="btn btn-primary verdict-compare-btn" id="verdictCompareBtn">&#128228; Compare Mountains</button>
-          <button class="btn btn-secondary verdict-share-btn" id="verdictShareBtn">&#127920; Share this pick</button>
+          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare Mountains</button>
+          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share This Pick</button>
         </div>
       </div>
     </div>`;
@@ -755,6 +755,18 @@ function renderVerdict(resorts) {
     renderDetail({ scroll: true });
     fetchConditionsForDetail(resort);
   });
+
+  // Wire Also Consider + Also in the Running resort name links
+  els.verdictCard.querySelectorAll('.verdict-resort-link[data-resort-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = RESORTS.find(x => x.id === btn.dataset.resortId);
+      if (!r) return;
+      state.selectedId = r.id;
+      renderDetail({ scroll: true });
+      fetchConditionsForDetail(r);
+    });
+  });
+
   const _compareBtn = $('verdictCompareBtn');
   if (_compareBtn) _compareBtn.addEventListener('click', () => {
     // howFar already applied to filteredResorts — no extra activation needed
@@ -1444,17 +1456,12 @@ function summaryHtml(label, value, sub = '') {
 
 function renderSummaryCards(resorts) {
   const count       = resorts.length;
-  const avgVertical = count ? Math.round(resorts.reduce((s, r) => s + r.vertical, 0) / count) : 0;
-  const avgPrice    = count ? Math.round(resorts.reduce((s, r) => s + r.price, 0) / count) : 0;
-
   els.summaryCards.innerHTML = [
-    dbStatHtml('Mountains',   count,                                          'across 34 states'),
-    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
-    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,        'resorts'),
-    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,        'resorts'),
-    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length, 'resorts'),
-    dbStatHtml('Avg Vertical', `${avgVertical} ft`,                           'across all mountains'),
-    dbStatHtml('Avg Ticket',   `$${avgPrice}`,                                'day ticket est.'),
+    dbStatHtml('Mountains',   count,                                                       'in the database'),
+    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,          'resorts'),
+    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,          'resorts'),
+    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,          'resorts'),
+    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length,   'resorts'),
   ].join('');
 }
 
