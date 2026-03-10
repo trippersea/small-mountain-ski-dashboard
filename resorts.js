@@ -877,7 +877,7 @@ function normalizedWeights() {
 // Human-readable labels for weight keys (used in UI summaries)
 const WEIGHT_LABELS = Object.freeze({
   snow: 'Snow Quality', drive: 'Drive Time', size: 'Mountain Size',
-  value: 'Best Value', crowd: 'Avoid Crowds',
+  value: 'Price', crowd: 'Avoid Crowds',
 });
 
 // ─── Drive time helpers ───────────────────────────────────────────────────────
@@ -2267,7 +2267,7 @@ function wireEvents() {
     snow:   'Blends live forecast snow (60%) with each mountain\'s historical avg snowfall (40%). Higher = only go when conditions are exceptional.',
     drive:  'Softly nudges rankings toward closer mountains. Use the Drive Time filter for a hard cutoff. Higher = distance matters more.',
     size:   'Composite of vertical drop (50%), skiable acres (35%), and longest run (15%). Higher = only big destination mountains rank well.',
-    value:  'Rewards cheaper day ticket prices. Higher = budget-friendly independents beat expensive resorts regardless of size.',
+    value:  'Rewards lower ticket prices. Higher = budget-friendly mountains rank above expensive ones regardless of size.',
     crowds: 'Penalizes busy mountains based on pass network, proximity to cities, and ticket price. Higher = quiet independents rise to the top.',
   };
   const tipEl = document.getElementById('sliderTooltip');
