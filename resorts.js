@@ -2102,69 +2102,8 @@ async function askAI(query) {
 // ─── Best Day To Go ───────────────────────────────────────────────────────────
 // Shows the 3-day forecast breakdown for the top 3 resorts and highlights the
 // highest-quality day at each (based on snow + cold temperature scoring).
-function renderBestDay(resorts) { return; // removed — verdict card is the primary pick surface
-  if (false) {
-  if (!els.bestDaySection || !els.bestDayGrid) return;
-
-  const withWx = resorts.filter(r => state.weatherCache[r.id]?.data);
-  if (!withWx.length) {
-    els.bestDaySection.classList.add('hidden');
-    return;
-  }
-
-  const w    = normalizedWeights();
-  const top3 = withWx
-    .map(r => ({
-      resort: r,
-      wx:     state.weatherCache[r.id].data,
-      bd:     plannerScoreBreakdown(r, state.weatherCache[r.id].data, 0, w),
-    }))
-    .sort((a, b) => b.bd.score - a.bd.score)
-    .slice(0, 3);
-
-  if (!top3.length) { els.bestDaySection.classList.add('hidden'); return; }
-
-  els.bestDaySection.classList.remove('hidden');
-  if (els.bestDayLastUpdated) {
-    els.bestDayLastUpdated.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  }
-
-  els.bestDayGrid.innerHTML = top3.map(({ resort, wx, bd }) => {
-    const forecast = wx.forecast || [];
-    if (!forecast.length) return '';
-
-    // Score each day: snow is king, cold temps add quality bonus
-    const dayScores = forecast.map(f => {
-      let s = Math.min(50, f.snow * 8);                              // snow: up to 50pts
-      if (f.lo <= 24) s += 15; else if (f.lo <= 30) s += 8;        // powder cold bonus
-      if (f.hi <= 32) s += 8;  else if (f.hi <= 38) s += 4;        // cold hi bonus
-      if (f.hi > 45)  s -= 10;                                       // warm/slushy penalty
-      return { ...f, dayScore: s };
-    });
-    const bestIdx = dayScores.reduce((bi, d, i) => d.dayScore > dayScores[bi].dayScore ? i : bi, 0);
-
-    const drive = formatDrive(resort.id);
-
-    return `<div class="best-day-card${bd.score > 0 ? '' : ''}">
-      <div class="best-day-resort-row">
-        <div>
-          <div class="best-day-resort">${esc(resort.name)}</div>
-          <div class="best-day-meta">${esc(resort.state)} &middot; ${esc(resort.passGroup)} &middot; Score ${bd.score}</div>
-        </div>
-        ${drive !== '—' ? `<div class="best-day-drive"><span class="metric-chip">&#128664; ${drive}</span></div>` : ''}
-      </div>
-      <div class="best-day-days">
-        ${dayScores.map((f, i) => `
-          <div class="best-day-day${i === bestIdx ? ' best' : ''}">
-            ${i === bestIdx ? '<div class="bdd-best-badge">&#9733; Best</div>' : ''}
-            <div class="bdd-day-name">${f.day}</div>
-            <div class="bdd-snow">${f.snow > 0 ? '&#10052;&#65039; ' + f.snow.toFixed(1) + '"' : '<span class="bdd-no-snow">No snow</span>'}</div>
-            <div class="bdd-temps">${f.lo}&deg;&ndash;${f.hi}&deg;F</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>`;
-  }).join('');
+function renderBestDay(resorts) {
+  // Best Day section removed — verdict card surfaces the top pick directly
 }
 
 // ─── Mobile Card Grid ─────────────────────────────────────────────────────────
