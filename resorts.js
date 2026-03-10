@@ -733,6 +733,10 @@ function renderVerdict(resorts) {
       </div>`
     : '';
 
+  const websiteLink = resort.website
+    ? `<a class="verdict-website-link" href="${resort.website}" target="_blank" rel="noopener">Visit ${esc(resort.name)} ↗</a>`
+    : '';
+
   els.verdictCard.innerHTML = `
     <div class="verdict-inner verdict-${tier}">
       ${driveBanner}
@@ -742,16 +746,13 @@ function renderVerdict(resorts) {
           <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
           <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
         </div>
-        ${reasonsHtml}
-        ${spark ? `<div class="verdict-spark-wrap"><span class="verdict-spark-label">Last 7 days</span>${spark}</div>` : ''}
         <div class="verdict-chips">
           <span class="metric-chip"><i class="bi bi-snow"></i> ${tomorrowIn.toFixed(1)}" tomorrow</span>
           <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" 3-day</span>
           ${histChip}
           ${driveChip}
         </div>
-        ${backupHtml}
-        ${top5Html}
+        ${websiteLink}
         <div class="verdict-action-row">
           <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
           <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
@@ -765,6 +766,9 @@ function renderVerdict(resorts) {
           ${subList}
           ${noOrigin}
         </div>
+        ${reasonsHtml}
+        ${backupHtml}
+        ${top5Html}
       </div>
     </div>`;
 
