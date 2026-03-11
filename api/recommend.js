@@ -10,17 +10,48 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // ── Manually parse body if needed (Vercel doesn't always auto-parse) ───────
-  let body = req.body;
-  if (!body || typeof body === 'string') {
+  // ── Parse body — always read raw stream ─────────────────────────────────
+  // Vercel sometimes delivers req.body as {} even for JSON POST requests,
+  // which causes downstream destructuring to silently miss all fields.
+  // Always parse from the raw body to be safe.
+  let body;
+  try {
+    const raw = await rawBody(req);
+    body = raw ? JSON.parse(raw) : (req.body || {});
+  } catch (e) {
+    return res.status(400).json({ error: 'Could not parse request body' });
+  }
+
+  const { resorts, _writeup, prompt: writeupPrompt } = body || {};
+
+  // ── Route: AI verdict write-up (Option B) ─────────────────────────────────
+  if (_writeup && writeupPrompt) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
     try {
-      body = JSON.parse(typeof body === 'string' ? body : await rawBody(req));
-    } catch (e) {
-      return res.status(400).json({ error: 'Could not parse request body' });
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type':      'application/json',
+          'x-api-key':         apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model:      'claude-haiku-4-5-20251001', // fast + cheap for short copy
+          max_tokens: 120,
+          messages:   [{ role: 'user', content: writeupPrompt }],
+        }),
+      });
+      if (!response.ok) throw new Error(`Anthropic ${response.status}`);
+      const data = await response.json();
+      const writeup = (data.content || []).find(b => b.type === 'text')?.text?.trim() || '';
+      return res.status(200).json({ writeup });
+    } catch (err) {
+      console.error('[/api/recommend] writeup error:', err.message);
+      return res.status(502).json({ error: err.message });
     }
   }
 
-  const { resorts } = body || {};
   if (!Array.isArray(resorts) || resorts.length < 2) {
     return res.status(400).json({ error: 'Need at least 2 resorts' });
   }
