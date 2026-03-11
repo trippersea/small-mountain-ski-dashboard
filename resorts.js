@@ -766,6 +766,7 @@ function renderVerdict(resorts) {
           ${subList}
           ${noOrigin}
         </div>
+        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
         ${reasonsHtml}
         ${backupHtml}
         ${top5Html}
@@ -792,6 +793,9 @@ function renderVerdict(resorts) {
     });
   });
 
+  // Kick off AI write-up (non-blocking — injects into slot when ready)
+  injectVerdictWriteup(v);
+
   const _compareBtn = $('verdictCompareBtn');
   if (_compareBtn) _compareBtn.addEventListener('click', () => {
     // howFar already applied to filteredResorts — no extra activation needed
@@ -811,6 +815,83 @@ function renderVerdict(resorts) {
       renderCompareTable(resorts);
     });
   });
+}
+
+// ─── AI Verdict Write-up (Option B) ──────────────────────────────────────────
+// Cache: key = `${resortId}:${tier}` → { text, ts }
+const verdictWriteupCache = new Map();
+
+// Build the prompt from facts already computed by computeVerdict
+function buildWriteupPrompt(v, origin) {
+  const { resort, breakdown, tomorrowIn, stormTotal, histTotal, driveText, tier } = v;
+  const originStr = origin?.label ? `from ${origin.label}` : '';
+  const driveStr  = driveText     ? `${driveText} away`     : 'distance unknown';
+  const histStr   = histTotal !== null ? `${histTotal}" of snow in the last 7 days` : null;
+  const scoreStr  = breakdown.baseScore;
+
+  const facts = [
+    `${tomorrowIn.toFixed(1)}" forecast tomorrow, ${stormTotal.toFixed(1)}" over 3 days`,
+    driveText ? `${driveStr}` : null,
+    histStr,
+    resort.vertical ? `${resort.vertical.toLocaleString()}ft vertical` : null,
+    resort.passGroup !== 'Independent' ? `${resort.passGroup} pass access` : null,
+  ].filter(Boolean).join('; ');
+
+  return `You are a ski trip advisor. In 1–2 natural, confident sentences explain why ${resort.name} in ${resort.state} is the top pick for this weekend${originStr ? ' for someone ' + originStr : ''}. Base it only on these facts: ${facts}. Ski score is ${scoreStr}/100. Verdict tier: ${tier}. Write like a knowledgeable friend giving a straight opinion — no filler phrases like "Looking at the data" or "Based on the information". Do not mention the score number.`;
+}
+
+// Fetch a write-up; returns null immediately if already loading (non-blocking)
+async function fetchVerdictWriteup(v, origin) {
+  const key = `${v.resort.id}:${v.tier}`;
+  if (verdictWriteupCache.has(key)) return verdictWriteupCache.get(key);
+
+  // Mark as loading so concurrent calls don't double-fetch
+  verdictWriteupCache.set(key, null);
+
+  try {
+    const res = await fetch('/api/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        _writeup: true,   // flag so recommend.js can route to a short prompt
+        prompt: buildWriteupPrompt(v, origin),
+      }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const text = data.writeup || data.reply || data.text || null;
+    if (text) {
+      verdictWriteupCache.set(key, text);
+      return text;
+    }
+  } catch (err) {
+    console.warn('[writeup] fetch failed:', err.message);
+    verdictWriteupCache.delete(key); // allow retry on next render
+  }
+  return null;
+}
+
+// Inject or refresh the write-up slot inside an already-rendered verdictCard
+async function injectVerdictWriteup(v) {
+  const slot = document.getElementById('verdictWriteupSlot');
+  if (!slot) return; // card not rendered yet
+
+  const cached = verdictWriteupCache.get(`${v.resort.id}:${v.tier}`);
+  if (cached) {
+    slot.textContent = cached;
+    slot.classList.remove('verdict-writeup--loading');
+    return;
+  }
+
+  slot.textContent = '';
+  slot.classList.add('verdict-writeup--loading');
+  const text = await fetchVerdictWriteup(v, state.origin);
+  // Re-query slot — card may have re-rendered while we were waiting
+  const liveSlot = document.getElementById('verdictWriteupSlot');
+  if (liveSlot && text) {
+    liveSlot.textContent = text;
+    liveSlot.classList.remove('verdict-writeup--loading');
+  }
 }
 
 function savePlannerState() {
@@ -877,12 +958,15 @@ function syncPlannerControls() {
   if (state.skillLevel === 'advanced') state.skillLevel = 'mixed';
   const skillLabel = { beginner: 'Beginner (≤800ft)', mixed: 'All Levels' }[state.skillLevel] || 'All Levels';
   const passLabel  = state.passPreference === 'any' ? 'Any' : state.passPreference;
-  const priorityLabel = v => v <= 1 ? 'Low' : v >= 10 ? 'High' : 'Medium';
+  const snowLabel   = { 1: 'Any Conditions', 5: 'Snow Matters',      10: 'Powder or Bust'    }[w.snow]  || 'Any Conditions';
+  const sizeLabel   = { 1: 'Under 1,000ft',  5: '1,000–1,999ft',    10: '2,000ft+'          }[w.size]  || 'Any Size';
+  const priceLabel  = { 1: '$150+ Fine',      5: '$100–$149',         10: 'Under $100'        }[w.value] || 'Any Price';
+  const crowdLabel  = { 1: 'No Issue!',       5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
   els.weightSummary.innerHTML =
-    `Snow: <strong>${priorityLabel(w.snow)}</strong> · ` +
-    `Size: <strong>${priorityLabel(w.size)}</strong> · ` +
-    `Price: <strong>${priorityLabel(w.value)}</strong> · ` +
-    `Crowds: <strong>${priorityLabel(w.crowd)}</strong> · ` +
+    `Snow: <strong>${snowLabel}</strong> · ` +
+    `Vertical: <strong>${sizeLabel}</strong> · ` +
+    `Price: <strong>${priceLabel}</strong> · ` +
+    `Crowds: <strong>${crowdLabel}</strong> · ` +
     `Skill: <strong>${skillLabel}</strong>` +
     (state.passPreference !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
 
@@ -1218,10 +1302,7 @@ function primaryReasons(item) {
   const reasons = [];
   const storm = item.storm || 0;
 
-  const displayScore = item.ski.skiScore; // already baseScore after skiScoreBreakdown fix
-  if (displayScore >= 85) reasons.push(`Elite Ski Score (${displayScore})`);
-  else                    reasons.push(`Strong Ski Score (${displayScore})`);
-
+  // Score chip removed (Option D) — the facts below are the score, no need to echo the number
   if (storm >= 6) reasons.push(`${storm.toFixed(1)}" forecast over 3 days`);
   // Re-read drive at render time — item.drive may be a stale haversine estimate
   // if OSRM confirmed a longer route since the brief was built
