@@ -907,7 +907,12 @@ async function fetchVerdictWriteup(v, origin) {
     }
   } catch (err) {
     console.warn('[writeup] fetch failed:', err.message);
-    verdictWriteupCache.delete(key); // allow retry on next render
+    // Set a sentinel so we don't hammer the endpoint on every re-render.
+    // After 30s the sentinel expires and we'll try once more.
+    verdictWriteupCache.set(key, '__failed__');
+    setTimeout(() => {
+      if (verdictWriteupCache.get(key) === '__failed__') verdictWriteupCache.delete(key);
+    }, 30_000);
   }
   return null;
 }
@@ -918,7 +923,7 @@ async function injectVerdictWriteup(v) {
   if (!slot) return; // card not rendered yet
 
   const cached = verdictWriteupCache.get(`${v.resort.id}:${v.tier}`);
-  if (cached) {
+  if (cached && cached !== '__failed__') {
     slot.textContent = cached;
     slot.classList.remove('verdict-writeup--loading');
     return;
