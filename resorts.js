@@ -173,6 +173,7 @@ const state = Object.seal({
   howFar:       0,        // index into HOW_FAR_TIERS (0=DayTrip, 1=Weekend, 2=All)
   maxPrice:     0,        // legacy — kept for URL compat
   priceRange:   0,        // index into PRICE_RANGES (0 = any)
+  verticalFilter: 'any',   // 'any' | 'small' (<1000ft) | 'mid' (1000-1999ft) | 'big' (2000ft+)
   selectedId:   null,
   origin:       null,
   driveCache:   {},
@@ -273,6 +274,7 @@ function serializeState() {
     p.set('w', [w.snow, w.size, w.value, w.crowd].join(','));
     if (state.skillLevel && state.skillLevel !== 'mixed') p.set('skill', state.skillLevel);
   }
+  if (state.verticalFilter !== 'any')  p.set('vert',  state.verticalFilter);
   if (state.passFilter  !== 'All')     p.set('pass',  state.passFilter);
   if (state.stateFilter !== 'All')     p.set('st',    state.stateFilter);
   if (state.sortBy      !== 'planner') p.set('sort',  state.sortBy);
@@ -313,6 +315,7 @@ function applyUrlState() {
       }
     }
   }
+  if (p.has('vert')  && ['any','small','mid','big'].includes(p.get('vert'))) state.verticalFilter = p.get('vert');
   if (p.has('pass')  && UNIQUE_PASSES.includes(p.get('pass')))  state.passFilter  = p.get('pass');
   if (p.has('st')    && UNIQUE_STATES.includes(p.get('st')))    state.stateFilter = p.get('st');
   if (p.has('sort'))  state.sortBy    = p.get('sort');
@@ -952,9 +955,11 @@ function snapToPriority(v) {
 
 // Normalize all user-adjustable weights to priority scale (called after loading from URL/localStorage)
 function normalizeWeightsToPriority() {
-  ['snow', 'size', 'value', 'crowd'].forEach(k => {
+  ['snow', 'value', 'crowd'].forEach(k => {
     state.weights[k] = snapToPriority(state.weights[k]);
   });
+  // size is now a hard filter (state.verticalFilter), not a weight — keep weights.size neutral
+  state.weights.size = 5;
 }
 
 // Update "What makes your perfect ski day from [city]?" label + edit btn visibility
@@ -972,7 +977,7 @@ function updatePlannerOriginLabel() {
 function syncPlannerControls() {
   // Sync priority-btn active state for snow, size, value, crowd
   // Drive is not user-adjustable (removed per Option C) — held at preset value
-  ['snow', 'size', 'value', 'crowd'].forEach(key => {
+  ['snow', 'value', 'crowd'].forEach(key => {
     const group = document.querySelector(`.priority-btns[data-key="${key}"]`);
     if (!group) return;
     const val = state.weights[key] ?? 1;
@@ -980,6 +985,13 @@ function syncPlannerControls() {
       btn.classList.toggle('active', Number(btn.dataset.val) === val);
     });
   });
+  // Vertical filter buttons — string values, not numeric weights
+  const vertGroup = document.querySelector('.priority-btns[data-key="size"]');
+  if (vertGroup) {
+    vertGroup.querySelectorAll('.priority-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.val === state.verticalFilter);
+    });
+  }
 
   // Sync skill buttons
   document.querySelectorAll('.skill-btn').forEach(btn => {
@@ -997,7 +1009,7 @@ function syncPlannerControls() {
   const skillLabel = { beginner: 'Beginner (≤800ft)', mixed: 'All Levels' }[state.skillLevel] || 'All Levels';
   const passLabel  = state.passPreference === 'any' ? 'Any' : state.passPreference;
   const snowLabel   = { 1: 'Any Conditions', 5: 'Snow Matters',      10: 'Powder or Bust'    }[w.snow]  || 'Any Conditions';
-  const sizeLabel   = { 1: 'Under 1,000ft',  5: '1,000–1,999ft',    10: '2,000ft+'          }[w.size]  || 'Any Size';
+  const sizeLabel   = { any: 'Any Size', small: 'Under 1,000ft', mid: '1,000–1,999ft', big: '2,000ft+' }[state.verticalFilter] || 'Any Size';
   const priceLabel  = { 1: '$150+ Fine',      5: '$100–$149',         10: 'Under $100'        }[w.value] || 'Any Price';
   const crowdLabel  = { 1: 'No Issue!',       5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
   els.weightSummary.innerHTML =
@@ -1455,6 +1467,10 @@ function filteredResorts() {
       const pr = PRICE_RANGES[state.priceRange];
       if (pr && (r.price < pr.min || r.price > pr.max)) return false;
     }
+    // Vertical hard filter
+    if (state.verticalFilter === 'small' && r.vertical >= 1000)  return false;
+    if (state.verticalFilter === 'mid'   && (r.vertical < 1000 || r.vertical >= 2000)) return false;
+    if (state.verticalFilter === 'big'   && r.vertical < 2000)   return false;
     // maxDrive legacy filter removed — now handled by howFar above
     return true;
   });
@@ -2592,7 +2608,12 @@ function wireEvents() {
     btn.addEventListener('click', () => {
       const key = btn.closest('.priority-btns')?.dataset.key;
       if (!key) return;
-      state.weights[key] = Number(btn.dataset.val);
+      if (key === 'size') {
+        // Vertical is now a hard filter, not a weight
+        state.verticalFilter = btn.dataset.val; // 'small' | 'mid' | 'big'
+      } else {
+        state.weights[key] = Number(btn.dataset.val);
+      }
       state.preset = 'custom';
       savePlannerState();
       syncPlannerControls();
