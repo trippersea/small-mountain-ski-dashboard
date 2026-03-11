@@ -332,11 +332,49 @@ function applyUrlState() {
   return true;
 }
 
+// ─── URL slug routing (/report/<slug>) ───────────────────────────────────────
+function slugify(name) {
+  return name
+    .toLowerCase()
+    .replace(/[''‘’]/g, '') // strip apostrophes: "Pat's Peak" → "pats-peak"
+    .replace(/[^a-z0-9]+/g, '-')       // non-alphanumeric to hyphens
+    .replace(/^-+|-+$/g, '');          // trim leading/trailing hyphens
+}
+
+function findResortBySlug(slug) {
+  return RESORTS.find(r => slugify(r.name) === slug || r.id === slug) || null;
+}
+
+function getReportSlug() {
+  const m = window.location.pathname.match(/^\/report\/([^/?#]+)/);
+  return m ? m[1] : null;
+}
+
+// Push a /report/<slug> URL when a resort detail card opens
+function pushReportUrl(resort) {
+  const slug   = slugify(resort.name);
+  const params = serializeState();
+  const qs     = params.toString() ? '?' + params : '';
+  history.pushState({ reportSlug: slug }, resort.name + ' — Where To Ski?!', '/report/' + slug + qs);
+  document.title = resort.name + ' — Where To Ski?!';
+}
+
+// Pop back to the root URL (called when detail closes or back is pressed)
+function popToRoot() {
+  const params = serializeState();
+  const qs     = params.toString() ? '?' + params : '';
+  history.replaceState({ reportSlug: null }, 'Where To Ski?!', '/' + qs);
+  document.title = 'Where To Ski?!';
+}
+
 const pushUrlDebounced = debounce(() => {
   const p    = serializeState();
-  const hash = location.hash || '';           // preserve #resort-xxx if present
-  const base = p.toString() ? `${location.pathname}?${p}` : location.pathname;
-  history.replaceState(null, '', base + hash);
+  const qs   = p.toString() ? '?' + p : '';
+  // If a resort detail is open, keep the /report/<slug> path; otherwise use /
+  const base = state.selectedId
+    ? '/report/' + slugify(RESORTS.find(r => r.id === state.selectedId)?.name || state.selectedId)
+    : '/';
+  history.replaceState(null, '', base + qs);
 }, 600);
 
 function copyShareLink() {
@@ -2022,13 +2060,8 @@ function renderDetail({ scroll = false } = {}) {
     </div>`;
   if (scroll) els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  // Update URL hash + document title for SEO / shareable deep-links (Priority 5)
-  // Preserve any existing query params (preset, filters etc.) when adding the hash.
-  if (resort) {
-    const qp = location.search; // preserve ?preset=...&pass=... etc.
-    history.replaceState(null, '', qp + '#resort-' + resort.id);
-    document.title = resort.name + ' — Where To Ski?!';
-  }
+  // Push /report/<slug> so URL is shareable and back button works
+  if (resort) pushReportUrl(resort);
 }
 
 // ─── Map ──────────────────────────────────────────────────────────────────────
@@ -2768,17 +2801,14 @@ function initialize() {
     loadDriveTimes();
   }
 
-  // Hash-based routing — restore selected resort from URL hash (#resort-<id>)
-  // This enables shareable deep-links to individual resort detail cards (Priority 5).
-  const hash = window.location.hash;
-  const hashMatch = hash.match(/^#resort-(.+)$/);
-  if (hashMatch) {
-    const resortId = hashMatch[1];
-    const found = RESORTS.find(r => r.id === resortId);
+  // Path-based routing — restore resort from /report/<slug> on direct load
+  // window.__REPORT_SLUG__ is injected by api/report.js (SSR); fall back to path parsing
+  const reportSlug = window.__REPORT_SLUG__ || getReportSlug();
+  if (reportSlug) {
+    const found = findResortBySlug(reportSlug);
     if (found) {
-      state.selectedId = resortId;
+      state.selectedId = found.id;
       document.title = found.name + ' — Where To Ski?!';
-      // Scroll to detail section after render completes
       setTimeout(() => {
         renderDetail();
         const sec = document.getElementById('detailSection');
@@ -2786,6 +2816,26 @@ function initialize() {
       }, 600);
     }
   }
+
+  // Browser back/forward — reopen or close the detail card based on URL
+  window.addEventListener('popstate', () => {
+    const slug = getReportSlug();
+    if (slug) {
+      const found = findResortBySlug(slug);
+      if (found) {
+        state.selectedId = found.id;
+        document.title = found.name + ' — Where To Ski?!';
+        renderDetail({ scroll: true });
+        fetchConditionsForDetail(found);
+        return;
+      }
+    }
+    // Navigated back to root — close detail card
+    state.selectedId = null;
+    if (els.detailSection) els.detailSection.classList.add('hidden');
+    document.title = 'Where To Ski?!';
+    render();
+  });
 
   setTimeout(() => initMap(), 100);
 }

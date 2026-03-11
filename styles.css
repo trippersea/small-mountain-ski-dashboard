@@ -2364,3 +2364,61 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .verdict-pick-link:hover {
   text-decoration-color: var(--accent);
 }
+
+/* ── SSR resort page — pre-rendered content shown before JS hydrates ──────── */
+.ssr-report {
+  max-width: 720px;
+  margin: 32px auto;
+  padding: 0 16px 64px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+.ssr-header { margin-bottom: 28px; }
+.ssr-eyebrow {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--muted); margin-bottom: 8px;
+}
+.ssr-title {
+  font-size: clamp(28px, 5vw, 42px); font-weight: 800;
+  color: var(--text); line-height: 1.1; margin: 0 0 10px;
+}
+.ssr-desc { font-size: 15px; color: var(--muted); line-height: 1.6; margin: 0; }
+
+.ssr-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+@media (max-width: 480px) { .ssr-stats { grid-template-columns: repeat(2, 1fr); } }
+.ssr-stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+}
+.ssr-stat-val { font-size: 26px; font-weight: 800; color: var(--text); line-height: 1; }
+.ssr-unit { font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 2px; }
+.ssr-stat-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .06em; }
+
+.ssr-terrain {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 20px;
+  margin-bottom: 24px; font-size: 14px;
+}
+.ssr-terrain-row { display: flex; align-items: center; gap: 6px; }
+.ssr-run-type { font-size: 10px; }
+.ssr-beginner    { color: #22c55e; }
+.ssr-intermediate { color: #3b82f6; }
+.ssr-advanced    { color: #ef4444; }
+
+.ssr-loading {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--muted); padding: 12px 0;
+}
+.ssr-loading-spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  animation: spin .7s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#app-container { transition: opacity .3s ease; }
