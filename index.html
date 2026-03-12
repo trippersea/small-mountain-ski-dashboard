@@ -20,13 +20,14 @@
 
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <a href="/" class="nav-brand" style="text-decoration:none">Where To Ski?!</a>
+      <span class="nav-brand">Where To Ski?!</span>
       <div class="nav-divider"></div>
       <a href="#verdictSection" class="nav-cta" id="navVerdictLink">My Pick</a>
       <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">Compare</a>
       <div class="nav-divider"></div>
       <a href="#stormSection" class="nav-secondary">Storm Chaser</a>
       <a href="#hiddenGemSection" class="nav-secondary">Hidden Gems</a>
+      <a href="#mapSection" class="nav-secondary">Map</a>
       <button class="btn-ghost nav-share" onclick="copyShareLink()">&#128279; Share</button>
     </div>
   </nav>
@@ -102,10 +103,10 @@
 
         <!-- Presets -->
         <div class="preset-row">
-          <button class="preset-btn active" data-preset="balanced">Balanced</button>
-          <button class="preset-btn" data-preset="powder">Powder</button>
-          <button class="preset-btn" data-preset="family">Family</button>
-          <button class="preset-btn" data-preset="cheap">Budget</button>
+          <button class="preset-btn active" data-preset="balanced">&#9878;&#65039; Balanced</button>
+          <button class="preset-btn" data-preset="powder">&#10052;&#65039; Powder</button>
+          <button class="preset-btn" data-preset="family">&#128106; Family</button>
+          <button class="preset-btn" data-preset="cheap">&#128176; Budget</button>
         </div>
 
         <!-- Priority pickers (Option B: 3-state Low/Medium/High, Option C: Drive removed) -->
@@ -113,7 +114,7 @@
           <div class="score-grid">
 
             <div class="score-control">
-              <div class="score-control-label">Snow</div>
+              <div class="score-control-label">&#10052;&#65039; Snow</div>
               <div class="priority-btns" data-key="snow">
                 <button class="priority-btn" data-val="1">Any Conditions</button>
                 <button class="priority-btn" data-val="5">Snow Matters</button>
@@ -123,7 +124,7 @@
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Vertical</div>
+              <div class="score-control-label">&#127956;&#65039; Vertical</div>
               <div class="priority-btns" data-key="size">
                 <button class="priority-btn active" data-val="any">Any Size</button>
                 <button class="priority-btn" data-val="small">Under 1,000ft</button>
@@ -134,7 +135,7 @@
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Price</div>
+              <div class="score-control-label">&#128176; Price</div>
               <div class="priority-btns" data-key="value">
                 <button class="priority-btn" data-val="10">Under $100</button>
                 <button class="priority-btn" data-val="5">$100&ndash;$149</button>
@@ -144,7 +145,7 @@
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Crowds</div>
+              <div class="score-control-label">&#128101; Trying to Avoid Crowds?</div>
               <div class="priority-btns" data-key="crowd">
                 <button class="priority-btn" data-val="1">No Issue!</button>
                 <button class="priority-btn" data-val="5">Not Ideal, But Fine</button>
@@ -191,6 +192,10 @@
 
       <!-- RIGHT: Should I Go? verdict -->
       <section id="verdictSection" class="verdict-section card verdict-col">
+        <div class="verdict-header">
+          <h2>My Mountain Pick</h2>
+          <p class="muted small">Live weather + your settings = a straight answer.</p>
+        </div>
         <div id="verdictCard">
           <div class="verdict-placeholder">
             <div class="verdict-placeholder-icon">&#128205;</div>
@@ -294,7 +299,7 @@
               <th scope="col" class="sortable-th" data-sort="state">State <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="pass">Pass <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="planner">Score <span class="sort-indicator"></span></th>
-              <th scope="col" class="sortable-th" data-sort="storm">Proj. 3-Day <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="storm">Storm 3d <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="hist7day" title="Snowfall in the past 7 days">7-Day &#10052;&#65039; <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="drive">Drive <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="vertical">Vertical <span class="sort-indicator"></span></th>
@@ -352,12 +357,30 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
       <div id="detailCard"></div>
     </section>
 
-    <!-- Map section removed -->
+    <!-- MAP -->
+    <section id="mapSection" class="card panel">
+      <div class="section-header">
+        <div><h2>&#128506;&#65039; Northeast Map</h2><p class="muted small">Drive radius, storm intensity, or pass network.</p></div>
+        <div class="map-mode-row">
+          <button class="map-mode-btn active" data-map-mode="drive">Drive</button>
+          <button class="map-mode-btn" data-map-mode="storm">Storm</button>
+          <button class="map-mode-btn" data-map-mode="pass">Pass</button>
+          <button class="map-mode-btn" data-map-mode="vertical">Vertical</button>
+        </div>
+      </div>
+      <div class="map-legend" id="mapLegend"></div>
+      <div id="leafletMap" class="leaflet-map"></div>
+    </section>
 
-    <!-- Database summary removed -->
+    <!-- DATABASE SUMMARY FOOTER -->
+    <section class="db-summary-section">
+      <div class="db-summary-label" style="text-align:center">What's in the database</div>
+      <div id="summaryCards" class="db-summary-grid"></div>
+    </section>
 
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="resorts-national.js"></script>
   <script src="resorts.js"></script>
 </body>

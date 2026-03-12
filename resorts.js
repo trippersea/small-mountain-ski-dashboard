@@ -85,7 +85,6 @@ const HIST_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const conditionsCache = new Map(); // resortId → { data: {...}, ts, source }
 const CONDITIONS_TTL  = 12 * 60 * 60 * 1000; // 12h for Claude-scraped snow reports
 const LIFTIE_TTL      = 15 * 60 * 1000;       // 15 min for Liftie lift status
-const SNOCOUNTRY_TTL  =  3 * 60 * 60 * 1000;  //  3 h  for SnoCountry conditions
 
 // Liftie (liftie.info) covers 30 NE resorts with free real-time lift data.
 // Map: resortId → liftie slug. These resorts use Liftie as primary source.
@@ -122,12 +121,6 @@ const LIFTIE_SLUGS = {
   'waterville-valley':      'waterville',
   'wildcat-mountain':       'wildcat',
 };
-
-// SnoCountry (feeds.snocountry.net) resort ID mapping.
-// Maps our resort ID → SnoCountry numeric ID.
-// Populated by running: SNOCOUNTRY_API_KEY=your_key node scripts/snocountry-setup.js
-// Until the key and mapping exist, this is empty and the app falls back to Liftie/Claude.
-const SNOCOUNTRY_IDS = {};  // e.g. { 'killington-resort': 123456, ... }
 
 function loadSavedWeights() {
   // Always start with balanced defaults — do not restore from localStorage
@@ -490,34 +483,10 @@ function saveConditionsCache() {
 
 async function fetchConditions(resort) {
   const cached = conditionsCache.get(resort.id);
-  const srcTTL = {
-    snocountry: SNOCOUNTRY_TTL,
-    liftie:     LIFTIE_TTL,
-    claude:     CONDITIONS_TTL,
-    none:       CONDITIONS_TTL,
-  }[cached?.source] ?? CONDITIONS_TTL;
-  if (cached && Date.now() - cached.ts < srcTTL) return cached.data;
+  const ttl = cached?.source === 'liftie' ? LIFTIE_TTL : CONDITIONS_TTL;
+  if (cached && Date.now() - cached.ts < ttl) return cached.data;
 
-  // ── Path A: SnoCountry (structured resort-reported data) ───────────────────
-  const snoId = SNOCOUNTRY_IDS[resort.id];
-  if (snoId) {
-    try {
-      const res = await fetchWithTimeout(`/api/snocountry?id=${snoId}`, 8000);
-      if (res.ok) {
-        const json = await res.json();
-        if (!json.error && json.conditions) {
-          const data = { ...json.conditions, source: 'snocountry' };
-          conditionsCache.set(resort.id, { ts: Date.now(), data, source: 'snocountry' });
-          saveConditionsCache();
-          return data;
-        }
-      }
-    } catch (e) {
-      console.warn('[conditions/snocountry] failed for', resort.name, e.message);
-    }
-  }
-
-  // ── Path B: Liftie (fast, free, real-time lift status) ─────────────────────
+  // ── Path A: Liftie (fast, free, ~200ms) ────────────────────────────────────
   const liftieSlug = LIFTIE_SLUGS[resort.id];
   if (liftieSlug) {
     try {
@@ -528,10 +497,16 @@ async function fetchConditions(resort) {
           const data = {
             liftsOpen:   json.liftsOpen  ?? null,
             liftsTotal:  json.liftsTotal ?? null,
-            baseDepth:   null, newSnow24h:  null, newSnow48h:  null,
-            trailsOpen:  null, trailsTotal: null, surface:     null,
-            reportDate:  null, notes:       null,
-            fetchedAt:   Date.now(), source: 'liftie',
+            baseDepth:   null,
+            newSnow24h:  null,
+            newSnow48h:  null,
+            trailsOpen:  null,
+            trailsTotal: null,
+            surface:     null,
+            reportDate:  null,
+            notes:       null,
+            fetchedAt:   Date.now(),
+            source:      'liftie',
           };
           conditionsCache.set(resort.id, { ts: Date.now(), data, source: 'liftie' });
           saveConditionsCache();
@@ -543,7 +518,7 @@ async function fetchConditions(resort) {
     }
   }
 
-  // ── Path C: Claude scraper fallback ────────────────────────────────────────
+  // ── Path B: Claude scraper fallback ────────────────────────────────────────
   if (!resort.website) {
     conditionsCache.set(resort.id, { ts: Date.now(), data: null, source: 'none' });
     return null;
@@ -620,26 +595,11 @@ function conditionsSummary(resort) {
   if (!c) return null;
   const parts = [];
   if (c.baseDepth    != null) parts.push(`${c.baseDepth}" base`);
-  if (c.newSnow24h   != null && c.newSnow24h > 0) parts.push(`${c.newSnow24h}" new (24h)`);
-  if (c.newSnow48h   != null && c.newSnow48h > 0 && c.newSnow48h !== c.newSnow24h) parts.push(`${c.newSnow48h}" (48h)`);
-  if (c.trailsOpen   != null && c.trailsTotal  != null) parts.push(`${c.trailsOpen}/${c.trailsTotal} trails`);
+  if (c.newSnow24h   != null && c.newSnow24h > 0) parts.push(`${c.newSnow24h}" new`);
+  if (c.trailsOpen   != null && c.trailsTotal  != null) parts.push(`${c.trailsOpen}/${c.trailsTotal} trails open`);
   if (c.liftsOpen    != null && c.liftsTotal   != null) parts.push(`${c.liftsOpen}/${c.liftsTotal} lifts`);
   if (c.surface) parts.push(c.surface);
   return parts.length ? parts.join(' · ') : null;
-}
-
-// Open/closed status from SnoCountry data
-// resortStatus: 1=Open, 2=Open limited, 3=No info, 4=Operating, 5=Plan to open, 6=Opening soon, 7=Closed, 8=Summer
-function resortOpenStatus(resort) {
-  const c = conditionsCache.get(resort.id)?.data;
-  if (!c?.resortStatus) return null;
-  const s = c.resortStatus;
-  if (s === 1 || s === 2 || s === 4) return { label: 'Open',         cls: 'status-open'    };
-  if (s === 3)                        return { label: 'No Info',      cls: 'status-noinfo'  };
-  if (s === 5 || s === 6)             return { label: 'Opening Soon', cls: 'status-soon'    };
-  if (s === 7)                        return { label: 'Closed',       cls: 'status-closed'  };
-  if (s === 8)                        return { label: 'Summer Ops',   cls: 'status-summer'  };
-  return null;
 }
 
 
@@ -787,38 +747,30 @@ function renderVerdict(resorts) {
        </div>`
     : '';
 
-  // Backup mountain block — no score, bigger name, with weather + 3-day snow
+  // Editorial reasons for the top pick
+  const reasons = primaryItem ? primaryReasons(primaryItem) : [];
+  const reasonsHtml = reasons.length
+    ? `<div class="verdict-reasons">${reasons.map(r => `<span class="verdict-reason-chip"><span class="chip-text">${esc(r)}</span></span>`).join('')}</div>`
+    : '';
+
+  // Backup mountain block
   const backupHtml = backup ? (() => {
-    const reason   = backupReason(primaryItem, backup);
-    const bDrive   = formatDrive(backup.resort.id);
-    const bWx      = state.weatherCache[backup.resort.id]?.data;
-    const bStorm   = bWx ? (bWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-    const bTomorrow = bWx?.forecast?.[0]?.snow ?? null;
-    const bWeather = bWx?.forecast?.[0] ? `${bWx.forecast[0].lo}°–${bWx.forecast[0].hi}°F` : null;
+    const reason = backupReason(primaryItem, backup);
+    const bDrive = formatDrive(backup.resort.id);
     return `<div class="verdict-backup">
-      <div class="verdict-backup-label">Also Consider</div>
+      <div class="verdict-backup-label">Also consider</div>
       <button class="verdict-backup-name verdict-resort-link" data-resort-id="${backup.resort.id}">${esc(backup.resort.name)}</button>
-      <div class="verdict-backup-meta">
-        ${esc(backup.resort.state)} · ${esc(backup.resort.passGroup)}${bDrive !== '—' ? ' · ' + bDrive : ''}
-        ${bTomorrow !== null ? ` · ${bTomorrow.toFixed(1)}" tomorrow` : ''}
-        ${bStorm    !== null ? ` · ${bStorm.toFixed(1)}" 3-day` : ''}
-        ${bWeather  ? ` · ${bWeather}` : ''}
-        · ${reason}
-      </div>
+      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
     </div>`;
   })() : '';
 
-  // Top-5 strip (skip #1 — it's already shown as top pick) — no scores
+  // Top-5 strip (skip #1 — it's already shown as top pick)
   const top5Html = top5.length > 1
     ? `<div class="verdict-top5">
-        <div class="verdict-top5-label">Also in the Running</div>
-        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) => {
-          const iWx    = state.weatherCache[item.resort.id]?.data;
-          const iStorm = iWx ? (iWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-          const iTom   = iWx?.forecast?.[0]?.snow ?? null;
-          const snowTxt = iTom !== null ? ` · ${iTom.toFixed(1)}" tomorrow` : (iStorm !== null ? ` · ${iStorm.toFixed(1)}" 3-day` : '');
-          return `<button class="verdict-top5-btn verdict-resort-link" data-resort-id="${item.resort.id}">${esc(item.resort.name)} <span class="top5-meta">${esc(item.resort.state)}${snowTxt}</span></button>`;
-        }).join('')}</div>
+        <div class="verdict-top5-label">Also in the running</div>
+        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
+          `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</button>`
+        ).join('')}</div>
       </div>`
     : '';
 
@@ -832,20 +784,16 @@ function renderVerdict(resorts) {
       <div class="verdict-left">
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
-          <div class="verdict-pick-name-row">
-            <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-            ${resort.website ? `<a class="verdict-pick-website" href="${resort.website}" target="_blank" rel="noopener">↗</a>` : ''}
-          </div>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
+          <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
         </div>
-        <hr class="verdict-divider" />
-        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
         <div class="verdict-chips">
           <span class="metric-chip"><i class="bi bi-snow"></i> ${tomorrowIn.toFixed(1)}" tomorrow</span>
-          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" Projected 3-Day Total</span>
+          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" 3-day</span>
           ${histChip}
           ${driveChip}
         </div>
+        ${websiteLink}
         <div class="verdict-action-row">
           <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
           <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
@@ -859,6 +807,8 @@ function renderVerdict(resorts) {
           ${subList}
           ${noOrigin}
         </div>
+        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
+        ${reasonsHtml}
         ${backupHtml}
         ${top5Html}
       </div>
@@ -1903,12 +1853,10 @@ function renderCompareTable(resorts) {
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
     const crowd    = crowdForecast(resort).label;
-    const condSum    = conditionsSummary(resort);
-    const openStatus = resortOpenStatus(resort);
-    const statusPill = openStatus ? `<span class="resort-status-pill ${openStatus.cls}">${openStatus.label}</span>` : '';
-    const condBadge  = condSum
-      ? `<div class="cond-table-badge" title="${condSum}">${statusPill} ${condSum.split(' · ').slice(0,2).join(' · ')}</div>`
-      : (statusPill ? `<div class="cond-table-badge">${statusPill}</div>` : (conditionsCache.has(resort.id) ? '' : ''));
+    const condSum  = conditionsSummary(resort);
+    const condBadge = condSum
+      ? `<div class="cond-table-badge" title="${condSum}"><i class="bi bi-geo"></i> ${condSum.split(' · ').slice(0,2).join(' · ')}</div>`
+      : (conditionsCache.has(resort.id) ? '' : '');
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
@@ -2076,10 +2024,7 @@ function renderDetail({ scroll = false } = {}) {
           const liftPct    = (c.liftsOpen  != null && c.liftsTotal  > 0) ? Math.round(c.liftsOpen  / c.liftsTotal  * 100) : null;
           const trailColor = trailPct == null ? '#999' : trailPct >= 80 ? '#16a34a' : trailPct >= 50 ? '#f0b44c' : '#e07a5f';
           const liftColor  = liftPct  == null ? '#999' : liftPct  >= 75 ? '#16a34a' : liftPct  >= 40 ? '#f0b44c' : '#e07a5f';
-          const openStatus = resortOpenStatus(resort);
-          const hasHours   = c.weekdayHours || c.weekendHours;
           return `
-          ${openStatus ? `<div class="resort-status-badge ${openStatus.cls}">${openStatus.label}${c.operatingStatus && c.operatingStatus !== openStatus.label ? ' — ' + esc(c.operatingStatus) : ''}</div>` : ''}
           <div class="conditions-grid">
             <div class="cond-stat">
               <div class="cond-stat-value">${c.baseDepth != null ? c.baseDepth + '"' : '—'}</div>
@@ -2089,11 +2034,6 @@ function renderDetail({ scroll = false } = {}) {
               <div class="cond-stat-value">${c.newSnow24h != null ? c.newSnow24h + '"' : '—'}</div>
               <div class="cond-stat-label">New (24h)</div>
             </div>
-            ${c.newSnow48h != null ? `
-            <div class="cond-stat">
-              <div class="cond-stat-value">${c.newSnow48h}"</div>
-              <div class="cond-stat-label">New (48h)</div>
-            </div>` : ''}
             <div class="cond-stat">
               <div class="cond-stat-value" style="color:${trailColor}">${c.trailsOpen != null ? c.trailsOpen : '—'}${c.trailsTotal ? '/' + c.trailsTotal : ''}</div>
               <div class="cond-stat-label">Trails Open</div>
@@ -2102,27 +2042,10 @@ function renderDetail({ scroll = false } = {}) {
               <div class="cond-stat-value" style="color:${liftColor}">${c.liftsOpen != null ? c.liftsOpen : '—'}${c.liftsTotal ? '/' + c.liftsTotal : ''}</div>
               <div class="cond-stat-label">Lifts Open</div>
             </div>
-            ${c.seasonTotal ? `
-            <div class="cond-stat">
-              <div class="cond-stat-value">${esc(String(c.seasonTotal))}"</div>
-              <div class="cond-stat-label">Season Total</div>
-            </div>` : ''}
           </div>
           ${c.surface ? `<div class="cond-surface">${esc(c.surface)}</div>` : ''}
-          ${c.forecastWeather || c.forecastBaseTemp != null ? `
-          <div class="cond-forecast-row">
-            ${c.forecastWeather ? `<span class="cond-forecast-wx">${esc(c.forecastWeather)}</span>` : ''}
-            ${c.forecastBaseTemp != null ? `<span class="cond-forecast-temp">Base ${c.forecastBaseTemp}°F</span>` : ''}
-            ${c.forecastTopTemp  != null ? `<span class="cond-forecast-temp">Summit ${c.forecastTopTemp}°F</span>` : ''}
-          </div>` : ''}
-          ${hasHours ? `
-          <div class="cond-hours">
-            ${c.weekdayHours  ? `<div class="cond-hours-row"><span class="cond-hours-label">Weekdays</span><span>${esc(c.weekdayHours)}</span></div>`  : ''}
-            ${c.weekendHours  ? `<div class="cond-hours-row"><span class="cond-hours-label">Weekends</span><span>${esc(c.weekendHours)}</span></div>`  : ''}
-          </div>` : ''}
-          ${c.lastSnowFallDate ? `<div class="cond-last-snow muted small">Last snowfall: <strong>${esc(c.lastSnowFallDate)}</strong>${c.lastSnowFallAmount ? ' — ' + esc(c.lastSnowFallAmount) + '"' : ''}</div>` : ''}
           ${c.notes   ? `<div class="cond-notes muted small">${esc(c.notes)}</div>` : ''}
-          ${c.reportDate ? `<div class="cond-date muted small" style="margin-top:6px">Report: ${esc(c.reportDate)}${c.source === 'snocountry' ? ' · SnoCountry' : ''}</div>` : ''}`;
+          ${c.reportDate ? `<div class="cond-date muted small" style="margin-top:6px">Report: ${esc(c.reportDate)}</div>` : ''}`;
         })()}
       </div>
       <div class="sub-card">
@@ -2134,7 +2057,7 @@ function renderDetail({ scroll = false } = {}) {
         </div>
       </div>
       <div class="sub-card">
-        <h3 class="sub-card-title">Weather Update &amp; Projected Forecast</h3>
+        <h3 class="sub-card-title">Snow History &amp; Forecast</h3>
         ${(() => {
           const hist = historyCache.get(resort.id);
           const spark = hist ? snowSparkline(hist.days) : null;
