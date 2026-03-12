@@ -748,34 +748,41 @@ function renderVerdict(resorts) {
     : '';
 
   // Editorial reasons for the top pick
-  const reasons = primaryItem ? primaryReasons(primaryItem) : [];
-  const reasonsHtml = reasons.length
-    ? `<div class="verdict-reasons">${reasons.map(r => `<span class="verdict-reason-chip"><span class="chip-text">${esc(r)}</span></span>`).join('')}</div>`
-    : '';
+    // Backup mountain block
+  const formatAlsoWeather = (r) => {
+    const wx = state.weatherCache[r.id]?.data;
+    const storm = wx ? (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+    const tomorrow = wx?.forecast?.[0]?.snow ?? null;
+    const parts = [esc(r.state), esc(r.passGroup)];
+    if (tomorrow !== null) parts.push(`${tomorrow.toFixed(1)}" tomorrow`);
+    if (storm !== null) parts.push(`${storm.toFixed(1)}" projected 3-day`);
+    const bDrive = formatDrive(r.id);
+    if (bDrive !== '—') parts.push(bDrive);
+    return parts.join(' · ');
+  };
 
-  // Backup mountain block
   const backupHtml = backup ? (() => {
-    const reason = backupReason(primaryItem, backup);
-    const bDrive = formatDrive(backup.resort.id);
     return `<div class="verdict-backup">
-      <div class="verdict-backup-label">Also consider</div>
+      <div class="verdict-backup-label">Also Consider</div>
       <button class="verdict-backup-name verdict-resort-link" data-resort-id="${backup.resort.id}">${esc(backup.resort.name)}</button>
-      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
+      <div class="verdict-backup-meta">${formatAlsoWeather(backup.resort)}</div>
     </div>`;
   })() : '';
 
-  // Top-5 strip (skip #1 — it's already shown as top pick)
   const top5Html = top5.length > 1
     ? `<div class="verdict-top5">
-        <div class="verdict-top5-label">Also in the running</div>
-        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
-          `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</button>`
+        <div class="verdict-top5-label">Also Consider</div>
+        <div class="verdict-top5-chips">${top5.slice(1, 4).map((item) =>
+          `<button class="verdict-top5-item verdict-resort-link" data-resort-id="${item.resort.id}">
+            <span class="verdict-top5-name">${esc(item.resort.name)}</span>
+            <span class="verdict-top5-meta">${formatAlsoWeather(item.resort)}</span>
+          </button>`
         ).join('')}</div>
       </div>`
     : '';
 
-  const websiteLink = resort.website
-    ? `<a class="verdict-website-link" href="${resort.website}" target="_blank" rel="noopener">Visit ${esc(resort.name)} ↗</a>`
+  const websiteLinkInline = resort.website
+    ? `<a class="verdict-website-link-inline" href="${resort.website}" target="_blank" rel="noopener">Mountain Site ↗</a>`
     : '';
 
   els.verdictCard.innerHTML = `
@@ -784,18 +791,24 @@ function renderVerdict(resorts) {
       <div class="verdict-left">
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
-          <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
+          <div class="verdict-pick-heading">
+            <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
+            ${websiteLinkInline}
+          </div>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
         </div>
+        <div class="verdict-ai-block">
+          <div class="verdict-ai-label">AI Overview</div>
+          <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
+        </div>
+        <div class="verdict-forecast-header">Weather Update and Projected Forecast</div>
         <div class="verdict-chips">
           <span class="metric-chip"><i class="bi bi-snow"></i> ${tomorrowIn.toFixed(1)}" tomorrow</span>
-          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" 3-day</span>
+          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" Projected 3-Day Total</span>
           ${histChip}
           ${driveChip}
         </div>
-        ${websiteLink}
         <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
           <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
       </div>
@@ -807,8 +820,6 @@ function renderVerdict(resorts) {
           ${subList}
           ${noOrigin}
         </div>
-        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
-        ${reasonsHtml}
         ${backupHtml}
         ${top5Html}
       </div>
@@ -837,12 +848,6 @@ function renderVerdict(resorts) {
   // Kick off AI write-up (non-blocking — injects into slot when ready)
   injectVerdictWriteup(v);
 
-  const _compareBtn = $('verdictCompareBtn');
-  if (_compareBtn) _compareBtn.addEventListener('click', () => {
-    // howFar already applied to filteredResorts — no extra activation needed
-    const sec = document.getElementById('compareSection');
-    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
   // Wire How Far tier buttons in verdict banner
   [0,1,2].forEach(i => {
     const btn = document.querySelector(`.vdb-tier-btn[data-tier="${i}"]`);
@@ -2545,7 +2550,7 @@ function wireEvents() {
 
   // Sticky nav: highlight active section on scroll
   (function initNavHighlight() {
-    const sectionIds = ['searchSection','plannerSection','verdictSection','compareSection','stormSection','mapSection'];
+    const sectionIds = ['searchSection','plannerSection','verdictSection','stormSection','hiddenGemSection','detailSection'];
     const navLinks   = document.querySelectorAll('.top-nav a[href^="#"]');
     function onScroll() {
       let current = '';
