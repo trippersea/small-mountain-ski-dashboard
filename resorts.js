@@ -1649,13 +1649,15 @@ function summaryHtml(label, value, sub = '') {
 }
 
 function renderSummaryCards(resorts) {
-  const count       = resorts.length;
+  if (!els.summaryCards) return;
+
+  const count = resorts.length;
   els.summaryCards.innerHTML = [
-    dbStatHtml('Mountains',   count,                                                       'in the database'),
-    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,          'resorts'),
-    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,          'resorts'),
-    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,          'resorts'),
-    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length,   'resorts'),
+    dbStatHtml('Mountains',   count,                                                     'in the database'),
+    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
+    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,        'resorts'),
+    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,        'resorts'),
+    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length, 'resorts'),
   ].join('');
 }
 
