@@ -747,35 +747,24 @@ function renderVerdict(resorts) {
        </div>`
     : '';
 
-  // Editorial reasons for the top pick
-  const reasons = primaryItem ? primaryReasons(primaryItem) : [];
-  const reasonsHtml = reasons.length
-    ? `<div class="verdict-reasons">${reasons.map(r => `<span class="verdict-reason-chip"><span class="chip-text">${esc(r)}</span></span>`).join('')}</div>`
-    : '';
-
-  // Backup mountain block
-  const backupHtml = backup ? (() => {
-    const reason = backupReason(primaryItem, backup);
-    const bDrive = formatDrive(backup.resort.id);
-    return `<div class="verdict-backup">
-      <div class="verdict-backup-label">Also consider</div>
-      <button class="verdict-backup-name verdict-resort-link" data-resort-id="${backup.resort.id}">${esc(backup.resort.name)}</button>
-      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
-    </div>`;
-  })() : '';
-
-  // Top-5 strip (skip #1 — it's already shown as top pick)
-  const top5Html = top5.length > 1
-    ? `<div class="verdict-top5">
-        <div class="verdict-top5-label">Also in the running</div>
-        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
-          `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</button>`
-        ).join('')}</div>
+  const alsoRunningHtml = top5.length > 1
+    ? `<div class="verdict-top5 verdict-top5--list">
+        <div class="verdict-top5-label">Also In the Running</div>
+        <div class="verdict-top5-list">${top5.slice(1, 5).map((item) => {
+          const altDrive = formatDrive(item.resort.id);
+          return `<div class="verdict-alt-card">
+            <button class="verdict-alt-name verdict-resort-link" data-resort-id="${item.resort.id}">${esc(item.resort.name)}</button>
+            <div class="verdict-alt-meta">${esc(item.resort.passGroup || 'Independent')}${altDrive !== '—' ? ` · ${altDrive}` : ''}</div>
+          </div>`;
+        }).join('')}</div>
+        <div class="verdict-alts-footer">
+          <button class="btn btn-outline verdict-compare-mountains-link" id="verdictCompareMountainsBtn">Compare Mountains</button>
+        </div>
       </div>`
     : '';
 
   const websiteLink = resort.website
-    ? `<a class="verdict-website-link" href="${resort.website}" target="_blank" rel="noopener">Visit ${esc(resort.name)} ↗</a>`
+    ? `<a class="verdict-website-link verdict-website-link--inline" href="${resort.website}" target="_blank" rel="noopener">Visit Mountain ↗</a>`
     : '';
 
   els.verdictCard.innerHTML = `
@@ -783,34 +772,30 @@ function renderVerdict(resorts) {
       ${driveBanner}
       <div class="verdict-left">
         <div class="verdict-pick-block">
-          <div class="verdict-pick-label">Top pick</div>
-          <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
+          <div class="verdict-pick-label">Top Pick</div>
+          <div class="verdict-pick-title-row">
+            <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
+            ${websiteLink}
+          </div>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
         </div>
         <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
-        <div class="verdict-chips">
-          <span class="metric-chip"><i class="bi bi-snow"></i> ${tomorrowIn.toFixed(1)}" tomorrow</span>
-          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" 3-day</span>
-          ${histChip}
-          ${driveChip}
+        <div class="verdict-weather-block">
+          <div class="verdict-weather-title">Weather Forecast</div>
+          <div class="verdict-body">
+            <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
+            <div class="verdict-detail">${detail}</div>
+            ${subList}
+            ${noOrigin}
+          </div>
         </div>
-        ${websiteLink}
         <div class="verdict-action-row">
           <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
           <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
       </div>
       <div class="verdict-right">
-        <div class="verdict-body">
-          <div class="verdict-context-headline">${esc(context.headline)}</div>
-          <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
-          <div class="verdict-detail">${detail}</div>
-          ${subList}
-          ${noOrigin}
-        </div>
-        ${reasonsHtml}
-        ${backupHtml}
-        ${top5Html}
+        ${alsoRunningHtml}
       </div>
     </div>`;
 
@@ -822,8 +807,17 @@ function renderVerdict(resorts) {
     renderDetail({ scroll: true });
     fetchConditionsForDetail(resort);
   });
+  const _compareMountainsBtn = $('verdictCompareMountainsBtn');
+  if (_compareMountainsBtn) _compareMountainsBtn.addEventListener('click', () => {
+    const compareIds = top5.slice(0, 5).map(item => item.resort.id);
+    state.compareSet = new Set(compareIds);
+    renderCompareTray();
+    renderComparePanel();
+    const sec = document.getElementById('compareSection');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
-  // Wire Also Consider + Also in the Running resort name links
+  // Wire resort name links in My Mountain Pick
   els.verdictCard.querySelectorAll('.verdict-resort-link[data-resort-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = RESORTS.find(x => x.id === btn.dataset.resortId);
@@ -971,7 +965,7 @@ function normalizeWeightsToPriority() {
 function updatePlannerOriginLabel() {
   if (!els.plannerFromLabel) return;
   if (state.origin && state.origin.label) {
-    els.plannerFromLabel.textContent = ' from ' + String(state.origin.label).trim();
+    els.plannerFromLabel.textContent = ' from ' + state.origin.label;
     if (els.plannerEditLocation) els.plannerEditLocation.hidden = false;
   } else {
     els.plannerFromLabel.textContent = '';
@@ -1649,15 +1643,13 @@ function summaryHtml(label, value, sub = '') {
 }
 
 function renderSummaryCards(resorts) {
-  if (!els.summaryCards) return;
-
-  const count = resorts.length;
+  const count       = resorts.length;
   els.summaryCards.innerHTML = [
-    dbStatHtml('Mountains',   count,                                                     'in the database'),
-    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
-    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,        'resorts'),
-    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,        'resorts'),
-    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length, 'resorts'),
+    dbStatHtml('Mountains',   count,                                                       'in the database'),
+    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,          'resorts'),
+    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,          'resorts'),
+    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,          'resorts'),
+    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length,   'resorts'),
   ].join('');
 }
 

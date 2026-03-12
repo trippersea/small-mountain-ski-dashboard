@@ -2422,3 +2422,58 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 #app-container { transition: opacity .3s ease; }
+
+/* My Mountain Pick layout refinements */
+.verdict-pick-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.verdict-website-link--inline {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.verdict-weather-block {
+  margin-top: 14px;
+}
+
+.verdict-weather-title {
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.verdict-top5--list {
+  width: 100%;
+}
+
+.verdict-top5-list {
+  display: grid;
+  gap: 10px;
+}
+
+.verdict-alt-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  padding: 12px 14px;
+}
+
+.verdict-alt-name {
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.verdict-alt-meta {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
