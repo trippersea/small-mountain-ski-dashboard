@@ -860,6 +860,376 @@ function shareVerdict(resort, verdictData) {
   }
 }
 
+
+
+// ─── Recovered core helpers / render pipeline ───────────────────────────────
+function fetchWithTimeout(url, options = {}, ms = 10000) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(t));
+}
+
+function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+function lerpScore(v, min, max) { if (max <= min) return 0; return clamp01((v - min) / (max - min)); }
+function haversineMiles(a, b) {
+  if (!a || !b) return null;
+  const R = 3958.8;
+  const dLat = (b.lat - a.lat) * Math.PI / 180;
+  const dLon = (b.lon - a.lon) * Math.PI / 180;
+  const la1 = a.lat * Math.PI / 180, la2 = b.lat * Math.PI / 180;
+  const h = Math.sin(dLat/2)**2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function estimateDriveMins(origin, resort) {
+  const miles = haversineMiles(origin, { lat: resort.lat, lon: resort.lon });
+  if (miles == null) return null;
+  return Math.max(25, Math.round(miles * 1.35));
+}
+function getDriveMins(resortId) {
+  if (!state.origin) return null;
+  if (state.driveCache?.[resortId] != null) return state.driveCache[resortId];
+  const r = RESORTS.find(x => x.id === resortId);
+  return r ? estimateDriveMins(state.origin, r) : null;
+}
+function formatDrive(resortId) {
+  const mins = getDriveMins(resortId);
+  if (mins == null) return '—';
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return h ? `${h}h ${String(m).padStart(2,'0')}m` : `${m}m`;
+}
+function applyHaversineEstimates() {
+  if (!state.origin) return;
+  RESORTS.forEach(r => { state.driveCache[r.id] = estimateDriveMins(state.origin, r); });
+}
+async function loadDriveTimes() { applyHaversineEstimates(); }
+
+function getPlanningWindow(now = new Date()) {
+  const day = now.getDay();
+  const hour = now.getHours();
+  const weekendMode = day === 5 || day === 6 || (day === 4 && hour >= 16);
+  return {
+    mode: weekendMode ? 'weekend' : 'tomorrow',
+    label: weekendMode ? 'this weekend' : 'tomorrow',
+    startIndex: 0,
+    endIndex: weekendMode ? 2 : 0,
+  };
+}
+function normalizedWeights() {
+  const w = state.weights || PRESETS.balanced;
+  const vals = { snow: +w.snow || 5, size: +w.size || 5, value: +w.value || 5, crowd: +w.crowd || 5 };
+  const total = Object.values(vals).reduce((a,b)=>a+b,0) || 1;
+  return Object.fromEntries(Object.entries(vals).map(([k,v]) => [k, v / total]));
+}
+function summitForecastTemps(resort, daily) {
+  if (!daily) return { summitHi:null, summitLo:null };
+  return {
+    summitHi: daily.hi == null ? null : summitTempF(daily.hi, resort.baseElevation || 0, resort.summitElevation || resort.baseElevation || 0),
+    summitLo: daily.lo == null ? null : summitTempF(daily.lo, resort.baseElevation || 0, resort.summitElevation || resort.baseElevation || 0),
+  };
+}
+function getWeatherDays(wx) {
+  return wx?.daily || wx?.days || [];
+}
+function weatherWindowIndex(resort, wx, plan = getPlanningWindow()) {
+  const days = getWeatherDays(wx);
+  if (!days.length) return { score: 0.45, primarySnow: 0, windowSnow: 0, primary: null };
+  const primary = days[plan.startIndex] || days[0] || null;
+  const windowDays = days.slice(plan.startIndex, Math.min(days.length, plan.endIndex + 1));
+  const primarySnow = +(primary?.snow || 0);
+  const windowSnow = +(windowDays.reduce((s,d)=> s + (+d.snow || 0), 0).toFixed(1));
+  const { summitHi, summitLo } = summitForecastTemps(resort, primary || {});
+  let tempScore = 0.65;
+  if (summitHi != null) {
+    if (summitHi >= SCORING.TEMP_IDEAL_LOW && summitHi <= SCORING.TEMP_IDEAL_HIGH) tempScore = 1;
+    else if (summitHi >= SCORING.TEMP_OK_LOW && summitHi <= SCORING.TEMP_OK_HIGH) tempScore = 0.8;
+    else if (summitHi > SCORING.BASE_RAIN_TEMP) tempScore = 0.2;
+    else tempScore = 0.45;
+  }
+  const snowScore = clamp01((primarySnow / SCORING.SNOW_DAY_SCALE) * 0.7 + (windowSnow / SCORING.SNOW_WINDOW_SCALE) * 0.3);
+  const score = clamp01(snowScore * 0.65 + tempScore * 0.35);
+  return { score, primarySnow, windowSnow, primary, summitHi, summitLo, days: windowDays };
+}
+function verticalPreferenceScore(resort) {
+  const v = resort.vertical || 0;
+  switch (state.verticalFilter) {
+    case 'small': return v <= 999 ? 1 : v <= 1400 ? 0.6 : 0.25;
+    case 'sweet': return v >= 1000 && v <= 1500 ? 1 : (v >= 850 && v <= 1700 ? 0.7 : 0.25);
+    case 'mid': return v >= 1000 && v < 2000 ? 1 : 0.35;
+    case 'big': return v >= 2000 ? 1 : 0.25;
+    default: return clamp01(1 - Math.abs(v - 1250) / 2500);
+  }
+}
+function pricePreferenceScore(resort) {
+  const p = resort.price || 999;
+  switch (state.priceRange) {
+    case 1: return p < 100 ? 1 : p <= 120 ? 0.55 : 0.2;
+    case 2: return (p >= 100 && p <= 150) ? 1 : (p >= 85 && p <= 165 ? 0.65 : 0.25);
+    case 3: return (p >= 151 && p <= 200) ? 1 : (p >= 120 && p <= 215 ? 0.65 : 0.25);
+    case 4: return p >= 200 ? 1 : 0.4;
+    default: return p >= 100 && p <= 149 ? 1 : (p < 100 ? 0.85 : p <= 180 ? 0.7 : 0.45);
+  }
+}
+function crowdIndex(resort) {
+  let c = 0.35;
+  if (['Epic','Ikon'].includes(resort.passGroup)) c += 0.22;
+  if ((resort.vertical || 0) > 1800) c += 0.12;
+  if ((resort.price || 0) < 90) c += 0.08;
+  if (resort.terrainPark) c += 0.06;
+  return clamp01(c);
+}
+function mountainSizeIndex(resort) {
+  const vert = clamp01((resort.vertical || 0) / SCORING.VERTICAL_CEILING);
+  const acres = clamp01((resort.acres || 0) / SCORING.ACRES_CEILING);
+  const run = clamp01((resort.longestRun || 0) / SCORING.LONGEST_RUN_CEILING);
+  return vert * 0.6 + acres * 0.25 + run * 0.15;
+}
+function plannerScoreBreakdown(resort, wx = null, _unused = null, w = normalizedWeights()) {
+  const plan = getPlanningWindow();
+  const weatherWindow = weatherWindowIndex(resort, wx, plan);
+  const snow = weatherWindow.score;
+  const size = verticalPreferenceScore(resort) * 0.75 + mountainSizeIndex(resort) * 0.25;
+  const value = pricePreferenceScore(resort);
+  const crowdPref = state.weights?.crowd >= 7 ? (1 - crowdIndex(resort)) : 1 - crowdIndex(resort) * 0.6;
+  const cond = conditionsIndex(resort);
+  const condAdj = cond == null ? 0 : (cond - 0.5) * 0.12;
+  const passAdj = state.passFilter !== 'All' && resort.passGroup === state.passFilter ? 0.03 : 0;
+  const driveMins = getDriveMins(resort.id);
+  const driveAdj = driveMins == null ? 0 : Math.max(-0.08, (1 - clamp01(driveMins / 420)) * 0.06);
+  const base = snow * w.snow + size * w.size + value * w.value + crowdPref * w.crowd;
+  const score = Math.round(clamp01(base + condAdj + passAdj + driveAdj) * 1000) / 10;
+  return { score, snow, size, value, crowd: crowdPref, weatherWindow };
+}
+function sortResortsForDisplay(resorts) {
+  const plan = getPlanningWindow();
+  const ranked = resorts.map(r => {
+    const wx = state.weatherCache[r.id]?.data || null;
+    const breakdown = plannerScoreBreakdown(r, wx, null, normalizedWeights());
+    return { ...r, plannerScore: breakdown.score, _breakdown: breakdown, _windowSnow: breakdown.weatherWindow.windowSnow, _primarySnow: breakdown.weatherWindow.primarySnow };
+  });
+  const dir = tableSort.dir === 'asc' ? 1 : -1;
+  const col = tableSort.col || state.sortBy || 'planner';
+  ranked.sort((a,b) => {
+    let av, bv;
+    switch (col) {
+      case 'storm': av = a._windowSnow; bv = b._windowSnow; break;
+      case 'drive': av = getDriveMins(a.id) ?? 1e9; bv = getDriveMins(b.id) ?? 1e9; break;
+      case 'price': av = a.price ?? 1e9; bv = b.price ?? 1e9; break;
+      case 'vertical': av = a.vertical ?? 0; bv = b.vertical ?? 0; break;
+      case 'avgSnowfall': av = a.avgSnowfall ?? 0; bv = b.avgSnowfall ?? 0; break;
+      default: av = a.plannerScore ?? 0; bv = b.plannerScore ?? 0; break;
+    }
+    if (av < bv) return -1 * dir;
+    if (av > bv) return 1 * dir;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+  return ranked;
+}
+function filteredResorts() {
+  let resorts = [...RESORTS];
+  if (state.passFilter && state.passFilter !== 'All') resorts = resorts.filter(r => r.passGroup === state.passFilter);
+  if (state.stateFilter && state.stateFilter !== 'All') resorts = resorts.filter(r => r.state === state.stateFilter);
+  if (state.nightOnly) resorts = resorts.filter(r => !!r.night);
+  if (state.priceRange > 0) {
+    const pr = PRICE_RANGES[state.priceRange];
+    if (pr) resorts = resorts.filter(r => (r.price ?? Infinity) >= pr.min && (r.price ?? Infinity) <= pr.max);
+  }
+  if (state.verticalFilter !== 'any') {
+    resorts = resorts.filter(r => {
+      const v = r.vertical || 0;
+      if (state.verticalFilter === 'small') return v < 1000;
+      if (state.verticalFilter === 'sweet') return v >= 1000 && v <= 1500;
+      if (state.verticalFilter === 'mid') return v >= 1000 && v < 2000;
+      if (state.verticalFilter === 'big') return v >= 2000;
+      return true;
+    });
+  }
+  if (state.origin && HOW_FAR_TIERS[state.howFar]?.cap < Infinity) {
+    const cap = HOW_FAR_TIERS[state.howFar].cap;
+    resorts = resorts.filter(r => {
+      const mins = getDriveMins(r.id);
+      return mins == null || mins <= cap;
+    });
+  }
+  if (state.tableSearch) {
+    const q = state.tableSearch.toLowerCase();
+    resorts = resorts.filter(r => [r.name, r.state, r.passGroup, r.region].filter(Boolean).join(' ').toLowerCase().includes(q));
+  }
+  return sortResortsForDisplay(resorts);
+}
+function plannerCandidates(resorts) { return resorts; }
+function buildDecisionBrief(resorts) {
+  const top5 = sortResortsForDisplay(resorts).slice(0,5).map(resort => ({ resort, breakdown: resort._breakdown || plannerScoreBreakdown(resort, state.weatherCache[resort.id]?.data || null) }));
+  const plan = getPlanningWindow();
+  return { context: { headline: `Best mountains for ${plan.label}` }, top5 };
+}
+
+function renderSummaryCards(resorts) {
+  if (!els.summaryCards) return;
+  const avgPrice = resorts.length ? Math.round(resorts.reduce((s,r)=>s+(r.price||0),0)/resorts.length) : 0;
+  const avgVert = resorts.length ? Math.round(resorts.reduce((s,r)=>s+(r.vertical||0),0)/resorts.length) : 0;
+  const indie = resorts.filter(r => !['Epic','Ikon'].includes(r.passGroup)).length;
+  els.summaryCards.innerHTML = [
+    ['Mountains', String(resorts.length), 'in current database'],
+    ['Avg Ticket', `$${avgPrice}`, 'day ticket'],
+    ['Avg Vertical', `${avgVert.toLocaleString()} ft`, 'vertical drop'],
+    ['Independent / Indy', `${indie}`, 'smaller-mountain options'],
+  ].map(([label,val,sub]) => `<div class="summary-card"><div class="summary-label">${label}</div><div class="summary-value">${val}</div><div class="summary-sub">${sub}</div></div>`).join('');
+}
+function renderActiveFilters() {
+  if (!els.activeFilters) return;
+  const bits = [];
+  if (state.passFilter !== 'All') bits.push(`Pass: ${state.passFilter}`);
+  if (state.stateFilter !== 'All') bits.push(`State: ${state.stateFilter}`);
+  if (state.priceRange > 0) bits.push(`Price: ${PRICE_RANGES[state.priceRange].label}`);
+  if (state.verticalFilter !== 'any') bits.push(`Vertical: ${state.verticalFilter === 'sweet' ? '1,000–1,500 ft' : state.verticalFilter}`);
+  if (state.nightOnly) bits.push('Night skiing');
+  bits.push(`Range: ${HOW_FAR_TIERS[state.howFar].label}`);
+  els.activeFilters.innerHTML = bits.map(b => `<span class="filter-chip">${esc(b)}</span>`).join('');
+}
+function renderHiddenGems(resorts) {
+  if (!els.hiddenGemGrid) return;
+  const gems = sortResortsForDisplay(resorts)
+    .filter(r => (r.vertical || 0) <= 1600 && (r.price || 999) <= 150 && !['Epic','Ikon'].includes(r.passGroup))
+    .slice(0,4);
+  els.hiddenGemGrid.innerHTML = gems.map(r => `<article class="planner-card"><h3>${esc(r.name)}</h3><p class="small">${esc(r.state)} · ${esc(r.passGroup)}</p><p class="small">${r.vertical.toLocaleString()} ft · $${r.price} · ${formatDrive(r.id)}</p></article>`).join('') || '<div class="planner-card">No hidden gems match these filters yet.</div>';
+}
+function renderCompareTable(resorts) {
+  if (!els.comparisonBody) return;
+  const rows = sortResortsForDisplay(resorts);
+  const shown = state.tableViewAll ? rows : rows.slice(0,10);
+  if (els.resultCount) els.resultCount.textContent = `${rows.length} mountains`;
+  if (els.tableViewAllBtn) els.tableViewAllBtn.textContent = state.tableViewAll ? 'Show Top 10' : 'View All';
+  els.comparisonBody.innerHTML = shown.map(r => {
+    const storm = r._windowSnow != null ? `${r._windowSnow.toFixed(1)}"` : '—';
+    return `<tr data-id="${r.id}">
+      <td><input type="checkbox" data-compare-id="${r.id}" ${state.compareSet.has(r.id)?'checked':''}></td>
+      <td><button class="link-button" data-row-detail="${r.id}">${esc(r.name)}</button></td>
+      <td>${esc(r.state)}</td>
+      <td>${esc(r.passGroup)}</td>
+      <td>${r.plannerScore?.toFixed ? r.plannerScore.toFixed(1) : '—'}</td>
+      <td>${storm}</td>
+      <td>${formatDrive(r.id)}</td>
+      <td>${(r.vertical||0).toLocaleString()}</td>
+      <td>${r.trails ?? '—'}</td>
+      <td>$${r.price ?? '—'}</td>
+      <td>${Math.round(crowdIndex(r)*100)}</td>
+    </tr>`;
+  }).join('');
+}
+function renderCompareTray() {
+  if (!els.compareTray || !els.comparePills) return;
+  const chosen = [...state.compareSet].map(id => RESORTS.find(r => r.id === id)).filter(Boolean);
+  els.compareTray.classList.toggle('hidden', chosen.length === 0);
+  els.comparePills.innerHTML = chosen.map(r => `<span class="compare-pill">${esc(r.name)}</span>`).join('');
+}
+function renderComparePanel() {
+  if (!els.comparePanel || !els.compareContent) return;
+  const chosen = [...state.compareSet].map(id => RESORTS.find(r => r.id === id)).filter(Boolean);
+  els.comparePanel.classList.toggle('hidden', chosen.length === 0);
+  if (!chosen.length) return;
+  els.compareContent.innerHTML = `<div class="compare-grid">${chosen.map(r => `<div class="planner-card"><h3>${esc(r.name)}</h3><p>${esc(r.state)} · ${esc(r.passGroup)}</p><p>${(r.vertical||0).toLocaleString()} ft · ${r.trails||'—'} trails · $${r.price||'—'}</p><p>Drive: ${formatDrive(r.id)}</p></div>`).join('')}</div>`;
+  els.comparePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function renderDetail(opts = {}) {
+  if (!els.detailCard || !els.detailSection) return;
+  const resort = RESORTS.find(r => r.id === state.selectedId);
+  if (!resort) { els.detailSection.classList.add('hidden'); els.detailCard.innerHTML = ''; return; }
+  const wx = state.weatherCache[resort.id]?.data;
+  const w = weatherWindowIndex(resort, wx, getPlanningWindow());
+  const cond = conditionsSummary(resort);
+  els.detailSection.classList.remove('hidden');
+  els.detailCard.innerHTML = `<div class="card panel"><div class="section-header"><div><div class="eyebrow">Mountain Detail</div><h2>${esc(resort.name)}</h2><p>${esc(resort.state)} · ${esc(resort.passGroup)} · ${formatDrive(resort.id)}</p></div><div>${resort.website ? `<a class="btn btn-outline" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>`:''}</div></div><div class="detail-stats-grid"><div class="summary-card"><div class="summary-label">Vertical</div><div class="summary-value">${(resort.vertical||0).toLocaleString()} ft</div></div><div class="summary-card"><div class="summary-label">Trails</div><div class="summary-value">${resort.trails||'—'}</div></div><div class="summary-card"><div class="summary-label">Ticket</div><div class="summary-value">$${resort.price||'—'}</div></div><div class="summary-card"><div class="summary-label">Forecast Window</div><div class="summary-value">${w.windowSnow.toFixed(1)}"</div><div class="summary-sub">${getPlanningWindow().label}</div></div></div>${cond ? `<p class="small" style="margin-top:12px">${esc(cond)}</p>`:''}</div>`;
+  if (opts.scroll) els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function updateMap(resorts) {
+  if (els.mapLegend) els.mapLegend.textContent = `${resorts.length} mountains shown — map view simplified while core planner is restored.`;
+}
+function initMap() {
+  const mapEl = document.getElementById('leafletMap');
+  if (!mapEl) return;
+  if (!window.L || mapEl.dataset.fallbackInit) {
+    mapEl.dataset.fallbackInit = '1';
+    mapEl.innerHTML = '<div style="padding:24px;color:#667a96">Map is temporarily simplified while the planner refreshes. Use the compare table below for exact rankings.</div>';
+    return;
+  }
+}
+async function fetchWeather(resort) {
+  const cached = state.weatherCache[resort.id];
+  if (cached && Date.now() - (cached.ts || 0) < 3 * 60 * 60 * 1000) return cached.data;
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&daily=snowfall_sum,temperature_2m_max,temperature_2m_min&forecast_days=7&timezone=America%2FNew_York`;
+    const res = await fetchWithTimeout(url, {}, 9000);
+    const json = await res.json();
+    const daily = (json.daily?.time || []).map((date, i) => ({
+      date,
+      snow: +(json.daily.snowfall_sum?.[i] || 0),
+      hi: json.daily.temperature_2m_max?.[i] ?? null,
+      lo: json.daily.temperature_2m_min?.[i] ?? null,
+    }));
+    const data = { daily };
+    state.weatherCache[resort.id] = { data, ts: Date.now() };
+    return data;
+  } catch (e) {
+    state.weatherCache[resort.id] = { data: { daily: [] }, ts: Date.now(), error: true };
+    return state.weatherCache[resort.id].data;
+  }
+}
+async function renderAsyncPanels(resorts) {
+  const top = sortResortsForDisplay(resorts).slice(0, 16);
+  await Promise.all(top.map(async r => {
+    if (!state.weatherCache[r.id]?.data?.daily?.length) await fetchWeather(r);
+  }));
+  renderVerdict(filteredResorts());
+  _renderStorm(filteredResorts());
+  renderCompareTable(filteredResorts());
+  renderHiddenGems(filteredResorts());
+}
+function _renderStorm(resorts) {
+  if (!els.stormGrid) return;
+  const top = sortResortsForDisplay(resorts).sort((a,b) => (b._windowSnow||0) - (a._windowSnow||0)).slice(0,6);
+  els.stormGrid.innerHTML = top.map(r => `<article class="planner-card"><h3>${esc(r.name)}</h3><p class="small">${esc(r.state)} · ${esc(r.passGroup)}</p><p class="small">Projected 3-Day Snowfall: ${(r._windowSnow||0).toFixed(1)}"</p></article>`).join('') || '<div class="planner-card">Loading storm data…</div>';
+}
+function renderBestDay() { /* section removed */ }
+function syncPlannerControls() {
+  if (els.passFilter) els.passFilter.value = state.passFilter;
+  if (els.stateFilter) els.stateFilter.value = state.stateFilter;
+  if (els.sortBy) els.sortBy.value = state.sortBy;
+  if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.priceRange);
+  if (els.toggleNight) {
+    els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
+    els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
+  }
+  if (els.plannerFromLabel) els.plannerFromLabel.textContent = state.origin?.label ? ` — ${state.origin.label}` : '';
+}
+async function applyLocation() {
+  const q = els.originInput?.value?.trim();
+  if (!q) return;
+  try {
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`;
+    const res = await fetchWithTimeout(url, {}, 9000);
+    const json = await res.json();
+    const hit = json.results?.[0];
+    if (!hit) { showToast('Location not found'); return; }
+    state.origin = { lat: hit.latitude, lon: hit.longitude, label: q };
+    if (els.locationStatus) els.locationStatus.textContent = `Location set to ${q}`;
+    const cb = document.getElementById('rememberLocation');
+    if (cb?.checked) localStorage.setItem('ski-origin', JSON.stringify(state.origin));
+    applyHaversineEstimates();
+    syncPlannerControls();
+    render();
+  } catch (e) { showToast('Could not set location'); }
+}
+function getSavedOrigin() {
+  try { return JSON.parse(localStorage.getItem('ski-origin') || 'null'); } catch { return null; }
+}
+function askAI(q) {
+  if (!els.aiChatResult) return;
+  const top = filteredResorts()[0];
+  const answer = top ? `Based on your current filters, ${top.name} is the strongest match for ${getPlanningWindow().label}. It fits your price / size preferences and has the best near-term ski setup in the current result set.` : 'Try widening your filters to get a recommendation.';
+  els.aiChatResult.classList.remove('hidden');
+  els.aiChatResult.innerHTML = `<div class="planner-card"><strong>AI Suggestion</strong><p>${esc(answer)}</p></div>`;
+}
+
 // ─── Top-level render ─────────────────────────────────────────────────────────
 function renderAllCards(resorts) {
   renderSummaryCards(resorts);
