@@ -721,13 +721,9 @@ function renderVerdict(resorts) {
           tomorrowIn, stormTotal, histTotal, histDays } = v;
 
   const brief = buildDecisionBrief(resorts);
-  const { context, backup, top5 } = brief;
+  const { top5 } = brief;
   const primaryItem = brief.primary;
 
-  const histChip  = histTotal !== null
-    ? `<span class="metric-chip"><i class="bi bi-bar-chart-fill"></i> ${histTotal}" last 7 days</span>` : '';
-  const driveChip = driveText
-    ? `<span class="metric-chip"><i class="bi bi-car-front"></i> ${driveText}</span>` : '';
   const subList   = subPoints.length
     ? `<ul class="verdict-points">${subPoints.map(p => `<li>${p}</li>`).join('')}</ul>` : '';
   const spark     = histDays ? snowSparkline(histDays) : '';
@@ -753,29 +749,28 @@ function renderVerdict(resorts) {
     ? `<div class="verdict-reasons">${reasons.map(r => `<span class="verdict-reason-chip"><span class="chip-text">${esc(r)}</span></span>`).join('')}</div>`
     : '';
 
-  // Backup mountain block
-  const backupHtml = backup ? (() => {
-    const reason = backupReason(primaryItem, backup);
-    const bDrive = formatDrive(backup.resort.id);
-    return `<div class="verdict-backup">
-      <div class="verdict-backup-label">Also consider</div>
-      <button class="verdict-backup-name verdict-resort-link" data-resort-id="${backup.resort.id}">${esc(backup.resort.name)}</button>
-      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
-    </div>`;
-  })() : '';
-
-  // Top-5 strip (skip #1 — it's already shown as top pick)
-  const top5Html = top5.length > 1
-    ? `<div class="verdict-top5">
-        <div class="verdict-top5-label">Also in the running</div>
-        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
-          `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</button>`
-        ).join('')}</div>
+  const runningItems = top5.length > 1 ? top5.slice(1, 5) : [];
+  const top5Html = runningItems.length
+    ? `<div class="verdict-top5 verdict-running-card">
+        <div class="verdict-top5-header">
+          <div class="verdict-top5-label">Also In the Running</div>
+          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare Mountains</button>
+        </div>
+        <div class="verdict-running-list">${runningItems.map((item, i) => {
+          const altDrive = formatDrive(item.resort.id);
+          return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
+            <span class="verdict-running-rank">${i + 2}</span>
+            <span class="verdict-running-main">
+              <span class="verdict-running-name">${esc(item.resort.name)}</span>
+              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDrive !== '—' ? altDrive : 'Drive TBD')}</span>
+            </span>
+          </button>`;
+        }).join('')}</div>
       </div>`
     : '';
 
   const websiteLink = resort.website
-    ? `<a class="verdict-website-link" href="${resort.website}" target="_blank" rel="noopener">Visit ${esc(resort.name)} ↗</a>`
+    ? `<a class="verdict-website-link verdict-website-link--inline" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>`
     : '';
 
   els.verdictCard.innerHTML = `
@@ -784,32 +779,25 @@ function renderVerdict(resorts) {
       <div class="verdict-left">
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
-          <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
+          <div class="verdict-pick-heading-row">
+            <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
+            ${websiteLink}
+          </div>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
         </div>
-        <div class="verdict-chips">
-          <span class="metric-chip"><i class="bi bi-snow"></i> ${tomorrowIn.toFixed(1)}" tomorrow</span>
-          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" 3-day</span>
-          ${histChip}
-          ${driveChip}
-        </div>
-        ${websiteLink}
-        <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
-          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
-        </div>
-      </div>
-      <div class="verdict-right">
+        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
         <div class="verdict-body">
-          <div class="verdict-context-headline">${esc(context.headline)}</div>
           <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
           <div class="verdict-detail">${detail}</div>
           ${subList}
           ${noOrigin}
         </div>
-        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
         ${reasonsHtml}
-        ${backupHtml}
+        <div class="verdict-action-row">
+          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+        </div>
+      </div>
+      <div class="verdict-right">
         ${top5Html}
       </div>
     </div>`;
