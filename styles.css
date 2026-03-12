@@ -2422,19 +2422,3 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 #app-container { transition: opacity .3s ease; }
-
-
-/* AI summary positioned in left column of My Mountain Pick */
-.verdict-left .verdict-writeup {
-  font-style: normal;
-  color: #374151;
-  background: #f8fafc;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  min-height: 72px;
-}
-
-.verdict-left .verdict-writeup--loading {
-  min-height: 72px;
-}

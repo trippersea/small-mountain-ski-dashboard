@@ -58,7 +58,7 @@
 
         <!-- Secondary actions -->
         <div class="hero-search-meta">
-          <button id="detectLocation" class="hero-locate-link">&#128225; Use my location</button>
+          <button id="detectLocation" class="hero-locate-link">Use my location</button>
           <span class="hero-meta-divider" aria-hidden="true">·</span>
           <label class="remember-location-label" id="rememberLocationLabel">
             <input type="checkbox" id="rememberLocation" />
@@ -103,10 +103,10 @@
 
         <!-- Presets -->
         <div class="preset-row">
-          <button class="preset-btn active" data-preset="balanced">&#9878;&#65039; Balanced</button>
-          <button class="preset-btn" data-preset="powder">&#10052;&#65039; Powder</button>
-          <button class="preset-btn" data-preset="family">&#128106; Family</button>
-          <button class="preset-btn" data-preset="cheap">&#128176; Budget</button>
+          <button class="preset-btn active" data-preset="balanced">Balanced</button>
+          <button class="preset-btn" data-preset="powder">Powder</button>
+          <button class="preset-btn" data-preset="family">Family</button>
+          <button class="preset-btn" data-preset="cheap">Budget</button>
         </div>
 
         <!-- Priority pickers (Option B: 3-state Low/Medium/High, Option C: Drive removed) -->
@@ -114,7 +114,7 @@
           <div class="score-grid">
 
             <div class="score-control">
-              <div class="score-control-label">&#10052;&#65039; Snow</div>
+              <div class="score-control-label">Snow</div>
               <div class="priority-btns" data-key="snow">
                 <button class="priority-btn" data-val="1">Any Conditions</button>
                 <button class="priority-btn" data-val="5">Snow Matters</button>
@@ -124,7 +124,7 @@
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">&#127956;&#65039; Vertical</div>
+              <div class="score-control-label">Vertical</div>
               <div class="priority-btns" data-key="size">
                 <button class="priority-btn active" data-val="any">Any Size</button>
                 <button class="priority-btn" data-val="small">Under 1,000ft</button>
@@ -135,7 +135,7 @@
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">&#128176; Price</div>
+              <div class="score-control-label">Price</div>
               <div class="priority-btns" data-key="value">
                 <button class="priority-btn" data-val="10">Under $100</button>
                 <button class="priority-btn" data-val="5">$100&ndash;$149</button>
@@ -145,7 +145,7 @@
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">&#128101; Trying to Avoid Crowds?</div>
+              <div class="score-control-label">Trying to Avoid Crowds?</div>
               <div class="priority-btns" data-key="crowd">
                 <button class="priority-btn" data-val="1">No Issue!</button>
                 <button class="priority-btn" data-val="5">Not Ideal, But Fine</button>
@@ -370,12 +370,6 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
       </div>
       <div class="map-legend" id="mapLegend"></div>
       <div id="leafletMap" class="leaflet-map"></div>
-    </section>
-
-    <!-- DATABASE SUMMARY FOOTER -->
-    <section class="db-summary-section">
-      <div class="db-summary-label" style="text-align:center">What's in the database</div>
-      <div id="summaryCards" class="db-summary-grid"></div>
     </section>
 
   </div>
