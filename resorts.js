@@ -1542,12 +1542,15 @@ async function fetchWeather(resort) {
   } catch (e) { return null; }
 }
 
-async function ensureWeather(resorts) {
+async function ensureWeather(resorts, onEach) {
   const queue = [...resorts];
   await Promise.all(Array.from({ length: 8 }, async () => {
     while (queue.length) {
       const r = queue.shift();
-      if (r) await fetchWeather(r);
+      if (r) {
+        await fetchWeather(r);
+        if (onEach) onEach();
+      }
     }
   }));
   saveWeatherCache();  // persist after each batch (audit #13)
@@ -1701,8 +1704,11 @@ async function renderAsyncPanels(resorts) {
   const top5 = candidates.slice(0, 5);
   const conditionsEarlyPromise = ensureConditions(top5);
 
+  // Render verdict incrementally as each resort's weather arrives — don't wait for all
+  const quickVerdict = debounce(() => renderVerdict(resorts), 150);
+
   // Weather and conditions run in parallel
-  await ensureWeather(candidates);
+  await ensureWeather(candidates, quickVerdict);
 
   renderCompareTable(resorts);
   updateMap(resorts);
