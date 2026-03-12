@@ -46,20 +46,6 @@ body {
   padding: 8px 14px; white-space: nowrap; color: var(--accent);
   margin-right: 4px;
 }
-
-.nav-brand {
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-}
-
-#compareSection,
-#compareTray,
-#comparePanel,
-#mapSection,
-.db-summary-section {
-  display: none !important;
-}
 .top-nav a {
   text-decoration: none; color: var(--text); font-weight: 600; font-size: 13px;
   padding: 8px 12px; border-radius: 999px; border: 1px solid transparent;
@@ -238,7 +224,7 @@ p, .muted, .helper-text { color: var(--muted); margin: 0; }
 .field-grow { flex: 1; }
 .field-mini { width: 110px; }
 label {
-  font-size: 13px; font-weight: 700; color: var(--muted);
+  font-size: 11px; font-weight: 700; color: var(--muted);
   margin-bottom: 5px; font-family: 'DM Mono', monospace;
   text-transform: uppercase; letter-spacing: .07em;
 }
@@ -299,7 +285,7 @@ button { font: inherit; }
   margin-bottom: 10px;
 }
 .score-desc { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.5; font-weight: 400; }
-.slider-hint { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.4; font-style: italic; }
+.slider-hint { font-size: 10px; color: var(--muted); margin-top: 7px; line-height: 1.4; font-style: italic; }
 
 /* Priority buttons — descriptive labels, stacked vertically */
 .priority-btns {
@@ -309,7 +295,7 @@ button { font: inherit; }
 }
 .priority-btn {
   flex: 1;
-  padding: 9px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
   border: 1.5px solid var(--border);
   background: #fff;
@@ -1871,7 +1857,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 .planner-col .planner-summary-title {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 800;
   margin-bottom: 4px;
   display: flex;
@@ -1906,7 +1892,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 .planner-col .weight-summary {
-  font-size: 13px;
+  font-size: 11px;
   margin-bottom: 0;
 }
 
@@ -1916,8 +1902,8 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 .planner-col .preset-btn {
-  font-size: 14px;
-  padding: 8px 14px;
+  font-size: 11px;
+  padding: 5px 10px;
 }
 
 /* Sliders — 2-col inside left panel */
@@ -1929,7 +1915,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 .planner-col .score-control label,
 .planner-col .score-control-label {
-  font-size: 15px;
+  font-size: 12px;
   margin-bottom: 4px;
 }
 
@@ -2438,100 +2424,12 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 #app-container { transition: opacity .3s ease; }
 
 
-.verdict-pick-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+#mapSection,
+.db-summary-section {
+  display: none !important;
 }
 
-.verdict-website-link-inline {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--accent);
-  text-decoration: none;
-  white-space: nowrap;
-}
+.nav-brand { text-decoration: none; color: inherit; }
 
-.verdict-website-link-inline:hover { text-decoration: underline; }
-
-.verdict-forecast-header {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.verdict-ai-block {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-
-.verdict-ai-label {
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-.verdict-left .verdict-writeup {
-  font-size: 0.96rem;
-  line-height: 1.65;
-}
-
-.verdict-right .verdict-writeup { display: none; }
-
-.verdict-backup-label,
-.verdict-top5-label {
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  opacity: .75;
-  margin-bottom: 10px;
-}
-
-.verdict-backup-name {
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
-.verdict-backup-meta {
-  font-size: 0.95rem;
-}
-
-.verdict-top5-chips {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-
-.verdict-top5-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,.8);
-}
-
-.verdict-top5-item .verdict-top5-name {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--accent);
-}
-
-.verdict-top5-item .verdict-top5-meta {
-  font-size: 0.92rem;
-  color: var(--muted);
-  text-align: left;
-}
+.verdict-alts-footer { margin-top: 10px; }
+.verdict-compare-mountains-link { width: 100%; justify-content: center; font-size: 15px; }
