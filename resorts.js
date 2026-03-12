@@ -744,28 +744,27 @@ function renderVerdict(resorts) {
     : '';
 
   // Editorial reasons for the top pick
-  const reasons = primaryItem ? primaryReasons(primaryItem) : [];
-  const reasonsHtml = reasons.length
-    ? `<div class="verdict-reasons">${reasons.map(r => `<span class="verdict-reason-chip"><span class="chip-text">${esc(r)}</span></span>`).join('')}</div>`
-    : '';
-
   const runningItems = top5.length > 1 ? top5.slice(1, 5) : [];
+  const compareIds = [resort.id, ...runningItems.map(item => item.resort.id)];
   const top5Html = runningItems.length
     ? `<div class="verdict-top5 verdict-running-card">
         <div class="verdict-top5-header">
           <div class="verdict-top5-label">Also In the Running</div>
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare Mountains</button>
         </div>
         <div class="verdict-running-list">${runningItems.map((item, i) => {
           const altDrive = formatDrive(item.resort.id);
+          const altDriveText = altDrive !== '—' ? altDrive : 'TBD';
           return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
             <span class="verdict-running-rank">${i + 2}</span>
             <span class="verdict-running-main">
               <span class="verdict-running-name">${esc(item.resort.name)}</span>
-              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDrive !== '—' ? altDrive : 'Drive TBD')}</span>
+              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · Drive Time: ${esc(altDriveText)}</span>
             </span>
           </button>`;
         }).join('')}</div>
+        <div class="verdict-compare-row">
+          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
+        </div>
       </div>`
     : '';
 
@@ -783,7 +782,7 @@ function renderVerdict(resorts) {
             <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
             ${websiteLink}
           </div>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Drive Time: ${esc(driveText || 'TBD')}</div>
         </div>
         <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
         <div class="verdict-body">
@@ -792,7 +791,6 @@ function renderVerdict(resorts) {
           ${subList}
           ${noOrigin}
         </div>
-        ${reasonsHtml}
         <div class="verdict-action-row">
           <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
@@ -827,7 +825,10 @@ function renderVerdict(resorts) {
 
   const _compareBtn = $('verdictCompareBtn');
   if (_compareBtn) _compareBtn.addEventListener('click', () => {
-    // howFar already applied to filteredResorts — no extra activation needed
+    const ids = (_compareBtn.dataset.compareIds || '').split(',').map(s => s.trim()).filter(Boolean);
+    state.compareSet = new Set(ids);
+    renderCompareTray();
+    renderCompareTable(filteredResorts());
     const sec = document.getElementById('compareSection');
     if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });

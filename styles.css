@@ -2449,16 +2449,22 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .verdict-top5-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   margin-bottom: 10px;
-}
-.verdict-top5-header .verdict-compare-btn {
-  flex: 0 0 auto;
 }
 .verdict-running-list {
   display: grid;
   gap: 10px;
+}
+
+.verdict-compare-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+.verdict-compare-row .verdict-compare-btn {
+  min-width: 200px;
 }
 .verdict-running-item {
   display: grid;
@@ -2508,7 +2514,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
     flex-direction: column;
     align-items: stretch;
   }
-  .verdict-top5-header .verdict-compare-btn {
+  .verdict-compare-row .verdict-compare-btn {
     width: 100%;
   }
 }
