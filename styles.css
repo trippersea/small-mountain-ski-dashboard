@@ -44,9 +44,8 @@ body {
 .nav-brand {
   font-weight: 800; font-size: 15px; letter-spacing: -.01em;
   padding: 8px 14px; white-space: nowrap; color: var(--accent);
-  margin-right: 4px; text-decoration: none; cursor: pointer;
+  margin-right: 4px;
 }
-.nav-brand:hover { opacity: .8; }
 .top-nav a {
   text-decoration: none; color: var(--text); font-weight: 600; font-size: 13px;
   padding: 8px 12px; border-radius: 999px; border: 1px solid transparent;
@@ -515,26 +514,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 .verdict-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .verdict-chips .metric-chip { font-size: 0.76rem; padding: 4px 9px; }
-.verdict-weather-header {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--muted);
-  margin-bottom: 6px;
-  margin-top: 14px;
-}
-.verdict-divider {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 14px 0;
-}
-.verdict-pick-name-row {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
-}
 .verdict-spark-wrap { display: flex; align-items: center; gap: 10px; }
 .verdict-spark-label { font-size: 0.74rem; color: #9ca3af; white-space: nowrap; }
 .verdict-share-btn  { align-self: flex-start; font-size: 0.82rem; padding: 8px 14px; margin-top: auto; }
@@ -1780,7 +1759,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 .verdict-backup-name {
   font-weight: 700;
-  font-size: 17px;
+  font-size: 14px;
   color: var(--accent);
   background: none;
   border: none;
@@ -1789,7 +1768,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 .verdict-backup-name:hover { opacity: .75; }
 .verdict-backup-meta {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--muted);
   margin-top: 3px;
   line-height: 1.5;
@@ -1841,7 +1820,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   margin-top: 12px;
 }
 .verdict-top5-label {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .06em;
   opacity: .55;
@@ -1850,12 +1829,11 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .verdict-top5-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 .verdict-top5-chips .metric-chip {
-  font-size: 14px;
+  font-size: 12px;
   opacity: .9;
-  padding: 6px 12px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -1879,7 +1857,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 .planner-col .planner-summary-title {
-  font-size: 21px;
+  font-size: 17px;
   font-weight: 800;
   margin-bottom: 4px;
   display: flex;
@@ -2020,7 +1998,8 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   padding: 22px 22px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  justify-content: space-between;
 }
 
 .verdict-col .verdict-right {

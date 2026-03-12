@@ -757,13 +757,10 @@ function renderVerdict(resorts) {
   const backupHtml = backup ? (() => {
     const reason = backupReason(primaryItem, backup);
     const bDrive = formatDrive(backup.resort.id);
-    const bWx = state.weatherCache[backup.resort.id]?.data;
-    const bStorm = bWx ? (bWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-    const bSnowLabel = bStorm !== null ? ` · ${bStorm.toFixed(1)}" projected 3-day` : '';
     return `<div class="verdict-backup">
       <div class="verdict-backup-label">Also consider</div>
       <button class="verdict-backup-name verdict-resort-link" data-resort-id="${backup.resort.id}">${esc(backup.resort.name)}</button>
-      <div class="verdict-backup-meta">${esc(backup.resort.state)} · ${reason}${bSnowLabel}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
+      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
     </div>`;
   })() : '';
 
@@ -771,17 +768,14 @@ function renderVerdict(resorts) {
   const top5Html = top5.length > 1
     ? `<div class="verdict-top5">
         <div class="verdict-top5-label">Also in the running</div>
-        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) => {
-          const iWx = state.weatherCache[item.resort.id]?.data;
-          const iStorm = iWx ? (iWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-          const snowLabel = iStorm !== null ? ` · ${iStorm.toFixed(1)}"` : '';
-          return `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)}${snowLabel}</button>`;
-        }).join('')}</div>
+        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
+          `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</button>`
+        ).join('')}</div>
       </div>`
     : '';
 
   const websiteLink = resort.website
-    ? `<a class="verdict-website-link" href="${resort.website}" target="_blank" rel="noopener">↗ Visit Site</a>`
+    ? `<a class="verdict-website-link" href="${resort.website}" target="_blank" rel="noopener">Visit ${esc(resort.name)} ↗</a>`
     : '';
 
   els.verdictCard.innerHTML = `
@@ -790,21 +784,16 @@ function renderVerdict(resorts) {
       <div class="verdict-left">
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
-          <div class="verdict-pick-name-row">
-            <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-            ${websiteLink}
-          </div>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
+          <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
         </div>
-        <hr class="verdict-divider">
-        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
-        <div class="verdict-weather-header">Weather Update and Projected Forecast</div>
         <div class="verdict-chips">
           <span class="metric-chip"><i class="bi bi-snow"></i> ${tomorrowIn.toFixed(1)}" tomorrow</span>
-          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" Projected 3-Day Total</span>
+          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" 3-day</span>
           ${histChip}
           ${driveChip}
         </div>
+        ${websiteLink}
         <div class="verdict-action-row">
           <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
           <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
@@ -812,11 +801,14 @@ function renderVerdict(resorts) {
       </div>
       <div class="verdict-right">
         <div class="verdict-body">
+          <div class="verdict-context-headline">${esc(context.headline)}</div>
           <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
           <div class="verdict-detail">${detail}</div>
           ${subList}
           ${noOrigin}
         </div>
+        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
+        ${reasonsHtml}
         ${backupHtml}
         ${top5Html}
       </div>
@@ -1657,7 +1649,6 @@ function summaryHtml(label, value, sub = '') {
 }
 
 function renderSummaryCards(resorts) {
-  if (!els.summaryCards) return;
   const count       = resorts.length;
   els.summaryCards.innerHTML = [
     dbStatHtml('Mountains',   count,                                                       'in the database'),
@@ -2110,7 +2101,6 @@ function verticalColor(v) {
 }
 
 function renderMapLegend() {
-  if (!els.mapLegend) return;
   const html = state.mapMode === 'drive' ? `
     <span class="legend-chip"><i class="legend-dot" style="background:#22b38a"></i> under 90 min</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#8ccf57"></i> 90–150 min</span>
@@ -2137,7 +2127,6 @@ function renderMapLegend() {
 
 function initMap() {
   if (map) return;
-  if (!document.getElementById('leafletMap')) return;
   map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
 }
@@ -2830,13 +2819,11 @@ function initialize() {
 
   syncPlannerControls();
   wireEvents();
-  // Apply Haversine drive estimates before first render so plannerCandidates
-  // picks nearby resorts (not quality-top-80 western mountains) from the start.
-  if (state.origin) applyHaversineEstimates();
   render();
 
   // Kick off drive time loading if origin came from URL or saved localStorage
   if (state.origin) {
+    applyHaversineEstimates();
     loadDriveTimes();
   }
 
