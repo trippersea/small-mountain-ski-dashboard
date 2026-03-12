@@ -20,7 +20,7 @@
 
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <a href="#searchSection" class="nav-brand">Where To Ski?!</a>
+      <a href="/" class="nav-brand" style="text-decoration:none">Where To Ski?!</a>
       <div class="nav-divider"></div>
       <a href="#verdictSection" class="nav-cta" id="navVerdictLink">My Pick</a>
       <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">Compare</a>
@@ -96,7 +96,7 @@
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
-          <div class="planner-summary-title"><span>What makes your perfect ski day<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>&#9998;</button></div>
+          <div class="planner-summary-title">What makes your perfect ski day<span id="plannerFromLabel"></span>?<button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>&#9998;</button></div>
           <div id="weightSummary" class="weight-summary"></div>
         </div>
 
@@ -144,7 +144,7 @@
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Trying to Avoid Crowds?</div>
+              <div class="score-control-label">Crowds</div>
               <div class="priority-btns" data-key="crowd">
                 <button class="priority-btn" data-val="1">No Issue!</button>
                 <button class="priority-btn" data-val="5">Not Ideal, But Fine</button>
@@ -294,7 +294,7 @@
               <th scope="col" class="sortable-th" data-sort="state">State <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="pass">Pass <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="planner">Score <span class="sort-indicator"></span></th>
-              <th scope="col" class="sortable-th" data-sort="storm">Projected 3-Day Snowfall <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="storm">Proj. 3-Day <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="hist7day" title="Snowfall in the past 7 days">7-Day &#10052;&#65039; <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="drive">Drive <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="vertical">Vertical <span class="sort-indicator"></span></th>
@@ -352,9 +352,12 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
       <div id="detailCard"></div>
     </section>
 
+    <!-- Map section removed -->
+
+    <!-- Database summary removed -->
+
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="resorts-national.js"></script>
   <script src="resorts.js"></script>
 </body>
