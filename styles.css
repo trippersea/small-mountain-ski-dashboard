@@ -2423,57 +2423,51 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 #app-container { transition: opacity .3s ease; }
 
-/* My Mountain Pick layout refinements */
-.verdict-pick-title-row {
+
+.verdict-pick-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
   flex-wrap: wrap;
 }
-
 .verdict-website-link--inline {
-  display: inline-flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
+  padding: 0;
+  font-size: 12px;
 }
-
-.verdict-weather-block {
-  margin-top: 14px;
-}
-
 .verdict-weather-title {
-  font-size: 14px;
-  font-weight: 800;
-  margin-bottom: 8px;
-  color: var(--text);
-}
-
-.verdict-top5--list {
-  width: 100%;
-}
-
-.verdict-top5-list {
-  display: grid;
-  gap: 10px;
-}
-
-.verdict-alt-card {
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #fff;
-  padding: 12px 14px;
-}
-
-.verdict-alt-name {
-  font-weight: 800;
-  font-size: 16px;
-  line-height: 1.25;
-}
-
-.verdict-alt-meta {
-  margin-top: 4px;
-  font-size: 13px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
   color: var(--muted);
+  margin-top: 2px;
+  margin-bottom: -2px;
+}
+.verdict-running-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.verdict-running-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.verdict-running-item:hover { border-color: var(--accent); }
+.verdict-running-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+.verdict-running-meta {
+  font-size: 12px;
+  color: #6b7280;
 }
