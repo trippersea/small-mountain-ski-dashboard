@@ -2422,14 +2422,3 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 #app-container { transition: opacity .3s ease; }
-
-
-#mapSection,
-.db-summary-section {
-  display: none !important;
-}
-
-.nav-brand { text-decoration: none; color: inherit; }
-
-.verdict-alts-footer { margin-top: 10px; }
-.verdict-compare-mountains-link { width: 100%; justify-content: center; font-size: 15px; }
