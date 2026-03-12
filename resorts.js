@@ -490,7 +490,7 @@ async function fetchConditions(resort) {
   const liftieSlug = LIFTIE_SLUGS[resort.id];
   if (liftieSlug) {
     try {
-      const res = await fetchWithTimeout(`/api/liftie?slug=${liftieSlug}`, 6000);
+      const res = await fetchWithTimeout(`/api/liftie?slug=${liftieSlug}`, {}, 6000);
       if (res.ok) {
         const json = await res.json();
         if (!json.error && json.liftsTotal != null) {
@@ -524,11 +524,11 @@ async function fetchConditions(resort) {
     return null;
   }
   try {
-    const res = await fetchWithTimeout('/api/conditions', 16000, {
+    const res = await fetchWithTimeout('/api/conditions', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ resortId: resort.id, name: resort.name, url: resort.website }),
-    });
+    }, 16000);
     const json = await res.json();
     const data = json.conditions ? { ...json.conditions, source: 'claude' } : null;
     conditionsCache.set(resort.id, { ts: Date.now(), data, source: 'claude' });
@@ -2126,13 +2126,17 @@ function renderMapLegend() {
 }
 
 function initMap() {
-  if (map) return;
+  if (map) return map;
+  if (typeof window === 'undefined' || !window.L) return null;
+  const mapEl = document.getElementById('leafletMap');
+  if (!mapEl) return null;
   map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
+  return map;
 }
 
 function updateMap(resorts) {
-  initMap();
+  if (!initMap()) return;
   renderMapLegend();
   const filtered = new Set(resorts.map(r => r.id));
   RESORTS.forEach(resort => {
