@@ -2830,11 +2830,13 @@ function initialize() {
 
   syncPlannerControls();
   wireEvents();
+  // Apply Haversine drive estimates before first render so plannerCandidates
+  // picks nearby resorts (not quality-top-80 western mountains) from the start.
+  if (state.origin) applyHaversineEstimates();
   render();
 
   // Kick off drive time loading if origin came from URL or saved localStorage
   if (state.origin) {
-    applyHaversineEstimates();
     loadDriveTimes();
   }
 
