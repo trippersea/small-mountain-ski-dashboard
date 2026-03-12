@@ -758,23 +758,19 @@ function renderVerdict(resorts) {
     const reason = backupReason(primaryItem, backup);
     const bDrive = formatDrive(backup.resort.id);
     return `<div class="verdict-backup">
+      <div class="verdict-backup-label">Also consider</div>
       <button class="verdict-backup-name verdict-resort-link" data-resort-id="${backup.resort.id}">${esc(backup.resort.name)}</button>
-      <div class="verdict-backup-meta">${esc(backup.resort.state)} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
+      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
     </div>`;
   })() : '';
 
   // Top-5 strip (skip #1 — it's already shown as top pick)
   const top5Html = top5.length > 1
     ? `<div class="verdict-top5">
-        <div class="verdict-top5-chips">${top5.slice(1, 4).map((item) => {
-          const altWeather = state.weatherCache[item.resort.id]?.data;
-          const altStorm = altWeather ? (altWeather.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-          const altTemp = altWeather?.current?.tempF;
-          return `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">${esc(item.resort.name)}${altStorm !== null ? ` · ${altStorm.toFixed(1)}\" 3-day` : ''}${Number.isFinite(altTemp) ? ` · ${Math.round(altTemp)}°` : ''}</button>`;
-        }).join('')}</div>
-        <div class="verdict-alts-footer">
-          <button class="btn btn-outline verdict-compare-mountains-link" id="verdictCompareMountainsBtn">Compare Mountains</button>
-        </div>
+        <div class="verdict-top5-label">Also in the running</div>
+        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
+          `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</button>`
+        ).join('')}</div>
       </div>`
     : '';
 
@@ -791,6 +787,7 @@ function renderVerdict(resorts) {
           <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
           <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
         </div>
+        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
         <div class="verdict-chips">
           <span class="metric-chip"><i class="bi bi-snow"></i> ${tomorrowIn.toFixed(1)}" tomorrow</span>
           <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" 3-day</span>
@@ -811,7 +808,6 @@ function renderVerdict(resorts) {
           ${subList}
           ${noOrigin}
         </div>
-        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
         ${reasonsHtml}
         ${backupHtml}
         ${top5Html}
@@ -825,15 +821,6 @@ function renderVerdict(resorts) {
     state.selectedId = resort.id;
     renderDetail({ scroll: true });
     fetchConditionsForDetail(resort);
-  });
-  const _compareMountainsBtn = $('verdictCompareMountainsBtn');
-  if (_compareMountainsBtn) _compareMountainsBtn.addEventListener('click', () => {
-    const compareIds = top5.slice(0, 4).map(item => item.resort.id);
-    state.compareSet = new Set(compareIds);
-    renderCompareTray();
-    renderComparePanel();
-    const sec = document.getElementById('comparePanel');
-    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   // Wire Also Consider + Also in the Running resort name links

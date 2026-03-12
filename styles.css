@@ -397,10 +397,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   color: #374151;
   line-height: 1.65;
   font-style: italic;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: rgba(43,109,233,.04);
 }
 .verdict-writeup--loading {
   min-height: 2.4em;
@@ -2428,12 +2424,17 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 #app-container { transition: opacity .3s ease; }
 
 
-#mapSection,
-.db-summary-section {
-  display: none !important;
+/* AI summary positioned in left column of My Mountain Pick */
+.verdict-left .verdict-writeup {
+  font-style: normal;
+  color: #374151;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-height: 72px;
 }
 
-.nav-brand { text-decoration: none; color: inherit; }
-
-.verdict-alts-footer { margin-top: 10px; }
-.verdict-compare-mountains-link { width: 100%; justify-content: center; font-size: 15px; }
+.verdict-left .verdict-writeup--loading {
+  min-height: 72px;
+}
