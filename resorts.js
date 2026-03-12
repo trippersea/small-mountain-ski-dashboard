@@ -1657,6 +1657,7 @@ function summaryHtml(label, value, sub = '') {
 }
 
 function renderSummaryCards(resorts) {
+  if (!els.summaryCards) return;
   const count       = resorts.length;
   els.summaryCards.innerHTML = [
     dbStatHtml('Mountains',   count,                                                       'in the database'),
@@ -2109,6 +2110,7 @@ function verticalColor(v) {
 }
 
 function renderMapLegend() {
+  if (!els.mapLegend) return;
   const html = state.mapMode === 'drive' ? `
     <span class="legend-chip"><i class="legend-dot" style="background:#22b38a"></i> under 90 min</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#8ccf57"></i> 90–150 min</span>
@@ -2135,6 +2137,7 @@ function renderMapLegend() {
 
 function initMap() {
   if (map) return;
+  if (!document.getElementById('leafletMap')) return;
   map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
 }
