@@ -627,47 +627,26 @@ function summitTempF(baseTempF, baseElevFt, summitElevFt) {
   return baseTempF - ((summitElevFt - baseElevFt) / 1000) * 3.5;
 }
 
-
-function getCanonicalRankedResorts(resorts) {
+function computeVerdict(resorts) {
+  // Score from the full filtered set — same pool as the table, so #1 always matches
+  // Cap verdict pool by How Far tier — day trip (180 min) by default
   const verdictCap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
-  const pool = (state.origin && verdictCap < Infinity)
+  const verdictPool = (state.origin && verdictCap < Infinity)
     ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= verdictCap; })
     : resorts;
-  const w = normalizedWeights();
+  const withWx = verdictPool.filter(r => state.weatherCache[r.id]?.data);
+  if (!withWx.length) return null;
 
-  return pool
-    .map(resort => {
-      const wx = state.weatherCache[resort.id]?.data;
-      if (!wx) return null;
-      const breakdown = plannerScoreBreakdown(resort, wx, 0, w);
-      return {
-        resort,
-        wx,
-        breakdown,
-        ski: skiScoreBreakdown(resort, wx, 0),
-        crowd: crowdForecast(resort),
-        drive: getDriveMins(resort.id) ?? null,
-        risk: weatherRiskScore(wx),
-        storm: (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0),
-        history: historyCache.get(resort.id) || null,
-      };
-    })
-    .filter(Boolean)
-    .sort((a, b) => {
-      const scoreDiff = b.breakdown.score - a.breakdown.score;
-      if (scoreDiff !== 0) return scoreDiff;
-      const stormDiff = (b.storm ?? 0) - (a.storm ?? 0);
-      if (stormDiff !== 0) return stormDiff;
-      const driveA = a.drive ?? Number.POSITIVE_INFINITY;
-      const driveB = b.drive ?? Number.POSITIVE_INFINITY;
-      if (driveA !== driveB) return driveA - driveB;
-      return a.resort.name.localeCompare(b.resort.name);
-    });
-}
-
-function computeVerdict(resorts) {
-  const ranked = getCanonicalRankedResorts(resorts);
-  if (!ranked.length) return null;
+  const w      = normalizedWeights();
+  const ranked = withWx.map(r => {
+    const wx = state.weatherCache[r.id].data;
+    return {
+      resort:    r,
+      wx,
+      breakdown: plannerScoreBreakdown(r, wx, 0, w),
+      history:   historyCache.get(r.id) || null,
+    };
+  }).sort((a, b) => b.breakdown.score - a.breakdown.score);
 
   const { resort, wx, breakdown, history } = ranked[0];
   const forecast   = wx.forecast || [];
@@ -739,8 +718,10 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText } = v;
   const brief = buildDecisionBrief(resorts);
-  const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
-  const compareIds = brief.top5.slice(0, 5).map(item => item.resort.id);
+  const runningItems = (brief.topCandidates || brief.top5 || [])
+    .filter(item => item?.resort?.id && item.resort.id !== resort.id)
+    .slice(0, 4);
+  const compareIds = [resort.id, ...runningItems.map(item => item.resort.id)];
 
   const subList = subPoints.length
     ? `<ul class="verdict-points">${subPoints.map(p => `<li>${p}</li>`).join('')}</ul>`
@@ -775,13 +756,19 @@ function renderVerdict(resorts) {
           const altDistanceText = formatDistanceFromOrigin(item.resort.id);
           return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
             <span class="verdict-running-main">
-              <span class="verdict-running-name">${esc(item.resort.name)}</span>
-              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · Drive Time: ${esc(altDriveText)}</span>
+              <span class="verdict-running-name-row">
+                <span class="verdict-running-name">${esc(item.resort.name)}</span>
+                <span class="verdict-running-pass">${esc(item.resort.passGroup || 'Independent')}</span>
+              </span>
+              <span class="verdict-running-meta">
+                <span>Distance: ${esc(altDistanceText)}</span>
+                <span>Drive: ${esc(altDriveText)}</span>
+              </span>
             </span>
           </button>`;
         }).join('')}</div>
         <div class="verdict-compare-row">
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
+          <button class="btn btn-outline verdict-action-btn verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
         </div>
       </div>`
     : '';
@@ -806,7 +793,7 @@ function renderVerdict(resorts) {
           ${noOrigin}
         </div>
         <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+          <button class="btn btn-outline verdict-action-btn verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
       </div>
       <div class="verdict-right">
@@ -1013,7 +1000,6 @@ function syncPlannerControls() {
   const w = state.weights;
   // Guard: if legacy 'advanced' skill level somehow persists, normalize to 'mixed'
   if (state.skillLevel === 'advanced') state.skillLevel = 'mixed';
-  const skillLabel = { beginner: 'Beginner (≤800ft)', mixed: 'All Levels' }[state.skillLevel] || 'All Levels';
   const passLabel  = state.passPreference === 'any' ? 'Any' : state.passPreference;
   const snowLabel   = { 1: 'Any Conditions', 5: 'Snow Matters',      10: 'Powder or Bust'    }[w.snow]  || 'Any Conditions';
   const sizeLabel   = { any: 'Any Size', small: 'Under 1,000ft', mid: '1,000–1,999ft', big: '2,000ft+' }[state.verticalFilter] || 'Any Size';
@@ -1023,8 +1009,7 @@ function syncPlannerControls() {
     `Snow: <strong>${snowLabel}</strong> · ` +
     `Vertical: <strong>${sizeLabel}</strong> · ` +
     `Price: <strong>${priceLabel}</strong> · ` +
-    `Crowds: <strong>${crowdLabel}</strong> · ` +
-    `Skill: <strong>${skillLabel}</strong>` +
+    `Crowds: <strong>${crowdLabel}</strong>` +
     (state.passPreference !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
@@ -1220,20 +1205,10 @@ function snowQualityIndex(resort, snowTotal) {
 }
 
 // ─── Skill Match Index ────────────────────────────────────────────────────────
-// Scores how well a mountain's terrain mix matches the user's skill level.
-// Skill match based on vertical drop — objective and data-reliable.
-// Beginner: mountains ≤800ft score 1.0; larger mountains decay down to 0.2.
-// All Levels (mixed): neutral — every mountain scores 1.0 so skill doesn’t affect ranking.
-function skillMatchIndex(resort) {
-  const skill = state.skillLevel || 'mixed';
-  if (skill === 'beginner') {
-    const BEGINNER_CEIL = 800; // ft — at or below this = perfect beginner mountain
-    if (resort.vertical <= BEGINNER_CEIL) return 1.0;
-    // Linear decay: 800ft → 1.0, 2500ft+ → 0.2
-    return Math.max(0.2, 1.0 - (resort.vertical - BEGINNER_CEIL) / (2500 - BEGINNER_CEIL) * 0.8);
-  }
-  // All Levels — neutral, does not favor any mountain size
-  return 1.0;
+// Retained as a zeroed compatibility hook so existing score-breakdown UI helpers
+// and saved state references do not break. Skill no longer affects ranking.
+function skillMatchIndex() {
+  return 0;
 }
 
 function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) {
@@ -1257,13 +1232,13 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     snow:         normalized.snow         * (w.snow  || 0) * 100,
     drive:        normalized.drive        * (w.drive || 0) * 100,
     size:         normalized.size         * (w.size  || 0) * 100,
-    skillMatch:   normalized.skillMatch   * 0.5 * 100,
+    skillMatch:   0,
     value:        normalized.value        * (w.value || 0) * 100,
     crowdPenalty: normalized.crowdPenalty * (w.crowd || 0) * 100,
   };
 
   let score = components.snow + components.drive + components.size +
-              components.skillMatch + components.value - components.crowdPenalty;
+              components.value - components.crowdPenalty;
 
   // Live conditions bonus — adds up to +40 pts when trails are open and base is deep
   // Only applied when conditions data is available (graceful degradation)
@@ -1294,7 +1269,6 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
       snow:         Math.round(base.components.snow),
       drive:        Math.round(base.components.drive),
       size:         Math.round(base.components.size),
-      skill:        Math.round(base.components.skillMatch),
       value:        Math.round(base.components.value),
       crowdPenalty: Math.round(base.components.crowdPenalty),
     },
@@ -1405,9 +1379,28 @@ function primaryReasons(item) {
 // ─── Decision brief (replaces findPrimaryAndBackup, adds context + top5) ─────
 function buildDecisionBrief(resorts) {
   const context = getDecisionContext();
-  const scored = getCanonicalRankedResorts(resorts);
 
-  if (!scored.length) return { context, primary: null, backup: null, top5: [] };
+  // Mirror verdict How Far tier so top5/backup come from same pool
+  const verdictCap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
+  const pool = (state.origin && verdictCap < Infinity)
+    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= verdictCap; })
+    : resorts;
+
+  const scored = pool
+    .map(resort => {
+      const wx = state.weatherCache[resort.id]?.data;
+      if (!wx) return null;
+      const ski   = skiScoreBreakdown(resort, wx, 0);
+      const crowd = crowdForecast(resort);
+      const drive = getDriveMins(resort.id) ?? null;
+      const risk  = weatherRiskScore(wx);
+      const storm = (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
+      return { resort, wx, ski, crowd, drive, risk, storm };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.ski.skiScore - a.ski.skiScore);
+
+  if (!scored.length) return { context, primary: null, backup: null, top5: [], topCandidates: [] };
 
   const primary = scored[0];
   const backup  = scored.slice(1).find(x =>
@@ -1416,7 +1409,7 @@ function buildDecisionBrief(resorts) {
     x.risk             <  primary.risk
   ) || scored[1] || null;
 
-  return { context, primary, backup, top5: scored.slice(0, 5) };
+  return { context, primary, backup, top5: scored.slice(0, 5), topCandidates: scored.slice(0, 10) };
 }
 
 function hiddenGemScore(resort) {
@@ -1668,7 +1661,6 @@ function cardBreakdown(b) {
     <div>Snow quality: <strong>+${c.snow.toFixed(1)}</strong></div>
     <div>Drive time: <strong>+${c.drive.toFixed(1)}</strong></div>
     <div>Mountain size: <strong>+${c.size.toFixed(1)}</strong></div>
-    <div>Skill match: <strong>+${c.skillMatch.toFixed(1)}</strong></div>
     <div>Value: <strong>+${c.value.toFixed(1)}</strong></div>
     <div>Crowd penalty: <strong>-${c.crowdPenalty.toFixed(1)}</strong></div>
   </div>`;
@@ -1997,7 +1989,6 @@ function renderDetail({ scroll = false } = {}) {
           <div>Snow quality: <strong>${skis.factors.snow}</strong></div>
           <div>Drive score: <strong>${skis.factors.drive}</strong></div>
           <div>Mountain size: <strong>${skis.factors.size}</strong></div>
-          <div>Skill match: <strong>${skis.factors.skill}</strong></div>
           <div>Value: <strong>${skis.factors.value}</strong></div>
           <div>Crowd penalty: <strong>−${skis.factors.crowdPenalty}</strong></div>
           ${skis.condIdx !== null ? `<div>Live conditions: <strong>${skis.condBonus > 0 ? '+' : ''}${Math.round(skis.condBonus)} pts</strong></div>` : ''}
@@ -2210,13 +2201,13 @@ async function askAI(query) {
     );
 
     const resortLink = matched
-      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">&#128269; View ${esc(data.resortName)} in table</button>`
+      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>`
       : '';
 
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-success';
       els.aiChatResult.innerHTML =
-        `<div class="ai-result-header"><strong>&#129302; AI Pick: ${esc(data.resortName)}</strong></div>` +
+        `<div class="ai-result-header"><strong>AI Pick: ${esc(data.resortName)}</strong></div>` +
         `<div class="ai-result-text">${esc(data.explanation)}</div>` +
         (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
     }
