@@ -681,43 +681,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   min-width: 12px;
 }
 
-/* ─── Skill Level Selector ───────────────────────────────────────────────── */
-.skill-control { grid-column: 1 / -1; }
-
-.skill-btn-row {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0.5rem 0 0.4rem;
-  flex-wrap: wrap;
-}
-
-.skill-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 2rem;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
-  font-family: inherit;
-  letter-spacing: 0.01em;
-}
-
-.skill-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: translateY(-1px);
-}
-
-.skill-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(43,109,233,0.25);
-}
-
 .skill-label-sub {
   font-weight: 400;
   font-size: 0.78rem;
@@ -1953,7 +1916,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 4px;
 }
 
-.qs-btns .skill-btn,
 .qs-btns .pass-pref-btn {
   font-size: 11px;
   padding: 4px 9px;
@@ -2224,16 +2186,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 5px;
 }
 
-/* Buttons inside qs-cards — slightly larger than old qs-btns */
-.qs-card-btns .skill-btn {
-  font-size: 12px;
-  padding: 5px 12px;
-  height: auto;
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  justify-content: center;
-}
 
 .qs-card-btns .pass-pref-btn {
   font-size: 12px;
@@ -2243,6 +2195,24 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   min-width: 0;
   text-align: center;
   justify-content: center;
+}
+
+.qs-card--pass-prominent {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.qs-card--pass-prominent .qs-card-title {
+  font-size: 13px;
+}
+
+.qs-card--pass-prominent .qs-card-desc {
+  font-size: 11.5px;
+}
+
+.qs-card--pass-prominent .pass-pref-btn {
+  font-size: 12.5px;
+  padding: 6px 10px;
 }
 
 /* ─── Live Conditions sub-card ───────────────────────────────────────────────── */
@@ -2422,99 +2392,3 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 #app-container { transition: opacity .3s ease; }
-
-
-/* My Mountain Pick refinements */
-.verdict-pick-heading-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.verdict-website-link--inline {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
-}
-.verdict-left .verdict-writeup {
-  margin-top: 14px;
-}
-.verdict-running-card {
-  width: 100%;
-  margin-top: 0;
-}
-.verdict-top5-header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.verdict-running-list {
-  display: grid;
-  gap: 10px;
-}
-
-.verdict-compare-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 14px;
-}
-.verdict-compare-row .verdict-compare-btn {
-  min-width: 200px;
-}
-.verdict-running-item {
-  display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 10px;
-  align-items: start;
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fff;
-  text-align: left;
-  cursor: pointer;
-}
-.verdict-running-item:hover {
-  border-color: #bfdbfe;
-  background: #f8fbff;
-}
-.verdict-running-rank {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: #e5eefc;
-  color: var(--accent);
-  font-size: 0.82rem;
-  font-weight: 800;
-}
-.verdict-running-main {
-  display: grid;
-  gap: 2px;
-}
-.verdict-running-name {
-  font-size: 0.98rem;
-  font-weight: 800;
-  color: var(--text);
-}
-.verdict-running-meta {
-  font-size: 0.82rem;
-  color: var(--muted);
-  line-height: 1.45;
-}
-@media (max-width: 700px) {
-  .verdict-top5-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .verdict-compare-row .verdict-compare-btn {
-    width: 100%;
-  }
-}
