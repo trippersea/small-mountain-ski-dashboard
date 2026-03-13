@@ -684,48 +684,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   min-width: 12px;
 }
 
-/* ─── Skill Level Selector ───────────────────────────────────────────────── */
-.skill-control { grid-column: 1 / -1; }
-
-.skill-btn-row {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0.5rem 0 0.4rem;
-  flex-wrap: wrap;
-}
-
-.skill-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 2rem;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
-  font-family: inherit;
-  letter-spacing: 0.01em;
-}
-
-.skill-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: translateY(-1px);
-}
-
-.skill-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(43,109,233,0.25);
-}
-
-.skill-label-sub {
-  font-weight: 400;
-  font-size: 0.78rem;
-  margin-left: 0.3rem;
-}
 
 /* Score breakdown tooltip in table — show normalized factors */
 .score-bar-wrap {
@@ -1933,15 +1891,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 /* Hide slider description text in compact mode */
 .planner-col .score-desc { display: none; }
 
-/* Quick Settings rows */
-.quick-settings {
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
 
 .qs-row {
   display: flex;
@@ -1964,12 +1913,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 4px;
 }
 
-.qs-btns .skill-btn,
-.qs-btns .pass-pref-btn {
-  font-size: 11px;
-  padding: 4px 9px;
-  height: auto;
-}
 
 .qs-hint {
   font-size: 10px;
@@ -2192,15 +2135,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   font-weight: 700;
 }
 
-/* ─── Prominent Quick Settings cards ─────────────────────────────────────────── */
-.quick-settings {
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
 
 .qs-card {
   background: var(--panel-2);
@@ -2235,16 +2169,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 5px;
 }
 
-/* Buttons inside qs-cards — slightly larger than old qs-btns */
-.qs-card-btns .skill-btn {
-  font-size: 12px;
-  padding: 5px 12px;
-  height: auto;
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  justify-content: center;
-}
 
 .qs-card-btns .pass-pref-btn {
   font-size: 12px;
