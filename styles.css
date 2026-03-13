@@ -2498,3 +2498,50 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   font-weight: 700;
   line-height: 1;
 }
+
+/* ─── Surgical fixes: My Pass spacing + Also In the Running organization ─── */
+.planner-pass-priority {
+  margin-bottom: 14px;
+}
+
+.planner-pass-priority .qs-card {
+  padding-bottom: 12px;
+}
+
+.planner-pass-priority + .preset-row {
+  margin-top: 2px;
+}
+
+.verdict-right .verdict-backup {
+  display: block;
+  padding: 14px 15px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.verdict-right .verdict-backup + .verdict-backup {
+  margin-top: 10px;
+}
+
+.verdict-right .verdict-backup-label {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 7px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--muted);
+}
+
+.verdict-right .verdict-backup-name {
+  display: block;
+  width: 100%;
+  text-align: left;
+  line-height: 1.25;
+}
+
+.verdict-right .verdict-backup-meta {
+  margin-top: 6px;
+}
