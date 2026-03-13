@@ -627,26 +627,47 @@ function summitTempF(baseTempF, baseElevFt, summitElevFt) {
   return baseTempF - ((summitElevFt - baseElevFt) / 1000) * 3.5;
 }
 
-function computeVerdict(resorts) {
-  // Score from the full filtered set — same pool as the table, so #1 always matches
-  // Cap verdict pool by How Far tier — day trip (180 min) by default
+
+function getCanonicalRankedResorts(resorts) {
   const verdictCap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
-  const verdictPool = (state.origin && verdictCap < Infinity)
+  const pool = (state.origin && verdictCap < Infinity)
     ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= verdictCap; })
     : resorts;
-  const withWx = verdictPool.filter(r => state.weatherCache[r.id]?.data);
-  if (!withWx.length) return null;
+  const w = normalizedWeights();
 
-  const w      = normalizedWeights();
-  const ranked = withWx.map(r => {
-    const wx = state.weatherCache[r.id].data;
-    return {
-      resort:    r,
-      wx,
-      breakdown: plannerScoreBreakdown(r, wx, 0, w),
-      history:   historyCache.get(r.id) || null,
-    };
-  }).sort((a, b) => b.breakdown.score - a.breakdown.score);
+  return pool
+    .map(resort => {
+      const wx = state.weatherCache[resort.id]?.data;
+      if (!wx) return null;
+      const breakdown = plannerScoreBreakdown(resort, wx, 0, w);
+      return {
+        resort,
+        wx,
+        breakdown,
+        ski: skiScoreBreakdown(resort, wx, 0),
+        crowd: crowdForecast(resort),
+        drive: getDriveMins(resort.id) ?? null,
+        risk: weatherRiskScore(wx),
+        storm: (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0),
+        history: historyCache.get(resort.id) || null,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      const scoreDiff = b.breakdown.score - a.breakdown.score;
+      if (scoreDiff !== 0) return scoreDiff;
+      const stormDiff = (b.storm ?? 0) - (a.storm ?? 0);
+      if (stormDiff !== 0) return stormDiff;
+      const driveA = a.drive ?? Number.POSITIVE_INFINITY;
+      const driveB = b.drive ?? Number.POSITIVE_INFINITY;
+      if (driveA !== driveB) return driveA - driveB;
+      return a.resort.name.localeCompare(b.resort.name);
+    });
+}
+
+function computeVerdict(resorts) {
+  const ranked = getCanonicalRankedResorts(resorts);
+  if (!ranked.length) return null;
 
   const { resort, wx, breakdown, history } = ranked[0];
   const forecast   = wx.forecast || [];
@@ -718,10 +739,8 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText } = v;
   const brief = buildDecisionBrief(resorts);
-  const runningItems = (brief.topCandidates || brief.top5 || [])
-    .filter(item => item?.resort?.id && item.resort.id !== resort.id)
-    .slice(0, 4);
-  const compareIds = [resort.id, ...runningItems.map(item => item.resort.id)];
+  const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
+  const compareIds = brief.top5.slice(0, 5).map(item => item.resort.id);
 
   const subList = subPoints.length
     ? `<ul class="verdict-points">${subPoints.map(p => `<li>${p}</li>`).join('')}</ul>`
@@ -756,19 +775,13 @@ function renderVerdict(resorts) {
           const altDistanceText = formatDistanceFromOrigin(item.resort.id);
           return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
             <span class="verdict-running-main">
-              <span class="verdict-running-name-row">
-                <span class="verdict-running-name">${esc(item.resort.name)}</span>
-                <span class="verdict-running-pass">${esc(item.resort.passGroup || 'Independent')}</span>
-              </span>
-              <span class="verdict-running-meta">
-                <span>Distance: ${esc(altDistanceText)}</span>
-                <span>Drive: ${esc(altDriveText)}</span>
-              </span>
+              <span class="verdict-running-name">${esc(item.resort.name)}</span>
+              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · Drive Time: ${esc(altDriveText)}</span>
             </span>
           </button>`;
         }).join('')}</div>
         <div class="verdict-compare-row">
-          <button class="btn btn-outline verdict-action-btn verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
+          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
         </div>
       </div>`
     : '';
@@ -793,7 +806,7 @@ function renderVerdict(resorts) {
           ${noOrigin}
         </div>
         <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-action-btn verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
       </div>
       <div class="verdict-right">
@@ -1392,28 +1405,9 @@ function primaryReasons(item) {
 // ─── Decision brief (replaces findPrimaryAndBackup, adds context + top5) ─────
 function buildDecisionBrief(resorts) {
   const context = getDecisionContext();
+  const scored = getCanonicalRankedResorts(resorts);
 
-  // Mirror verdict How Far tier so top5/backup come from same pool
-  const verdictCap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
-  const pool = (state.origin && verdictCap < Infinity)
-    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= verdictCap; })
-    : resorts;
-
-  const scored = pool
-    .map(resort => {
-      const wx = state.weatherCache[resort.id]?.data;
-      if (!wx) return null;
-      const ski   = skiScoreBreakdown(resort, wx, 0);
-      const crowd = crowdForecast(resort);
-      const drive = getDriveMins(resort.id) ?? null;
-      const risk  = weatherRiskScore(wx);
-      const storm = (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-      return { resort, wx, ski, crowd, drive, risk, storm };
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.ski.skiScore - a.ski.skiScore);
-
-  if (!scored.length) return { context, primary: null, backup: null, top5: [], topCandidates: [] };
+  if (!scored.length) return { context, primary: null, backup: null, top5: [] };
 
   const primary = scored[0];
   const backup  = scored.slice(1).find(x =>
@@ -1422,7 +1416,7 @@ function buildDecisionBrief(resorts) {
     x.risk             <  primary.risk
   ) || scored[1] || null;
 
-  return { context, primary, backup, top5: scored.slice(0, 5), topCandidates: scored.slice(0, 10) };
+  return { context, primary, backup, top5: scored.slice(0, 5) };
 }
 
 function hiddenGemScore(resort) {
@@ -2216,13 +2210,13 @@ async function askAI(query) {
     );
 
     const resortLink = matched
-      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>`
+      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">&#128269; View ${esc(data.resortName)} in table</button>`
       : '';
 
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-success';
       els.aiChatResult.innerHTML =
-        `<div class="ai-result-header"><strong>AI Pick: ${esc(data.resortName)}</strong></div>` +
+        `<div class="ai-result-header"><strong>&#129302; AI Pick: ${esc(data.resortName)}</strong></div>` +
         `<div class="ai-result-text">${esc(data.explanation)}</div>` +
         (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
     }
