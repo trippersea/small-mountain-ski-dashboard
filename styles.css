@@ -681,49 +681,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   min-width: 12px;
 }
 
-/* ─── Skill Level Selector ───────────────────────────────────────────────── */
-.skill-control { grid-column: 1 / -1; }
-
-.skill-btn-row {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0.5rem 0 0.4rem;
-  flex-wrap: wrap;
-}
-
-.skill-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 2rem;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
-  font-family: inherit;
-  letter-spacing: 0.01em;
-}
-
-.skill-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: translateY(-1px);
-}
-
-.skill-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(43,109,233,0.25);
-}
-
-.skill-label-sub {
-  font-weight: 400;
-  font-size: 0.78rem;
-  margin-left: 0.3rem;
-}
-
 /* Score breakdown tooltip in table — show normalized factors */
 .score-bar-wrap {
   display: flex;
@@ -1742,38 +1699,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 .mob-website-btn:hover { background: #deeaff; }
 
-/* ─── Verdict backup mountain ────────────────────────────────────────────────── */
-.verdict-backup {
-  padding: 10px 12px;
-  background: #f8faff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-.verdict-backup-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--muted);
-  margin-bottom: 3px;
-}
-.verdict-backup-name {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--accent);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-.verdict-backup-name:hover { opacity: .75; }
-.verdict-backup-meta {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 3px;
-  line-height: 1.5;
-}
-
 /* ─── Verdict: context headline + reason chips + top-5 strip ─────────────────── */
 .verdict-context-headline {
   font-size: 11px;
@@ -1958,25 +1883,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   flex-shrink: 0;
 }
 
-.qs-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.qs-btns .skill-btn,
-.qs-btns .pass-pref-btn {
-  font-size: 11px;
-  padding: 4px 9px;
-  height: auto;
-}
-
-.qs-hint {
-  font-size: 10px;
-  color: var(--muted);
-  opacity: .7;
-}
-
 /* Right column — verdict */
 .verdict-col {
   padding: 20px 22px;
@@ -2039,7 +1945,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 /* Reasons chips move to right panel — remove top margin since gap handles spacing */
 .verdict-right .verdict-reasons { margin-top: 0; }
-.verdict-right .verdict-backup  { margin-top: 0; }
 .verdict-right .verdict-top5    { margin-top: 0; }
 
 /* Collapse to single col on narrow screens */
@@ -2235,17 +2140,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 5px;
 }
 
-/* Buttons inside qs-cards — slightly larger than old qs-btns */
-.qs-card-btns .skill-btn {
-  font-size: 12px;
-  padding: 5px 12px;
-  height: auto;
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  justify-content: center;
-}
-
+/* Buttons inside qs-cards */
 .qs-card-btns .pass-pref-btn {
   font-size: 12px;
   padding: 5px 10px;
@@ -2254,81 +2149,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   min-width: 0;
   text-align: center;
   justify-content: center;
-}
-
-/* ─── Live Conditions sub-card ───────────────────────────────────────────────── */
-.conditions-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 10px;
-}
-.cond-stat {
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 8px;
-  text-align: center;
-}
-.cond-stat-value {
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.1;
-  color: var(--text);
-}
-.cond-stat-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  margin-top: 3px;
-}
-.cond-surface {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 4px;
-}
-.cond-notes {
-  font-style: italic;
-  line-height: 1.5;
-}
-.cond-date {
-  opacity: .6;
-}
-
-/* Loading spinner */
-.conditions-loading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-}
-.conditions-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  flex-shrink: 0;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Conditions badge under resort name in table */
-.cond-table-badge {
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 220px;
-}
-
-@media (max-width: 700px) {
-  .conditions-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ─── Info tooltip (Storm Chaser etc.) ──────────────────────────────────── */
