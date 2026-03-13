@@ -718,7 +718,9 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText } = v;
   const brief = buildDecisionBrief(resorts);
-  const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
+  const runningItems = (brief.topCandidates || brief.top5 || [])
+    .filter(item => item?.resort?.id && item.resort.id !== resort.id)
+    .slice(0, 4);
   const compareIds = [resort.id, ...runningItems.map(item => item.resort.id)];
 
   const subList = subPoints.length
@@ -1411,7 +1413,7 @@ function buildDecisionBrief(resorts) {
     .filter(Boolean)
     .sort((a, b) => b.ski.skiScore - a.ski.skiScore);
 
-  if (!scored.length) return { context, primary: null, backup: null, top5: [] };
+  if (!scored.length) return { context, primary: null, backup: null, top5: [], topCandidates: [] };
 
   const primary = scored[0];
   const backup  = scored.slice(1).find(x =>
@@ -1420,7 +1422,7 @@ function buildDecisionBrief(resorts) {
     x.risk             <  primary.risk
   ) || scored[1] || null;
 
-  return { context, primary, backup, top5: scored.slice(0, 5) };
+  return { context, primary, backup, top5: scored.slice(0, 5), topCandidates: scored.slice(0, 10) };
 }
 
 function hiddenGemScore(resort) {
