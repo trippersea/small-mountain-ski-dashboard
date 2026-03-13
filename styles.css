@@ -393,13 +393,10 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 /* AI write-up slot — sits between verdict headline and reason chips */
 .verdict-writeup {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #243447;
-  line-height: 1.7;
-  font-style: normal;
-  letter-spacing: -.01em;
+  font-size: 0.88rem;
+  color: #374151;
+  line-height: 1.65;
+  font-style: italic;
 }
 .verdict-writeup--loading {
   min-height: 2.4em;
@@ -684,6 +681,48 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   min-width: 12px;
 }
 
+/* ─── Skill Level Selector ───────────────────────────────────────────────── */
+.skill-control { grid-column: 1 / -1; }
+
+.skill-btn-row {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.4rem;
+  flex-wrap: wrap;
+}
+
+.skill-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 2rem;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+
+.skill-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.skill-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(43,109,233,0.25);
+}
+
+.skill-label-sub {
+  font-weight: 400;
+  font-size: 0.78rem;
+  margin-left: 0.3rem;
+}
 
 /* Score breakdown tooltip in table — show normalized factors */
 .score-bar-wrap {
@@ -1803,14 +1842,9 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 .planner-verdict-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  grid-template-columns: 1fr 1.15fr;
   gap: 16px;
   align-items: stretch;
-}
-
-.planner-verdict-row > .planner-col,
-.planner-verdict-row > .verdict-col {
-  min-width: 0;
 }
 
 /* Left column — planner */
@@ -1830,12 +1864,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-}
-
-.planner-title-copy {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
 }
 
 /* "from [city]" label within the title */
@@ -1878,14 +1906,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   padding: 5px 10px;
 }
 
-.planner-pass-priority {
-  margin-bottom: 12px;
-}
-
-.qs-card-pass-priority {
-  background: linear-gradient(180deg, #f7fbff, #eef5ff);
-}
-
 /* Sliders — 2-col inside left panel */
 .planner-col .score-grid {
   grid-template-columns: 1fr 1fr;
@@ -1902,6 +1922,15 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 /* Hide slider description text in compact mode */
 .planner-col .score-desc { display: none; }
 
+/* Quick Settings rows */
+.quick-settings {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
 
 .qs-row {
   display: flex;
@@ -1924,6 +1953,11 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 4px;
 }
 
+.qs-btns .pass-pref-btn {
+  font-size: 11px;
+  padding: 4px 9px;
+  height: auto;
+}
 
 .qs-hint {
   font-size: 10px;
@@ -2031,7 +2065,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 /* Collapse to single column on narrower screens */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .planner-verdict-row {
     grid-template-columns: 1fr;
   }
@@ -2146,6 +2180,15 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   font-weight: 700;
 }
 
+/* ─── Prominent Quick Settings cards ─────────────────────────────────────────── */
+.quick-settings {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
 
 .qs-card {
   background: var(--panel-2);
@@ -2180,6 +2223,16 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 5px;
 }
 
+/* Buttons inside qs-cards — slightly larger than old qs-btns */
+.qs-card-btns .skill-btn {
+  font-size: 12px;
+  padding: 5px 12px;
+  height: auto;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  justify-content: center;
+}
 
 .qs-card-btns .pass-pref-btn {
   font-size: 12px;
@@ -2390,123 +2443,127 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 
-.verdict-pick-heading-row {
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PLANNER / VERDICT SOURCE-OF-TRUTH OVERRIDES
+   Keep these rules together so future UI tweaks do not reintroduce old planner
+   layouts, missing title spacing, or mismatched card sizing.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.planner-verdict-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.planner-verdict-row > .planner-col,
+.planner-verdict-row > .verdict-col {
+  min-width: 0;
+}
+
+.planner-col,
+.verdict-col {
+  padding: 24px;
+}
+
+.planner-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.planner-col-header,
+.verdict-col .verdict-header {
+  min-height: 72px;
+}
+
+.planner-col .planner-summary-title,
+.verdict-col .verdict-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.planner-col .planner-summary-title {
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.planner-title-copy {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.planner-title-text,
+.planner-title-qmark {
+  color: var(--text);
+}
+
+.planner-col .weight-summary,
+.verdict-col .verdict-header p {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.planner-pass-priority {
+  margin-bottom: 14px;
+}
+
+.qs-card-pass-priority {
+  background: linear-gradient(180deg, #f7fbff, #eef5ff);
+}
+
+.qs-card-header {
+  display: flex;
+  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.verdict-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-}
-
-.verdict-action-row .verdict-action-btn {
-  flex: 1;
-}
-
-.verdict-compare-row {
-  display: flex;
-  margin-top: 14px;
-}
-
-.verdict-compare-row .verdict-action-btn {
-  width: 100%;
-}
-
-.verdict-running-card {
-  width: 100%;
-}
-
-.verdict-top5-header {
   margin-bottom: 10px;
 }
 
-.verdict-running-list {
-  display: grid;
-  gap: 10px;
-}
-
-.verdict-running-item {
-  width: 100%;
-  display: block;
-  text-align: left;
-  padding: 14px 15px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(255,255,255,.78);
-  box-shadow: var(--shadow-sm);
-  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
-}
-
-.verdict-running-item:hover {
-  transform: translateY(-1px);
-  border-color: rgba(43,109,233,.35);
-  box-shadow: 0 8px 20px rgba(43,109,233,.10);
-  background: #fff;
-}
-
-.verdict-running-main {
-  display: grid;
-  gap: 7px;
-}
-
-.verdict-running-name-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.verdict-running-name {
-  font-size: 15px;
+.qs-card-title {
+  font-size: 14px;
   font-weight: 800;
   color: var(--text);
-  line-height: 1.25;
 }
 
-.verdict-running-pass {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: rgba(43,109,233,.08);
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.verdict-running-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.qs-card-desc {
   font-size: 12px;
-  color: #5b6b80;
-  line-height: 1.5;
+  line-height: 1.4;
+  color: var(--muted);
 }
 
-.verdict-running-meta span {
-  display: inline-flex;
+.planner-col .preset-row {
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
-@media (max-width: 700px) {
-  .verdict-running-meta {
-    flex-direction: column;
-    gap: 4px;
+.planner-col .preset-btn {
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+.planner-col .score-control-label {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 760px) {
+  .planner-col,
+  .verdict-col {
+    padding: 20px;
+  }
+
+  .planner-col .planner-summary-title,
+  .verdict-col .verdict-header h2 {
+    font-size: 18px;
   }
 }
