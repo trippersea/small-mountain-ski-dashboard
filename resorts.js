@@ -11,8 +11,8 @@ const SCORING = Object.freeze({
   // Snow — live forecast + historical reliability blend
   SNOW_SCALE:             8,  // inches — 8"+ = max live forecast score
   SNOW_AVG_MAX:         300,  // Stowe — highest historical avg in dataset
-  SNOW_FORECAST_WEIGHT: 0.6,  // live forecast counts 60%
-  SNOW_RELIABILITY_WEIGHT: 0.4, // avgSnowfall reliability counts 40%
+  SNOW_FORECAST_WEIGHT: 0.95, // live forecast counts 95%
+  SNOW_RELIABILITY_WEIGHT: 0.05, // avgSnowfall reliability counts 5%
   // Drive
   DRIVE_SCALE:          300,  // minutes — 5 hrs = zero drive score
   DRIVE_DEFAULT:        0.5,  // fallback when no origin set
@@ -882,7 +882,7 @@ function syncPlannerControls() {
   if (state.skillLevel === 'advanced') state.skillLevel = 'mixed';
   const skillLabel = { beginner: 'Beginner (≤800ft)', mixed: 'All Levels' }[state.skillLevel] || 'All Levels';
   const passLabel  = state.passPreference === 'any' ? 'Any' : state.passPreference;
-  const snowLabel   = { 1: 'Any Conditions', 5: 'Snow Matters',      10: 'Powder or Bust'    }[w.snow]  || 'Any Conditions';
+  const snowLabel   = { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser' }[w.snow] || 'Any Snow';
   const sizeLabel   = { any: 'Any Size', small: 'Under 1,000ft', mid: '1,000–1,999ft', big: '2,000ft+' }[state.verticalFilter] || 'Any Size';
   const priceLabel  = { 1: '$150+ Fine',      5: '$100–$149',         10: 'Under $100'        }[w.value] || 'Any Price';
   const crowdLabel  = { 1: 'No Issue!',       5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
@@ -1077,11 +1077,26 @@ function mountainSizeIndex(resort) {
 }
 
 // ─── Snow Quality Index ───────────────────────────────────────────────────────
-// Blends live 3-day forecast snow (60%) with historical annual avg (40%).
-// This fixes the core reliability gap: on a no-storm day, Stowe (300" avg) now
-// beats Yawgoo RI (60" avg) on snow score — as it should.
+// Uses a 95/5 blend of live forecast snow and historical snowfall. The user
+// snow setting now maps to explicit forecast targets so the labels match the
+// ranking logic:
+//   1  → Any Snow      (0"+ target)
+//   5  → 3"+ Matters  (3" target)
+//   10 → 6"+ Chaser   (6" target)
+function snowPreferenceTarget() {
+  const pref = Number(state.weights?.snow || 1);
+  if (pref >= 10) return 6;
+  if (pref >= 5) return 3;
+  return 0;
+}
+
 function snowQualityIndex(resort, snowTotal) {
-  const live        = Math.min(1, snowTotal / SCORING.SNOW_SCALE);
+  const target      = snowPreferenceTarget();
+  const adjusted    = target > 0 ? Math.max(0, snowTotal - target) : snowTotal;
+  const liveScale   = Math.max(1, SCORING.SNOW_SCALE - target);
+  const live        = target === 0
+    ? Math.min(1, snowTotal / SCORING.SNOW_SCALE)
+    : (snowTotal >= target ? Math.min(1, adjusted / liveScale) : 0);
   const reliability = Math.min(1, resort.avgSnowfall / SCORING.SNOW_AVG_MAX);
   return live * SCORING.SNOW_FORECAST_WEIGHT + reliability * SCORING.SNOW_RELIABILITY_WEIGHT;
 }
@@ -2173,7 +2188,7 @@ const debouncedRender = debounce(render, 50);
 function wireEvents() {
   // ── Slider info tooltips ──────────────────────────────────────────────────────
   const SLIDER_TIPS = {
-    snow:   'Uses a 95/5 blend of live forecast snow and historical snowfall. High = forecast-driven picks matter much more than long-term climatology.',
+    snow:   'Uses a 95/5 blend of live forecast snow and historical snowfall. Snow mode now matches explicit forecast targets: Any Snow = any forecast, 3"+ Matters = 3 inches or more, 6"+ Chaser = 6 inches or more.',
     size:   'Composite of vertical drop, skiable acres, and longest run. High = big destination mountains rank above small hills.',
     value:  'Rewards lower ticket prices. High = budget-friendly independents outrank expensive resorts regardless of snow.',
     crowds: 'Penalizes busy mountains based on pass network, city proximity, and price. High = quiet independents rise to the top.',
