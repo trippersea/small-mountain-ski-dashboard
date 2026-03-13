@@ -648,6 +648,9 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 @media (max-width: 760px) {
   .container { width: calc(100vw - 14px); }
+  .planner-col { padding: 22px 18px 20px; }
+  .planner-col .planner-summary-title { font-size: 22px; }
+  .planner-col .weight-summary { font-size: 14px; }
   .top-nav-inner { padding-inline: 6px; }
   .hero { padding: 18px; }
   .score-grid, .card-grid, .metric-grid { grid-template-columns: 1fr; }
@@ -1842,29 +1845,33 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 .planner-verdict-row {
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 16px;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 18px;
   align-items: stretch;
 }
 
 /* Left column — planner */
 .planner-col {
-  padding: 24px 26px 22px;
+  padding: 28px 30px 26px;
 }
 
 .planner-col-header {
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
 .planner-col .planner-summary-title {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  line-height: 1.2;
+  line-height: 1.18;
+}
+
+.planner-title-copy {
+  display: inline;
 }
 
 /* "from [city]" label within the title */
@@ -1893,38 +1900,54 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 .planner-col .weight-summary {
-  font-size: 13px;
+  font-size: 15px;
   margin-bottom: 0;
-  line-height: 1.45;
+  line-height: 1.55;
+  max-width: 62ch;
 }
 
 .planner-col .preset-row {
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin: 8px auto 20px;
   justify-content: center;
   align-items: center;
+  width: 100%;
 }
 
 .planner-col .preset-btn {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  padding: 8px 14px;
-  min-width: 92px;
+  padding: 10px 18px;
+  min-width: 104px;
   text-align: center;
 }
 
 /* Sliders — 2-col inside left panel */
 .planner-col .score-grid {
   grid-template-columns: 1fr 1fr;
-  gap: 14px 20px;
+  gap: 18px 22px;
   margin-bottom: 0;
 }
 
 .planner-col .score-control label,
 .planner-col .score-control-label {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.planner-col .score-control {
+  padding: 16px 16px 14px;
+}
+
+.planner-col .priority-btn {
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+.planner-col .slider-hint {
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 /* Hide slider description text in compact mode */
