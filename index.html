@@ -97,16 +97,32 @@
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
-          <div class="planner-summary-title">What makes your perfect ski day <span id="plannerFromLabel"></span>?<button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>&#9998;</button></div>
+          <div class="planner-summary-title"><span class="planner-title-copy">What makes your perfect ski day<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>&#9998;</button></div>
           <div id="weightSummary" class="weight-summary"></div>
+        </div>
+
+        <div class="planner-pass-priority">
+          <div class="qs-card qs-card-pass-priority">
+            <div class="qs-card-header">
+              <span class="qs-card-title">My Pass</span>
+              <span class="qs-card-desc">Boosts mountains on your season pass</span>
+            </div>
+            <div class="qs-card-btns pass-pref-row">
+              <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
+              <button class="pass-pref-btn epic-btn"  data-pass="Epic">Epic</button>
+              <button class="pass-pref-btn ikon-btn"  data-pass="Ikon">Ikon</button>
+              <button class="pass-pref-btn indy-btn"  data-pass="Indy">Indy</button>
+              <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
+            </div>
+          </div>
         </div>
 
         <!-- Presets -->
         <div class="preset-row">
-          <button class="preset-btn active" data-preset="balanced">&#9878;&#65039; Balanced</button>
-          <button class="preset-btn" data-preset="powder">&#10052;&#65039; Powder</button>
-          <button class="preset-btn" data-preset="family">&#128106; Family</button>
-          <button class="preset-btn" data-preset="cheap">&#128176; Budget</button>
+          <button class="preset-btn active" data-preset="balanced">Balanced</button>
+          <button class="preset-btn" data-preset="powder">Powder</button>
+          <button class="preset-btn" data-preset="family">Family</button>
+          <button class="preset-btn" data-preset="cheap">Budget</button>
         </div>
 
         <!-- Priority pickers (Option B: 3-state Low/Medium/High, Option C: Drive removed) -->
@@ -155,37 +171,6 @@
             </div>
 
           </div>
-        </div>
-
-        <!-- Quick Settings: prominent cards for Skill / Pass / Day Trip -->
-        <div class="quick-settings">
-
-          <div class="qs-card">
-            <div class="qs-card-header">
-              <span class="qs-card-title">Skill Level</span>
-              <span class="qs-card-desc">Beginner = mountains ≤800ft vertical · All Levels = everything</span>
-            </div>
-            <div class="qs-card-btns">
-              <button class="skill-btn" data-skill="beginner">&#128994; Beginner</button>
-              <button class="skill-btn active" data-skill="mixed">&#128309; All Levels</button>
-            </div>
-          </div>
-
-          <div class="qs-card">
-            <div class="qs-card-header">
-              <span class="qs-card-title">My Pass</span>
-              <span class="qs-card-desc">Boosts mountains on your season pass</span>
-            </div>
-            <div class="qs-card-btns pass-pref-row">
-              <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
-              <button class="pass-pref-btn epic-btn"  data-pass="Epic">Epic</button>
-              <button class="pass-pref-btn ikon-btn"  data-pass="Ikon">Ikon</button>
-              <button class="pass-pref-btn indy-btn"  data-pass="Indy">Indy</button>
-              <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
-            </div>
-          </div>
-
-
         </div>
 
       </section>
