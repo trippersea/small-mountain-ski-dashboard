@@ -1803,9 +1803,14 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 .planner-verdict-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   gap: 16px;
   align-items: stretch;
+}
+
+.planner-verdict-row > .planner-col,
+.planner-verdict-row > .verdict-col {
+  min-width: 0;
 }
 
 /* Left column — planner */
@@ -2026,7 +2031,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 /* Collapse to single column on narrower screens */
-@media (max-width: 900px) {
+@media (max-width: 760px) {
   .planner-verdict-row {
     grid-template-columns: 1fr;
   }
