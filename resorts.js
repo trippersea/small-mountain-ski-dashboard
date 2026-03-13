@@ -754,13 +754,19 @@ function renderVerdict(resorts) {
           const altDistanceText = formatDistanceFromOrigin(item.resort.id);
           return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
             <span class="verdict-running-main">
-              <span class="verdict-running-name">${esc(item.resort.name)}</span>
-              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · Drive Time: ${esc(altDriveText)}</span>
+              <span class="verdict-running-name-row">
+                <span class="verdict-running-name">${esc(item.resort.name)}</span>
+                <span class="verdict-running-pass">${esc(item.resort.passGroup || 'Independent')}</span>
+              </span>
+              <span class="verdict-running-meta">
+                <span>Distance: ${esc(altDistanceText)}</span>
+                <span>Drive: ${esc(altDriveText)}</span>
+              </span>
             </span>
           </button>`;
         }).join('')}</div>
         <div class="verdict-compare-row">
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
+          <button class="btn btn-outline verdict-action-btn verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
         </div>
       </div>`
     : '';
@@ -785,7 +791,7 @@ function renderVerdict(resorts) {
           ${noOrigin}
         </div>
         <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+          <button class="btn btn-outline verdict-action-btn verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
       </div>
       <div class="verdict-right">
@@ -2208,13 +2214,13 @@ async function askAI(query) {
     );
 
     const resortLink = matched
-      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">&#128269; View ${esc(data.resortName)} in table</button>`
+      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>`
       : '';
 
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-success';
       els.aiChatResult.innerHTML =
-        `<div class="ai-result-header"><strong>&#129302; AI Pick: ${esc(data.resortName)}</strong></div>` +
+        `<div class="ai-result-header"><strong>AI Pick: ${esc(data.resortName)}</strong></div>` +
         `<div class="ai-result-text">${esc(data.explanation)}</div>` +
         (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
     }
