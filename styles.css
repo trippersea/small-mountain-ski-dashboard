@@ -648,9 +648,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 @media (max-width: 760px) {
   .container { width: calc(100vw - 14px); }
-  .planner-col { padding: 22px 18px 20px; }
-  .planner-col .planner-summary-title { font-size: 22px; }
-  .planner-col .weight-summary { font-size: 14px; }
   .top-nav-inner { padding-inline: 6px; }
   .hero { padding: 18px; }
   .score-grid, .card-grid, .metric-grid { grid-template-columns: 1fr; }
@@ -1845,39 +1842,45 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 .planner-verdict-row {
   display: grid;
-  grid-template-columns: 1.08fr 0.92fr;
-  gap: 18px;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 16px;
   align-items: stretch;
 }
 
 /* Left column — planner */
 .planner-col {
-  padding: 28px 30px 26px;
+  padding: 20px 22px 18px;
 }
 
 .planner-col-header {
-  margin-bottom: 22px;
+  margin-bottom: 14px;
 }
 
 .planner-col .planner-summary-title {
-  font-size: 26px;
+  font-size: 17px;
   font-weight: 800;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  line-height: 1.18;
-}
-
-.planner-title-copy {
-  display: inline;
 }
 
 /* "from [city]" label within the title */
 #plannerFromLabel {
   color: var(--accent);
   font-weight: 800;
+}
+
+.planner-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planner-title-text {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 /* Small pencil edit button */
@@ -1900,54 +1903,31 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 .planner-col .weight-summary {
-  font-size: 15px;
+  font-size: 11px;
   margin-bottom: 0;
-  line-height: 1.55;
-  max-width: 62ch;
 }
 
 .planner-col .preset-row {
-  gap: 12px;
-  margin: 8px auto 20px;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
 .planner-col .preset-btn {
-  font-size: 14px;
-  font-weight: 700;
-  padding: 10px 18px;
-  min-width: 104px;
-  text-align: center;
+  font-size: 11px;
+  padding: 5px 10px;
 }
 
 /* Sliders — 2-col inside left panel */
 .planner-col .score-grid {
   grid-template-columns: 1fr 1fr;
-  gap: 18px 22px;
+  gap: 10px 16px;
   margin-bottom: 0;
 }
 
 .planner-col .score-control label,
 .planner-col .score-control-label {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.planner-col .score-control {
-  padding: 16px 16px 14px;
-}
-
-.planner-col .priority-btn {
   font-size: 12px;
-  padding: 8px 12px;
-}
-
-.planner-col .slider-hint {
-  font-size: 11px;
-  line-height: 1.45;
+  margin-bottom: 4px;
 }
 
 /* Hide slider description text in compact mode */
@@ -2474,30 +2454,47 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   line-height: 1.45;
 }
 
-.planner-col .slider-hint {
-  font-size: 12px;
-  line-height: 1.45;
-  margin-top: 6px;
+
+/* Source-of-truth fixes: keep planner heading on one clean line and match verdict action buttons */
+.planner-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
 }
 
-.planner-col .priority-btns {
-  gap: 8px;
+.planner-title-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
-.planner-col .priority-btn {
-  font-size: 12px;
-  padding: 8px 12px;
+.planner-title-copy {
+  white-space: nowrap;
 }
 
-.planner-pass-priority .qs-card-title {
-  font-size: 15px;
+#plannerFromLabel {
+  display: inline;
+  white-space: nowrap;
+  margin-left: 0.32em;
 }
 
-.planner-pass-priority .qs-card-desc {
-  font-size: 12px;
+.planner-title-qmark {
+  display: inline;
+  white-space: nowrap;
 }
 
-.planner-pass-priority .pass-pref-btn {
-  font-size: 12px;
-  padding: 7px 11px;
+.verdict-share-btn,
+.verdict-compare-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
 }
