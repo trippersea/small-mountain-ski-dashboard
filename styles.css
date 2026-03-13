@@ -2512,27 +2512,38 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   margin-top: 2px;
 }
 
+.verdict-right .verdict-running-list {
+  display: grid;
+  gap: 12px;
+}
+
 .verdict-right .verdict-backup {
   display: block;
-  padding: 14px 15px;
-  background: rgba(255,255,255,.92);
+  width: 100%;
+  padding: 14px 16px;
+  background: #fff;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 16px;
+  box-shadow: none;
 }
 
 .verdict-right .verdict-backup + .verdict-backup {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .verdict-right .verdict-backup-label {
   display: inline-flex;
   align-items: center;
-  margin-bottom: 7px;
-  padding: 3px 8px;
+  justify-content: center;
+  margin-bottom: 10px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--panel-2);
   color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .verdict-right .verdict-backup-name {
@@ -2540,8 +2551,10 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   width: 100%;
   text-align: left;
   line-height: 1.25;
+  font-weight: 700;
 }
 
 .verdict-right .verdict-backup-meta {
-  margin-top: 6px;
+  margin-top: 7px;
+  line-height: 1.45;
 }
