@@ -11,8 +11,8 @@ const SCORING = Object.freeze({
   // Snow — live forecast + historical reliability blend
   SNOW_SCALE:             8,  // inches — 8"+ = max live forecast score
   SNOW_AVG_MAX:         300,  // Stowe — highest historical avg in dataset
-  SNOW_FORECAST_WEIGHT: 0.95, // live forecast counts 95%
-  SNOW_RELIABILITY_WEIGHT: 0.05, // avgSnowfall reliability counts 5%
+  SNOW_FORECAST_WEIGHT: 0.6,  // live forecast counts 60%
+  SNOW_RELIABILITY_WEIGHT: 0.4, // avgSnowfall reliability counts 40%
   // Drive
   DRIVE_SCALE:          300,  // minutes — 5 hrs = zero drive score
   DRIVE_DEFAULT:        0.5,  // fallback when no origin set
@@ -987,6 +987,11 @@ function syncPlannerControls() {
     });
   }
 
+  // Sync skill buttons
+  document.querySelectorAll('.skill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.skill === state.skillLevel);
+  });
+
   // Sync pass preference buttons
   document.querySelectorAll('.pass-pref-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.pass === state.passPreference);
@@ -1190,9 +1195,9 @@ function mountainSizeIndex(resort) {
 }
 
 // ─── Snow Quality Index ───────────────────────────────────────────────────────
-// Heavily favors live 3-day forecast snow (95%) with only a small historical
-// average snowfall backstop (5%). This keeps the tool focused on where to ski
-// tomorrow or this weekend rather than long-term climatology.
+// Blends live 3-day forecast snow (60%) with historical annual avg (40%).
+// This fixes the core reliability gap: on a no-storm day, Stowe (300" avg) now
+// beats Yawgoo RI (60" avg) on snow score — as it should.
 function snowQualityIndex(resort, snowTotal) {
   const live        = Math.min(1, snowTotal / SCORING.SNOW_SCALE);
   const reliability = Math.min(1, resort.avgSnowfall / SCORING.SNOW_AVG_MAX);
@@ -2599,6 +2604,18 @@ function wireEvents() {
       } else {
         state.weights[key] = Number(btn.dataset.val);
       }
+      state.preset = 'custom';
+      savePlannerState();
+      syncPlannerControls();
+      pushUrlDebounced();
+      debouncedRender();
+    });
+  });
+
+  // Skill level buttons
+  document.querySelectorAll('.skill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.skillLevel = btn.dataset.skill;
       state.preset = 'custom';
       savePlannerState();
       syncPlannerControls();
