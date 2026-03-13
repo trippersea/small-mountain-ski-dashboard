@@ -1433,51 +1433,60 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 /* AI Result States */
 .ai-chat-result {
   margin-top: 10px;
-  border-radius: 10px;
-  padding: 11px 14px;
-  font-size: 13px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
   transition: all .2s;
 }
 .ai-chat-loading {
-  background: rgba(0,0,0,.04);
+  background: rgba(27,42,58,.05);
   color: var(--muted);
   display: flex;
   align-items: center;
   gap: 10px;
-  font-style: italic;
 }
 .ai-chat-success {
-  background: rgba(34,179,138,.12);
-  border: 1px solid rgba(34,179,138,.25);
+  background: linear-gradient(180deg, rgba(43,109,233,.08), rgba(34,179,138,.08));
+  border: 1px solid rgba(43,109,233,.18);
+  color: var(--text);
 }
 .ai-chat-error {
-  background: rgba(217,91,91,.12);
-  border: 1px solid rgba(217,91,91,.25);
-  color: #fca5a5;
+  background: rgba(217,91,91,.08);
+  border: 1px solid rgba(217,91,91,.22);
+  color: #8b2e2e;
 }
 .ai-result-header {
-  font-weight: 700;
-  color: #e2eaf8;
-  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -.01em;
 }
 .ai-result-text {
-  color: rgba(226,234,248,.85);
-  line-height: 1.6;
+  color: #314256;
+  line-height: 1.65;
+  font-weight: 500;
 }
 .ai-result-actions {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 .ai-result-jump-btn {
-  background: rgba(43,109,233,.2);
-  border: 1px solid rgba(43,109,233,.45);
+  background: #fff;
+  border: 1px solid rgba(43,109,233,.28);
   border-radius: 999px;
-  color: #93c5fd;
-  font: 600 12px/1 inherit;
-  padding: 6px 14px;
+  color: var(--accent);
+  font: 700 12px/1 'DM Sans', system-ui, sans-serif;
+  padding: 8px 14px;
   cursor: pointer;
-  transition: background .12s;
+  transition: background .12s, border-color .12s, color .12s;
 }
-.ai-result-jump-btn:hover { background: rgba(43,109,233,.35); }
+.ai-result-jump-btn:hover {
+  background: #edf4ff;
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 /* Spinner */
 .ai-spinner {
@@ -1870,17 +1879,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 #plannerFromLabel {
   color: var(--accent);
   font-weight: 800;
-}
-
-.planner-summary-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.planner-title-text {
-  display: inline-block;
-  white-space: nowrap;
 }
 
 /* Small pencil edit button */
@@ -2436,8 +2434,9 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 .verdict-compare-row {
   display: flex;
-  justify-content: center;
-  margin-top: 12px;
+  justify-content: flex-start;
+  margin-top: auto;
+  padding-top: 12px;
 }
 .verdict-running-list {
   display: flex;
@@ -2454,36 +2453,23 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   line-height: 1.45;
 }
 
+.verdict-action-row,
+.verdict-compare-row {
+  align-items: center;
+}
 
-/* Source-of-truth fixes: keep planner heading on one clean line and match verdict action buttons */
-.planner-summary-title {
+/* Source-of-truth fixes: Ask AI readability + verdict action alignment */
+.verdict-running-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
+}
+
+.verdict-action-row,
+.verdict-compare-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: nowrap;
-}
-
-.planner-title-text {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0;
-  flex-wrap: nowrap;
-  min-width: 0;
-}
-
-.planner-title-copy {
-  white-space: nowrap;
-}
-
-#plannerFromLabel {
-  display: inline;
-  white-space: nowrap;
-  margin-left: 0.32em;
-}
-
-.planner-title-qmark {
-  display: inline;
-  white-space: nowrap;
 }
 
 .verdict-share-btn,
@@ -2491,72 +2477,10 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   min-height: 40px;
+  min-width: 164px;
   padding: 9px 16px;
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
-}
-
-/* ─── Surgical fixes: My Pass spacing + Also In the Running organization ─── */
-.planner-pass-priority {
-  margin-bottom: 14px;
-}
-
-.planner-pass-priority .qs-card {
-  padding-bottom: 12px;
-}
-
-.planner-pass-priority + .preset-row {
-  margin-top: 2px;
-}
-
-.verdict-right .verdict-running-list {
-  display: grid;
-  gap: 12px;
-}
-
-.verdict-right .verdict-running-item.verdict-resort-link {
-  display: block;
-  width: 100%;
-  padding: 14px 16px;
-  text-align: left;
-  background: #fff;
-  border: 1.5px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-sm);
-  color: var(--text);
-  text-decoration: none;
-  transition: border-color .12s, background .12s, box-shadow .12s, transform .08s;
-}
-
-.verdict-right .verdict-running-item.verdict-resort-link:hover {
-  border-color: var(--accent);
-  background: #f8fbff;
-  box-shadow: 0 8px 20px rgba(30,60,100,.10);
-  transform: translateY(-1px);
-}
-
-.verdict-right .verdict-running-main {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-}
-
-.verdict-right .verdict-running-name {
-  display: block;
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.2;
-  color: var(--text);
-}
-
-.verdict-right .verdict-running-meta {
-  display: block;
-  margin-top: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--muted);
 }
