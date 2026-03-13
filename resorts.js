@@ -490,7 +490,7 @@ async function fetchConditions(resort) {
   const liftieSlug = LIFTIE_SLUGS[resort.id];
   if (liftieSlug) {
     try {
-      const res = await fetchWithTimeout(`/api/liftie?slug=${liftieSlug}`, {}, 6000);
+      const res = await fetchWithTimeout(`/api/liftie?slug=${liftieSlug}`, 6000);
       if (res.ok) {
         const json = await res.json();
         if (!json.error && json.liftsTotal != null) {
@@ -524,11 +524,11 @@ async function fetchConditions(resort) {
     return null;
   }
   try {
-    const res = await fetchWithTimeout('/api/conditions', {
+    const res = await fetchWithTimeout('/api/conditions', 16000, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ resortId: resort.id, name: resort.name, url: resort.website }),
-    }, 16000);
+    });
     const json = await res.json();
     const data = json.conditions ? { ...json.conditions, source: 'claude' } : null;
     conditionsCache.set(resort.id, { ts: Date.now(), data, source: 'claude' });
@@ -716,26 +716,19 @@ function renderVerdict(resorts) {
     return;
   }
 
-  const { tier, icon, headline, detail, subPoints,
-          resort, breakdown, driveText,
-          tomorrowIn, stormTotal, histTotal, histDays } = v;
-
+  const { tier, headline, detail, subPoints, resort, driveText } = v;
   const brief = buildDecisionBrief(resorts);
-  const { context, backup, top5 } = brief;
-  const primaryItem = brief.primary;
+  const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
+  const compareIds = [resort.id, ...runningItems.map(item => item.resort.id)];
 
-  const histChip  = histTotal !== null
-    ? `<span class="metric-chip"><i class="bi bi-bar-chart-fill"></i> ${histTotal}" last 7 days</span>` : '';
-  const driveChip = driveText
-    ? `<span class="metric-chip"><i class="bi bi-car-front"></i> ${driveText}</span>` : '';
-  const subList   = subPoints.length
-    ? `<ul class="verdict-points">${subPoints.map(p => `<li>${p}</li>`).join('')}</ul>` : '';
-  const spark     = histDays ? snowSparkline(histDays) : '';
-  const noOrigin  = !state.origin
-    ? `<p class="verdict-no-origin"><i class="bi bi-geo-alt"></i> Set your starting location for drive times and distance-weighted picks.</p>` : '';
-  // How Far Will You Go? tier banner
+  const subList = subPoints.length
+    ? `<ul class="verdict-points">${subPoints.map(p => `<li>${p}</li>`).join('')}</ul>`
+    : '';
+  const noOrigin = !state.origin
+    ? `<p class="verdict-no-origin"><i class="bi bi-geo-alt"></i> Set your starting location for drive times and distance-weighted picks.</p>`
+    : '';
+
   const _tierLabels = ['Day Trip (≤3h)', 'Weekend (≤6h)', 'All Distances'];
-  const _tierWarning = state.howFar === 2 ? ' — best pick may be far away' : '';
   const driveBanner = state.origin
     ? `<div class="verdict-drive-banner${state.howFar === 2 ? ' verdict-drive-banner--off' : ''}">
         <span class="vdb-label"><i class="bi bi-geo-alt-fill"></i> How Far Will You Go?</span>
@@ -747,35 +740,29 @@ function renderVerdict(resorts) {
        </div>`
     : '';
 
-  // Editorial reasons for the top pick
-  const reasons = primaryItem ? primaryReasons(primaryItem) : [];
-  const reasonsHtml = reasons.length
-    ? `<div class="verdict-reasons">${reasons.map(r => `<span class="verdict-reason-chip"><span class="chip-text">${esc(r)}</span></span>`).join('')}</div>`
-    : '';
-
-  // Backup mountain block
-  const backupHtml = backup ? (() => {
-    const reason = backupReason(primaryItem, backup);
-    const bDrive = formatDrive(backup.resort.id);
-    return `<div class="verdict-backup">
-      <div class="verdict-backup-label">Also consider</div>
-      <button class="verdict-backup-name verdict-resort-link" data-resort-id="${backup.resort.id}">${esc(backup.resort.name)}</button>
-      <div class="verdict-backup-meta">${esc(backup.resort.state)} · Ski Score ${backup.ski.skiScore}${backup.ski.passBonus ? ' <span class="pass-bonus-badge">+pass</span>' : ''} · ${reason}${bDrive !== '—' ? ' · ' + bDrive : ''}</div>
-    </div>`;
-  })() : '';
-
-  // Top-5 strip (skip #1 — it's already shown as top pick)
-  const top5Html = top5.length > 1
-    ? `<div class="verdict-top5">
-        <div class="verdict-top5-label">Also in the running</div>
-        <div class="verdict-top5-chips">${top5.slice(1).map((item, i) =>
-          `<button class="metric-chip verdict-resort-link" data-resort-id="${item.resort.id}">#${i + 2} ${esc(item.resort.name)} · ${item.ski.skiScore}</button>`
-        ).join('')}</div>
-      </div>`
-    : '';
-
   const websiteLink = resort.website
-    ? `<a class="verdict-website-link" href="${resort.website}" target="_blank" rel="noopener">Visit ${esc(resort.name)} ↗</a>`
+    ? `<a class="verdict-website-link verdict-website-link--inline" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>`
+    : '';
+
+  const runningHtml = runningItems.length
+    ? `<div class="verdict-top5 verdict-running-card">
+        <div class="verdict-top5-header">
+          <div class="verdict-top5-label">Also In the Running</div>
+        </div>
+        <div class="verdict-running-list">${runningItems.map(item => {
+          const altDriveText = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : 'TBD';
+          const altDistanceText = formatDistanceFromOrigin(item.resort.id);
+          return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
+            <span class="verdict-running-main">
+              <span class="verdict-running-name">${esc(item.resort.name)}</span>
+              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · Drive Time: ${esc(altDriveText)}</span>
+            </span>
+          </button>`;
+        }).join('')}</div>
+        <div class="verdict-compare-row">
+          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
+        </div>
+      </div>`
     : '';
 
   els.verdictCard.innerHTML = `
@@ -784,33 +771,25 @@ function renderVerdict(resorts) {
       <div class="verdict-left">
         <div class="verdict-pick-block">
           <div class="verdict-pick-label">Top pick</div>
-          <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup)} · Score ${breakdown.baseScore}</div>
+          <div class="verdict-pick-heading-row">
+            <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
+            ${websiteLink}
+          </div>
+          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup || 'Independent')} · Drive Time: ${esc(driveText || 'TBD')}</div>
         </div>
-        <div class="verdict-chips">
-          <span class="metric-chip"><i class="bi bi-snow"></i> ${tomorrowIn.toFixed(1)}" tomorrow</span>
-          <span class="metric-chip"><i class="bi bi-cloud-snow"></i> ${stormTotal.toFixed(1)}" 3-day</span>
-          ${histChip}
-          ${driveChip}
-        </div>
-        ${websiteLink}
-        <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn">Compare</button>
-          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
-        </div>
-      </div>
-      <div class="verdict-right">
+        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
         <div class="verdict-body">
-          <div class="verdict-context-headline">${esc(context.headline)}</div>
           <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
           <div class="verdict-detail">${detail}</div>
           ${subList}
           ${noOrigin}
         </div>
-        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
-        ${reasonsHtml}
-        ${backupHtml}
-        ${top5Html}
+        <div class="verdict-action-row">
+          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+        </div>
+      </div>
+      <div class="verdict-right">
+        ${runningHtml}
       </div>
     </div>`;
 
@@ -823,7 +802,6 @@ function renderVerdict(resorts) {
     fetchConditionsForDetail(resort);
   });
 
-  // Wire Also Consider + Also in the Running resort name links
   els.verdictCard.querySelectorAll('.verdict-resort-link[data-resort-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = RESORTS.find(x => x.id === btn.dataset.resortId);
@@ -834,26 +812,29 @@ function renderVerdict(resorts) {
     });
   });
 
-  // Kick off AI write-up (non-blocking — injects into slot when ready)
   injectVerdictWriteup(v);
 
   const _compareBtn = $('verdictCompareBtn');
   if (_compareBtn) _compareBtn.addEventListener('click', () => {
-    // howFar already applied to filteredResorts — no extra activation needed
+    const ids = (_compareBtn.dataset.compareIds || '').split(',').map(s => s.trim()).filter(Boolean);
+    state.compareSet = new Set(ids);
+    renderCompareTray();
+    renderCompareTable(filteredResorts());
     const sec = document.getElementById('compareSection');
     if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-  // Wire How Far tier buttons in verdict banner
+
   [0,1,2].forEach(i => {
     const btn = document.querySelector(`.vdb-tier-btn[data-tier="${i}"]`);
     if (btn) btn.addEventListener('click', () => {
       state.howFar = i;
-      // Keep toolbar in sync
       const tb = document.getElementById('howFarFilter');
       if (tb) tb.value = String(i);
       const resorts = filteredResorts();
       renderVerdict(resorts);
       renderCompareTable(resorts);
+      savePlannerState();
+      syncPlannerControls();
     });
   });
 }
@@ -1079,6 +1060,17 @@ function formatDriveMins(mins, estimated = false) {
 }
 function formatDrive(resortId) {               // always pass a resort ID (audit #16, #33)
   return formatDriveMins(getDriveMins(resortId), isDriveEstimated(resortId));
+}
+function formatDistanceFromOrigin(resortId) {
+  const resort = RESORTS.find(r => r.id === resortId);
+  if (!resort || !state.origin) return 'Distance: TBD';
+  let km = null;
+  const cached = state.driveCache[resortId];
+  if (cached && typeof cached === 'object' && typeof cached.km === 'number') km = cached.km;
+  else if (typeof resort.lat === 'number' && typeof resort.lon === 'number') km = haversineKm(state.origin.lat, state.origin.lon, resort.lat, resort.lon);
+  if (km == null || !Number.isFinite(km)) return 'Distance: TBD';
+  const miles = Math.round(km * 0.621371);
+  return `Distance: ${miles} mi`;
 }
 
 // ─── Haversine / drive estimates ─────────────────────────────────────────────
@@ -1649,14 +1641,13 @@ function summaryHtml(label, value, sub = '') {
 }
 
 function renderSummaryCards(resorts) {
-  if (!els.summaryCards) return;
-  const count = resorts.length;
+  const count       = resorts.length;
   els.summaryCards.innerHTML = [
-    dbStatHtml('Mountains',   count,                                                     'in the database'),
-    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
-    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,        'resorts'),
-    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,        'resorts'),
-    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length, 'resorts'),
+    dbStatHtml('Mountains',   count,                                                       'in the database'),
+    dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,          'resorts'),
+    dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,          'resorts'),
+    dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,          'resorts'),
+    dbStatHtml('Independent', resorts.filter(r => r.passGroup === 'Independent').length,   'resorts'),
   ].join('');
 }
 
@@ -2127,17 +2118,13 @@ function renderMapLegend() {
 }
 
 function initMap() {
-  if (map) return map;
-  if (typeof window === 'undefined' || !window.L) return null;
-  const mapEl = document.getElementById('leafletMap');
-  if (!mapEl) return null;
+  if (map) return;
   map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
-  return map;
 }
 
 function updateMap(resorts) {
-  if (!initMap()) return;
+  initMap();
   renderMapLegend();
   const filtered = new Set(resorts.map(r => r.id));
   RESORTS.forEach(resort => {
