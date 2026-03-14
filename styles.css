@@ -92,9 +92,6 @@ body {
 #compareSection,
 #mapSection,
 #detailSection,
-#bestDaySection {
-  scroll-margin-top: 58px;
-}
 .section-header {
   display: flex; justify-content: space-between; align-items: flex-start;
   gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
@@ -684,48 +681,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   min-width: 12px;
 }
 
-/* ─── Skill Level Selector ───────────────────────────────────────────────── */
-.skill-control { grid-column: 1 / -1; }
-
-.skill-btn-row {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0.5rem 0 0.4rem;
-  flex-wrap: wrap;
-}
-
-.skill-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 2rem;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
-  font-family: inherit;
-  letter-spacing: 0.01em;
-}
-
-.skill-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: translateY(-1px);
-}
-
-.skill-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(43,109,233,0.25);
-}
-
-.skill-label-sub {
-  font-weight: 400;
-  font-size: 0.78rem;
-  margin-left: 0.3rem;
-}
 
 /* Score breakdown tooltip in table — show normalized factors */
 .score-bar-wrap {
@@ -750,19 +705,10 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   max-width: 380px;
 }
 
-.table-search-icon {
-  position: absolute;
-  left: 0.65rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 0.85rem;
-  opacity: 0.6;
-}
 
 .table-search-input {
   width: 100%;
-  padding: 0.45rem 0.75rem 0.45rem 2rem;
+  padding: 0.45rem 0.75rem;
   border: 1.5px solid var(--border);
   border-radius: 0.5rem;
   background: var(--surface);
@@ -923,7 +869,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   background: var(--accent);
   color: #fff;
 }
-.planner-toggle-icon { font-size: 14px; }
 
 /* Collapsed state: tighten padding */
 .planner-collapsed { padding-bottom: 14px !important; }
@@ -1984,7 +1929,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 4px;
 }
 
-.qs-btns .skill-btn,
 .qs-btns .pass-pref-btn {
   font-size: 11px;
   padding: 4px 9px;
@@ -2256,16 +2200,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 /* Buttons inside qs-cards — slightly larger than old qs-btns */
-.qs-card-btns .skill-btn {
-  font-size: 12px;
-  padding: 5px 12px;
-  height: auto;
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  justify-content: center;
-}
-
 .qs-card-btns .pass-pref-btn {
   font-size: 12px;
   padding: 5px 10px;

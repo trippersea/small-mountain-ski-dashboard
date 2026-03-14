@@ -9,10 +9,10 @@ const SCORING = Object.freeze({
   ACRES_CEILING:       2500,  // normalization ceiling — national p80
   LONGEST_RUN_CEILING:  4.0,  // miles — Killington 6mi gets capped, fair spread
   // Snow — live forecast + historical reliability blend
-  SNOW_SCALE:             8,  // inches — 8"+ = max live forecast score
+  SNOW_SCALE:             8,  // inches — 8"+ = max live forecast score in Any Snow mode
   SNOW_AVG_MAX:         300,  // Stowe — highest historical avg in dataset
-  SNOW_FORECAST_WEIGHT: 0.95, // live forecast counts 95%
-  SNOW_RELIABILITY_WEIGHT: 0.05, // avgSnowfall reliability counts 5%
+  SNOW_FORECAST_WEIGHT: 0.95, // forecast drives tomorrow's decision
+  SNOW_RELIABILITY_WEIGHT: 0.05, // small backstop so reliable regions still get some credit
   // Drive
   DRIVE_SCALE:          300,  // minutes — 5 hrs = zero drive score
   DRIVE_DEFAULT:        0.5,  // fallback when no origin set
@@ -54,6 +54,7 @@ const PRESETS = {
   cheap:    { snow:5, drive:4, size:1, value:10, crowd:1  },
 };
 
+
 // Table sort state — dir tracked separately from URL state
 let tableSort = { col: 'planner', dir: 'desc' };
 
@@ -75,6 +76,7 @@ const esc = s => String(s)
 // ─── History cache (outside sealed state — grows dynamically) ────────────────
 const historyCache = new Map(); // resortId → { total, days:[{date,snow}], ts }
 const HIST_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
 
 function loadSavedWeights() {
   // Always start with balanced defaults — do not restore from localStorage
@@ -119,8 +121,11 @@ const state = Object.seal({
   sortBy:       'planner',
   nightOnly:    false,
   howFar:       0,        // index into HOW_FAR_TIERS (0=DayTrip, 1=Weekend, 2=All)
+  maxPrice:     0,        // legacy — kept for URL compat
   priceRange:   0,        // index into PRICE_RANGES (0 = any)
   verticalFilter: 'any',   // 'any' | 'small' (<1000ft) | 'mid' (1000-1999ft) | 'big' (2000ft+)
+  tempBucket:   'any',     // 'any' | 'ideal' | 'spring' | 'cold'
+  windBucket:   'any',     // 'any' | 'light' | 'breezy' | 'holds'
   selectedId:   null,
   origin:       null,
   driveCache:   {},
@@ -179,9 +184,6 @@ const els = {
   aiChatBtn:           $('aiChatBtn'),
   aiChatResult:        $('aiChatResult'),
   // Best Day section
-  bestDaySection:      $('bestDaySection'),
-  bestDayGrid:         $('bestDayGrid'),
-  bestDayLastUpdated:  $('bestDayLastUpdated'),
 };
 
 // Cached querySelectorAll results — avoid re-querying on every syncPlannerControls (audit #14)
@@ -221,6 +223,7 @@ function serializeState() {
   if (state.sortBy      !== 'planner') p.set('sort',  state.sortBy);
   if (state.nightOnly)                 p.set('night', '1');
   if (state.howFar > 0)                p.set('howfar', state.howFar);
+  if (state.maxPrice > 0)              p.set('price', state.maxPrice);
   if (state.skiDays  !== 5)            p.set('days',  state.skiDays);
   if (state.origin) {
     p.set('lat', state.origin.lat.toFixed(4));
@@ -260,6 +263,7 @@ function applyUrlState() {
   if (p.has('sort'))  state.sortBy    = p.get('sort');
   if (p.has('night'))   state.nightOnly   = true;
   if (p.has('howfar'))  state.howFar = Math.min(2, Number(p.get('howfar')) || 0);
+  if (p.has('price')) { state.maxPrice = Number(p.get('price')) || 0; state.priceRange = 0; } // legacy URL compat
   if (p.has('days'))  state.skiDays   = Math.max(1, Number(p.get('days')) || 5);
 
   const lat = parseFloat(p.get('lat'));
@@ -396,6 +400,9 @@ function saveHistoryCache() {
   } catch (e) { /* quota exceeded */ }
 }
 
+
+
+
 // Inline SVG bar sparkline — one bar per day, colour-coded by intensity
 function snowSparkline(days) {
   if (!days?.length) return '';
@@ -460,17 +467,17 @@ function computeVerdict(resorts) {
   let tier, icon, headline, detail, subPoints = [];
 
   if (rainLikely) {
-    tier = 'bad'; icon = '<i class="bi bi-x-circle" style="color:var(--danger)"></i>'; headline = 'Skip this weekend';
+    tier = 'bad'; icon = ''; headline = 'Skip this weekend';
     detail = `Temperatures look too warm — rain likely above ${resort.baseElevation.toLocaleString()} ft at ${esc(resort.name)}. Check back when a colder system moves through.`;
   } else if (stormTotal >= 6 || tomorrowIn >= 4) {
-    tier = 'great'; icon = '<i class="bi bi-check-circle-fill" style="color:#059669"></i>'; headline = 'Go — excellent weekend for skiing';
+    tier = 'great'; icon = ''; headline = 'Go — excellent weekend for skiing';
     detail = tomorrowIn >= 4
       ? `${tomorrowIn.toFixed(1)}" expected tomorrow at ${esc(resort.name)}. That's a powder day.`
       : `${stormTotal.toFixed(1)}" forecast over the next 3 days. This is what you wait all season for.`;
     if (coldSnow) subPoints.push('Temperatures are ideal — light, dry snow expected');
     if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week, so the base is deep`);
   } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6)) {
-    tier = 'good'; icon = '<i class="bi bi-check-circle" style="color:var(--accent)"></i>'; headline = 'Decent conditions — worth the trip';
+    tier = 'good'; icon = ''; headline = 'Decent conditions — worth the trip';
     if (stormTotal >= 2) {
       detail = `${stormTotal.toFixed(1)}" in the 3-day forecast at ${esc(resort.name)}. Not a powder day, but fresh snow makes a real difference.`;
     } else if (histTotal !== null && histTotal >= 6) {
@@ -480,13 +487,13 @@ function computeVerdict(resorts) {
     }
     if (warmCaution) subPoints.push('Snow may be dense/wet — get out early for the best runs');
   } else if (stormTotal >= 0.5) {
-    tier = 'marginal'; icon = '<i class="bi bi-dash-circle" style="color:var(--accent-warm)"></i>'; headline = 'Marginal — manage your expectations';
+    tier = 'marginal'; icon = ''; headline = 'Marginal — manage your expectations';
     detail = stormTotal >= 0.5
       ? `Only ${stormTotal.toFixed(1)}" in the forecast at ${esc(resort.name)}. You're mostly working with the existing base — groomed runs will be fine, off-piste less so.`
       : `No new snow expected at ${esc(resort.name)}. Conditions will depend on the existing groomed base.`;
     subPoints.push('Stick to groomed trails, get out early, avoid south-facing terrain');
   } else {
-    tier = 'bad'; icon = '<i class="bi bi-x-circle" style="color:var(--danger)"></i>'; headline = 'Probably skip this one';
+    tier = 'bad'; icon = ''; headline = 'Probably skip this one';
     detail = `Less than half an inch forecast and limited recent snowfall at ${esc(resort.name)}. Not a great weekend for conditions.`;
   }
 
@@ -502,8 +509,7 @@ function renderVerdict(resorts) {
   const v = computeVerdict(resorts);
   if (!v) {
     els.verdictCard.innerHTML = `<div class="verdict-placeholder">
-      <div class="verdict-placeholder-icon">⏳</div>
-      <div class="verdict-placeholder-text">Loading weather for your top picks…</div>
+      <div class="verdict-placeholder-text">Loading forecast data for your top picks…</div>
     </div>`;
     return;
   }
@@ -517,13 +523,13 @@ function renderVerdict(resorts) {
     ? `<ul class="verdict-points">${subPoints.map(p => `<li>${p}</li>`).join('')}</ul>`
     : '';
   const noOrigin = !state.origin
-    ? `<p class="verdict-no-origin"><i class="bi bi-geo-alt"></i> Set your starting location for drive times and distance-weighted picks.</p>`
+    ? `<p class="verdict-no-origin">Set your starting location for drive times and distance-weighted picks.</p>`
     : '';
 
   const _tierLabels = ['Day Trip (≤3h)', 'Weekend (≤6h)', 'All Distances'];
   const driveBanner = state.origin
     ? `<div class="verdict-drive-banner${state.howFar === 2 ? ' verdict-drive-banner--off' : ''}">
-        <span class="vdb-label"><i class="bi bi-geo-alt-fill"></i> How Far Will You Go?</span>
+        <span class="vdb-label">How Far Will You Go?</span>
         <span class="vdb-tiers">
           ${[0,1,2].map(i =>
             `<button class="vdb-tier-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}">${_tierLabels[i]}</button>`
@@ -533,7 +539,7 @@ function renderVerdict(resorts) {
     : '';
 
   const websiteLink = resort.website
-    ? `<a class="verdict-website-link verdict-website-link--inline" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>`
+    ? `<a class="verdict-website-link verdict-website-link--inline" href="${resort.website}" target="_blank" rel="noopener">Website</a>`
     : '';
 
   const runningHtml = runningItems.length
@@ -637,19 +643,25 @@ const verdictWriteupCache = new Map();
 function buildWriteupPrompt(v, origin) {
   const { resort, breakdown, tomorrowIn, stormTotal, histTotal, driveText, tier } = v;
   const originStr = origin?.label ? `from ${origin.label}` : '';
-  const driveStr  = driveText     ? `${driveText} away`     : 'distance unknown';
+  const driveStr  = driveText ? `${driveText} away` : 'distance unknown';
   const histStr   = histTotal !== null ? `${histTotal}" of snow in the last 7 days` : null;
   const scoreStr  = breakdown.baseScore;
+  const wx = state.weatherCache[resort.id]?.data;
+  const tomorrow = tomorrowForecast(wx);
+  const weatherStr = tomorrow
+    ? `tomorrow low ${tomorrow.lo}°F, high ${tomorrow.hi}°F, wind ${tomorrow.wind || 0} mph`
+    : null;
 
   const facts = [
     `${tomorrowIn.toFixed(1)}" forecast tomorrow, ${stormTotal.toFixed(1)}" over 3 days`,
+    weatherStr,
     driveText ? `${driveStr}` : null,
     histStr,
     resort.vertical ? `${resort.vertical.toLocaleString()}ft vertical` : null,
     resort.passGroup !== 'Independent' ? `${resort.passGroup} pass access` : null,
   ].filter(Boolean).join('; ');
 
-  return `You are a ski trip advisor. In 1–2 natural, confident sentences explain why ${resort.name} in ${resort.state} is the top pick for this weekend${originStr ? ' for someone ' + originStr : ''}. Base it only on these facts: ${facts}. Ski score is ${scoreStr}/100. Verdict tier: ${tier}. Write like a knowledgeable friend giving a straight opinion — no filler phrases like "Looking at the data" or "Based on the information". Do not mention the score number.`;
+  return `You are a ski trip advisor. In 1–2 natural, confident sentences explain why ${resort.name} in ${resort.state} is the top pick for this ski day${originStr ? ' for someone ' + originStr : ''}. Base it only on these facts: ${facts}. Ski score is ${scoreStr}/100. Verdict tier: ${tier}. Write like a knowledgeable friend giving a straight opinion — no filler phrases like "Looking at the data" or "Based on the information". It is okay to say that a day with little or no new snow can still be a great ski day when temperatures are in the ideal range and winds stay light. Do not mention the score number.`;
 }
 
 // Fetch a write-up; returns null immediately if already loading (non-blocking)
@@ -725,15 +737,17 @@ function snapToPriority(v) {
   const n = Number(v) || 1;
   if (n <= 2) return 1;
   if (n <= 7) return 5;
-  return 10;
+  if (n <= 12) return 10;
+  return 15;
 }
 
 // Normalize all user-adjustable weights to priority scale (called after loading from URL/localStorage)
 function normalizeWeightsToPriority() {
-  ['snow', 'value', 'crowd'].forEach(k => {
+  state.weights.snow = snapToPriority(state.weights.snow);
+  ['value', 'crowd'].forEach(k => {
     state.weights[k] = snapToPriority(state.weights[k]);
+    if (state.weights[k] === 15) state.weights[k] = 10;
   });
-  // size is now a hard filter (state.verticalFilter), not a weight — keep weights.size neutral
   state.weights.size = 5;
 }
 
@@ -750,8 +764,6 @@ function updatePlannerOriginLabel() {
 }
 
 function syncPlannerControls() {
-  // Sync priority-btn active state for snow, size, value, crowd
-  // Drive is not user-adjustable (removed per Option C) — held at preset value
   ['snow', 'value', 'crowd'].forEach(key => {
     const group = document.querySelector(`.priority-btns[data-key="${key}"]`);
     if (!group) return;
@@ -760,37 +772,32 @@ function syncPlannerControls() {
       btn.classList.toggle('active', Number(btn.dataset.val) === val);
     });
   });
-  // Vertical filter buttons — string values, not numeric weights
   const vertGroup = document.querySelector('.priority-btns[data-key="size"]');
-  if (vertGroup) {
-    vertGroup.querySelectorAll('.priority-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.val === state.verticalFilter);
-    });
-  }
-
-
-  // Sync pass preference buttons
-  document.querySelectorAll('.pass-pref-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.pass === state.passPreference);
-  });
+  if (vertGroup) vertGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.verticalFilter));
+  const tempGroup = document.querySelector('.priority-btns[data-key="temp"]');
+  if (tempGroup) tempGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.tempBucket));
+  const windGroup = document.querySelector('.priority-btns[data-key="wind"]');
+  if (windGroup) windGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.windBucket));
+  document.querySelectorAll('.pass-pref-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.pass === state.passPreference));
 
   const w = state.weights;
   const passLabel  = state.passPreference === 'any' ? 'Any' : state.passPreference;
-  const snowLabel   = { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser' }[w.snow] || 'Any Snow';
-  const sizeLabel   = { any: 'Any Size', small: 'Under 1,000ft', mid: '1,000–1,999ft', big: '2,000ft+' }[state.verticalFilter] || 'Any Size';
-  const priceLabel  = { 1: '$150+ Fine',      5: '$100–$149',         10: 'Under $100'        }[w.value] || 'Any Price';
-  const crowdLabel  = { 1: 'No Issue!',       5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
+  const snowLabel  = { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser', 15: 'Powder Day' }[w.snow] || 'Any Snow';
+  const tempLabel  = { any: 'Any Temp', ideal: '0°–32° Ideal', spring: '33°+ Spring', cold: 'Below 0°' }[state.tempBucket] || 'Any Temp';
+  const windLabel  = { any: 'Any Wind', light: '0–15 mph', breezy: '16–25 mph', holds: '25+ mph' }[state.windBucket] || 'Any Wind';
+  const sizeLabel  = { any: 'Any Style', small: 'Local / Smaller', mid: '1,000–1,500ft Sweet Spot', big: 'Big-Mountain Feel' }[state.verticalFilter] || 'Any Style';
+  const priceLabel = { 0: 'Any', 1: '$150+ Fine', 5: '$100–$149', 10: 'Under $100' }[w.value] || 'Any';
+  const crowdLabel = { 1: 'No Issue!', 5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
   els.weightSummary.innerHTML =
     `Snow: <strong>${snowLabel}</strong> · ` +
-    `Vertical: <strong>${sizeLabel}</strong> · ` +
+    `Temp: <strong>${tempLabel}</strong> · ` +
+    `Wind: <strong>${windLabel}</strong> · ` +
+    `Style: <strong>${sizeLabel}</strong> · ` +
     `Price: <strong>${priceLabel}</strong> · ` +
     `Crowds: <strong>${crowdLabel}</strong>` +
     (state.passPreference !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
-
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
-
-  // Sync How Far toolbar dropdown
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
 }
@@ -811,10 +818,6 @@ function normalizedWeights() {
 }
 
 // Human-readable labels for weight keys (used in UI summaries)
-const WEIGHT_LABELS = Object.freeze({
-  snow: 'Snow Quality', drive: 'Drive Time', size: 'Mountain Size',
-  value: 'Price', crowd: 'Avoid Crowds',
-});
 
 // ─── Drive time helpers ───────────────────────────────────────────────────────
 // driveCache entries:
@@ -957,6 +960,80 @@ function crowdForecast(resort) {
 }
 
 // Accept pre-computed normalized weights to avoid repeated computation (audit #5, #6)
+function safeNum(value, fallback = null) {
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function snowPreferenceTarget() {
+  const snow = Number(state.weights?.snow || 1);
+  if (snow >= 15) return 12;
+  if (snow >= 10) return 6;
+  if (snow >= 5) return 3;
+  return 0;
+}
+
+function snowPreferenceLabel() {
+  return { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser', 15: 'Powder Day (12"+)' }[Number(state.weights?.snow || 1)] || 'Any Snow';
+}
+
+function tomorrowForecast(wx) {
+  return wx?.forecast?.[0] || null;
+}
+
+function tempBucketMatches(temp) {
+  if (state.tempBucket === 'any' || temp == null) return true;
+  if (state.tempBucket === 'ideal') return temp >= 0 && temp <= 32;
+  if (state.tempBucket === 'spring') return temp > 32;
+  if (state.tempBucket === 'cold') return temp < 0;
+  return true;
+}
+
+function windBucketMatches(wind) {
+  if (state.windBucket === 'any' || wind == null) return true;
+  if (state.windBucket === 'light') return wind <= 15;
+  if (state.windBucket === 'breezy') return wind > 15 && wind <= 25;
+  if (state.windBucket === 'holds') return wind > 25;
+  return true;
+}
+
+function tempScoreIndex(temp) {
+  if (temp == null) return 0.55;
+  if (temp < 0) return 0.20;
+  if (temp <= 32) return 1.00;
+  return 0.65;
+}
+
+function windScoreIndex(wind) {
+  if (wind == null) return 0.55;
+  if (wind <= 15) return 1.00;
+  if (wind <= 25) return 0.45;
+  return 0.10;
+}
+
+function driveScoreIndex(driveMins) {
+  const drive = safeNum(driveMins, null);
+  if (drive === null) return SCORING.DRIVE_DEFAULT;
+  if (drive <= 75) return 1.0;
+  if (drive <= 120) return 0.85 - ((drive - 75) / 45) * 0.20;
+  if (drive <= 180) return 0.65 - ((drive - 120) / 60) * 0.25;
+  if (drive <= 240) return 0.40 - ((drive - 180) / 60) * 0.20;
+  return Math.max(0, 0.20 - ((drive - 240) / 60) * 0.10);
+}
+
+function valueIndex(resort) {
+  const price = safeNum(resort?.price, null);
+  if (price === null) return 0.50;
+  const matchedPass = state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference;
+  const effectivePrice = matchedPass ? price * 0.35 : price;
+  const priceOnly = Math.max(0, Math.min(1, (SCORING.PRICE_MAX - effectivePrice) / (SCORING.PRICE_MAX - SCORING.PRICE_MIN)));
+  const sizeAdj = mountainSizeIndex(resort);
+  return priceOnly * 0.80 + sizeAdj * 0.20;
+}
+
+function passBonusPoints(resort) {
+  if (!state.passPreference || state.passPreference === 'any') return 0;
+  return resort.passGroup === state.passPreference ? 8 : 0;
+}
 // ─── Mountain Size Index ─────────────────────────────────────────────────────
 // Replaces the old separate Vertical + Trails metrics.
 // vertical(50%) + acres(35%) + longestRun(15%) with p80 ceilings so ~20% of
@@ -969,45 +1046,43 @@ function mountainSizeIndex(resort) {
 }
 
 // ─── Snow Quality Index ───────────────────────────────────────────────────────
-// Uses a 95/5 blend of live forecast snow and historical snowfall. The user
-// snow setting now maps to explicit forecast targets so the labels match the
-// ranking logic:
-//   1  → Any Snow      (0"+ target)
-//   5  → 3"+ Matters  (3" target)
-//   10 → 6"+ Chaser   (6" target)
-function snowPreferenceTarget() {
-  const pref = Number(state.weights?.snow || 1);
-  if (pref >= 10) return 6;
-  if (pref >= 5) return 3;
-  return 0;
+// Forecast-led score with explicit target modes and skiability support.
+function snowQualityIndex(resort, snowTotal, wx = null, forecastIndex = null) {
+  const target = snowPreferenceTarget();
+  const liveSnow = safeNum(snowTotal, 0);
+  const reliability = Math.min(1, safeNum(resort.avgSnowfall, 0) / SCORING.SNOW_AVG_MAX);
+
+  let live;
+  if (target === 0) {
+    live = Math.min(1, liveSnow / SCORING.SNOW_SCALE);
+  } else if (liveSnow < target) {
+    live = 0.15 * Math.min(1, liveSnow / Math.max(1, target));
+  } else {
+    const cap = Math.max(target + 4, target === 12 ? 16 : SCORING.SNOW_SCALE + target);
+    live = Math.min(1, (liveSnow - target) / Math.max(1, cap - target));
+  }
+
+  const fc = forecastIndex === null ? tomorrowForecast(wx) : (wx?.forecast?.[forecastIndex] || null);
+  const skiability = fc ? (tempScoreIndex(fc.lo) * 0.6 + windScoreIndex(fc.wind) * 0.4) : 0.55;
+
+  return (live * 0.75 + skiability * 0.20) * SCORING.SNOW_FORECAST_WEIGHT +
+         reliability * SCORING.SNOW_RELIABILITY_WEIGHT;
 }
 
-function snowQualityIndex(resort, snowTotal) {
-  const target      = snowPreferenceTarget();
-  const adjusted    = target > 0 ? Math.max(0, snowTotal - target) : snowTotal;
-  const liveScale   = Math.max(1, SCORING.SNOW_SCALE - target);
-  const live        = target === 0
-    ? Math.min(1, snowTotal / SCORING.SNOW_SCALE)
-    : (snowTotal >= target ? Math.min(1, adjusted / liveScale) : 0);
-  const reliability = Math.min(1, resort.avgSnowfall / SCORING.SNOW_AVG_MAX);
-  return live * SCORING.SNOW_FORECAST_WEIGHT + reliability * SCORING.SNOW_RELIABILITY_WEIGHT;
-}
-
-// ─── Skill Match Index ────────────────────────────────────────────────────────
 function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) {
   if (!w) w = normalizedWeights();
   const forecast  = weather?.forecast || [];
   const picks     = forecastIndex === null ? forecast : (forecast[forecastIndex] ? [forecast[forecastIndex]] : []);
-  const snowTotal = picks.reduce((sum, f) => sum + (f.snow || 0), 0);
+  const snowTotal = picks.reduce((sum, f) => sum + safeNum(f?.snow, 0), 0);
   const drive     = getDriveMins(resort.id);
   const crowd     = crowdForecast(resort);
 
   const normalized = {
-    snow:         snowQualityIndex(resort, snowTotal),
-    drive:        drive !== null ? Math.max(0, 1 - drive / SCORING.DRIVE_SCALE) : SCORING.DRIVE_DEFAULT,
+    snow:         snowQualityIndex(resort, snowTotal, weather, forecastIndex),
+    drive:        driveScoreIndex(drive),
     size:         mountainSizeIndex(resort),
-    value:        Math.max(0, Math.min(1, (SCORING.PRICE_MAX - resort.price) / (SCORING.PRICE_MAX - SCORING.PRICE_MIN))),
-    crowdPenalty: Math.min(1, crowd.score / SCORING.CROWD_SCALE),
+    value:        valueIndex(resort),
+    crowdPenalty: Math.min(1, safeNum(crowd.score, 0) / SCORING.CROWD_SCALE),
   };
 
   const components = {
@@ -1018,17 +1093,16 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     crowdPenalty: normalized.crowdPenalty * (w.crowd || 0) * 100,
   };
 
-  let score = components.snow + components.drive + components.size +
-              components.value - components.crowdPenalty;
-
-  // Pass preference bonus — boosts ranking but NOT the displayed score
-  const passBonus = (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) ? 60 : 0;
+  let score = components.snow + components.drive + components.size + components.value - components.crowdPenalty;
+  const condIdx = null;
+  const condBonus = 0;
+  const passBonus = passBonusPoints(resort);
   if (state.nightOnly && resort.night) score += 4;
 
-  const baseScore = Math.round(score * 10) / 10;  // score without pass bonus — shown in UI
-  const fullScore = Math.round((score + passBonus) * 10) / 10;  // score with pass bonus — used for ranking only
+  const baseScore = Math.round(score * 10) / 10;
+  const fullScore = Math.round((score + passBonus) * 10) / 10;
 
-  return { score: fullScore, baseScore, passBonus, snowTotal, drive, resortId: resort.id, crowdLabel: crowd.label, normalized, components };
+  return { score: fullScore, baseScore, passBonus, snowTotal, drive, resortId: resort.id, crowdLabel: crowd.label, normalized, components, condIdx, condBonus };
 }
 
 // ─── Ski Score (public-facing wrapper around plannerScoreBreakdown) ────────────
@@ -1045,7 +1119,7 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
       snow:         Math.round(base.components.snow),
       drive:        Math.round(base.components.drive),
       size:         Math.round(base.components.size),
-      value:        Math.round(base.components.value),
+        value:        Math.round(base.components.value),
       crowdPenalty: Math.round(base.components.crowdPenalty),
     },
   };
@@ -1091,15 +1165,14 @@ function getDecisionContext() {
 // ─── Weather risk score (0–100) ───────────────────────────────────────────────
 function weatherRiskScore(wx) {
   if (!wx) return 50;
+  const fc = tomorrowForecast(wx);
+  if (!fc) return 50;
   let risk = 0;
-  const wind  = wx.wind  || 0;
-  const temp  = wx.temp  || 30;
-  const storm = (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-  if (wind >= 30)  risk += 30;
-  else if (wind >= 20) risk += 15;
-  if (temp >= 38)  risk += 20;
-  else if (temp >= 34) risk += 10;
-  if (storm <= 1)  risk += 5;
+  if (fc.wind > 25) risk += 35;
+  else if (fc.wind > 15) risk += 12;
+  if (fc.lo < 0) risk += 20;
+  else if (fc.lo > 32) risk += 8;
+  if ((fc.snow || 0) < 1) risk += 4;
   return Math.max(0, Math.min(100, risk));
 }
 
@@ -1131,6 +1204,20 @@ function primaryReasons(item) {
   const cLabel = item.crowd?.label || '';
   if (cLabel === 'Light' || cLabel === 'Light-Moderate')
     reasons.push('Lighter crowd outlook');
+
+  if (c) {
+    if (c.trailsOpen != null && c.trailsTotal > 0 && c.trailsOpen / c.trailsTotal >= 0.85)
+      reasons.push(`${c.trailsOpen}/${c.trailsTotal} trails open`);
+    else if (c.baseDepth != null && c.baseDepth >= 40)
+      reasons.push(`${c.baseDepth}" base depth`);
+    else if (c.newSnow24h != null && c.newSnow24h >= 4)
+      reasons.push(`${c.newSnow24h}" fresh in last 24h`);
+  }
+  if (state.nightOnly && item.resort.night)
+    reasons.push('Night skiing available');
+  if (state.passPreference && state.passPreference !== 'All' &&
+      item.resort.passGroup === state.passPreference)
+    reasons.push(`${item.resort.passGroup} pass access`);
 
   return reasons.slice(0, 3);
 }
@@ -1187,6 +1274,8 @@ function activeFilters() {
   const filters = [];
   if (state.search.trim())     filters.push(`Search: "${esc(state.search.trim())}"`);
   if (state.howFar > 0)        filters.push(`How Far: ${HOW_FAR_TIERS[state.howFar]?.label ?? ''}${state.origin ? '' : ' (set location to activate)'}`);
+  if (state.tempBucket !== 'any') filters.push(`Temp: ${ {ideal:'0°–32° Ideal', spring:'33°+ Spring', cold:'Below 0°'}[state.tempBucket] || state.tempBucket }`);
+  if (state.windBucket !== 'any') filters.push(`Wind: ${ {light:'0–15 mph', breezy:'16–25 mph', holds:'25+ mph'}[state.windBucket] || state.windBucket }`);
   if (state.priceRange > 0)    filters.push(`Ticket: ${PRICE_RANGES[state.priceRange]?.label ?? ''}`);
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
@@ -1199,13 +1288,13 @@ function renderActiveFilters() {
 }
 
 function filteredResorts() {
-  const q = state.search.trim().toLowerCase();
+  const q = state.search.toLowerCase();
   return RESORTS.filter(r => {
-    if (q && !`${r.name} ${r.state} ${r.passGroup} ${r.region}`.toLowerCase().includes(q)) return false;
+    if (q && !(`${r.name} ${r.state} ${r.passGroup}`.toLowerCase().includes(q))) return false;
     if (state.passFilter !== 'All'  && r.passGroup !== state.passFilter)  return false;
     if (state.stateFilter !== 'All' && r.state     !== state.stateFilter) return false;
     if (state.nightOnly && !r.night) return false;
-    // How Far filter — applies to both verdict and table
+
     if (state.origin) {
       const cap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
       if (cap < Infinity) {
@@ -1213,14 +1302,27 @@ function filteredResorts() {
         if (mins !== null && mins > cap) return false;
       }
     }
+
     if (state.priceRange > 0) {
       const pr = PRICE_RANGES[state.priceRange];
       if (pr && (r.price < pr.min || r.price > pr.max)) return false;
     }
-    // Vertical hard filter
-    if (state.verticalFilter === 'small' && r.vertical >= 1000)  return false;
-    if (state.verticalFilter === 'mid'   && (r.vertical < 1000 || r.vertical >= 2000)) return false;
-    if (state.verticalFilter === 'big'   && r.vertical < 2000)   return false;
+
+    if (state.weights.value === 10 && r.price >= 100) return false;
+    if (state.weights.value === 5 && (r.price < 100 || r.price > 149)) return false;
+
+    if (state.verticalFilter === 'small' && r.vertical >= 1000) return false;
+    if (state.verticalFilter === 'mid'   && (r.vertical < 1000 || r.vertical > 1500)) return false;
+    if (state.verticalFilter === 'big'   && r.vertical < 1500) return false;
+
+    const wx = state.weatherCache[r.id]?.data;
+    const tomorrow = tomorrowForecast(wx);
+    if (tomorrow) {
+      if (!tempBucketMatches(tomorrow.lo)) return false;
+      if (!windBucketMatches(tomorrow.wind)) return false;
+      if (state.weights.snow >= 15 && (tomorrow.snow || 0) < 12) return false;
+    }
+
     return true;
   });
 }
@@ -1257,7 +1359,7 @@ async function fetchWeather(resort) {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}` +
       `&current=temperature_2m,weathercode,windspeed_10m` +
-      `&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum` +
+      `&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum,windspeed_10m_max` +
       `&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4&timezone=America%2FNew_York`;
     const res  = await fetchWithTimeout(url);
     const data = await res.json();
@@ -1271,6 +1373,7 @@ async function fetchWeather(resort) {
         hi:   Math.round(data.daily.temperature_2m_max[i + 1]),
         lo:   Math.round(data.daily.temperature_2m_min[i + 1]),
         snow: Math.round((data.daily.snowfall_sum?.[i + 1] || 0) * 10) / 10,
+        wind: Math.round(data.daily.windspeed_10m_max?.[i + 1] || 0),
       })),
     };
     state.weatherCache[resort.id] = { ts: Date.now(), data: wx };
@@ -1384,13 +1487,6 @@ function plannerCandidates(resorts) {
 }
 
 // ─── Summary cards ────────────────────────────────────────────────────────────
-function summaryHtml(label, value, sub = '') {
-  return `<div class="summary-card">` +
-    `<div class="summary-label">${esc(label)}</div>` +
-    `<div class="summary-value">${value}</div>` +
-    (sub ? `<div class="summary-sub">${sub}</div>` : '') +
-    `</div>`;
-}
 
 function renderSummaryCards(resorts) {
   const count       = resorts.length;
@@ -1436,89 +1532,16 @@ async function renderAsyncPanels(resorts) {
   updateMap(resorts);
   renderDetail();
   renderVerdict(resorts);
-  renderBestDay(resorts);
   _renderStorm(resorts);
 
+
+  // History fetch in parallel
   ensureHistory(candidates.slice(0, 50)).then(() => {
     renderVerdict(resorts);
-    renderBestDay(resorts);
-    renderDetail();
+      renderDetail();
     renderCompareTable(resorts);
   });
-}
 
-
-function _renderStorm(resorts) {
-  // Use the full filtered pool — pick any resort that has weather cached.
-  // Sort by 3-day storm total descending; show top 4.
-  const enriched = resorts
-    .map(resort => {
-      const wx    = state.weatherCache[resort.id]?.data;
-      const storm = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-      return { resort, wx, storm };
-    })
-    .filter(item => item.wx)               // only resorts with live weather
-    .sort((a, b) => b.storm - a.storm)
-    .slice(0, 4);
-
-  if (!enriched.length) {
-    els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data — set a location or wait a moment for weather to load.</div>';
-    return;
-  }
-
-  els.stormGrid.innerHTML = enriched.map((item, i) => {
-    const days = (item.wx.forecast || []).map(f =>
-      `<span class="metric-chip"><i class="bi bi-snow"></i> ${f.day}: ${f.snow.toFixed(1)}"</span>`).join('');
-    return `
-    <div class="planner-card ${i === 0 ? 'top' : ''}">
-      <div class="planner-title">${esc(item.resort.name)}</div>
-      <div class="planner-meta">${esc(item.resort.state)} · ${esc(item.resort.passGroup)} · <strong>${item.storm.toFixed(1)}"</strong> over 3 days</div>
-      ${days}
-      <div class="metric-chip"><i class="bi bi-car-front"></i> ${formatDrive(item.resort.id)}</div>
-    </div>`;
-  }).join('');
-}
-
-
-// ─── Sync render functions ────────────────────────────────────────────────────
-function renderHiddenGems(resorts) {
-  // Schwartzian transform — compute gem score once per resort, not O(N log N) in sort (audit #11)
-  const withScore = resorts.map(r => ({ r, score: hiddenGemScore(r) }));
-  withScore.sort((a, b) => b.score - a.score);
-  const top = withScore.slice(0, 3);
-
-  els.hiddenGemGrid.innerHTML = top.map(({ r, score }) => `
-    <div class="planner-card">
-      <div class="planner-title">${esc(r.name)}</div>
-      <div class="planner-meta">${esc(r.state)} · Hidden Gem Score ${score}</div>
-      <div class="metric-chip">${esc(r.passGroup)}</div>
-      <div class="metric-chip">Avg snowfall ${r.avgSnowfall}"</div>
-      <div class="metric-chip">Ticket* $${r.price}</div>
-      <div class="breakdown">
-        <div>Why it rates well: <strong>${crowdForecast(r).label}</strong> crowds,
-        <strong>${r.vertical} ft</strong> vertical, and better-than-average value.</div>
-      </div>
-    </div>`).join('');
-}
-
-
-// ─── Compare table ────────────────────────────────────────────────────────────
-function renderCompareTable(resorts) {
-  // Apply inline table search filter
-  const q = (state.tableSearch || '').trim().toLowerCase();
-  const filtered = q
-    ? resorts.filter(r => `${r.name} ${r.state} ${r.passGroup} ${r.region}`.toLowerCase().includes(q))
-    : resorts;
-
-  // Schwartzian transform — compute breakdown once per resort (audit #6)
-  const w = normalizedWeights();
-  const decorated = filtered.map(resort => {
-    const weather    = state.weatherCache[resort.id]?.data;
-    const breakdown  = weather ? plannerScoreBreakdown(resort, weather, 0, w) : null;
-    const stormTotal = weather ? (weather.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-    const hist       = historyCache.get(resort.id);
-    return { resort, weather, breakdown, stormTotal, hist };
-  });
 
   const dir = tableSort.dir === 'asc' ? 1 : -1;
   if (state.sortBy === 'planner') {
@@ -1621,7 +1644,7 @@ function renderComparePanel() {
   ];
   els.compareContent.innerHTML = `
     <div id="compareAiBox" class="compare-ai-box">
-      <div class="ai-thinking"><i class="bi bi-robot"></i> Loading AI recommendation…</div>
+      <div class="ai-thinking">Loading AI recommendation…</div>
     </div>
     <div class="table-wrap">
       <table class="comparison-table">
@@ -1634,7 +1657,7 @@ function renderComparePanel() {
   // AI recommendation — build prompt and call Claude API
   const aiBox = document.getElementById('compareAiBox');
   if (aiBox) {
-    aiBox.innerHTML = '<div class="ai-thinking"><i class="bi bi-robot"></i> Analyzing your mountains…</div>';
+    aiBox.innerHTML = '<div class="ai-thinking">Analyzing your mountains…</div>';
     // Build a clean payload for the server-side proxy — no API key on the client
     const payload = resorts.map(r => ({
       name:         r.name,
@@ -1683,7 +1706,7 @@ function renderDetail({ scroll = false } = {}) {
         <p class="muted small">${esc(resort.state)} · ${esc(resort.passGroup)} · ${esc(resort.ownerGroup)}</p>
       </div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        ${resort.website ? `<a class="btn btn-primary detail-website-btn" href="${resort.website}" target="_blank" rel="noopener">&#127758; Visit Website &#8599;</a>` : ''}
+        ${resort.website ? `<a class="btn btn-primary detail-website-btn" href="${resort.website}" target="_blank" rel="noopener">Visit Website</a>` : ''}
         <div class="metric-chip">${skis ? `Ski Score ${skis.skiScore}` : 'Loading Ski Score…'}</div>
       </div>
     </div>
@@ -1742,8 +1765,8 @@ function renderDetail({ scroll = false } = {}) {
           const fcRows = wx ? (wx.forecast || []).map(f =>
             `<div class="forecast-row">
                <span class="forecast-day">${f.day}</span>
-               <span class="forecast-snow ${f.snow >= 4 ? 'snow-big' : f.snow >= 1 ? 'snow-med' : ''}"><i class="bi bi-snow"></i> ${f.snow.toFixed(1)}"</span>
-               <span class="forecast-temps">${f.lo}° – ${f.hi}°F</span>
+               <span class="forecast-snow ${f.snow >= 4 ? 'snow-big' : f.snow >= 1 ? 'snow-med' : ''}">${f.snow.toFixed(1)}"</span>
+               <span class="forecast-temps">${f.lo}° – ${f.hi}°F · ${f.wind || 0} mph</span>
              </div>`).join('')
             : '<div class="muted small">Weather loading…</div>';
           return histRow + (wx ? `<div class="forecast-rows" style="margin-top:10px">${fcRows}</div>` : '');
@@ -1778,7 +1801,7 @@ function renderMapLegend() {
     <span class="legend-chip"><i class="legend-dot" style="background:#f0b44c"></i> 150–210 min</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#e07a5f"></i> 210+ min</span>`
     : state.mapMode === 'storm' ? `
-    <span class="legend-chip"><i class="legend-dot" style="background:#1d4ed8"></i> 8&quot;+ forecast</span>
+    <span class="legend-chip"><span class="legend-dot" style="background:#1d4ed8"></span> 8&quot;+ forecast</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#3b82f6"></i> 5–8&quot;</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#93c5fd"></i> 2–5&quot;</span>
     <span class="legend-chip"><i class="legend-dot" style="background:#cbd5e1"></i> under 2&quot;</span>`
@@ -1825,7 +1848,7 @@ function updateMap(resorts) {
     if (markers[resort.id]) { markers[resort.id].setIcon(icon); return; }
     const marker = L.marker([resort.lat, resort.lon], { icon })
       .addTo(map)
-      .bindPopup(`<strong>${esc(resort.name)}</strong><br>${esc(resort.state)} · ${esc(resort.passGroup)}<br>Vertical ${resort.vertical} ft<br>Ticket* $${resort.price}${resort.website ? `<br><a href="${resort.website}" target="_blank" rel="noopener">Visit website ↗</a>` : ''}`);
+      .bindPopup(`<strong>${esc(resort.name)}</strong><br>${esc(resort.state)} · ${esc(resort.passGroup)}<br>Vertical ${resort.vertical} ft<br>Ticket* $${resort.price}${resort.website ? `<br><a href="${resort.website}" target="_blank" rel="noopener">Visit website</a>` : ''}`);
     marker.on('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
     markers[resort.id] = marker;
   });
@@ -1863,6 +1886,10 @@ async function askAI(query) {
       drive:        getDriveMins(r.id),
       crowd:        crowdForecast(r).label,
       snow3d:       snow3d !== null ? Math.round(snow3d * 10) / 10 : null,
+      tomorrowSnow: wx?.forecast?.[0]?.snow ?? null,
+      tomorrowLow:  wx?.forecast?.[0]?.lo ?? null,
+      tomorrowHigh: wx?.forecast?.[0]?.hi ?? null,
+      tomorrowWind: wx?.forecast?.[0]?.wind ?? null,
       plannerScore: bd ? bd.score : null,
       beginner:     r.terrainBreakdown?.beginner ?? null,
     };
@@ -1887,13 +1914,13 @@ async function askAI(query) {
     );
 
     const resortLink = matched
-      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">&#128269; View ${esc(data.resortName)} in table</button>`
+      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>`
       : '';
 
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-success';
       els.aiChatResult.innerHTML =
-        `<div class="ai-result-header"><strong>&#129302; AI Pick: ${esc(data.resortName)}</strong></div>` +
+        `<div class="ai-result-header"><strong>AI Pick: ${esc(data.resortName)}</strong></div>` +
         `<div class="ai-result-text">${esc(data.explanation)}</div>` +
         (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
     }
@@ -1915,7 +1942,7 @@ async function askAI(query) {
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-error';
       els.aiChatResult.innerHTML =
-        `<span>&#9888;&#65039; ${esc(err.message || 'AI unavailable — try again shortly')}</span>`;
+        `<span>${esc(err.message || 'AI unavailable — try again shortly')}</span>`;
     }
   } finally {
     aiChatLoading = false;
@@ -1926,9 +1953,6 @@ async function askAI(query) {
 // ─── Best Day To Go ───────────────────────────────────────────────────────────
 // Shows the 3-day forecast breakdown for the top 3 resorts and highlights the
 // highest-quality day at each (based on snow + cold temperature scoring).
-function renderBestDay(resorts) {
-  // Best Day section removed — verdict card surfaces the top pick directly
-}
 
 // ─── Mobile Card Grid ─────────────────────────────────────────────────────────
 // Renders a compact card grid for mobile screens (< 760px).
@@ -1952,8 +1976,8 @@ function renderMobileCards(decorated) {
       <div class="mob-card-chips">
         <span class="mob-chip" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
         <span class="mob-chip">${esc(resort.state)}</span>
-        ${drive !== '—' ? `<span class="mob-chip">&#128664; ${drive}</span>` : ''}
-        <span class="mob-chip">&#10052;&#65039; ${storm}</span>
+        ${drive !== '—' ? `<span class="mob-chip">${drive}</span>` : ''}
+        <span class="mob-chip">${storm}</span>
       </div>
       <div class="mob-card-stats">
         <div><span class="mob-stat-label">Vertical</span><span class="mob-stat-val">${resort.vertical} ft</span></div>
@@ -1967,7 +1991,7 @@ function renderMobileCards(decorated) {
           Compare
         </label>
         <div style="display:flex;gap:6px">
-          ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener">&#127758;</a>` : ''}
+          ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener">Website</a>` : ''}
           <button class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details &rarr;</button>
         </div>
       </div>
@@ -1984,7 +2008,7 @@ function shareVerdict(resort, verdictData) {
   const driveInfo = driveText ? ` · ${driveText} drive` : '';
   const shareText =
     `I'm skiing ${resort.name} (${resort.state}) this weekend — ${snowText}${driveInfo}. ` +
-    `Pass: ${resort.passGroup}. Find your mountain →`;
+    `Pass: ${resort.passGroup}. Find your mountain.`;
   const p   = serializeState();
   const url = `${location.origin}${location.pathname}${p.toString() ? '?' + p : ''}`;
 
@@ -2024,11 +2048,9 @@ function renderAllCards(resorts) {
 
   if (hasWeather) {
     renderVerdict(resorts);
-    renderBestDay(resorts);
-    _renderStorm(resorts);
+      _renderStorm(resorts);
   } else {
     // First load — verdict col shows placeholder, other panels show loading
-    // bestDaySection removed
     els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data…</div>';
   }
 
@@ -2046,10 +2068,10 @@ const debouncedRender = debounce(render, 50);
 function wireEvents() {
   // ── Slider info tooltips ──────────────────────────────────────────────────────
   const SLIDER_TIPS = {
-    snow:   'Uses a 95/5 blend of live forecast snow and historical snowfall. Snow mode now matches explicit forecast targets: Any Snow = any forecast, 3"+ Matters = 3 inches or more, 6"+ Chaser = 6 inches or more.',
-    size:   'Composite of vertical drop, skiable acres, and longest run. High = big destination mountains rank above small hills.',
-    value:  'Rewards lower ticket prices. High = budget-friendly independents outrank expensive resorts regardless of snow.',
-    crowds: 'Penalizes busy mountains based on pass network, city proximity, and price. High = quiet independents rise to the top.',
+    snow:   'Forecast-led snow score with temperature and wind folded in. High = only mountains with meaningful snow or truly ideal ski weather rise to the top.',
+    size:   'Matches the kind of mountain experience you want, from local hills to big-mountain feel.',
+    value:  'Acts as a true ticket-price filter first, then rewards stronger value among the mountains that remain.',
+    crowds: 'Penalizes busy mountains based on pass network, city proximity, and price. High = quieter mountains rise to the top.',
   };
   const tipEl = document.getElementById('sliderTooltip');
   let tipTimeout;
@@ -2162,6 +2184,7 @@ function wireEvents() {
 
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
     state.priceRange = Number(e.target.value);
+    state.maxPrice = 0; // keep legacy field cleared
     pushUrlDebounced(); render();
   });
   els.sortBy.addEventListener('change', e => { state.sortBy = e.target.value; pushUrlDebounced(); render(); });
@@ -2196,8 +2219,8 @@ function wireEvents() {
   })();
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
-    state.sortBy = 'planner'; state.nightOnly = false;
-    state.priceRange = 0; state.howFar = 0;
+    state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any'; state.nightOnly = false;
+    state.maxPrice = 0; state.priceRange = 0; state.howFar = 0;
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
@@ -2245,8 +2268,11 @@ function wireEvents() {
       const key = btn.closest('.priority-btns')?.dataset.key;
       if (!key) return;
       if (key === 'size') {
-        // Vertical is now a hard filter, not a weight
-        state.verticalFilter = btn.dataset.val; // 'small' | 'mid' | 'big'
+        state.verticalFilter = btn.dataset.val;
+      } else if (key === 'temp') {
+        state.tempBucket = btn.dataset.val;
+      } else if (key === 'wind') {
+        state.windBucket = btn.dataset.val;
       } else {
         state.weights[key] = Number(btn.dataset.val);
       }
@@ -2284,16 +2310,10 @@ function wireEvents() {
     if (!row || e.target.closest('input')) return;
     state.selectedId = row.dataset.id;
     renderDetail({ scroll: true });
-    const resort = RESORTS.find(r => r.id === state.selectedId);
     [...els.comparisonBody.querySelectorAll('tr')].forEach(r =>
       r.classList.toggle('active-row', r.dataset.id === state.selectedId));
   });
 
-  els.comparisonBody.addEventListener('mouseenter', e => {
-    const row = e.target.closest('tr[data-id]');
-    if (!row) return;
-    const resort = RESORTS.find(r => r.id === row.dataset.id);
-  }, true);
   els.comparisonBody.addEventListener('change', e => {
     const box = e.target.closest('input[data-compare]');
     if (!box) return;
@@ -2460,7 +2480,7 @@ function initialize() {
         state.selectedId = found.id;
         document.title = found.name + ' — Where To Ski?!';
         renderDetail({ scroll: true });
-        return;
+          return;
       }
     }
     // Navigated back to root — close detail card
