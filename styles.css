@@ -2738,3 +2738,16 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
     padding-right: 16px;
   }
 }
+
+
+/* Planner pass placement and spacing */
+.planner-pass-priority {
+  order: 0;
+  margin-bottom: 18px;
+}
+.planner-pass-priority .qs-card {
+  margin-bottom: 0;
+}
+.preset-row {
+  margin-top: 0;
+}

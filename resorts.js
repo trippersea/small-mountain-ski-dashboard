@@ -1521,7 +1521,6 @@ function cardBreakdown(b) {
 function crowdClass(label) { return `crowd-${label.toLowerCase()}`; }
 
 // ─── Async render panels ──────────────────────────────────────────────────────
-// Single shared pipeline — compute candidates & weather once, pass to all panels (audit #2)
 // Single shared pipeline — compute candidates & weather once, pass to all panels
 async function renderAsyncPanels(resorts) {
   const candidates = plannerCandidates(resorts);
@@ -1534,14 +1533,28 @@ async function renderAsyncPanels(resorts) {
   renderVerdict(resorts);
   _renderStorm(resorts);
 
-
   // History fetch in parallel
   ensureHistory(candidates.slice(0, 50)).then(() => {
     renderVerdict(resorts);
-      renderDetail();
+    renderDetail();
     renderCompareTable(resorts);
   });
+}
 
+function renderCompareTable(resorts) {
+  const filtered = resorts;
+  const q = (state.tableSearch || '').trim().toLowerCase();
+  const w = normalizedWeights();
+
+  const decorated = filtered
+    .filter(resort => !q || `${resort.name} ${resort.state} ${resort.passGroup}`.toLowerCase().includes(q))
+    .map(resort => {
+      const wx = state.weatherCache[resort.id]?.data;
+      const breakdown = wx ? plannerScoreBreakdown(resort, wx, 0, w) : null;
+      const stormTotal = wx ? (wx.forecast || []).reduce((sum, f) => sum + (f.snow || 0), 0) : null;
+      const hist = historyCache.get(resort.id) || null;
+      return { resort, breakdown, stormTotal, hist };
+    });
 
   const dir = tableSort.dir === 'asc' ? 1 : -1;
   if (state.sortBy === 'planner') {
@@ -1551,15 +1564,13 @@ async function renderAsyncPanels(resorts) {
   } else if (state.sortBy === 'hist7day') {
     decorated.sort((a, b) => dir * ((a.hist?.total ?? -1) - (b.hist?.total ?? -1)));
   } else {
-    const order = new Map(staticSort(resorts).map((r, i) => [r.id, i]));
+    const order = new Map(staticSort(filtered).map((r, i) => [r.id, i]));
     decorated.sort((a, b) => (order.get(a.resort.id) ?? 9999) - (order.get(b.resort.id) ?? 9999));
   }
 
-  // Show top 10 by default; View All shows everything
-  const showAll = state.tableViewAll || q;  // always show all rows when searching
+  const showAll = state.tableViewAll || q;
   const displayed = showAll ? decorated : decorated.slice(0, 10);
 
-  // Update result count + View All button
   const totalFiltered = filtered.length;
   if (q) {
     els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${q}"`;
@@ -1569,11 +1580,10 @@ async function renderAsyncPanels(resorts) {
       : `Top 10 of ${totalFiltered} mountains`;
   }
   if (els.tableViewAllBtn) {
-    els.tableViewAllBtn.textContent = (state.tableViewAll && !q) ? '⬆ Show Top 10' : `View All ${totalFiltered}`;
+    els.tableViewAllBtn.textContent = (state.tableViewAll && !q) ? 'Show Top 10' : `View All ${totalFiltered}`;
     els.tableViewAllBtn.style.display = q ? 'none' : '';
   }
 
-  // Update sort indicators on column headers
   document.querySelectorAll('.sortable-th').forEach(th => {
     const ind = th.querySelector('.sort-indicator');
     if (!ind) return;
@@ -1608,8 +1618,6 @@ async function renderAsyncPanels(resorts) {
       </tr>`;
   }).join('');
 
-  // Pass sorted list to passCalc so it reflects current sort order (audit #21)
-  // Note: event listeners are wired once via delegation in wireEvents() — not attached here (audit #10)
   renderMobileCards(displayed);
 }
 
