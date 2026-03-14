@@ -24,14 +24,12 @@ const SCORING = Object.freeze({
 });
 
 // How Far Will You Go? — three tiers used in both verdict card and toolbar
-// index stored in state.howFar (0=daytrip 3h, 1=weekend 6h, 2=all)
+// index stored in state.howFar (0 = day trip ≤3h, 1 = weekend ≤6h, 2 = all distances)
 const HOW_FAR_TIERS = Object.freeze([
   { label: 'Day Trip',  cap: 180,      hint: '≤3h drive'   },
   { label: 'Weekend',   cap: 360,      hint: '≤6h drive'   },
   { label: 'All',       cap: Infinity, hint: 'any distance' },
 ]);
-// Keep DRIVE_RANGES as alias so any stray references don’t break
-const DRIVE_RANGES = HOW_FAR_TIERS;
 
 // Ticket price filter ranges — index stored in state.priceRange (0 = any)
 const PRICE_RANGES = Object.freeze([
@@ -83,6 +81,9 @@ function loadSavedPassPreference() {
 function loadSavedPreset() {
   // Always default to balanced — do not restore from localStorage
   return 'balanced';
+}
+function loadSavedWeights() {
+  return { ...PRESETS[loadSavedPreset()] };
 }
 function loadSavedSkiDays() {
   try { return Number(localStorage.getItem('ski-ski-days') || 5); } catch (e) { return 5; }
@@ -140,7 +141,6 @@ const els = {
   sortBy:              $('sortBy'),
   toggleNight:         $('toggleNight'),
   resetFilters:        $('resetFilters'),
-  plannerToggle:       $('plannerToggle'),
   plannerDetails:      $('plannerDetails'),
   plannerSection:      $('plannerSection'),
   plannerFromLabel:    $('plannerFromLabel'),
@@ -173,10 +173,6 @@ const els = {
   aiChatInput:         $('aiChatInput'),
   aiChatBtn:           $('aiChatBtn'),
   aiChatResult:        $('aiChatResult'),
-  // Best Day section
-  bestDaySection:      $('bestDaySection'),
-  bestDayGrid:         $('bestDayGrid'),
-  bestDayLastUpdated:  $('bestDayLastUpdated'),
 };
 
 // Cached querySelectorAll results — avoid re-querying on every syncPlannerControls (audit #14)
@@ -239,11 +235,7 @@ function applyUrlState() {
     const wStr = p.get('w');
     if (wStr) {
       const parts = wStr.split(',').map(Number);
-      if (parts.length === 5 && parts.every(n => !isNaN(n) && n >= 0)) {
-        // Legacy 5-part URL [snow, drive, size, value, crowd] — drop drive
-        const [snow, , size, value, crowd] = parts;
-        state.weights = { ...state.weights, snow, size, value, crowd };
-      } else if (parts.length === 4 && parts.every(n => !isNaN(n) && n >= 0)) {
+      if (parts.length === 4 && parts.every(n => !isNaN(n) && n >= 0)) {
         const [snow, size, value, crowd] = parts;
         state.weights = { ...state.weights, snow, size, value, crowd };
       }
@@ -803,12 +795,6 @@ function normalizedWeights() {
   return Object.fromEntries(Object.entries(state.weights).map(([k, v]) => [k, v / total]));
 }
 
-// Human-readable labels for weight keys (used in UI summaries)
-const WEIGHT_LABELS = Object.freeze({
-  snow: 'Snow Quality', drive: 'Drive Time', size: 'Mountain Size',
-  value: 'Price', crowd: 'Avoid Crowds',
-});
-
 // ─── Drive time helpers ───────────────────────────────────────────────────────
 // driveCache entries:
 //   { mins, estimated: true, km }  — haversine estimate (phase 1)
@@ -1364,14 +1350,6 @@ function plannerCandidates(resorts) {
 }
 
 // ─── Summary cards ────────────────────────────────────────────────────────────
-function summaryHtml(label, value, sub = '') {
-  return `<div class="summary-card">` +
-    `<div class="summary-label">${esc(label)}</div>` +
-    `<div class="summary-value">${value}</div>` +
-    (sub ? `<div class="summary-sub">${sub}</div>` : '') +
-    `</div>`;
-}
-
 function renderSummaryCards(resorts) {
   const count       = resorts.length;
   els.summaryCards.innerHTML = [
@@ -1415,14 +1393,12 @@ async function renderAsyncPanels(resorts) {
   updateMap(resorts);
   renderDetail();
   renderVerdict(resorts);
-  renderBestDay(resorts);
   _renderStorm(resorts);
 
   // History fetch in parallel
   ensureHistory(candidates.slice(0, 50)).then(() => {
     renderVerdict(resorts);
-    renderBestDay(resorts);
-    renderDetail();
+      renderDetail();
     renderCompareTable(resorts);
   });
 }
@@ -1899,13 +1875,6 @@ async function askAI(query) {
   }
 }
 
-// ─── Best Day To Go ───────────────────────────────────────────────────────────
-// Shows the 3-day forecast breakdown for the top 3 resorts and highlights the
-// highest-quality day at each (based on snow + cold temperature scoring).
-function renderBestDay(resorts) {
-  // Best Day section removed — verdict card surfaces the top pick directly
-}
-
 // ─── Mobile Card Grid ─────────────────────────────────────────────────────────
 // Renders a compact card grid for mobile screens (< 760px).
 // Called from renderCompareTable with the same already-decorated array.
@@ -2000,11 +1969,9 @@ function renderAllCards(resorts) {
 
   if (hasWeather) {
     renderVerdict(resorts);
-    renderBestDay(resorts);
-    _renderStorm(resorts);
+      _renderStorm(resorts);
   } else {
     // First load — verdict col shows placeholder, other panels show loading
-    // bestDaySection removed
     els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data…</div>';
   }
 
@@ -2020,30 +1987,6 @@ function render() {
 const debouncedRender = debounce(render, 50);
 
 function wireEvents() {
-  // ── Slider info tooltips ──────────────────────────────────────────────────────
-  const SLIDER_TIPS = {
-    snow:   'Uses live forecast snow with a light historical backstop. High = only mountains with meaningful forecast snowfall rank well.',
-    size:   'Composite of vertical drop, skiable acres, and longest run. High = big destination mountains rank above small hills.',
-    value:  'Rewards lower ticket prices. High = budget-friendly independents outrank expensive resorts regardless of snow.',
-    crowds: 'Penalizes busy mountains based on pass network, city proximity, and price. High = quiet independents rise to the top.',
-  };
-  const tipEl = document.getElementById('sliderTooltip');
-  let tipTimeout;
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('.slider-info-btn');
-    if (!btn) { if (tipEl) { tipEl.classList.remove('visible'); } return; }
-    e.stopPropagation();
-    const key = btn.dataset.tip;
-    if (!tipEl || !key || !SLIDER_TIPS[key]) return;
-    const rect = btn.getBoundingClientRect();
-    tipEl.textContent = SLIDER_TIPS[key];
-    tipEl.style.left = Math.min(rect.left + window.scrollX, window.innerWidth - 260) + 'px';
-    tipEl.style.top  = (rect.bottom + window.scrollY + 8) + 'px';
-    tipEl.classList.add('visible');
-    clearTimeout(tipTimeout);
-    tipTimeout = setTimeout(() => tipEl.classList.remove('visible'), 8000);
-  });
-
   // ── AI Chat ──────────────────────────────────────────────────────────────────
   if (els.aiChatBtn) {
     els.aiChatBtn.addEventListener('click', () => {
