@@ -35,23 +35,22 @@ const DRIVE_RANGES = HOW_FAR_TIERS;
 
 // Ticket price filter ranges — index stored in state.priceRange (0 = any)
 const PRICE_RANGES = Object.freeze([
-  { label: 'Any price',      min: 0,   max: Infinity },
-  { label: 'Under $100',     min: 0,   max: 99       },
-  { label: '$100 – $150',    min: 100, max: 150       },
-  { label: '$150 – $200',    min: 151, max: 200       },
-  { label: '$200+',          min: 201, max: Infinity  },
+  { label: 'Any price',   min: 0,   max: Infinity },
+  { label: 'Under $100',  min: 0,   max: 99       },
+  { label: '$100 – $149', min: 100, max: 149      },
+  { label: '$150+ Fine',  min: 150, max: Infinity },
 ]);
 
 // Pass break-even prices (audit #39)
 const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 
 const PRESETS = {
-  // snow/size/value/crowd: 1=Low, 5=Medium, 10=High (user-adjustable)
-  // drive: kept for scoring continuity, not exposed in UI (Option C)
-  balanced: { snow:5, drive:4, size:5, value:5, crowd:5  },
-  powder:   { snow:10, drive:4, size:5, value:1, crowd:1  },
-  family:   { snow:5, drive:4, size:1, value:5, crowd:10  },
-  cheap:    { snow:5, drive:4, size:1, value:10, crowd:1  },
+  // snow/crowd remain user-adjustable scoring inputs
+  // drive/value/size stay in the algorithm, but the planner now breaks out temp, wind, style, and price as explicit filters
+  balanced: { snow:5, drive:4, size:5, value:5, crowd:5 },
+  powder:   { snow:10, drive:4, size:5, value:3, crowd:1 },
+  family:   { snow:5, drive:4, size:3, value:6, crowd:10 },
+  cheap:    { snow:5, drive:4, size:3, value:10, crowd:3 },
 };
 
 // Skill presets per named preset
@@ -173,6 +172,8 @@ const state = Object.seal({
   howFar:       0,        // index into HOW_FAR_TIERS (0=DayTrip, 1=Weekend, 2=All)
   maxPrice:     0,        // legacy — kept for URL compat
   priceRange:   0,        // index into PRICE_RANGES (0 = any)
+  tempBucket:   'any',    // 'any' | 'ideal' | 'spring' | 'cold'
+  windBucket:   'any',    // 'any' | 'light' | 'breezy' | 'holds'
   verticalFilter: 'any',   // 'any' | 'small' (<1000ft) | 'mid' (1000-1999ft) | 'big' (2000ft+)
   selectedId:   null,
   origin:       null,
@@ -280,6 +281,9 @@ function serializeState() {
   if (state.sortBy      !== 'planner') p.set('sort',  state.sortBy);
   if (state.nightOnly)                 p.set('night', '1');
   if (state.howFar > 0)                p.set('howfar', state.howFar);
+  if (state.priceRange > 0)            p.set('prange', state.priceRange);
+  if (state.tempBucket !== 'any')      p.set('temp', state.tempBucket);
+  if (state.windBucket !== 'any')      p.set('wind', state.windBucket);
   // maxDrive legacy URL param removed
   if (state.maxPrice > 0)              p.set('price', state.maxPrice);
   if (state.skiDays  !== 5)            p.set('days',  state.skiDays);
@@ -321,6 +325,9 @@ function applyUrlState() {
   if (p.has('sort'))  state.sortBy    = p.get('sort');
   if (p.has('night'))   state.nightOnly   = true;
   if (p.has('howfar'))  state.howFar = Math.min(2, Number(p.get('howfar')) || 0);
+  if (p.has('prange'))  state.priceRange = Math.min(3, Number(p.get('prange')) || 0);
+  if (p.has('temp') && ['any','ideal','spring','cold'].includes(p.get('temp'))) state.tempBucket = p.get('temp');
+  if (p.has('wind') && ['any','light','breezy','holds'].includes(p.get('wind'))) state.windBucket = p.get('wind');
   // maxDrive legacy URL param — ignored, howFar takes precedence
   if (p.has('price')) { state.maxPrice = Number(p.get('price')) || 0; state.priceRange = 0; } // legacy URL compat
   if (p.has('days'))  state.skiDays   = Math.max(1, Number(p.get('days')) || 5);
@@ -959,6 +966,14 @@ function normalizeWeightsToPriority() {
   state.weights.size = 5;
 }
 
+function tempBucketLabel(bucket) {
+  return ({ any: 'Any Temp', ideal: '0°–32° Ideal', spring: '33°+ Spring', cold: 'Below 0°' })[bucket] || 'Any Temp';
+}
+
+function windBucketLabel(bucket) {
+  return ({ any: 'Any Wind', light: '0–15 mph', breezy: '16–25 mph', holds: '25+ mph' })[bucket] || 'Any Wind';
+}
+
 // Update "What makes your perfect ski day from [city]?" label + edit btn visibility
 function updatePlannerOriginLabel() {
   if (!els.plannerFromLabel) return;
@@ -972,8 +987,8 @@ function updatePlannerOriginLabel() {
 }
 
 function syncPlannerControls() {
-  // Sync priority-btn active state for snow, value, crowd
-  ['snow', 'value', 'crowd'].forEach(key => {
+  // Sync scoring buttons (snow, crowd)
+  ['snow', 'crowd'].forEach(key => {
     const group = document.querySelector(`.priority-btns[data-key="${key}"]`);
     if (!group) return;
     const val = state.weights[key] ?? 1;
@@ -989,6 +1004,27 @@ function syncPlannerControls() {
     });
   }
 
+  const priceGroup = document.querySelector('.priority-btns[data-key="price"]');
+  if (priceGroup) {
+    priceGroup.querySelectorAll('.priority-btn').forEach(btn => {
+      btn.classList.toggle('active', Number(btn.dataset.val) === state.priceRange);
+    });
+  }
+
+  const tempGroup = document.querySelector('.priority-btns[data-key="temp"]');
+  if (tempGroup) {
+    tempGroup.querySelectorAll('.priority-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.val === state.tempBucket);
+    });
+  }
+
+  const windGroup = document.querySelector('.priority-btns[data-key="wind"]');
+  if (windGroup) {
+    windGroup.querySelectorAll('.priority-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.val === state.windBucket);
+    });
+  }
+
   document.querySelectorAll('.pass-pref-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.pass === state.passPreference);
   });
@@ -996,15 +1032,16 @@ function syncPlannerControls() {
   const w = state.weights;
   const passLabel = state.passPreference === 'any' ? 'Any' : state.passPreference;
   const snowLabel = { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser', 15: 'Powder Day (12"+)' }[w.snow] || 'Any Snow';
-  const sizeLabel = { any: 'Any Size', small: 'Under 1,000ft', mid: '1,000–1,999ft', big: '2,000ft+' }[state.verticalFilter] || 'Any Size';
-  const priceLabel = { 1: '$150+ Fine', 5: '$100–$149', 10: 'Under $100' }[w.value] || 'Any Price';
+  const sizeLabel = { any: 'Any Style', small: 'Local / Smaller', mid: '1,000–1,500ft Sweet Spot', big: 'Big-Mountain Feel' }[state.verticalFilter] || 'Any Style';
+  const priceLabel = PRICE_RANGES[state.priceRange]?.label || 'Any price';
   const crowdLabel = { 1: 'No Issue!', 5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
   els.weightSummary.innerHTML =
     `Snow: <strong>${snowLabel}</strong> · ` +
-    `Vertical: <strong>${sizeLabel}</strong> · ` +
+    `Temp: <strong>${tempBucketLabel(state.tempBucket)}</strong> · ` +
+    `Wind: <strong>${windBucketLabel(state.windBucket)}</strong> · ` +
+    `Style: <strong>${sizeLabel}</strong> · ` +
     `Price: <strong>${priceLabel}</strong> · ` +
-    `Crowds: <strong>${crowdLabel}</strong> · ` +
-    `Temps/Wind: <strong>Auto</strong>` +
+    `Crowds: <strong>${crowdLabel}</strong>` +
     (state.passPreference !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
@@ -1012,6 +1049,7 @@ function syncPlannerControls() {
 
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
+  if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.priceRange);
 }
 
 function applyPreset(name) {
@@ -1543,6 +1581,8 @@ function activeFilters() {
   if (state.search.trim())     filters.push(`Search: "${esc(state.search.trim())}"`);
   if (state.howFar > 0)        filters.push(`How Far: ${HOW_FAR_TIERS[state.howFar]?.label ?? ''}${state.origin ? '' : ' (set location to activate)'}`);
   if (state.priceRange > 0)    filters.push(`Ticket: ${PRICE_RANGES[state.priceRange]?.label ?? ''}`);
+  if (state.tempBucket !== 'any') filters.push(`Temp: ${tempBucketLabel(state.tempBucket)}`);
+  if (state.windBucket !== 'any') filters.push(`Wind: ${windBucketLabel(state.windBucket)}`);
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
   if (state.nightOnly)         filters.push('Night only');
@@ -1552,6 +1592,26 @@ function activeFilters() {
 
 function renderActiveFilters() {
   els.activeFilters.innerHTML = activeFilters().map(f => `<span class="filter-pill">${f}</span>`).join('');
+}
+
+function tempBucketMatches(day) {
+  if (state.tempBucket === 'any') return true;
+  const temp = expectedTempValue(day);
+  if (temp === null) return true;
+  if (state.tempBucket === 'cold') return temp < 0;
+  if (state.tempBucket === 'ideal') return temp >= 0 && temp <= 32;
+  if (state.tempBucket === 'spring') return temp > 32;
+  return true;
+}
+
+function windBucketMatches(day) {
+  if (state.windBucket === 'any') return true;
+  const wind = safeNum(day?.wind, null);
+  if (wind === null) return true;
+  if (state.windBucket === 'light') return wind <= 15;
+  if (state.windBucket === 'breezy') return wind > 15 && wind <= 25;
+  if (state.windBucket === 'holds') return wind > 25;
+  return true;
 }
 
 function filteredResorts() {
@@ -1568,10 +1628,13 @@ function filteredResorts() {
         if (mins !== null && mins > cap) return false;
       }
     }
+    const tomorrow = state.weatherCache[r.id]?.data?.forecast?.[0] || null;
     if (Number(state.weights?.snow || 1) >= 15) {
-      const tomorrowSnow = state.weatherCache[r.id]?.data?.forecast?.[0]?.snow;
+      const tomorrowSnow = tomorrow?.snow;
       if (tomorrowSnow != null && tomorrowSnow < 12) return false;
     }
+    if (!tempBucketMatches(tomorrow)) return false;
+    if (!windBucketMatches(tomorrow)) return false;
     if (state.priceRange > 0) {
       const pr = PRICE_RANGES[state.priceRange];
       if (pr && (r.price < pr.min || r.price > pr.max)) return false;
@@ -2605,7 +2668,7 @@ function wireEvents() {
     render();
   });
 
-  els.maxDriveFilter.addEventListener('change', e => {
+  if (els.maxDriveFilter) els.maxDriveFilter.addEventListener('change', e => {
     // legacy — maxDriveFilter DOM element now maps to howFar
     state.maxDrive = Number(e.target.value);
     if (state.maxDrive > 0 && !state.origin) showToast('Set a starting location to use the Drive Time filter');
@@ -2614,6 +2677,7 @@ function wireEvents() {
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
     state.priceRange = Number(e.target.value);
     state.maxPrice = 0; // keep legacy field cleared
+    syncPlannerControls();
     pushUrlDebounced(); render();
   });
   els.sortBy.addEventListener('change', e => { state.sortBy = e.target.value; pushUrlDebounced(); render(); });
@@ -2679,11 +2743,12 @@ function wireEvents() {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.nightOnly = false; state.daytripOnly = false;
     state.maxDrive = 0; state.maxPrice = 0; state.priceRange = 0; state.howFar = 0;
+    state.tempBucket = 'any'; state.windBucket = 'any';
     state.skillLevel = 'mixed'; state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
     els.stateFilter.value    = 'All';
-    els.maxDriveFilter.value = '0';
+    if (els.maxDriveFilter) els.maxDriveFilter.value = '0';
     const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '0';
     // sync verdict tier buttons
     document.querySelectorAll('.vdb-tier-btn').forEach((b,i) => b.classList.toggle('active', i===0));
@@ -2722,17 +2787,25 @@ function wireEvents() {
   });
   els.closeCompare.addEventListener('click', () => els.comparePanel.classList.add('hidden'));
 
-  // Priority buttons (Low/Medium/High) — replace 1-10 sliders
+  // Planner buttons — some are scoring preferences, others are hard filters
   document.querySelectorAll('.priority-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const key = btn.closest('.priority-btns')?.dataset.key;
       if (!key) return;
+
       if (key === 'size') {
-        // Vertical is now a hard filter, not a weight
-        state.verticalFilter = btn.dataset.val; // 'small' | 'mid' | 'big'
+        state.verticalFilter = btn.dataset.val;
+      } else if (key === 'price') {
+        state.priceRange = Number(btn.dataset.val) || 0;
+        state.maxPrice = 0;
+      } else if (key === 'temp') {
+        state.tempBucket = btn.dataset.val || 'any';
+      } else if (key === 'wind') {
+        state.windBucket = btn.dataset.val || 'any';
       } else {
         state.weights[key] = Number(btn.dataset.val);
       }
+
       state.preset = 'custom';
       savePlannerState();
       syncPlannerControls();
@@ -2920,7 +2993,7 @@ function initialize() {
     els.passFilter.value     = state.passFilter;
     els.stateFilter.value    = state.stateFilter;
     els.sortBy.value         = state.sortBy;
-    els.maxDriveFilter.value = String(state.maxDrive);
+    if (els.maxDriveFilter) els.maxDriveFilter.value = String(state.maxDrive);
     const _hfSync = document.getElementById('howFarFilter'); if (_hfSync) _hfSync.value = String(state.howFar);
     if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.priceRange);
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
