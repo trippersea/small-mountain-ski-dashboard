@@ -991,7 +991,7 @@ function syncPlannerControls() {
 
   const w = state.weights;
   const passLabel  = state.passPreference === 'any' ? 'Any' : state.passPreference;
-  const snowLabel  = { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser' }[w.snow] || 'Any Snow';
+  const snowLabel  = snowPreferenceLabel();
   const sizeLabel  = { any: 'Any Size', small: 'Under 1,000ft', mid: '1,000–1,999ft', big: '2,000ft+' }[state.verticalFilter] || 'Any Size';
   const priceLabel = { 1: '$150+ Fine', 5: '$100–$149', 10: 'Under $100' }[w.value] || 'Any Price';
   const crowdLabel = { 1: 'No Issue!', 5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
@@ -1186,9 +1186,29 @@ function mountainSizeIndex(resort) {
 
 function snowPreferenceTarget() {
   const level = Number(state.weights?.snow ?? 1);
+  if (level >= 15) return 12;
   if (level >= 10) return 6;
   if (level >= 5) return 3;
   return 0;
+}
+
+function snowPreferenceLabel() {
+  const level = Number(state.weights?.snow ?? 1);
+  if (level >= 15) return 'Powder Day (12"+)';
+  if (level >= 10) return '6"+ Chaser';
+  if (level >= 5) return '3"+ Matters';
+  return 'Any Snow';
+}
+
+function plannerPriceConstraint() {
+  const level = Number(state.weights?.value ?? 1);
+  if (level >= 10) return { min: 0, max: 99, label: 'Under $100' };
+  if (level >= 5) return { min: 100, max: 149, label: '$100–$149' };
+  return null;
+}
+
+function tomorrowSnowInches(resortId) {
+  return Number(state.weatherCache?.[resortId]?.data?.forecast?.[0]?.snow || 0);
 }
 
 function driveScoreIndex(driveMins) {
@@ -1229,10 +1249,10 @@ function snowQualityIndex(resort, snowTotal) {
   if (target === 0) {
     live = Math.min(1, liveSnow / SCORING.SNOW_SCALE);
   } else if (liveSnow < target) {
-    const floor = target === 3 ? 0.15 : 0.05;
+    const floor = target === 12 ? 0.02 : (target === 3 ? 0.15 : 0.05);
     live = floor * Math.min(1, liveSnow / target);
   } else {
-    const cap = target === 3 ? 10 : 12;
+    const cap = target === 12 ? 18 : (target === 3 ? 10 : 12);
     live = Math.min(1, (liveSnow - target) / (cap - target));
   }
 
@@ -1467,9 +1487,12 @@ function hiddenGemScore(resort) {
 // ─── Filters ──────────────────────────────────────────────────────────────────
 function activeFilters() {
   const filters = [];
+  const plannerPrice = plannerPriceConstraint();
   if (state.search.trim())     filters.push(`Search: "${esc(state.search.trim())}"`);
   if (state.howFar > 0)        filters.push(`How Far: ${HOW_FAR_TIERS[state.howFar]?.label ?? ''}${state.origin ? '' : ' (set location to activate)'}`);
   if (state.priceRange > 0)    filters.push(`Ticket: ${PRICE_RANGES[state.priceRange]?.label ?? ''}`);
+  if (plannerPrice)            filters.push(`Budget: ${plannerPrice.label}`);
+  if (snowPreferenceTarget() >= 12) filters.push('Snow: Powder Day 12"+ tomorrow');
   if (state.passFilter !== 'All')  filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
   if (state.nightOnly)         filters.push('Night only');
@@ -1483,6 +1506,8 @@ function renderActiveFilters() {
 
 function filteredResorts() {
   const q = state.search.trim().toLowerCase();
+  const plannerPrice = plannerPriceConstraint();
+  const powderThreshold = snowPreferenceTarget() >= 12 ? 12 : null;
   return RESORTS.filter(r => {
     if (q && !`${r.name} ${r.state} ${r.passGroup} ${r.region}`.toLowerCase().includes(q)) return false;
     if (state.passFilter !== 'All'  && r.passGroup !== state.passFilter)  return false;
@@ -1499,6 +1524,11 @@ function filteredResorts() {
     if (state.priceRange > 0) {
       const pr = PRICE_RANGES[state.priceRange];
       if (pr && (r.price < pr.min || r.price > pr.max)) return false;
+    }
+    if (plannerPrice && (r.price < plannerPrice.min || r.price > plannerPrice.max)) return false;
+    if (powderThreshold !== null) {
+      const hasWx = !!state.weatherCache[r.id]?.data;
+      if (hasWx && tomorrowSnowInches(r.id) < powderThreshold) return false;
     }
     // Vertical hard filter
     if (state.verticalFilter === 'small' && r.vertical >= 1000)  return false;
@@ -2402,7 +2432,7 @@ function wireEvents() {
   const SLIDER_TIPS = {
     snow:   'Blends live forecast snow with historical avg snowfall. High = only mountains with genuinely good conditions rank well.',
     size:   'Composite of vertical drop, skiable acres, and longest run. High = big destination mountains rank above small hills.',
-    value:  'Rewards lower ticket prices. High = budget-friendly independents outrank expensive resorts regardless of snow.',
+    value:  'Acts as a real budget filter first. High = only mountains in your selected price bucket remain, then cheaper tickets still get a small edge.',
     crowds: 'Penalizes busy mountains based on pass network, city proximity, and price. High = quiet independents rise to the top.',
   };
   const tipEl = document.getElementById('sliderTooltip');
