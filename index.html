@@ -97,16 +97,32 @@
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
-          <div class="planner-summary-title">What makes your perfect ski day<span id="plannerFromLabel"></span>?<button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>&#9998;</button></div>
+          <div class="planner-summary-title"><span class="planner-title-copy">What makes your perfect ski day <span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>&#9998;</button></div>
           <div id="weightSummary" class="weight-summary"></div>
+        </div>
+
+        <div class="planner-pass-priority">
+          <div class="qs-card qs-card-pass-priority">
+            <div class="qs-card-header">
+              <span class="qs-card-title">My Pass</span>
+              <span class="qs-card-desc">Boosts mountains on your season pass</span>
+            </div>
+            <div class="qs-card-btns pass-pref-row">
+              <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
+              <button class="pass-pref-btn epic-btn"  data-pass="Epic">Epic</button>
+              <button class="pass-pref-btn ikon-btn"  data-pass="Ikon">Ikon</button>
+              <button class="pass-pref-btn indy-btn"  data-pass="Indy">Indy</button>
+              <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
+            </div>
+          </div>
         </div>
 
         <!-- Presets -->
         <div class="preset-row">
-          <button class="preset-btn active" data-preset="balanced">&#9878;&#65039; Balanced</button>
-          <button class="preset-btn" data-preset="powder">&#10052;&#65039; Powder</button>
-          <button class="preset-btn" data-preset="family">&#128106; Family</button>
-          <button class="preset-btn" data-preset="cheap">&#128176; Budget</button>
+          <button class="preset-btn active" data-preset="balanced">Balanced</button>
+          <button class="preset-btn" data-preset="powder">Powder</button>
+          <button class="preset-btn" data-preset="family">Family</button>
+          <button class="preset-btn" data-preset="cheap">Budget</button>
         </div>
 
         <!-- Priority pickers (Option B: 3-state Low/Medium/High, Option C: Drive removed) -->
@@ -114,13 +130,14 @@
           <div class="score-grid">
 
             <div class="score-control">
-              <div class="score-control-label">Snow Forecast</div>
+              <div class="score-control-label">Conditions</div>
               <div class="priority-btns" data-key="snow">
-                <button class="priority-btn" data-val="1">Any Conditions</button>
-                <button class="priority-btn" data-val="5">Good Snow &amp; Temps</button>
-                <button class="priority-btn" data-val="10">Best Conditions Possible</button>
+                <button class="priority-btn" data-val="1">Any Snow</button>
+                <button class="priority-btn" data-val="5">3&quot;+ Matters</button>
+                <button class="priority-btn" data-val="10">6&quot;+ Chaser</button>
+                <button class="priority-btn" data-val="15">Powder Day (12&quot;+)</button>
               </div>
-              <div class="slider-hint">Ranks tomorrow or this weekend by forecast snow, temps, and thaw risk</div>
+              <div class="slider-hint">Uses forecast snowfall targets: any forecast snow, 3&quot;+ matters, 6&quot;+ chase mode, or 12&quot;+ powder day mode</div>
             </div>
 
             <div class="score-control">
@@ -128,43 +145,20 @@
               <div class="priority-btns" data-key="size">
                 <button class="priority-btn active" data-val="any">Any Style</button>
                 <button class="priority-btn" data-val="small">Local / Smaller</button>
-                <button class="priority-btn" data-val="mid">1,000&ndash;1,500ft Sweet Spot</button>
+                <button class="priority-btn" data-val="sweet">1,000&ndash;1,500ft Sweet Spot</button>
                 <button class="priority-btn" data-val="big">Big-Mountain Feel</button>
               </div>
               <div class="slider-hint">Matches the kind of mountain experience you want, not just the biggest hill</div>
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Expected Temperature</div>
-              <div class="priority-btns" data-key="temp">
-                <button class="priority-btn active" data-val="any">Any Temp</button>
-                <button class="priority-btn" data-val="ideal">0&deg;&ndash;32&deg; Ideal</button>
-                <button class="priority-btn" data-val="spring">33&deg;+ Spring</button>
-                <button class="priority-btn" data-val="cold">Below 0&deg;</button>
-              </div>
-              <div class="slider-hint">Breaks out the temp piece separately so you can narrow by tomorrow&rsquo;s forecast range</div>
-            </div>
-
-            <div class="score-control">
-              <div class="score-control-label">Expected Wind</div>
-              <div class="priority-btns" data-key="wind">
-                <button class="priority-btn active" data-val="any">Any Wind</button>
-                <button class="priority-btn" data-val="light">0&ndash;15 mph</button>
-                <button class="priority-btn" data-val="breezy">16&ndash;25 mph</button>
-                <button class="priority-btn" data-val="holds">25+ mph</button>
-              </div>
-              <div class="slider-hint">Lets you filter for calm days versus breezy days or possible wind-hold setups</div>
-            </div>
-
-            <div class="score-control">
               <div class="score-control-label">Price</div>
-              <div class="priority-btns" data-key="price">
-                <button class="priority-btn active" data-val="0">Any</button>
-                <button class="priority-btn" data-val="1">Under $100</button>
-                <button class="priority-btn" data-val="2">$100&ndash;$149</button>
-                <button class="priority-btn" data-val="3">$150+ Fine</button>
+              <div class="priority-btns" data-key="value">
+                <button class="priority-btn" data-val="10">Under $100</button>
+                <button class="priority-btn" data-val="5">$100&ndash;$149</button>
+                <button class="priority-btn" data-val="1">$150+ Fine</button>
               </div>
-              <div class="slider-hint">Removes mountains that do not fit the ticket-price bucket you choose</div>
+              <div class="slider-hint">Boosts mountains that fit your budget</div>
             </div>
 
             <div class="score-control">
@@ -178,37 +172,6 @@
             </div>
 
           </div>
-        </div>
-
-        <!-- Quick Settings: prominent cards for Skill / Pass / Day Trip -->
-        <div class="quick-settings">
-
-          <div class="qs-card">
-            <div class="qs-card-header">
-              <span class="qs-card-title">Skill Level</span>
-              <span class="qs-card-desc">Beginner = mountains ≤800ft vertical · All Levels = everything</span>
-            </div>
-            <div class="qs-card-btns">
-              <button class="skill-btn" data-skill="beginner">&#128994; Beginner</button>
-              <button class="skill-btn active" data-skill="mixed">&#128309; All Levels</button>
-            </div>
-          </div>
-
-          <div class="qs-card">
-            <div class="qs-card-header">
-              <span class="qs-card-title">My Pass</span>
-              <span class="qs-card-desc">Boosts mountains on your season pass</span>
-            </div>
-            <div class="qs-card-btns pass-pref-row">
-              <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
-              <button class="pass-pref-btn epic-btn"  data-pass="Epic">Epic</button>
-              <button class="pass-pref-btn ikon-btn"  data-pass="Ikon">Ikon</button>
-              <button class="pass-pref-btn indy-btn"  data-pass="Indy">Indy</button>
-              <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
-            </div>
-          </div>
-
-
         </div>
 
       </section>
@@ -252,8 +215,9 @@
             <select id="maxPriceFilter">
               <option value="0">Any price</option>
               <option value="1">Under $100</option>
-              <option value="2">$100 – $149</option>
-              <option value="3">$150+ Fine</option>
+              <option value="2">$100 – $150</option>
+              <option value="3">$150 – $200</option>
+              <option value="4">$200+</option>
             </select>
           </div>
           <div class="field">
