@@ -2751,3 +2751,40 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .preset-row {
   margin-top: 0;
 }
+/* ─── Safety & polish 2025 ─────────────────────────────────────────────────── */
+
+:root {
+  --accent: #2563eb;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger:  #ef4444;
+}
+
+/* Verdict glow by quality tier */
+.verdict-great   { border-top: 6px solid var(--success);  box-shadow: 0 0 0 4px rgba(22,163,74,0.12); }
+.verdict-good    { border-top: 6px solid var(--accent);   box-shadow: 0 0 0 4px rgba(37,99,235,0.12); }
+.verdict-marginal{ border-top: 6px solid var(--warning);  box-shadow: 0 0 0 4px rgba(245,158,11,0.12); }
+.verdict-bad     { border-top: 6px solid var(--danger);   box-shadow: 0 0 0 4px rgba(239,68,68,0.12); }
+
+/* Mobile card interaction */
+.mob-card {
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.mob-card:hover,
+.mob-card:active { transform: translateY(-3px); box-shadow: 0 16px 32px rgba(37,99,235,0.14); }
+
+/* Responsive planner/verdict layout */
+@media (max-width: 960px) {
+  .planner-verdict-row {
+    flex-direction: column;
+    gap: 28px;
+  }
+}
+
+/* Better button feel */
+.btn, .priority-btn, .pass-pref-btn {
+  transition: all 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
