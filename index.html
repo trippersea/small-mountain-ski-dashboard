@@ -32,91 +32,359 @@
     </div>
   </nav>
 
-  <button id="backToTop" class="back-to-top" aria-label="Back to top">↑ Top</button>
+  <button id="backToTop" class="back-to-top" aria-label="Back to top">Top</button>
 
   <div class="container">
 
-    <!-- HERO -->
+    <!-- HERO: value prop + location + AI chat -->
     <section id="searchSection" class="hero card hero-search">
       <div class="hero-search-inner">
-        <div class="hero-headline">Where are you skiing from?</div>
-        <div class="hero-subhead">Enter ZIP code or city — we'll find your best mountain this weekend.</div>
 
+        <div class="hero-headline">Where are you skiing from?</div>
+        <div class="hero-subhead">Enter your ZIP code or city and we&rsquo;ll find your best mountain.</div>
+
+        <!-- Big pill search bar -->
         <div class="hero-search-bar">
-          <input id="originInput" type="text" class="hero-search-input"
-                 placeholder="e.g. 02301 or Brockton, MA" autocomplete="off" autofocus />
+          <input
+            id="originInput"
+            type="text"
+            class="hero-search-input"
+            placeholder="ZIP code or city &mdash; e.g. 02101 or Boston, MA"
+            autocomplete="off"
+            autofocus
+          />
           <button id="setLocation" class="hero-search-btn">Find My Mountain</button>
         </div>
 
+        <!-- Secondary actions -->
         <div class="hero-search-meta">
-          <button id="detectLocation" class="hero-locate-link">Use current location</button>
-          <span class="hero-meta-divider">·</span>
-          <label class="remember-location-label">
+          <button id="detectLocation" class="hero-locate-link">Use my location</button>
+          <span class="hero-meta-divider" aria-hidden="true">·</span>
+          <label class="remember-location-label" id="rememberLocationLabel">
             <input type="checkbox" id="rememberLocation" />
             Remember this location
-            <span class="location-privacy-tip" tabindex="0">?
-              <span class="location-privacy-tooltip">Stored only in your browser — never sent to servers.</span>
+            <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info
+              <span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span>
             </span>
           </label>
         </div>
 
         <div id="locationStatus" class="helper-text hero-location-status"></div>
 
+        <!-- AI chat — quiet secondary -->
         <div class="hero-ai-row">
-          <span class="hero-ai-label">Not sure? Tell us your perfect ski day</span>
+          <span class="hero-ai-label">Not sure? Describe your ideal ski day</span>
           <div class="hero-ai-input-row">
-            <input id="aiChatInput" type="text" class="ai-chat-input"
-                   placeholder='e.g. "Ikon pass, < 3 hrs from Boston, fresh powder"' />
+            <input
+              id="aiChatInput"
+              type="text"
+              class="ai-chat-input hero-ai-input"
+              placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
+              aria-label="Describe your ideal ski day"
+            />
             <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
           </div>
-          <div id="aiChatResult" class="ai-chat-result hidden"></div>
+          <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
         </div>
+
       </div>
     </section>
 
+    <!-- PLANNER + VERDICT: two-column layout -->
     <div class="planner-verdict-row">
-      <!-- Planner -->
+
+      <!-- LEFT: Planner controls -->
       <section id="plannerSection" class="card panel planner-col">
-        <!-- ... your existing planner HTML remains here ... -->
+
+        <div class="planner-col-header">
+          <div class="planner-summary-title"><span class="planner-title-copy">What makes your perfect ski day<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit</button></div>
+          <div id="weightSummary" class="weight-summary"></div>
+        </div>
+
+        <div class="planner-pass-priority">
+          <div class="qs-card qs-card-pass-priority">
+            <div class="qs-card-header">
+              <span class="qs-card-title">My Pass</span>
+              <span class="qs-card-desc">Boosts mountains on your season pass</span>
+            </div>
+            <div class="qs-card-btns pass-pref-row">
+              <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
+              <button class="pass-pref-btn epic-btn" data-pass="Epic">Epic</button>
+              <button class="pass-pref-btn ikon-btn" data-pass="Ikon">Ikon</button>
+              <button class="pass-pref-btn indy-btn" data-pass="Indy">Indy</button>
+              <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="preset-row">
+          <button class="preset-btn active" data-preset="balanced">Balanced</button>
+          <button class="preset-btn" data-preset="powder">Powder</button>
+          <button class="preset-btn" data-preset="family">Family</button>
+          <button class="preset-btn" data-preset="cheap">Budget</button>
+        </div>
+
+        <div id="plannerDetails" class="planner-details">
+          <div class="score-grid">
+
+            <div class="score-control">
+              <div class="score-control-label">Snow Forecast</div>
+              <div class="priority-btns" data-key="snow">
+                <button class="priority-btn" data-val="1">Any Snow</button>
+                <button class="priority-btn" data-val="5">3&quot;+ Matters</button>
+                <button class="priority-btn" data-val="10">6&quot;+ Chaser</button>
+                <button class="priority-btn" data-val="15">Powder Day (12&quot;+)</button>
+              </div>
+              <div class="slider-hint">Uses tomorrow's snowfall target so you can chase any fresh snow, 3&quot;+ value, 6&quot;+ storm totals, or a true 12&quot;+ powder day.</div>
+            </div>
+
+            <div class="score-control">
+              <div class="score-control-label">Expected Temperature</div>
+              <div class="priority-btns" data-key="temp">
+                <button class="priority-btn active" data-val="any">Any Temp</button>
+                <button class="priority-btn" data-val="ideal">0&deg;&ndash;32&deg; Ideal</button>
+                <button class="priority-btn" data-val="spring">33&deg;+ Spring</button>
+                <button class="priority-btn" data-val="cold">Below 0&deg;</button>
+              </div>
+              <div class="slider-hint">Cold, dry days score best. Bitter cold is a penalty, and spring temps are a smaller lift when the wind stays manageable.</div>
+            </div>
+
+            <div class="score-control">
+              <div class="score-control-label">Expected Wind</div>
+              <div class="priority-btns" data-key="wind">
+                <button class="priority-btn active" data-val="any">Any Wind</button>
+                <button class="priority-btn" data-val="light">0&ndash;15 mph</button>
+                <button class="priority-btn" data-val="breezy">16&ndash;25 mph</button>
+                <button class="priority-btn" data-val="holds">25+ mph</button>
+              </div>
+              <div class="slider-hint">Light wind skis best. Breezy is manageable. At 25+ mph, some mountains can feel rough or start to see lift holds.</div>
+            </div>
+
+            <div class="score-control">
+              <div class="score-control-label">Mountain Style</div>
+              <div class="priority-btns" data-key="size">
+                <button class="priority-btn active" data-val="any">Any Style</button>
+                <button class="priority-btn" data-val="small">Local / Smaller</button>
+                <button class="priority-btn" data-val="mid">1,000&ndash;1,500ft Sweet Spot</button>
+                <button class="priority-btn" data-val="big">Big-Mountain Feel</button>
+              </div>
+              <div class="slider-hint">Matches the kind of mountain experience you want, not just the biggest hill.</div>
+            </div>
+
+            <div class="score-control">
+              <div class="score-control-label">Price</div>
+              <div class="priority-btns" data-key="value">
+                <button class="priority-btn active" data-val="0">Any</button>
+                <button class="priority-btn" data-val="10">Under $100</button>
+                <button class="priority-btn" data-val="5">$100&ndash;$149</button>
+                <button class="priority-btn" data-val="1">$150+ Fine</button>
+              </div>
+              <div class="slider-hint">Acts as a true ticket-price filter first, then uses value scoring inside the remaining set.</div>
+            </div>
+
+            <div class="score-control">
+              <div class="score-control-label">Crowds</div>
+              <div class="priority-btns" data-key="crowd">
+                <button class="priority-btn" data-val="1">No Issue!</button>
+                <button class="priority-btn" data-val="5">Not Ideal, But Fine</button>
+                <button class="priority-btn" data-val="10">Fewer the Better</button>
+              </div>
+              <div class="slider-hint">Penalizes popular mountains on busy days so smaller, calmer options can compete.</div>
+            </div>
+
+          </div>
+        </div>
+
       </section>
 
-      <!-- Verdict (was missing / incomplete in some versions) -->
-      <section id="verdictSection" class="card panel verdict-col">
-        <div id="verdictCard"></div>
+      <!-- RIGHT: Should I Go? verdict -->
+      <section id="verdictSection" class="verdict-section card verdict-col">
+        <div class="verdict-header">
+          <h2>My Mountain Pick</h2>
+          <p class="muted small">Live weather + your settings = a straight answer.</p>
+        </div>
+        <div id="verdictCard">
+          <div class="verdict-placeholder">
+            <div class="verdict-placeholder-text">Your top match will appear here, with forecast, drive time, why it fits, and the best day to go.</div>
+          </div>
+        </div>
       </section>
+
+    </div><!-- /planner-verdict-row -->
+
+
+    <!-- FILTERS -->
+    <section class="toolbar card">
+      <div class="toolbar-row">
+        <span class="toolbar-label">Narrow the Mountain</span>
+        <div class="toolbar-controls">
+          <div class="field">
+            <label for="howFarFilter">How Far Will You Go?</label>
+            <span class="filter-hint">Only show mountains within this drive range.</span>
+            <select id="howFarFilter">
+              <option value="0">Day Trip (&le;3h)</option>
+              <option value="1">Weekend (&le;6h)</option>
+              <option value="2">All Distances</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="maxPriceFilter">Ticket Price</label>
+            <span class="filter-hint">Choose a budget range.</span>
+            <select id="maxPriceFilter">
+              <option value="0">Any price</option>
+              <option value="1">Under $100</option>
+              <option value="2">$100 – $150</option>
+              <option value="3">$150 – $200</option>
+              <option value="4">$200+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="passFilter">Pass</label>
+            <span class="filter-hint">Show mountains on a specific pass.</span>
+            <select id="passFilter"></select>
+          </div>
+          <div class="field">
+            <label for="stateFilter">State</label>
+            <span class="filter-hint">Focus on one state.</span>
+            <select id="stateFilter"></select>
+          </div>
+          <div class="field">
+            <label for="sortBy">Sort by</label>
+            <span class="filter-hint">Rank results by what matters most.</span>
+            <select id="sortBy">
+              <option value="planner">Ski Score</option>
+              <option value="storm">Storm Snow</option>
+              <option value="drive">Drive Time</option>
+              <option value="price">Ticket Price</option>
+              <option value="vertical">Vertical</option>
+              <option value="avgSnowfall">Avg Snowfall</option>
+            </select>
+          </div>
+          <div class="field field-toggle">
+            <label>Night Skiing</label>
+            <span class="filter-hint">Show only mountains with night skiing.</span>
+            <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">Off</button>
+          </div>
+          <!-- toggleDaytrip removed — distance handled by howFarFilter -->
+          <div class="field field-toggle">
+            <label>&nbsp;</label>
+            <span class="filter-hint">&nbsp;</span>
+            <button id="resetFilters" class="btn btn-secondary">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div id="activeFilters" class="active-filters"></div>
+    </section>
+
+    <!-- COMPARE TABLE -->
+    <section id="compareSection" class="card panel">
+      <div class="section-header">
+        <div>
+          <h2>Compare All Mountains</h2>
+          <p class="muted small">Ranked by your score settings. Search by name, state, or pass. Click any column to sort.</p>
+        </div>
+        <div id="resultCount" class="helper-text result-count"></div>
+      </div>
+      <div class="table-toolbar">
+        <div class="table-search-wrap">
+          <input id="tableSearch" type="text" class="table-search-input" placeholder="Search mountains, state, or pass&hellip;" autocomplete="off" />
+        </div>
+        <button id="tableViewAllBtn" class="btn btn-secondary">View All</button>
+      </div>
+
+      <!-- Desktop table (hidden on mobile via CSS) -->
+      <div class="table-wrap">
+        <table id="compareTable" class="comparison-table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col" class="sortable-th" data-sort="name">Name <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="state">State <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="pass">Pass <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="planner">Score <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="storm">Storm 3d <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="hist7day" title="Snowfall in the past 7 days">7-Day Snow <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="drive">Drive <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="vertical">Vertical <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="trails">Trails <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="price">Day Ticket* <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="crowd">Crowd <span class="sort-indicator"></span></th>
+            </tr>
+          </thead>
+          <tbody id="comparisonBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Mobile card grid (hidden on desktop via CSS) -->
+      <div id="mobileCardGrid" class="mobile-card-grid" aria-label="Mountain cards"></div>
+
+      <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
+    </section>
+
+    <div id="compareTray" class="compare-tray hidden">
+      <div class="compare-tray-inner">
+        <span class="tray-label">Comparing</span>
+        <div id="comparePills" class="compare-pills"></div>
+        <button id="compareBtn" class="btn btn-primary">Open side-by-side</button>
+        <button id="clearCompare" class="btn btn-secondary">Clear all</button>
+      </div>
     </div>
 
-    <!-- Compare section -->
-    <section id="compareSection" class="card panel">
-      <!-- ... your existing compare table + mobile grid ... -->
+    <section id="comparePanel" class="card panel hidden">
+      <div class="section-header"><h2>Side-by-Side Comparison</h2><button id="closeCompare" class="btn btn-secondary">Close</button></div>
+      <div id="compareContent"></div>
     </section>
 
-    <!-- Storm chaser + Hidden gems -->
+    <!-- STORM + HIDDEN GEMS -->
     <section class="feature-grid">
-      <section id="stormSection" class="card panel">...</section>
-      <section id="hiddenGemSection" class="card panel">...</section>
+      <section id="stormSection" class="card panel">
+        <div class="section-header"><div>
+          <h2>Storm Chaser <span class="info-tooltip" data-tooltip="Storm Chaser ranks mountains by total forecast snowfall over the next 3 days — useful when an active storm is arriving and you want to find the best powder.
+
+The 'Snow' weight in your planner blends forecast + historical snowfall."><svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='currentColor' style='color:var(--muted);vertical-align:middle;cursor:pointer;margin-left:2px'><path d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16'/><path d='m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0'/></svg></span></h2>
+          <p class="muted small">Resorts with the most forecast snowfall in the next 3 days.</p>
+        </div></div>
+        <div id="stormGrid" class="card-grid"></div>
+      </section>
+
+      <section id="hiddenGemSection" class="card panel">
+        <div class="section-header"><div>
+          <h2>Hidden Gems</h2>
+          <p class="muted small">Lower crowds, good value, real terrain &mdash; the anti-resort picks.</p>
+        </div></div>
+        <div id="hiddenGemGrid" class="card-grid"></div>
+      </section>
     </section>
 
-    <!-- Detail view -->
     <section id="detailSection" class="card panel hidden">
       <div id="detailCard"></div>
     </section>
 
-    <!-- Map -->
+    <!-- MAP -->
     <section id="mapSection" class="card panel">
-      <!-- ... existing map HTML ... -->
+      <div class="section-header">
+        <div><h2>Northeast Map</h2><p class="muted small">Drive radius, storm intensity, or pass network.</p></div>
+        <div class="map-mode-row">
+          <button class="map-mode-btn active" data-map-mode="drive">Drive</button>
+          <button class="map-mode-btn" data-map-mode="storm">Storm</button>
+          <button class="map-mode-btn" data-map-mode="pass">Pass</button>
+          <button class="map-mode-btn" data-map-mode="vertical">Vertical</button>
+        </div>
+      </div>
+      <div class="map-legend" id="mapLegend"></div>
+      <div id="leafletMap" class="leaflet-map"></div>
     </section>
 
-    <!-- Footer summary -->
+    <!-- DATABASE SUMMARY FOOTER -->
     <section class="db-summary-section">
-      <div class="db-summary-label">Database summary</div>
+      <div class="db-summary-label" style="text-align:center">What's in the database</div>
       <div id="summaryCards" class="db-summary-grid"></div>
     </section>
 
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="resorts-data.js"></script>
+  <script src="resorts-national.js"></script>
   <script src="resorts.js"></script>
 </body>
 </html>
