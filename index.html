@@ -206,6 +206,8 @@
               <option value="2">All Distances</option>
             </select>
           </div>
+          <!-- keep legacy hidden element so JS els.maxDriveFilter reference doesn't throw -->
+          <select id="maxDriveFilter" style="display:none"><option value="0">0</option></select>
           <div class="field">
             <label for="maxPriceFilter">Ticket Price</label>
             <span class="filter-hint">Choose a budget range.</span>
@@ -244,6 +246,7 @@
             <span class="filter-hint">Show only mountains with night skiing.</span>
             <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">Off</button>
           </div>
+          <!-- toggleDaytrip removed — distance handled by howFarFilter -->
           <div class="field field-toggle">
             <label>&nbsp;</label>
             <span class="filter-hint">&nbsp;</span>
