@@ -1797,17 +1797,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   font-weight: 800;
 }
 
-.planner-summary-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.planner-title-text {
-  display: inline-block;
-  white-space: nowrap;
-}
-
 /* Small pencil edit button */
 .planner-edit-btn {
   background: none;
@@ -1881,6 +1870,24 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   color: var(--muted);
   min-width: 60px;
   flex-shrink: 0;
+}
+
+.qs-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.qs-btns .pass-pref-btn {
+  font-size: 11px;
+  padding: 4px 9px;
+  height: auto;
+}
+
+.qs-hint {
+  font-size: 10px;
+  color: var(--muted);
+  opacity: .7;
 }
 
 /* Right column — verdict */
@@ -2140,7 +2147,8 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 5px;
 }
 
-/* Buttons inside qs-cards */
+/* Buttons inside qs-cards — slightly larger than old qs-btns */
+
 .qs-card-btns .pass-pref-btn {
   font-size: 12px;
   padding: 5px 10px;
@@ -2272,111 +2280,4 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 .verdict-running-meta {
   line-height: 1.45;
-}
-
-
-/* Source-of-truth fixes: keep planner heading on one clean line and match verdict action buttons */
-.planner-summary-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: nowrap;
-}
-
-.planner-title-text {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0;
-  flex-wrap: nowrap;
-  min-width: 0;
-}
-
-.planner-title-copy {
-  white-space: nowrap;
-}
-
-#plannerFromLabel {
-  display: inline;
-  white-space: nowrap;
-  margin-left: 0.32em;
-}
-
-.planner-title-qmark {
-  display: inline;
-  white-space: nowrap;
-}
-
-.verdict-share-btn,
-.verdict-compare-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 9px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* ─── Surgical fixes: My Pass spacing + Also In the Running organization ─── */
-.planner-pass-priority {
-  margin-bottom: 14px;
-}
-
-.planner-pass-priority .qs-card {
-  padding-bottom: 12px;
-}
-
-.planner-pass-priority + .preset-row {
-  margin-top: 2px;
-}
-
-.verdict-right .verdict-running-list {
-  display: grid;
-  gap: 12px;
-}
-
-.verdict-right .verdict-running-item.verdict-resort-link {
-  display: block;
-  width: 100%;
-  padding: 14px 16px;
-  text-align: left;
-  background: #fff;
-  border: 1.5px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-sm);
-  color: var(--text);
-  text-decoration: none;
-  transition: border-color .12s, background .12s, box-shadow .12s, transform .08s;
-}
-
-.verdict-right .verdict-running-item.verdict-resort-link:hover {
-  border-color: var(--accent);
-  background: #f8fbff;
-  box-shadow: 0 8px 20px rgba(30,60,100,.10);
-  transform: translateY(-1px);
-}
-
-.verdict-right .verdict-running-main {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-}
-
-.verdict-right .verdict-running-name {
-  display: block;
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.2;
-  color: var(--text);
-}
-
-.verdict-right .verdict-running-meta {
-  display: block;
-  margin-top: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--muted);
 }
