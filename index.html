@@ -16,7 +16,8 @@
 </head>
 <body>
   <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
-  
+  <div id="sliderTooltip" class="slider-tooltip" role="tooltip"></div>
+
   <nav class="top-nav">
     <div class="top-nav-inner">
       <span class="nav-brand">Where To Ski?!</span>
@@ -27,7 +28,7 @@
       <a href="#stormSection" class="nav-secondary">Storm Chaser</a>
       <a href="#hiddenGemSection" class="nav-secondary">Hidden Gems</a>
       <a href="#mapSection" class="nav-secondary">Map</a>
-      <button class="btn-ghost nav-share" onclick="copyShareLink()">Share</button>
+      <button class="btn-ghost nav-share" onclick="copyShareLink()">&#128279; Share</button>
     </div>
   </nav>
 
@@ -57,7 +58,7 @@
 
         <!-- Secondary actions -->
         <div class="hero-search-meta">
-          <button id="detectLocation" class="hero-locate-link">Use my location</button>
+          <button id="detectLocation" class="hero-locate-link">&#128225; Use my location</button>
           <span class="hero-meta-divider" aria-hidden="true">·</span>
           <label class="remember-location-label" id="rememberLocationLabel">
             <input type="checkbox" id="rememberLocation" />
@@ -81,7 +82,7 @@
               placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
               aria-label="Describe your ideal ski day"
             />
-            <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+            <button id="aiChatBtn" class="btn btn-ai">Ask AI &rarr;</button>
           </div>
           <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
         </div>
@@ -124,79 +125,55 @@
           <button class="preset-btn" data-preset="cheap">Budget</button>
         </div>
 
-          <!-- Planner filters -->
-  <div id="plannerDetails" class="planner-details">
-    <div class="score-grid">
+        <!-- Priority pickers (Option B: 3-state Low/Medium/High, Option C: Drive removed) -->
+        <div id="plannerDetails" class="planner-details">
+          <div class="score-grid">
 
-      <div class="score-control">
-        <div class="score-control-label">Snow Forecast</div>
-        <div class="priority-btns" data-key="snow">
-          <button class="priority-btn" data-val="1">Any Snow</button>
-          <button class="priority-btn" data-val="5">3&quot;+ Matters</button>
-          <button class="priority-btn" data-val="10">6&quot;+ Chaser</button>
-          <button class="priority-btn" data-val="15">Powder Day (12&quot;+)</button>
+            <div class="score-control">
+              <div class="score-control-label">Conditions</div>
+              <div class="priority-btns" data-key="snow">
+                <button class="priority-btn" data-val="1">Any Snow</button>
+                <button class="priority-btn" data-val="5">3&quot;+ Matters</button>
+                <button class="priority-btn" data-val="10">6&quot;+ Chaser</button>
+              </div>
+              <div class="slider-hint">Uses forecast snowfall targets: any forecast snow, 3"+ matters, or 6"+ chase mode</div>
+            </div>
+
+            <div class="score-control">
+              <div class="score-control-label">Mountain Style</div>
+              <div class="priority-btns" data-key="size">
+                <button class="priority-btn active" data-val="any">Any Style</button>
+                <button class="priority-btn" data-val="small">Local / Smaller</button>
+                <button class="priority-btn" data-val="sweet">1,000&ndash;1,500ft Sweet Spot</button>
+                <button class="priority-btn" data-val="big">Big-Mountain Feel</button>
+              </div>
+              <div class="slider-hint">Matches the kind of mountain experience you want, not just the biggest hill</div>
+            </div>
+
+            <div class="score-control">
+              <div class="score-control-label">Price</div>
+              <div class="priority-btns" data-key="value">
+                <button class="priority-btn" data-val="10">Under $100</button>
+                <button class="priority-btn" data-val="5">$100&ndash;$149</button>
+                <button class="priority-btn" data-val="1">$150+ Fine</button>
+              </div>
+              <div class="slider-hint">Boosts mountains that fit your budget</div>
+            </div>
+
+            <div class="score-control">
+              <div class="score-control-label">Crowds</div>
+              <div class="priority-btns" data-key="crowd">
+                <button class="priority-btn" data-val="1">No Issue!</button>
+                <button class="priority-btn" data-val="5">Not Ideal, But Fine</button>
+                <button class="priority-btn" data-val="10">Fewer the Better</button>
+              </div>
+              <div class="slider-hint">Penalizes popular mountains on busy days</div>
+            </div>
+
+          </div>
         </div>
-        <div class="slider-hint">Uses tomorrow&apos;s forecast snowfall target: any snow, 3&quot;+ matters, 6&quot;+ chase mode, or 12&quot;+ powder day mode.</div>
-      </div>
 
-      <div class="score-control">
-        <div class="score-control-label">Expected Temperature</div>
-        <div class="priority-btns" data-key="temp">
-          <button class="priority-btn active" data-val="any">Any Temp</button>
-          <button class="priority-btn" data-val="ideal">0&deg;&ndash;32&deg; Ideal</button>
-          <button class="priority-btn" data-val="spring">33&deg;+ Spring</button>
-          <button class="priority-btn" data-val="cold">Below 0&deg;</button>
-        </div>
-        <div class="slider-hint">Ideal ski weather gets the biggest boost. Bitter cold is penalized, and spring-like temps get a smaller lift.</div>
-      </div>
-
-      <div class="score-control">
-        <div class="score-control-label">Expected Wind</div>
-        <div class="priority-btns" data-key="wind">
-          <button class="priority-btn active" data-val="any">Any Wind</button>
-          <button class="priority-btn" data-val="light">0&ndash;15 mph</button>
-          <button class="priority-btn" data-val="breezy">16&ndash;25 mph</button>
-          <button class="priority-btn" data-val="holds">25+ mph</button>
-        </div>
-        <div class="slider-hint">Light wind skis best. Breezy is manageable. 25+ mph can mean rough skiing or possible holds.</div>
-      </div>
-
-      <div class="score-control">
-        <div class="score-control-label">Mountain Style</div>
-        <div class="priority-btns" data-key="size">
-          <button class="priority-btn active" data-val="any">Any Style</button>
-          <button class="priority-btn" data-val="small">Local / Smaller</button>
-          <button class="priority-btn" data-val="mid">1,000&ndash;1,500ft Sweet Spot</button>
-          <button class="priority-btn" data-val="big">Big-Mountain Feel</button>
-        </div>
-        <div class="slider-hint">Matches the kind of mountain experience you want, not just the biggest hill.</div>
-      </div>
-
-      <div class="score-control">
-        <div class="score-control-label">Price</div>
-        <div class="priority-btns" data-key="value">
-          <button class="priority-btn active" data-val="0">Any</button>
-          <button class="priority-btn" data-val="10">Under $100</button>
-          <button class="priority-btn" data-val="5">$100&ndash;$149</button>
-          <button class="priority-btn" data-val="1">$150+ Fine</button>
-        </div>
-        <div class="slider-hint">Acts as a real ticket-price filter first, then value helps sort the remaining resorts.</div>
-      </div>
-
-      <div class="score-control">
-        <div class="score-control-label">Crowds</div>
-        <div class="priority-btns" data-key="crowd">
-          <button class="priority-btn" data-val="1">No Issue!</button>
-          <button class="priority-btn" data-val="5">Not Ideal, But Fine</button>
-          <button class="priority-btn" data-val="10">Fewer the Better</button>
-        </div>
-        <div class="slider-hint">Penalizes popular mountains on busy days.</div>
-      </div>
-
-    </div>
-  </div>
-
-</section>
+      </section>
 
       <!-- RIGHT: Should I Go? verdict -->
       <section id="verdictSection" class="verdict-section card verdict-col">
@@ -229,6 +206,8 @@
               <option value="2">All Distances</option>
             </select>
           </div>
+          <!-- keep legacy hidden element so JS els.maxDriveFilter reference doesn't throw -->
+          <select id="maxDriveFilter" style="display:none"><option value="0">0</option></select>
           <div class="field">
             <label for="maxPriceFilter">Ticket Price</label>
             <span class="filter-hint">Choose a budget range.</span>
@@ -267,6 +246,7 @@
             <span class="filter-hint">Show only mountains with night skiing.</span>
             <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">Off</button>
           </div>
+          <!-- toggleDaytrip removed — distance handled by howFarFilter -->
           <div class="field field-toggle">
             <label>&nbsp;</label>
             <span class="filter-hint">&nbsp;</span>
@@ -386,6 +366,7 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="resorts.js"></script>
+  <script src="resorts-national.js"></script>
+  <script src="resorts.js"></script>
 </body>
 </html>
