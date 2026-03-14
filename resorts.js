@@ -754,19 +754,13 @@ function renderVerdict(resorts) {
           const altDistanceText = formatDistanceFromOrigin(item.resort.id);
           return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
             <span class="verdict-running-main">
-              <span class="verdict-running-name-row">
-                <span class="verdict-running-name">${esc(item.resort.name)}</span>
-                <span class="verdict-running-pass">${esc(item.resort.passGroup || 'Independent')}</span>
-              </span>
-              <span class="verdict-running-meta">
-                <span>Distance: ${esc(altDistanceText)}</span>
-                <span>Drive: ${esc(altDriveText)}</span>
-              </span>
+              <span class="verdict-running-name">${esc(item.resort.name)}</span>
+              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · Drive Time: ${esc(altDriveText)}</span>
             </span>
           </button>`;
         }).join('')}</div>
         <div class="verdict-compare-row">
-          <button class="btn btn-outline verdict-action-btn verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
+          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
         </div>
       </div>`
     : '';
@@ -791,7 +785,7 @@ function renderVerdict(resorts) {
           ${noOrigin}
         </div>
         <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-action-btn verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
       </div>
       <div class="verdict-right">
@@ -2001,6 +1995,7 @@ function renderDetail({ scroll = false } = {}) {
           <div>Snow quality: <strong>${skis.factors.snow}</strong></div>
           <div>Drive score: <strong>${skis.factors.drive}</strong></div>
           <div>Mountain size: <strong>${skis.factors.size}</strong></div>
+          <div>Skill match: <strong>${skis.factors.skill}</strong></div>
           <div>Value: <strong>${skis.factors.value}</strong></div>
           <div>Crowd penalty: <strong>−${skis.factors.crowdPenalty}</strong></div>
           ${skis.condIdx !== null ? `<div>Live conditions: <strong>${skis.condBonus > 0 ? '+' : ''}${Math.round(skis.condBonus)} pts</strong></div>` : ''}
@@ -2009,7 +2004,41 @@ function renderDetail({ scroll = false } = {}) {
       </div>
       <div class="sub-card sub-card-conditions">
         <h3 class="sub-card-title">Live Conditions</h3>
-        <div class="muted small">Live conditions are currently turned off while the data pipeline is being improved.</div>
+        ${(() => {
+          const c = conditionsCache.get(resort.id)?.data;
+          if (!c) {
+            const hasSite = !!resort.website;
+            return hasSite
+              ? `<div class="conditions-loading"><div class="conditions-spinner"></div><div class="muted small">Fetching live report from resort website…</div></div>`
+              : `<div class="muted small">No website on record for this resort.</div>`;
+          }
+          const trailPct   = (c.trailsOpen != null && c.trailsTotal > 0) ? Math.round(c.trailsOpen / c.trailsTotal * 100) : null;
+          const liftPct    = (c.liftsOpen  != null && c.liftsTotal  > 0) ? Math.round(c.liftsOpen  / c.liftsTotal  * 100) : null;
+          const trailColor = trailPct == null ? '#999' : trailPct >= 80 ? '#16a34a' : trailPct >= 50 ? '#f0b44c' : '#e07a5f';
+          const liftColor  = liftPct  == null ? '#999' : liftPct  >= 75 ? '#16a34a' : liftPct  >= 40 ? '#f0b44c' : '#e07a5f';
+          return `
+          <div class="conditions-grid">
+            <div class="cond-stat">
+              <div class="cond-stat-value">${c.baseDepth != null ? c.baseDepth + '"' : '—'}</div>
+              <div class="cond-stat-label">Base Depth</div>
+            </div>
+            <div class="cond-stat">
+              <div class="cond-stat-value">${c.newSnow24h != null ? c.newSnow24h + '"' : '—'}</div>
+              <div class="cond-stat-label">New (24h)</div>
+            </div>
+            <div class="cond-stat">
+              <div class="cond-stat-value" style="color:${trailColor}">${c.trailsOpen != null ? c.trailsOpen : '—'}${c.trailsTotal ? '/' + c.trailsTotal : ''}</div>
+              <div class="cond-stat-label">Trails Open</div>
+            </div>
+            <div class="cond-stat">
+              <div class="cond-stat-value" style="color:${liftColor}">${c.liftsOpen != null ? c.liftsOpen : '—'}${c.liftsTotal ? '/' + c.liftsTotal : ''}</div>
+              <div class="cond-stat-label">Lifts Open</div>
+            </div>
+          </div>
+          ${c.surface ? `<div class="cond-surface">${esc(c.surface)}</div>` : ''}
+          ${c.notes   ? `<div class="cond-notes muted small">${esc(c.notes)}</div>` : ''}
+          ${c.reportDate ? `<div class="cond-date muted small" style="margin-top:6px">Report: ${esc(c.reportDate)}</div>` : ''}`;
+        })()}
       </div>
       <div class="sub-card">
         <h3 class="sub-card-title">Crowd Forecast</h3>
@@ -2089,13 +2118,21 @@ function renderMapLegend() {
 }
 
 function initMap() {
-  if (map) return;
+  // Guard map init so the rest of the app still works even if Leaflet fails to load.
+  const mapEl = document.getElementById('leafletMap');
+  if (!mapEl) return false;
+  if (typeof L === 'undefined' || !L?.map || !L?.tileLayer || !L?.marker || !L?.divIcon) {
+    mapEl.innerHTML = '<div class="muted small" style="padding:16px">Map unavailable right now.</div>';
+    return false;
+  }
+  if (map) return true;
   map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
+  return true;
 }
 
 function updateMap(resorts) {
-  initMap();
+  if (!initMap()) return;
   renderMapLegend();
   const filtered = new Set(resorts.map(r => r.id));
   RESORTS.forEach(resort => {
@@ -2179,13 +2216,13 @@ async function askAI(query) {
     );
 
     const resortLink = matched
-      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>`
+      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">&#128269; View ${esc(data.resortName)} in table</button>`
       : '';
 
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-success';
       els.aiChatResult.innerHTML =
-        `<div class="ai-result-header"><strong>AI Pick: ${esc(data.resortName)}</strong></div>` +
+        `<div class="ai-result-header"><strong>&#129302; AI Pick: ${esc(data.resortName)}</strong></div>` +
         `<div class="ai-result-text">${esc(data.explanation)}</div>` +
         (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
     }
