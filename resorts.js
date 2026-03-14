@@ -8,11 +8,11 @@ const SCORING = Object.freeze({
   VERTICAL_CEILING:    3000,  // normalization ceiling — 3000ft = world-class, full credit
   ACRES_CEILING:       2500,  // normalization ceiling — national p80
   LONGEST_RUN_CEILING:  4.0,  // miles — Killington 6mi gets capped, fair spread
-  // Snow — forecast-led for a next-day decision engine
-  SNOW_SCALE:             8,  // inches — 8"+ = full credit in Any Snow mode
+  // Snow — live forecast + historical reliability blend
+  SNOW_SCALE:             8,  // inches — 8"+ = max live forecast score
   SNOW_AVG_MAX:         300,  // Stowe — highest historical avg in dataset
-  SNOW_FORECAST_WEIGHT: 0.95, // live forecast counts 95%
-  SNOW_RELIABILITY_WEIGHT: 0.05, // small historical backstop only
+  SNOW_FORECAST_WEIGHT: 0.6,  // live forecast counts 60%
+  SNOW_RELIABILITY_WEIGHT: 0.4, // avgSnowfall reliability counts 40%
   // Drive
   DRIVE_SCALE:          300,  // minutes — 5 hrs = zero drive score
   DRIVE_DEFAULT:        0.5,  // fallback when no origin set
@@ -754,13 +754,19 @@ function renderVerdict(resorts) {
           const altDistanceText = formatDistanceFromOrigin(item.resort.id);
           return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
             <span class="verdict-running-main">
-              <span class="verdict-running-name">${esc(item.resort.name)}</span>
-              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · Drive Time: ${esc(altDriveText)}</span>
+              <span class="verdict-running-name-row">
+                <span class="verdict-running-name">${esc(item.resort.name)}</span>
+                <span class="verdict-running-pass">${esc(item.resort.passGroup || 'Independent')}</span>
+              </span>
+              <span class="verdict-running-meta">
+                <span>Distance: ${esc(altDistanceText)}</span>
+                <span>Drive: ${esc(altDriveText)}</span>
+              </span>
             </span>
           </button>`;
         }).join('')}</div>
         <div class="verdict-compare-row">
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
+          <button class="btn btn-outline verdict-action-btn verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
         </div>
       </div>`
     : '';
@@ -785,7 +791,7 @@ function renderVerdict(resorts) {
           ${noOrigin}
         </div>
         <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+          <button class="btn btn-outline verdict-action-btn verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
       </div>
       <div class="verdict-right">
@@ -990,16 +996,20 @@ function syncPlannerControls() {
   });
 
   const w = state.weights;
+  // Guard: if legacy 'advanced' skill level somehow persists, normalize to 'mixed'
+  if (state.skillLevel === 'advanced') state.skillLevel = 'mixed';
+  const skillLabel = { beginner: 'Beginner (≤800ft)', mixed: 'All Levels' }[state.skillLevel] || 'All Levels';
   const passLabel  = state.passPreference === 'any' ? 'Any' : state.passPreference;
-  const snowLabel  = { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser' }[w.snow] || 'Any Snow';
+  const snowLabel   = { 1: 'Any Conditions', 5: 'Snow Matters',      10: 'Powder or Bust'    }[w.snow]  || 'Any Conditions';
   const sizeLabel   = { any: 'Any Size', small: 'Under 1,000ft', mid: '1,000–1,999ft', big: '2,000ft+' }[state.verticalFilter] || 'Any Size';
-  const priceLabel = { 1: '$150+ Fine', 5: '$100–$149', 10: 'Under $100' }[w.value] || 'Any Price';
-  const crowdLabel = { 1: 'No Issue!', 5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
+  const priceLabel  = { 1: '$150+ Fine',      5: '$100–$149',         10: 'Under $100'        }[w.value] || 'Any Price';
+  const crowdLabel  = { 1: 'No Issue!',       5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
   els.weightSummary.innerHTML =
     `Snow: <strong>${snowLabel}</strong> · ` +
     `Vertical: <strong>${sizeLabel}</strong> · ` +
     `Price: <strong>${priceLabel}</strong> · ` +
-    `Crowds: <strong>${crowdLabel}</strong>` +
+    `Crowds: <strong>${crowdLabel}</strong> · ` +
+    `Skill: <strong>${skillLabel}</strong>` +
     (state.passPreference !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
 
   presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
@@ -1014,6 +1024,7 @@ function applyPreset(name) {
   if (!PRESETS[name]) { console.warn(`Unknown preset: ${name}`); return; }
   state.preset = name;
   state.weights = { ...PRESETS[name] };
+  if (PRESET_SKILLS[name]) state.skillLevel = PRESET_SKILLS[name];
   savePlannerState();
   syncPlannerControls();
   render();
@@ -1177,114 +1188,79 @@ function crowdForecast(resort) {
 // vertical(50%) + acres(35%) + longestRun(15%) with p80 ceilings so ~20% of
 // mountains can reach a perfect score — far better spread than a single-metric max.
 function mountainSizeIndex(resort) {
-  const v = Math.min(1, resort.vertical   / SCORING.VERTICAL_CEILING);
-  const a = Math.min(1, resort.acres      / SCORING.ACRES_CEILING);
-  const l = Math.min(1, resort.longestRun / SCORING.LONGEST_RUN_CEILING);
-  return v * 0.50 + a * 0.30 + l * 0.20;
-}
-
-function safeNum(value, fallback = null) {
-  return Number.isFinite(value) ? value : fallback;
-}
-
-function getSnowModeConfig() {
-  const pref = Number(state.weights?.snow ?? 1);
-  if (pref >= 10) return { key: '6plus', label: '6"+ Chaser', targetInches: 6, maxInches: 12, belowTargetFloor: 0.05 };
-  if (pref >= 5) return { key: '3plus', label: '3"+ Matters', targetInches: 3, maxInches: 10, belowTargetFloor: 0.15 };
-  return { key: 'any', label: 'Any Snow', targetInches: 0, maxInches: 8, belowTargetFloor: 0.35 };
-}
-
-function driveScoreIndex(driveMins) {
-  const drive = safeNum(driveMins, null);
-  if (drive === null) return SCORING.DRIVE_DEFAULT;
-  if (drive <= 75) return 1.0;
-  if (drive <= 120) return 0.85 - ((drive - 75) / 45) * 0.20;
-  if (drive <= 180) return 0.65 - ((drive - 120) / 60) * 0.25;
-  if (drive <= 240) return 0.40 - ((drive - 180) / 60) * 0.20;
-  return Math.max(0, 0.20 - ((drive - 240) / 60) * 0.10);
-}
-
-function valueIndex(resort) {
-  const price = safeNum(resort?.price, null);
-  if (price === null) return 0.50;
-
-  const matchedPass = state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference;
-  const effectivePrice = matchedPass ? price * 0.35 : price;
-  const priceOnly = Math.max(0, Math.min(1, (SCORING.PRICE_MAX - effectivePrice) / (SCORING.PRICE_MAX - SCORING.PRICE_MIN)));
-  const sizeAdj = mountainSizeIndex(resort);
-  return priceOnly * 0.80 + sizeAdj * 0.20;
-}
-
-function passBonusPoints(resort) {
-  if (!state.passPreference || state.passPreference === 'any') return 0;
-  return resort.passGroup === state.passPreference ? 8 : 0;
+  const v = Math.min(1, resort.vertical    / SCORING.VERTICAL_CEILING);
+  const a = Math.min(1, resort.acres       / SCORING.ACRES_CEILING);
+  const l = Math.min(1, resort.longestRun  / SCORING.LONGEST_RUN_CEILING);
+  return v * 0.50 + a * 0.35 + l * 0.15;
 }
 
 // ─── Snow Quality Index ───────────────────────────────────────────────────────
-// Forecast-led snow score with explicit user modes:
-// Any Snow      = any forecast snow helps
-// 3"+ Matters   = meaningful reward starts around 3"
-// 6"+ Chaser    = meaningful reward starts around 6"
+// Blends live 3-day forecast snow (60%) with historical annual avg (40%).
+// This fixes the core reliability gap: on a no-storm day, Stowe (300" avg) now
+// beats Yawgoo RI (60" avg) on snow score — as it should.
 function snowQualityIndex(resort, snowTotal) {
-  const mode = getSnowModeConfig();
-  const liveSnow = safeNum(snowTotal, 0);
-  const reliability = Math.min(1, safeNum(resort?.avgSnowfall, 0) / SCORING.SNOW_AVG_MAX);
-
-  let live;
-  if (mode.targetInches === 0) {
-    live = Math.min(1, liveSnow / mode.maxInches);
-  } else if (liveSnow < mode.targetInches) {
-    live = mode.belowTargetFloor * Math.min(1, liveSnow / mode.targetInches);
-  } else {
-    live = Math.min(1, (liveSnow - mode.targetInches) / (mode.maxInches - mode.targetInches));
-  }
-
+  const live        = Math.min(1, snowTotal / SCORING.SNOW_SCALE);
+  const reliability = Math.min(1, resort.avgSnowfall / SCORING.SNOW_AVG_MAX);
   return live * SCORING.SNOW_FORECAST_WEIGHT + reliability * SCORING.SNOW_RELIABILITY_WEIGHT;
 }
 
 // ─── Skill Match Index ────────────────────────────────────────────────────────
-// Retained as a zeroed compatibility hook so existing score-breakdown UI helpers
-// and saved state references do not break. Skill no longer affects ranking.
-function skillMatchIndex() {
-  return 0;
+// Scores how well a mountain's terrain mix matches the user's skill level.
+// Skill match based on vertical drop — objective and data-reliable.
+// Beginner: mountains ≤800ft score 1.0; larger mountains decay down to 0.2.
+// All Levels (mixed): neutral — every mountain scores 1.0 so skill doesn’t affect ranking.
+function skillMatchIndex(resort) {
+  const skill = state.skillLevel || 'mixed';
+  if (skill === 'beginner') {
+    const BEGINNER_CEIL = 800; // ft — at or below this = perfect beginner mountain
+    if (resort.vertical <= BEGINNER_CEIL) return 1.0;
+    // Linear decay: 800ft → 1.0, 2500ft+ → 0.2
+    return Math.max(0.2, 1.0 - (resort.vertical - BEGINNER_CEIL) / (2500 - BEGINNER_CEIL) * 0.8);
+  }
+  // All Levels — neutral, does not favor any mountain size
+  return 1.0;
 }
 
 function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) {
   if (!w) w = normalizedWeights();
   const forecast  = weather?.forecast || [];
   const picks     = forecastIndex === null ? forecast : (forecast[forecastIndex] ? [forecast[forecastIndex]] : []);
-  const snowTotal = picks.reduce((sum, f) => sum + safeNum(f?.snow, 0), 0);
+  const snowTotal = picks.reduce((sum, f) => sum + (f.snow || 0), 0);
   const drive     = getDriveMins(resort.id);
   const crowd     = crowdForecast(resort);
 
   const normalized = {
     snow:         snowQualityIndex(resort, snowTotal),
-    drive:        driveScoreIndex(drive),
+    drive:        drive !== null ? Math.max(0, 1 - drive / SCORING.DRIVE_SCALE) : SCORING.DRIVE_DEFAULT,
     size:         mountainSizeIndex(resort),
-    skillMatch:   0,
-    value:        valueIndex(resort),
-    crowdPenalty: Math.min(1, safeNum(crowd?.score, 0) / SCORING.CROWD_SCALE),
+    skillMatch:   skillMatchIndex(resort),
+    value:        Math.max(0, Math.min(1, (SCORING.PRICE_MAX - resort.price) / (SCORING.PRICE_MAX - SCORING.PRICE_MIN))),
+    crowdPenalty: Math.min(1, crowd.score / SCORING.CROWD_SCALE),
   };
 
   const components = {
     snow:         normalized.snow         * (w.snow  || 0) * 100,
     drive:        normalized.drive        * (w.drive || 0) * 100,
     size:         normalized.size         * (w.size  || 0) * 100,
-    skillMatch:   0,
+    skillMatch:   normalized.skillMatch   * 0.5 * 100,
     value:        normalized.value        * (w.value || 0) * 100,
     crowdPenalty: normalized.crowdPenalty * (w.crowd || 0) * 100,
   };
 
   let score = components.snow + components.drive + components.size +
-              components.value - components.crowdPenalty;
+              components.skillMatch + components.value - components.crowdPenalty;
 
+  // Live conditions bonus — adds up to +40 pts when trails are open and base is deep
+  // Only applied when conditions data is available (graceful degradation)
+  const condIdx = conditionsIndex(resort);
+  const condBonus = condIdx !== null ? (condIdx - 0.5) * 80 : 0; // -40 to +40
+  score += condBonus;
+  // Pass preference bonus — boosts ranking but NOT the displayed score
+  const passBonus = (state.passPreference && state.passPreference !== 'any' && resort.passGroup === state.passPreference) ? 60 : 0;
   if (state.nightOnly && resort.night) score += 4;
 
-  const condIdx = null;
-  const condBonus = 0;
-  const passBonus = passBonusPoints(resort);
-  const baseScore = Math.round(score * 10) / 10;
-  const fullScore = Math.round((score + passBonus) * 10) / 10;
+  const baseScore = Math.round(score * 10) / 10;  // score without pass bonus — shown in UI
+  const fullScore = Math.round((score + passBonus) * 10) / 10;  // score with pass bonus — used for ranking only
 
   return { score: fullScore, baseScore, passBonus, snowTotal, drive, resortId: resort.id, crowdLabel: crowd.label, normalized, components, condIdx, condBonus };
 }
@@ -2025,7 +2001,6 @@ function renderDetail({ scroll = false } = {}) {
           <div>Snow quality: <strong>${skis.factors.snow}</strong></div>
           <div>Drive score: <strong>${skis.factors.drive}</strong></div>
           <div>Mountain size: <strong>${skis.factors.size}</strong></div>
-          <div>Skill match: <strong>${skis.factors.skill}</strong></div>
           <div>Value: <strong>${skis.factors.value}</strong></div>
           <div>Crowd penalty: <strong>−${skis.factors.crowdPenalty}</strong></div>
           ${skis.condIdx !== null ? `<div>Live conditions: <strong>${skis.condBonus > 0 ? '+' : ''}${Math.round(skis.condBonus)} pts</strong></div>` : ''}
@@ -2034,41 +2009,7 @@ function renderDetail({ scroll = false } = {}) {
       </div>
       <div class="sub-card sub-card-conditions">
         <h3 class="sub-card-title">Live Conditions</h3>
-        ${(() => {
-          const c = conditionsCache.get(resort.id)?.data;
-          if (!c) {
-            const hasSite = !!resort.website;
-            return hasSite
-              ? `<div class="conditions-loading"><div class="conditions-spinner"></div><div class="muted small">Fetching live report from resort website…</div></div>`
-              : `<div class="muted small">No website on record for this resort.</div>`;
-          }
-          const trailPct   = (c.trailsOpen != null && c.trailsTotal > 0) ? Math.round(c.trailsOpen / c.trailsTotal * 100) : null;
-          const liftPct    = (c.liftsOpen  != null && c.liftsTotal  > 0) ? Math.round(c.liftsOpen  / c.liftsTotal  * 100) : null;
-          const trailColor = trailPct == null ? '#999' : trailPct >= 80 ? '#16a34a' : trailPct >= 50 ? '#f0b44c' : '#e07a5f';
-          const liftColor  = liftPct  == null ? '#999' : liftPct  >= 75 ? '#16a34a' : liftPct  >= 40 ? '#f0b44c' : '#e07a5f';
-          return `
-          <div class="conditions-grid">
-            <div class="cond-stat">
-              <div class="cond-stat-value">${c.baseDepth != null ? c.baseDepth + '"' : '—'}</div>
-              <div class="cond-stat-label">Base Depth</div>
-            </div>
-            <div class="cond-stat">
-              <div class="cond-stat-value">${c.newSnow24h != null ? c.newSnow24h + '"' : '—'}</div>
-              <div class="cond-stat-label">New (24h)</div>
-            </div>
-            <div class="cond-stat">
-              <div class="cond-stat-value" style="color:${trailColor}">${c.trailsOpen != null ? c.trailsOpen : '—'}${c.trailsTotal ? '/' + c.trailsTotal : ''}</div>
-              <div class="cond-stat-label">Trails Open</div>
-            </div>
-            <div class="cond-stat">
-              <div class="cond-stat-value" style="color:${liftColor}">${c.liftsOpen != null ? c.liftsOpen : '—'}${c.liftsTotal ? '/' + c.liftsTotal : ''}</div>
-              <div class="cond-stat-label">Lifts Open</div>
-            </div>
-          </div>
-          ${c.surface ? `<div class="cond-surface">${esc(c.surface)}</div>` : ''}
-          ${c.notes   ? `<div class="cond-notes muted small">${esc(c.notes)}</div>` : ''}
-          ${c.reportDate ? `<div class="cond-date muted small" style="margin-top:6px">Report: ${esc(c.reportDate)}</div>` : ''}`;
-        })()}
+        <div class="muted small">Live conditions are currently turned off while the data pipeline is being improved.</div>
       </div>
       <div class="sub-card">
         <h3 class="sub-card-title">Crowd Forecast</h3>
@@ -2238,13 +2179,13 @@ async function askAI(query) {
     );
 
     const resortLink = matched
-      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">&#128269; View ${esc(data.resortName)} in table</button>`
+      ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>`
       : '';
 
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-success';
       els.aiChatResult.innerHTML =
-        `<div class="ai-result-header"><strong>&#129302; AI Pick: ${esc(data.resortName)}</strong></div>` +
+        `<div class="ai-result-header"><strong>AI Pick: ${esc(data.resortName)}</strong></div>` +
         `<div class="ai-result-text">${esc(data.explanation)}</div>` +
         (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
     }
