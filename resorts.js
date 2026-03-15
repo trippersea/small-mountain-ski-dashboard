@@ -1859,13 +1859,26 @@ function renderMapLegend() {
 }
 
 function initMap() {
-  if (map) return;
-  map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
+  if (map) return map;
+  if (!els.leafletMap || typeof L === 'undefined' || !L?.map || !L?.tileLayer) return null;
+  try {
+    map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
+    return map;
+  } catch (err) {
+    console.warn('Map init skipped:', err);
+    map = null;
+    return null;
+  }
 }
 
 function updateMap(resorts) {
-  initMap();
+  if (!els.leafletMap || typeof L === 'undefined' || !L?.divIcon || !L?.marker) {
+    if (els.mapLegend) els.mapLegend.innerHTML = '';
+    return;
+  }
+  const activeMap = initMap();
+  if (!activeMap) return;
   renderMapLegend();
   const filtered = new Set(resorts.map(r => r.id));
   RESORTS.forEach(resort => {
@@ -1873,7 +1886,7 @@ function updateMap(resorts) {
     const selected = resort.id === state.selectedId;
     const wx       = state.weatherCache[resort.id]?.data;
     const storm    = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-    const driveMins = getDriveMins(resort.id);  // extracted once (audit #12)
+    const driveMins = getDriveMins(resort.id);
     let color = passColor(resort.passGroup);
     if (state.mapMode === 'drive' && driveMins !== null) color = driveColor(driveMins);
     if (state.mapMode === 'storm') color = stormColor(storm);
@@ -1884,11 +1897,18 @@ function updateMap(resorts) {
       html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid rgba(0,0,0,.18);opacity:${inFilter ? 1 : 0.22};box-shadow:${selected ? '0 0 0 4px rgba(43,109,233,.18)' : '0 2px 6px rgba(0,0,0,.18)'}"></div>`,
       iconSize: [size, size], iconAnchor: [size / 2, size / 2],
     });
-    if (markers[resort.id]) { markers[resort.id].setIcon(icon); return; }
+    const existing = markers[resort.id];
+    if (existing && typeof existing.setIcon === 'function') {
+      existing.setIcon(icon);
+      return;
+    }
+    if (existing && typeof existing.remove === 'function') {
+      try { existing.remove(); } catch (_) {}
+    }
     const marker = L.marker([resort.lat, resort.lon], { icon })
-      .addTo(map)
+      .addTo(activeMap)
       .bindPopup(`<strong>${esc(resort.name)}</strong><br>${esc(resort.state)} · ${esc(resort.passGroup)}<br>Vertical ${resort.vertical} ft<br>Ticket* $${resort.price}${resort.website ? `<br><a href="${resort.website}" target="_blank" rel="noopener">Visit website</a>` : ''}`);
-    marker.on('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+    if (typeof marker.on === 'function') marker.on('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
     markers[resort.id] = marker;
   });
 }
