@@ -20,14 +20,14 @@
 
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <span class="nav-brand nav-brand-lockup"><img src="ski-decision-logo.png" alt="Where To Ski logo" class="nav-logo" /><span class="nav-brand-text">Where To Ski</span></span>
+      <span class="nav-brand">Where To Ski</span>
       <div class="nav-divider"></div>
       <a href="#verdictSection" class="nav-cta" id="navVerdictLink">My Pick</a>
       <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">Compare</a>
       <div class="nav-divider"></div>
       <a href="#stormSection" class="nav-secondary">Storm Chaser</a>
       <a href="#hiddenGemSection" class="nav-secondary">Hidden Gems</a>
-      <button class="btn-ghost nav-share" onclick="copyShareLink()">Share</button>
+            <button class="btn-ghost nav-share" onclick="copyShareLink()">Share</button>
     </div>
   </nav>
 
@@ -35,30 +35,40 @@
 
   <div class="container">
 
-    <!-- HERO: value prop + location + AI chat -->
-    <section id="searchSection" class="hero card hero-search hero-search-premium">
+    <!-- HERO: centered search-first landing -->
+    <section id="searchSection" class="hero card hero-search hero-search-centered">
       <div class="hero-search-shell">
-        <div class="hero-search-copy">
-          <div class="hero-brand-row">
-            <img src="ski-decision-logo.png" alt="Where To Ski logo" class="hero-logo" />
-            <div class="hero-brand-text-wrap">
-              <div class="hero-brand-name">Where To Ski</div>
-              <div class="hero-brand-tag">The Ski Decision Engine</div>
-            </div>
+        <div class="hero-search-inner">
+          <div class="hero-brand-row hero-brand-row-centered">
+            <div class="hero-brand-name">Where To Ski</div>
+            <div class="hero-brand-tag">The Ski Decision Engine</div>
           </div>
 
-          <div class="hero-headline">Find the best ski mountain for today.</div>
-          <div class="hero-subhead">Compare live snow, drive time, pass access, crowds, and price — ranked instantly so you can decide in under 20 seconds.</div>
+          <div class="hero-headline">Where should you ski tomorrow?</div>
+          <div class="hero-subhead">Compare snow, drive time, pass access, price, and crowds in one search.</div>
 
-          <div class="hero-search-bar hero-search-bar-premium">
+          <div class="hero-search-bar hero-search-bar-unified">
             <input
               id="originInput"
               type="text"
               class="hero-search-input"
-              placeholder="Enter ZIP code or city — e.g. 02101 or Boston, MA"
+              placeholder="ZIP or city — e.g. 02101 or Boston, MA"
               autocomplete="off"
               autofocus
             />
+            <select id="heroPassSelect" class="hero-search-select" aria-label="Pass preference">
+              <option value="All">Any Pass</option>
+              <option value="Epic">Epic</option>
+              <option value="Ikon">Ikon</option>
+              <option value="Indy">Indy</option>
+              <option value="Independent">Independent</option>
+            </select>
+            <select id="heroSnowSelect" class="hero-search-select" aria-label="Snow preference">
+              <option value="1">Any Snow</option>
+              <option value="5">3&quot;+ Matters</option>
+              <option value="10">6&quot;+ Chaser</option>
+              <option value="15">Powder Day</option>
+            </select>
             <button id="setLocation" class="hero-search-btn">Find My Mountain</button>
           </div>
 
@@ -76,8 +86,26 @@
 
           <div id="locationStatus" class="helper-text hero-location-status"></div>
 
+          <aside class="hero-proof-card hero-proof-card-centered" aria-label="What you get instantly">
+            <div class="hero-proof-kicker">What you get instantly</div>
+            <div class="hero-proof-list hero-proof-list-stacked">
+              <div class="hero-proof-item">
+                <strong>Top pick</strong>
+                <span>The best mountain for your setup tomorrow.</span>
+              </div>
+              <div class="hero-proof-item">
+                <strong>Fast compare</strong>
+                <span>Snow, drive, pass, price, and crowds side by side.</span>
+              </div>
+              <div class="hero-proof-item">
+                <strong>Explore next</strong>
+                <span>Storm Chaser, Hidden Gems, and the full comparison table below.</span>
+              </div>
+            </div>
+          </aside>
+
           <div class="hero-ai-row hero-ai-row-premium">
-            <span class="hero-ai-label">Not sure? Describe your ideal ski day</span>
+            <span class="hero-ai-label">Or describe your perfect ski day</span>
             <div class="hero-ai-input-row">
               <input
                 id="aiChatInput"
@@ -91,31 +119,26 @@
             <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
           </div>
         </div>
-
-        <aside class="hero-proof-card" aria-label="What you get instantly">
-          <div class="hero-proof-kicker">What you get instantly</div>
-          <div class="hero-proof-list">
-            <div class="hero-proof-item">
-              <strong>Top pick</strong>
-              <span>The best mountain for your setup today.</span>
-            </div>
-            <div class="hero-proof-item">
-              <strong>Fast compare</strong>
-              <span>Snow, drive, pass, price, and crowds side by side.</span>
-            </div>
-            <div class="hero-proof-item">
-              <strong>Explore next</strong>
-              <span>Storm Chaser, Hidden Gems, and the full comparison table below.</span>
-            </div>
-          </div>
-        </aside>
       </div>
     </section>
 
     <!-- PLANNER + VERDICT: two-column layout -->
     <div class="planner-verdict-row">
 
-      <!-- LEFT: Planner controls -->
+      <!-- LEFT: Should I Go? verdict -->
+      <section id="verdictSection" class="verdict-section card verdict-col">
+        <div class="verdict-header">
+          <h2>My Mountain Pick</h2>
+          <p class="muted small">Live weather + your settings = a straight answer.</p>
+        </div>
+        <div id="verdictCard">
+          <div class="verdict-placeholder">
+            <div class="verdict-placeholder-text">Your top match will appear here, with forecast, drive time, why it fits, and the best day to go.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Planner controls -->
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
@@ -180,7 +203,7 @@
               <div class="priority-btns" data-key="size">
                 <button class="priority-btn active" data-val="any">Any Style</button>
                 <button class="priority-btn" data-val="small">Local / Smaller</button>
-                <button class="priority-btn" data-val="mid">1,000&ndash;1,500ft Sweet Spot</button>
+                <button class="priority-btn" data-val="mid">Mid-Mountain Fit</button>
                 <button class="priority-btn" data-val="big">Big-Mountain Feel</button>
               </div>
               <div class="slider-hint">Filters for the type of mountain you want, then ranks fit inside the remaining set.</div>
@@ -210,19 +233,6 @@
           </div>
         </div>
 
-      </section>
-
-      <!-- RIGHT: Should I Go? verdict -->
-      <section id="verdictSection" class="verdict-section card verdict-col">
-        <div class="verdict-header">
-          <h2>My Mountain Pick</h2>
-          <p class="muted small">Live weather + your settings = a straight answer.</p>
-        </div>
-        <div id="verdictCard">
-          <div class="verdict-placeholder">
-            <div class="verdict-placeholder-text">Your top match will appear here, with forecast, drive time, why it fits, and the best day to go.</div>
-          </div>
-        </div>
       </section>
 
     </div><!-- /planner-verdict-row -->

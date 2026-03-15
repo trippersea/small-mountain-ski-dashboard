@@ -172,6 +172,8 @@ const els = {
   aiChatInput:         $('aiChatInput'),
   aiChatBtn:           $('aiChatBtn'),
   aiChatResult:        $('aiChatResult'),
+  heroPassSelect:      $('heroPassSelect'),
+  heroSnowSelect:      $('heroSnowSelect'),
   // Best Day section
 };
 
@@ -508,7 +510,7 @@ function renderVerdict(resorts) {
 
   const _tierLabels = ['Day Trip (≤3h)', 'Weekend (≤6h)', 'All Distances'];
   const driveBanner = state.origin
-    ? `<div class="verdict-drive-banner${state.howFar === 2 ? ' verdict-drive-banner--off' : ''}">
+    ? `<div class="verdict-drive-banner${state.howFar === 2 ? ' verdict-drive-banner--off' : ''}>
         <span class="vdb-label">How Far Will You Go?</span>
         <span class="vdb-tiers">
           ${[0,1,2].map(i =>
@@ -531,10 +533,8 @@ function renderVerdict(resorts) {
           const altDriveText = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : 'TBD';
           const altDistanceText = formatDistanceFromOrigin(item.resort.id);
           return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
-            <span class="verdict-running-main">
-              <span class="verdict-running-name">${esc(item.resort.name)}</span>
-              <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · ${esc(altDriveText)}</span>
-            </span>
+            <span class="verdict-running-name">${esc(item.resort.name)}</span>
+            <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · ${esc(altDriveText)}</span>
           </button>`;
         }).join('')}</div>
         <div class="verdict-compare-row">
@@ -548,7 +548,7 @@ function renderVerdict(resorts) {
       ${driveBanner}
       <div class="verdict-left">
         <div class="verdict-pick-block">
-          <div class="verdict-pick-label">Top pick</div>
+          <div class="verdict-pick-label">Top Pick</div>
           <div class="verdict-pick-heading-row">
             <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
             ${websiteLink}
@@ -565,8 +565,6 @@ function renderVerdict(resorts) {
         <div class="verdict-action-row">
           <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
         </div>
-      </div>
-      <div class="verdict-right">
         ${runningHtml}
       </div>
     </div>`;
@@ -771,7 +769,7 @@ function syncPlannerControls() {
   const snowLabel  = { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser', 15: 'Powder Day' }[w.snow] || 'Any Snow';
   const tempLabel  = { any: 'Any Temp', ideal: '0°–32° Ideal', spring: '33°+ Spring', cold: 'Below 0°' }[state.tempBucket] || 'Any Temp';
   const windLabel  = { any: 'Any Wind', light: '0–15 mph', breezy: '16–25 mph', holds: '25+ mph' }[state.windBucket] || 'Any Wind';
-  const sizeLabel  = { any: 'Any Style', small: 'Local / Smaller', mid: '1,000–1,500ft Sweet Spot', big: 'Big-Mountain Feel' }[state.verticalFilter] || 'Any Style';
+  const sizeLabel  = { any: 'Any Style', small: 'Local / Smaller', mid: 'Mid-Mountain Fit', big: 'Big-Mountain Feel' }[state.verticalFilter] || 'Any Style';
   const priceLabel = { 0: 'Any', 1: '$150+ Fine', 5: '$100–$149', 10: 'Under $100' }[w.value] || 'Any';
   const crowdLabel = { 1: 'No Issue!', 5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
   els.weightSummary.innerHTML =
@@ -784,6 +782,8 @@ function syncPlannerControls() {
     (plannerPass !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
 
   if (els.passFilter) els.passFilter.value = state.passFilter;
+  if (els.heroPassSelect) els.heroPassSelect.value = state.passFilter;
+  if (els.heroSnowSelect) els.heroSnowSelect.value = String(state.weights.snow ?? 1);
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
@@ -2401,6 +2401,27 @@ function wireEvents() {
     });
   });
 
+  if (els.heroPassSelect) {
+    els.heroPassSelect.addEventListener('change', () => {
+      state.passFilter = els.heroPassSelect.value || 'All';
+      state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter;
+      savePlannerState();
+      syncPlannerControls();
+      pushUrlDebounced();
+      debouncedRender();
+    });
+  }
+
+  if (els.heroSnowSelect) {
+    els.heroSnowSelect.addEventListener('change', () => {
+      state.weights.snow = Number(els.heroSnowSelect.value || 1);
+      savePlannerState();
+      syncPlannerControls();
+      pushUrlDebounced();
+      debouncedRender();
+    });
+  }
+
   mapModeBtns().forEach(btn => btn.addEventListener('click', () => {
     state.mapMode = btn.dataset.mapMode;
     const current = filteredResorts();  // reuse current filtered set
@@ -2448,8 +2469,8 @@ function wireEvents() {
       els.locationStatus.textContent = `\u2713 Location set to ${loc.label}`;
       updatePlannerOriginLabel();
       // Scroll to planner so user sees their results, not the hero
-      if (els.plannerSection) {
-        setTimeout(() => els.plannerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      if (els.verdictSection) {
+        setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
       }
       if (isRememberChecked()) saveOrigin(loc); else clearSavedOrigin();
       pushUrlDebounced();
@@ -2491,8 +2512,8 @@ function wireEvents() {
       await loadDriveTimes();
       els.locationStatus.textContent = '\u2713 Using your location';
       updatePlannerOriginLabel();
-      if (els.plannerSection) {
-        setTimeout(() => els.plannerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      if (els.verdictSection) {
+        setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
       }
     }, () => { els.locationStatus.textContent = 'Could not get location'; });
   });
