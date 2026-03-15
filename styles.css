@@ -2738,3 +2738,179 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
     padding-right: 16px;
   }
 }
+
+/* ─── Final UX polish: My Pass + My Mountain Pick cleanup ───────────────── */
+.planner-pass-priority {
+  margin-bottom: 14px;
+}
+
+.planner-pass-priority .qs-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.planner-pass-priority .qs-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+}
+
+.planner-pass-priority .qs-card-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.planner-pass-priority .qs-card-desc {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.planner-pass-priority .pass-pref-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.planner-pass-priority .pass-pref-btn {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  justify-content: center;
+}
+
+.planner-col .preset-row {
+  margin: 0 auto 18px;
+}
+
+.verdict-col .verdict-header {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.verdict-col .verdict-inner {
+  grid-template-columns: 1.03fr 0.97fr;
+  align-items: start;
+}
+
+.verdict-col .verdict-left {
+  padding: 18px 18px 16px;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.verdict-col .verdict-right {
+  padding: 18px 18px 16px;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.verdict-pick-block {
+  padding-bottom: 10px;
+}
+
+.verdict-pick-heading-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.verdict-pick-link {
+  line-height: 1.1;
+}
+
+.verdict-pick-meta {
+  margin-top: 4px;
+}
+
+.verdict-website-link--inline {
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.verdict-writeup {
+  line-height: 1.55;
+}
+
+.verdict-detail {
+  line-height: 1.6;
+}
+
+.verdict-action-row {
+  margin-top: 10px;
+}
+
+.verdict-share-btn {
+  margin-top: 0;
+  align-self: flex-start;
+}
+
+.verdict-running-card {
+  padding: 14px;
+}
+
+.verdict-top5-header {
+  margin-bottom: 10px;
+}
+
+.verdict-running-list {
+  gap: 10px;
+}
+
+.verdict-right .verdict-running-item.verdict-resort-link {
+  padding: 12px 13px;
+}
+
+.verdict-right .verdict-running-meta {
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.verdict-running-chip {
+  padding: 5px 8px;
+}
+
+.verdict-compare-row {
+  margin-top: 12px;
+}
+
+@media (max-width: 1180px) {
+  .planner-pass-priority .pass-pref-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .planner-pass-priority .pass-pref-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .verdict-col .verdict-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .verdict-col .verdict-left,
+  .verdict-col .verdict-right {
+    padding: 16px 15px 14px;
+  }
+
+  .verdict-pick-heading-row {
+    gap: 6px;
+  }
+}
