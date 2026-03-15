@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About SkiDecision — The Straight Answer on Where to Ski</title>
+  <meta name="description" content="SkiDecision ranks 256 US ski mountains in real time using live snow forecasts, drive times, pass access, price, and crowd outlook. Free, no account needed." />
+  <link rel="canonical" href="https://wheretoskinext.com/about/" />
+  <meta property="og:title" content="About SkiDecision" />
+  <meta property="og:description" content="The straight answer to where should I ski this weekend? 256 mountains ranked in real time, free, no account." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://wheretoskinext.com/about/" />
+  <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
+  <link rel="icon" href="ski-decision-logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Design tokens — matches main site exactly ─────────────────────── */
+    :root {
+      --bg:           #f3f8fd;
+      --panel:        #ffffff;
+      --panel-2:      #edf4ff;
+      --text:         #1b2a3a;
+      --muted:        #667a96;
+      --accent:       #2b6de9;
+      --accent-2:     #22b38a;
+      --accent-warm:  #f59e0b;
+      --border:       #d6e1f0;
+      --shadow:       0 12px 30px rgba(30,60,100,.08);
+      --shadow-sm:    0 4px 16px rgba(30,60,100,.06);
+      --radius:       20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: linear-gradient(180deg, #f7fbff 0%, #eef5fb 100%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Nav — identical to main site ──────────────────────────────────── */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(14px);
+      background: rgba(255,255,255,.92);
+      border-bottom: 1px solid var(--border);
+    }
+    .top-nav-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-brand {
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--text);
+      letter-spacing: -.01em;
+      margin-right: 6px;
+    }
+    .nav-divider { width: 1px; height: 16px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+    .nav-link {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1.5px solid transparent;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 13px;
+      transition: background .12s, color .12s, border-color .12s;
+    }
+    .nav-link:hover { background: #edf4ff; color: var(--accent); border-color: var(--border); }
+    .nav-link-cta {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .nav-link-cta:hover { background: #1d5fd4; border-color: #1d5fd4; color: #fff; }
+    .nav-link-active { color: var(--accent); }
+
+    /* ── Page wrapper ───────────────────────────────────────────────────── */
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 24px 96px;
+    }
+
+    /* ── Hero ───────────────────────────────────────────────────────────── */
+    .about-hero {
+      margin-bottom: 56px;
+      position: relative;
+    }
+    .about-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--panel-2);
+      border: 1px solid rgba(43,109,233,.2);
+      border-radius: 999px;
+      padding: 5px 12px;
+      margin-bottom: 20px;
+    }
+    .about-eyebrow::before {
+      content: '';
+      display: block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .about-headline {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -.03em;
+      color: var(--text);
+      margin: 0 0 14px;
+    }
+    .about-headline em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .about-subhead {
+      font-size: 18px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 0;
+      max-width: 52ch;
+    }
+
+    /* ── Divider ────────────────────────────────────────────────────────── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 48px 0 32px;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Content sections ───────────────────────────────────────────────── */
+    .about-section { margin-bottom: 48px; }
+
+    .about-section h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: var(--text);
+      margin: 0 0 14px;
+      line-height: 1.2;
+    }
+
+    .about-section p {
+      font-size: 17px;
+      color: #2e3f54;
+      line-height: 1.72;
+      margin: 0 0 14px;
+    }
+    .about-section p:last-child { margin-bottom: 0; }
+
+    /* Opening paragraph — slightly larger */
+    .about-opening p {
+      font-size: 18px;
+      color: var(--text);
+      line-height: 1.68;
+    }
+    .about-opening p:first-child {
+      font-size: 19px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── Pull quote card ────────────────────────────────────────────────── */
+    .pull-quote {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 14px 14px 0;
+      padding: 18px 22px;
+      margin: 28px 0;
+      box-shadow: var(--shadow-sm);
+    }
+    .pull-quote p {
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      color: var(--text) !important;
+      margin: 0 !important;
+      line-height: 1.5 !important;
+      font-style: italic;
+    }
+
+    /* ── How it works — stat strip ──────────────────────────────────────── */
+    .score-factors {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin: 24px 0;
+    }
+    .factor-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .factor-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .factor-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .factor-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-weight: 400;
+    }
+
+    /* ── Builder callout ────────────────────────────────────────────────── */
+    .builder-card {
+      background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fd 100%);
+      border: 1px solid rgba(43,109,233,.18);
+      border-radius: var(--radius);
+      padding: 28px 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    .builder-card::before {
+      content: '⛷';
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 56px;
+      opacity: .08;
+      line-height: 1;
+    }
+
+    /* ── Free/no-catch strip ────────────────────────────────────────────── */
+    .free-strip {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 30px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .free-strip-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-top: 2px;
+    }
+    .free-strip h2 { margin: 0 0 10px; }
+    .free-strip p  { margin: 0; font-size: 16px; color: var(--muted); }
+
+    /* ── CTA button ─────────────────────────────────────────────────────── */
+    .about-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 999px;
+      padding: 14px 28px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      margin-top: 28px;
+      box-shadow: 0 4px 18px rgba(43,109,233,.3);
+      transition: background .14s, box-shadow .14s, transform .1s;
+    }
+    .about-cta:hover {
+      background: #1d5fd4;
+      box-shadow: 0 6px 24px rgba(43,109,233,.4);
+      transform: translateY(-1px);
+    }
+    .about-cta svg { flex-shrink: 0; }
+
+    /* ── Contact footer ─────────────────────────────────────────────────── */
+    .about-contact {
+      margin-top: 56px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .about-contact a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .about-contact a:hover { text-decoration: underline; }
+
+    /* ── Page footer ────────────────────────────────────────────────────── */
+    .site-footer {
+      text-align: center;
+      padding: 32px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--panel);
+    }
+    .site-footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Responsive ─────────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .page { padding: 36px 18px 72px; }
+      .score-factors { grid-template-columns: 1fr; }
+      .free-strip { flex-direction: column; gap: 10px; }
+      .about-headline { font-size: 28px; }
+      .builder-card { padding: 22px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="top-nav" role="navigation" aria-label="Main navigation">
+    <div class="top-nav-inner">
+      <span class="nav-brand">SkiDecision</span>
+      <div class="nav-divider"></div>
+      <a href="/" class="nav-link">Find My Mountain</a>
+      <a href="/about/" class="nav-link nav-link-active">About</a>
+      <a href="/privacy/" class="nav-link">Privacy</a>
+      <div class="nav-divider"></div>
+      <a href="/" class="nav-link nav-link-cta">Open App →</a>
+    </div>
+  </nav>
+
+  <main class="page">
+
+    <!-- Hero -->
+    <header class="about-hero">
+      <div class="about-eyebrow">About SkiDecision</div>
+      <h1 class="about-headline">The straight answer to <em>"where should I ski this weekend?"</em></h1>
+      <p class="about-subhead">256 mountains. Live forecasts. Your drive time. One clear recommendation.</p>
+    </header>
+
+    <!-- Opening -->
+    <section class="about-section about-opening">
+      <p>You know the drill. It's Thursday night. You've got a free Saturday. You open five tabs — resort websites, weather apps, trail reports, Reddit threads — and two hours later you're no closer to a decision than when you started. You just wanted to know where to go.</p>
+      <p>That's exactly why SkiDecision exists.</p>
+    </section>
+
+    <!-- One search. One answer. -->
+    <div class="section-divider"><span class="section-label">One search. One answer.</span></div>
+
+    <section class="about-section">
+      <h2>One search. One answer.</h2>
+      <p>Type in your ZIP code or city, tell us what pass you have and how much snow you need, and we do the rest. In seconds, we rank 256 ski mountains across the US using live forecast data, your actual drive time, current crowd outlook, ticket price, and your preferences — all at once, all in one place.</p>
+
+      <div class="score-factors" aria-label="What we factor into rankings">
+        <div class="factor-chip">
+          <span class="factor-icon">🌨</span>
+          <div><div class="factor-text">Live Snow Forecast</div><div class="factor-sub">Tomorrow + 3-day storm total</div></div>
+        </div>
+        <div class="factor-chip">
+          <span class="factor-icon">🚗</span>
+          <div><div class="factor-text">Your Drive Time</div><div class="factor-sub">Real routing from your location</div></div>
+        </div>
+        <div class="factor-chip">
+          <span class="factor-icon">👥</span>
+          <div><div class="factor-text">Crowd Outlook</div><div class="factor-sub">Day-of-week, pass network, proximity</div></div>
+        </div>
+        <div class="factor-chip">
+          <span class="factor-icon">🎿</span>
+          <div><div class="factor-text">Pass &amp; Price</div><div class="factor-sub">Epic, Ikon, Indy, Independent</div></div>
+        </div>
+      </div>
+
+      <div class="pull-quote">
+        <p>No resort website is going to tell you their mountain got beat on snow this weekend by a smaller hill two hours closer. We will.</p>
+      </div>
+    </section>
+
+    <!-- How the score works -->
+    <div class="section-divider"><span class="section-label">How the score works</span></div>
+
+    <section class="about-section">
+      <h2>How the score works</h2>
+      <p>Every mountain gets a Ski Score that updates daily. It weighs tomorrow's snowfall forecast, the 7-day snow history, how long it'll take you to get there, how busy it's likely to be, and what you told us matters most.</p>
+      <p>Prioritize powder and the algorithm chases storms. Prioritize a short drive and your closest mountains rise to the top. The score shifts with your preferences, not the other way around.</p>
+      <p>No black box. No paid placements. The mountain with the best conditions for your specific situation ranks first.</p>
+    </section>
+
+    <!-- Built by a skier -->
+    <div class="section-divider"><span class="section-label">Who built it</span></div>
+
+    <section class="about-section">
+      <h2>Built by a skier, not a committee</h2>
+      <div class="builder-card">
+        <p style="font-size:17px;line-height:1.7;color:#1b2a3a;margin:0 0 12px">SkiDecision was built by someone who spent too many Saturday mornings driving to the wrong mountain. Not because the snow reports were wrong — because there was no tool that put all the signals together and just told you where to go. So we built it.</p>
+        <p style="font-size:17px;line-height:1.7;color:#1b2a3a;margin:0">It covers Epic, Ikon, and Indy pass mountains alongside independent resorts, because the best mountain for your weekend might not be the one on your pass.</p>
+      </div>
+    </section>
+
+    <!-- Free. No account. No catch. -->
+    <div class="section-divider"><span class="section-label">The deal</span></div>
+
+    <section class="about-section">
+      <div class="free-strip">
+        <div class="free-strip-icon">🏔</div>
+        <div>
+          <h2>Free. No account. No catch.</h2>
+          <p>SkiDecision is free to use and always will be. No account required, no email to enter, no ads. Just open it, enter your location, and go ski.</p>
+        </div>
+      </div>
+
+      <a href="/" class="about-cta">
+        Find my mountain
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </section>
+
+    <!-- Contact -->
+    <div class="about-contact">
+      Have feedback or found a mountain we're missing?<br />
+      Reach us at <a href="mailto:hello@wheretoskinext.com">hello@wheretoskinext.com</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>© <script>document.write(new Date().getFullYear())</script> SkiDecision · <a href="/">Home</a> · <a href="/about/">About</a> · <a href="/privacy/">Privacy</a></p>
+  </footer>
+
+</body>
+</html>
