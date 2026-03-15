@@ -37,56 +37,121 @@
   <div class="container">
 
     <!-- HERO: value prop + location + AI chat -->
-    <section id="searchSection" class="hero card hero-search">
-      <div class="hero-search-inner">
+    <section id="searchSection" class="hero card hero-search hero-search-premium">
+      <div class="hero-search-shell">
+        <div class="hero-search-copy">
+          <div class="hero-kicker">The Ski Decision Engine</div>
+          <div class="hero-headline">Find the best mountain to ski today.</div>
+          <div class="hero-subhead">Live snow, drive time, pass access, crowd profile, and price — ranked instantly so you can decide in under 20 seconds.</div>
 
-        <div class="hero-headline">Where are you skiing from?</div>
-        <div class="hero-subhead">Enter your ZIP code or city and we&rsquo;ll find your best mountain.</div>
-
-        <!-- Big pill search bar -->
-        <div class="hero-search-bar">
-          <input
-            id="originInput"
-            type="text"
-            class="hero-search-input"
-            placeholder="ZIP code or city &mdash; e.g. 02101 or Boston, MA"
-            autocomplete="off"
-            autofocus
-          />
-          <button id="setLocation" class="hero-search-btn">Find My Mountain</button>
-        </div>
-
-        <!-- Secondary actions -->
-        <div class="hero-search-meta">
-          <button id="detectLocation" class="hero-locate-link">Use my location</button>
-          <span class="hero-meta-divider" aria-hidden="true">·</span>
-          <label class="remember-location-label" id="rememberLocationLabel">
-            <input type="checkbox" id="rememberLocation" />
-            Remember this location
-            <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info
-              <span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span>
-            </span>
-          </label>
-        </div>
-
-        <div id="locationStatus" class="helper-text hero-location-status"></div>
-
-        <!-- AI chat — quiet secondary -->
-        <div class="hero-ai-row">
-          <span class="hero-ai-label">Not sure? Describe your ideal ski day</span>
-          <div class="hero-ai-input-row">
+          <!-- Big pill search bar -->
+          <div class="hero-search-bar hero-search-bar-premium">
             <input
-              id="aiChatInput"
+              id="originInput"
               type="text"
-              class="ai-chat-input hero-ai-input"
-              placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
-              aria-label="Describe your ideal ski day"
+              class="hero-search-input"
+              placeholder="Enter ZIP code or city — e.g. 02101 or Boston, MA"
+              autocomplete="off"
+              autofocus
             />
-            <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+            <button id="setLocation" class="hero-search-btn">Find My Mountain</button>
           </div>
-          <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
+
+          <div class="hero-search-meta hero-search-meta-premium">
+            <button id="detectLocation" class="hero-locate-link">Use my location</button>
+            <span class="hero-meta-divider" aria-hidden="true">•</span>
+            <label class="remember-location-label" id="rememberLocationLabel">
+              <input type="checkbox" id="rememberLocation" />
+              Remember this location
+              <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info
+                <span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span>
+              </span>
+            </label>
+          </div>
+
+          <div id="locationStatus" class="helper-text hero-location-status"></div>
+
+          <div class="hero-pass-strip" aria-label="Quick pass picks">
+            <span class="hero-pass-label">Popular passes</span>
+            <button class="pass-pref-btn hero-pass-btn epic-btn" data-pass="Epic">Epic</button>
+            <button class="pass-pref-btn hero-pass-btn ikon-btn" data-pass="Ikon">Ikon</button>
+            <button class="pass-pref-btn hero-pass-btn indy-btn" data-pass="Indy">Indy</button>
+            <button class="pass-pref-btn hero-pass-btn indep-btn" data-pass="Independent">Independent</button>
+          </div>
+
+          <!-- AI chat — quiet secondary -->
+          <div class="hero-ai-row hero-ai-row-premium">
+            <span class="hero-ai-label">Or describe your perfect ski day</span>
+            <div class="hero-ai-input-row">
+              <input
+                id="aiChatInput"
+                type="text"
+                class="ai-chat-input hero-ai-input"
+                placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
+                aria-label="Describe your ideal ski day"
+              />
+              <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+            </div>
+            <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
+          </div>
         </div>
 
+        <aside class="hero-proof-card" aria-label="Why this is useful">
+          <div class="hero-proof-kicker">What you get instantly</div>
+          <div class="hero-proof-title">A straight answer, not just raw conditions.</div>
+          <div class="hero-proof-stack">
+            <div class="hero-proof-item">
+              <span class="hero-proof-item-label">Top pick</span>
+              <strong>Best mountain for your setup today</strong>
+            </div>
+            <div class="hero-proof-item">
+              <span class="hero-proof-item-label">Fast compare</span>
+              <strong>Snow, drive, pass, price, and crowds side by side</strong>
+            </div>
+            <div class="hero-proof-item">
+              <span class="hero-proof-item-label">Decision-ready</span>
+              <strong>Storm Chaser, Hidden Gems, map, and full table below</strong>
+            </div>
+          </div>
+          <div class="hero-proof-metrics">
+            <div class="hero-proof-metric">
+              <span class="hero-proof-num">256</span>
+              <span class="hero-proof-meta">mountains ranked</span>
+            </div>
+            <div class="hero-proof-metric">
+              <span class="hero-proof-num">10–20s</span>
+              <span class="hero-proof-meta">to reach a decision</span>
+            </div>
+            <div class="hero-proof-metric">
+              <span class="hero-proof-num">Free</span>
+              <span class="hero-proof-meta">no account needed</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="decision-strip card" aria-label="Decision workflow">
+      <div class="decision-step">
+        <span class="decision-step-num">1</span>
+        <div>
+          <strong>Enter your location</strong>
+          <p>ZIP code, city, or one-click location.</p>
+        </div>
+      </div>
+      <div class="decision-step">
+        <span class="decision-step-num">2</span>
+        <div>
+          <strong>Set your ski-day style</strong>
+          <p>Pass, powder, temperature, wind, price, and crowds.</p>
+        </div>
+      </div>
+      <div class="decision-step">
+        <span class="decision-step-num">3</span>
+        <div>
+          <strong>Get your answer fast</strong>
+          <p>Your top match, alternatives, compare table, and map all stay in sync.</p>
+        </div>
       </div>
     </section>
 
@@ -194,7 +259,7 @@
       <section id="verdictSection" class="verdict-section card verdict-col">
         <div class="verdict-header">
           <h2>My Mountain Pick</h2>
-          <p class="muted small">Live weather + your settings = a straight answer.</p>
+          <p class="muted small">The fastest answer on the page: best fit first, supporting evidence second.</p>
         </div>
         <div id="verdictCard">
           <div class="verdict-placeholder">
@@ -209,7 +274,7 @@
     <!-- FILTERS -->
     <section class="toolbar card">
       <div class="toolbar-row">
-        <span class="toolbar-label">Narrow the Mountain</span>
+        <span class="toolbar-label">Refine Results</span>
         <div class="toolbar-controls">
           <div class="field">
             <label for="howFarFilter">How Far Will You Go?</label>
@@ -274,7 +339,7 @@
       <div class="section-header">
         <div>
           <h2>Compare All Mountains</h2>
-          <p class="muted small">Ranked by your score settings. Search by name, state, or pass. Click any column to sort.</p>
+          <p class="muted small">Decision-first on top, full comparison below. Search by name, state, or pass and sort any column.</p>
         </div>
         <div id="resultCount" class="helper-text result-count"></div>
       </div>
@@ -373,6 +438,44 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
       <div class="db-summary-label" style="text-align:center">What's in the database</div>
       <div id="summaryCards" class="db-summary-grid"></div>
     </section>
+
+    <section class="trust-monetization-grid">
+      <div class="card panel trust-panel">
+        <div class="section-header">
+          <div>
+            <div class="eyebrow">Why trust it</div>
+            <h2>Decision-ready, not data overload</h2>
+            <p class="muted small">Built to answer one question fast: where should you ski next?</p>
+          </div>
+        </div>
+        <div class="trust-grid">
+          <div class="trust-item">
+            <strong>Fast answer</strong>
+            <p>Top pick appears first, with forecast, drive time, pass fit, and supporting reasons.</p>
+          </div>
+          <div class="trust-item">
+            <strong>Data-driven</strong>
+            <p>Snow, vertical, crowd profile, price, and map views all stay aligned with your settings.</p>
+          </div>
+          <div class="trust-item">
+            <strong>Built for action</strong>
+            <p>Compare alternatives, open the map, and move from browsing to a real decision in seconds.</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="card panel sponsor-panel">
+        <div class="eyebrow">Monetization-ready</div>
+        <h2>Sponsored placements can live here.</h2>
+        <p class="muted small">Reserve this surface for lodging, gear, or destination partners without interrupting the core decision flow.</p>
+        <div class="sponsor-slot">
+          <span class="sponsor-badge">Sponsored</span>
+          <strong>Weekend Stay Partner</strong>
+          <p>Nearby lodging, family offers, or local dining can appear once the user already has a mountain in mind.</p>
+        </div>
+      </aside>
+    </section>
+
 
   </div>
 
