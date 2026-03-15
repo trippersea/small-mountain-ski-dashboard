@@ -2482,6 +2482,18 @@ function wireEvents() {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
   })();
+  // ── Compare section: filter panel toggle ─────────────────────────────────
+  const _filterToggleBtn = document.getElementById('filterToggleBtn');
+  const _filterPanel     = document.getElementById('filterPanel');
+  if (_filterToggleBtn && _filterPanel) {
+    _filterToggleBtn.addEventListener('click', () => {
+      const isOpen = !_filterPanel.hidden;
+      _filterPanel.hidden = isOpen;
+      _filterToggleBtn.setAttribute('aria-expanded', String(!isOpen));
+      _filterToggleBtn.classList.toggle('filter-toggle-btn--open', !isOpen);
+    });
+  }
+
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any'; state.nightOnly = false;
@@ -2491,17 +2503,18 @@ function wireEvents() {
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     if (els.passFilter) els.passFilter.value = 'All';
-    els.stateFilter.value    = 'All';
+    els.stateFilter.value = 'All';
     const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '0';
-    // sync verdict tier buttons
     document.querySelectorAll('.vdb-tier-btn').forEach((b,i) => b.classList.toggle('active', i===0));
     if (els.maxPriceFilter) els.maxPriceFilter.value = '0'; state.priceRange = 0;
     if (els.heroPassSelect) els.heroPassSelect.value = 'All';
     if (els.heroSnowSelect) els.heroSnowSelect.value = '1';
-    els.sortBy.value         = 'planner';
+    els.sortBy.value = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false');
     els.toggleNight.textContent = 'Off';
     if (els.tableSearch) els.tableSearch.value = '';
+    syncPlannerControls();
+    updateFilterBadge();
     pushUrlDebounced(); render();
   });
 

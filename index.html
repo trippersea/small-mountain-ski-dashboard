@@ -256,32 +256,36 @@
 
     <!-- COMPARE TABLE -->
     <section id="compareSection" class="card panel">
-      <div class="section-header">
-        <div>
+
+      <!-- Header row: title + result count + filter toggle -->
+      <div class="compare-section-header">
+        <div class="compare-section-title-block">
           <h2>Compare All Mountains</h2>
-          <p class="muted small">Your ranking preferences decide score order. Database filters below remove mountains from the table.</p>
+          <span id="resultCount" class="result-count"></span>
         </div>
-        <div id="resultCount" class="helper-text result-count"></div>
+        <button id="filterToggleBtn" class="filter-toggle-btn" aria-expanded="false" aria-controls="filterPanel">
+          <svg class="filter-toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Filter &amp; Sort
+          <svg class="filter-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
-      
-      <div class="database-filter-note">Use these filters to remove mountains from the comparison table. Your ranking preferences above still control score order.</div>
-      <div class="toolbar toolbar-inline">
-      <div class="toolbar-row">
-        <span class="toolbar-label">Narrow the Mountains</span>
-        <div class="toolbar-controls">
-          <div class="field">
-            <label for="howFarFilter">How Far Will You Go?</label>
-            <span class="filter-hint">Only show mountains within this drive range.</span>
-            <select id="howFarFilter">
-              <option value="0">Day Trip (&le;3h)</option>
-              <option value="1">Weekend (&le;6h)</option>
+
+      <!-- Collapsible filter panel -->
+      <div id="filterPanel" class="filter-panel" hidden>
+        <div class="filter-panel-grid">
+
+          <div class="fp-field">
+            <label class="fp-label" for="howFarFilter">Distance</label>
+            <select id="howFarFilter" class="fp-select">
+              <option value="0">Day Trip (≤3h)</option>
+              <option value="1">Weekend (≤6h)</option>
               <option value="2">All Distances</option>
             </select>
           </div>
-          <div class="field">
-            <label for="maxPriceFilter">Price Ceiling</label>
-            <span class="filter-hint">Remove mountains above a target price.</span>
-            <select id="maxPriceFilter">
+
+          <div class="fp-field">
+            <label class="fp-label" for="maxPriceFilter">Ticket Price</label>
+            <select id="maxPriceFilter" class="fp-select">
               <option value="0">Any price</option>
               <option value="1">Under $100</option>
               <option value="2">$100 – $150</option>
@@ -290,45 +294,43 @@
             </select>
           </div>
 
-          <div class="field">
-            <label for="stateFilter">State (optional)</label>
-            <span class="filter-hint">Limit the database to one state.</span>
-            <select id="stateFilter"></select>
+          <div class="fp-field">
+            <label class="fp-label" for="stateFilter">State</label>
+            <select id="stateFilter" class="fp-select"></select>
           </div>
-          <div class="field">
-            <label for="sortBy">Sort database by</label>
-            <span class="filter-hint">Change the order of the full mountain list.</span>
-            <select id="sortBy">
+
+          <div class="fp-field">
+            <label class="fp-label" for="sortBy">Sort by</label>
+            <select id="sortBy" class="fp-select">
               <option value="planner">Ski Score</option>
               <option value="storm">Storm Snow</option>
               <option value="drive">Drive Time</option>
-              <option value="price">Price Ceiling</option>
+              <option value="price">Price</option>
               <option value="vertical">Vertical</option>
               <option value="avgSnowfall">Avg Snowfall</option>
             </select>
           </div>
-          <div class="field field-toggle">
-            <label>Night Skiing</label>
-            <span class="filter-hint">Show only mountains with night skiing.</span>
-            <button id="toggleNight" class="btn btn-secondary" aria-pressed="false">Off</button>
+
+          <div class="fp-field fp-field--toggle">
+            <label class="fp-label">Night Skiing</label>
+            <button id="toggleNight" class="fp-toggle-btn" aria-pressed="false">Off</button>
           </div>
-          <!-- toggleDaytrip removed — distance handled by howFarFilter -->
-          <div class="field field-toggle">
-            <label>Reset</label>
-            <span class="filter-hint">Clear all active filters.</span>
-            <button id="resetFilters" class="btn btn-secondary">Reset All</button>
+
+          <div class="fp-field fp-field--action">
+            <button id="resetFilters" class="fp-clear-btn">Clear all filters</button>
           </div>
+
         </div>
       </div>
-      <div id="activeFilters" class="active-filters"></div>
-    
-      </div>
-      <div class="table-toolbar">
+
+      <!-- Search bar + active filter pills + view-all -->
+      <div class="compare-toolbar">
         <div class="table-search-wrap">
-          <input id="tableSearch" type="text" class="table-search-input" placeholder="Search mountains, state, or pass&hellip;" autocomplete="off" />
+          <input id="tableSearch" type="text" class="table-search-input" placeholder="Search mountains, state, or pass…" autocomplete="off" />
         </div>
         <button id="tableViewAllBtn" class="btn btn-secondary">View All</button>
       </div>
+      <div id="activeFilters" class="active-filters"></div>
 
       <!-- Desktop table (hidden on mobile via CSS) -->
       <div class="table-wrap">
