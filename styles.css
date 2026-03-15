@@ -375,7 +375,8 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .vcard {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   border-radius: inherit;
   overflow: hidden;
 }
@@ -1923,12 +1924,23 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 /* ── Left column — planner ──────────────────────────────────────────────── */
 .planner-col {
   padding: 26px 28px 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 .planner-col-header {
   margin-bottom: 20px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* plannerDetails fills remaining height so score grid expands to match verdict card */
+.planner-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* Header top row: title + edit button */
@@ -1982,19 +1994,23 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   color: var(--accent);
 }
 
-/* Score grid — 2 columns in planner */
+/* Score grid — 2 columns in planner, fills available height */
 .planner-col .score-grid {
   grid-template-columns: 1fr 1fr;
   gap: 12px 16px;
   margin-bottom: 0;
+  flex: 1;
+  align-content: start;
 }
 
-/* Each control card */
+/* Each control card — equal height within row */
 .planner-col .score-control {
   padding: 14px 15px 12px;
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 14px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Section label */
@@ -2096,17 +2112,18 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 
 /* ── Verdict cleanup overrides ─────────────────────────────────────────── */
+/* Both columns must be flex columns so inner content can fill the full height */
 .verdict-col {
-  padding: 18px 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
-
-
-.verdict-col .verdict-right {
-  padding: 16px 18px 14px;
-  gap: 8px;
-}
-
-
+/* #verdictCard must grow to fill the section, then vcard fills #verdictCard */
+#verdictCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 
@@ -2138,7 +2155,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .hero-ai-row-premium { width: min(100%, 760px); max-width: 760px; text-align:left; margin-top: 8px; }
 .hero-ai-row-premium .hero-ai-label { text-align:left; }
 .planner-verdict-row { grid-template-columns: minmax(0,1.16fr) minmax(360px,.84fr); }
-.verdict-col { padding: 20px 22px; }
 @media (max-width: 1040px) { .hero-search-bar-unified { grid-template-columns: 1fr 1fr; border-radius: 24px; } .hero-search-bar-unified .hero-search-input { grid-column: 1 / -1; border-bottom:1px solid var(--border); } .hero-search-select { border-left:0; border-top:0; border-right:1px solid var(--border); } .hero-search-select:last-of-type { border-right:0; } .hero-search-bar-unified .hero-search-btn { grid-column: 1 / -1; border-radius:0 0 24px 24px; } .planner-verdict-row { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .hero-search-centered { padding: 26px 14px 24px !important; } .hero-search-centered .hero-headline { max-width: 11ch; font-size: clamp(30px, 9vw, 42px); } .hero-search-centered .hero-subhead { font-size: 15px; } .hero-search-bar-unified { grid-template-columns: 1fr; } .hero-search-bar-unified .hero-search-input { border-bottom:1px solid var(--border); } .hero-search-select { border-right:0; border-top:1px solid var(--border); } .hero-search-bar-unified .hero-search-btn { border-radius:0 0 24px 24px; } .hero-proof-card-centered { padding: 18px 18px; } }
 
