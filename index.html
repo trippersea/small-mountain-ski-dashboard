@@ -104,8 +104,8 @@
         <div class="planner-pass-priority">
           <div class="qs-card qs-card-pass-priority">
             <div class="qs-card-header">
-              <span class="qs-card-title">My Pass</span>
-              <span class="qs-card-desc">Boosts mountains on your season pass</span>
+              <span class="qs-card-title">Pass Access</span>
+              <span class="qs-card-desc">Only show mountains available on your pass</span>
             </div>
             <div class="qs-card-btns pass-pref-row">
               <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
@@ -139,7 +139,7 @@
                 <button class="priority-btn" data-val="spring">33&deg;+ Spring</button>
                 <button class="priority-btn" data-val="cold">Below 0&deg;</button>
               </div>
-              <div class="slider-hint">Cold, dry days score best. Bitter cold is a penalty, and spring temps are a smaller lift when the wind stays manageable.</div>
+              <div class="slider-hint">Acts as an eligibility filter for the type of temperatures you want to ski in.</div>
             </div>
 
             <div class="score-control">
@@ -150,7 +150,7 @@
                 <button class="priority-btn" data-val="breezy">16&ndash;25 mph</button>
                 <button class="priority-btn" data-val="holds">25+ mph</button>
               </div>
-              <div class="slider-hint">Light wind skis best. Breezy is manageable. At 25+ mph, some mountains can feel rough or start to see lift holds.</div>
+              <div class="slider-hint">Acts as a wind tolerance filter so the result set matches the kind of day you are willing to ski.</div>
             </div>
 
             <div class="score-control">
@@ -161,7 +161,7 @@
                 <button class="priority-btn" data-val="mid">1,000&ndash;1,500ft Sweet Spot</button>
                 <button class="priority-btn" data-val="big">Big-Mountain Feel</button>
               </div>
-              <div class="slider-hint">Matches the kind of mountain experience you want, not just the biggest hill.</div>
+              <div class="slider-hint">Filters for the type of mountain you want, then ranks fit inside the remaining set.</div>
             </div>
 
             <div class="score-control">
@@ -172,7 +172,7 @@
                 <button class="priority-btn" data-val="5">$100&ndash;$149</button>
                 <button class="priority-btn" data-val="1">$150+ Fine</button>
               </div>
-              <div class="slider-hint">Acts as a true ticket-price filter first, then uses value scoring inside the remaining set.</div>
+              <div class="slider-hint">Acts as a true ticket-price filter first, then ranks value inside the remaining set.</div>
             </div>
 
             <div class="score-control">
@@ -182,7 +182,7 @@
                 <button class="priority-btn" data-val="5">Not Ideal, But Fine</button>
                 <button class="priority-btn" data-val="10">Fewer the Better</button>
               </div>
-              <div class="slider-hint">Penalizes popular mountains on busy days so smaller, calmer options can compete.</div>
+              <div class="slider-hint">Lets you screen out busier mountains when you want a calmer ski day.</div>
             </div>
 
           </div>
@@ -232,8 +232,8 @@
             </select>
           </div>
           <div class="field">
-            <label for="passFilter">Pass</label>
-            <span class="filter-hint">Show mountains on a specific pass.</span>
+            <label for="passFilter">Pass Access</label>
+            <span class="filter-hint">Only show mountains available on that pass.</span>
             <select id="passFilter"></select>
           </div>
           <div class="field">

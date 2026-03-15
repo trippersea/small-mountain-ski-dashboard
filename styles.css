@@ -2875,3 +2875,110 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
     gap: 6px;
   }
 }
+
+
+/* ── Verdict cleanup overrides ─────────────────────────────────────────── */
+.verdict-col {
+  padding: 18px 20px;
+}
+
+.verdict-col .verdict-header {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+
+.verdict-col .verdict-inner {
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  align-items: start;
+}
+
+.verdict-col .verdict-left,
+.verdict-col .verdict-right {
+  min-height: 0;
+  justify-content: flex-start;
+}
+
+.verdict-col .verdict-left {
+  padding: 16px 18px 14px;
+  gap: 8px;
+}
+
+.verdict-col .verdict-right {
+  padding: 16px 18px 14px;
+  gap: 8px;
+}
+
+.verdict-pick-block {
+  padding-bottom: 8px;
+}
+
+.verdict-pick-heading-row {
+  align-items: center;
+  gap: 8px;
+}
+
+.verdict-pick-name {
+  font-size: 1.22rem;
+}
+
+.verdict-pick-meta,
+.verdict-detail,
+.verdict-writeup,
+.verdict-right .verdict-running-meta {
+  line-height: 1.45;
+}
+
+.verdict-writeup {
+  margin: 0;
+}
+
+.verdict-writeup--loading {
+  min-height: 1.8em;
+}
+
+.verdict-body {
+  display: grid;
+  gap: 6px;
+}
+
+.verdict-headline {
+  margin-bottom: 0;
+}
+
+.verdict-points {
+  margin-top: 4px;
+}
+
+.verdict-action-row {
+  margin-top: 8px;
+}
+
+.verdict-running-card {
+  padding: 12px;
+}
+
+.verdict-top5-header {
+  margin-bottom: 8px;
+}
+
+.verdict-running-list {
+  gap: 8px;
+}
+
+.verdict-right .verdict-running-item.verdict-resort-link {
+  padding: 10px 12px;
+}
+
+.verdict-right .verdict-running-meta {
+  margin-top: 4px;
+}
+
+.verdict-compare-row {
+  margin-top: 10px;
+}
+
+@media (max-width: 960px) {
+  .verdict-col .verdict-inner {
+    grid-template-columns: 1fr;
+  }
+}
