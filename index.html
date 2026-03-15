@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkiDecision — Your Guide to the Slopes</title>
-  <meta name="description" content="256 mountains across 34 states ranked in real time — live snow forecasts, drive times, pass networks, and a straight answer on where to ski next." />
+  <title>SkiDecision — Find the Best Mountain to Ski Next</title>
+  <meta name="description" content="Find the best mountain to ski based on live snow forecast, your drive time, pass access, price and crowds. 256 mountains ranked in real time — free, no account needed." />
   <meta property="og:title" content="SkiDecision — Your Guide to the Slopes" />
   <meta property="og:description" content="256 mountains nationwide, live weather, ranked for your weekend. Free, no account needed." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://skidecision.com" />
+  <meta property="og:url" content="https://wheretoskinext.com" />
   <meta property="og:image" content="https://skidecision.com/ski-decision-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SkiDecision — Your Guide to the Slopes" />
   <meta name="twitter:description" content="256 mountains nationwide, live weather, ranked for your weekend. Free, no account needed." />
   <meta name="twitter:image" content="https://skidecision.com/ski-decision-logo.png" />
+    <link rel="canonical" href="https://wheretoskinext.com" />
   <link rel="icon" href="ski-decision-logo.png" type="image/png" />
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,6 +22,18 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link id="leafletCss" rel="stylesheet" href="" />
   <link rel="stylesheet" href="styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SkiDecision",
+    "url": "https://wheretoskinext.com",
+    "description": "256 ski mountains ranked in real time by snow forecast, drive time, pass access and crowds. Free, no account needed.",
+    "applicationCategory": "SportsApplication",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "operatingSystem": "Web browser"
+  }
+  </script>
 </head>
 <body>
   <a href="#compareSection" class="skip-to-content">Skip to mountain list</a>
@@ -77,7 +90,7 @@
             <div class="hero-brand-tag">Your Guide to the Slopes</div>
           </div>
 
-          <div class="hero-headline">Where should you ski tomorrow?</div>
+          <h1 class="hero-headline">Where should you ski tomorrow?</h1>
           <div class="hero-subhead">Compare snow, drive time, pass access, price, and crowds in one search.</div>
 
           <div class="hero-search-bar hero-search-bar-unified">
@@ -425,6 +438,9 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
   </div>
 
   <script src="resorts-national.js"></script>
-  <script src="resorts.js"></script>
+  <script src="sd-data.js"></script>
+  <script src="sd-scoring.js"></script>
+  <script src="sd-filters.js"></script>
+  <script src="sd-app.js"></script>
 </body>
 </html>
