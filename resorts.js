@@ -81,7 +81,7 @@ const HIST_TTL = 24 * 60 * 60 * 1000; // 24 hours
 function loadSavedWeights() {
   // Always start with balanced defaults — do not restore from localStorage
   try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
-  return { ...PRESETS.balanced };
+  return { snow: 1, drive: 4, size: 5, value: 0, crowd: 1 };
 }
 
 function loadSavedPassPreference() {
@@ -90,7 +90,7 @@ function loadSavedPassPreference() {
 }
 function loadSavedPreset() {
   // Always default to balanced — do not restore from localStorage
-  return 'balanced';
+  return 'custom';
 }
 function loadSavedSkiDays() {
   try { return Number(localStorage.getItem('ski-ski-days') || 5); } catch (e) { return 5; }
@@ -745,7 +745,12 @@ function snapToPriority(v) {
 function normalizeWeightsToPriority() {
   state.weights.snow = snapToPriority(state.weights.snow);
   ['value', 'crowd'].forEach(k => {
-    state.weights[k] = snapToPriority(state.weights[k]);
+    const raw = Number(state.weights[k]);
+    if (k === 'value' && raw === 0) {
+      state.weights[k] = 0;
+      return;
+    }
+    state.weights[k] = snapToPriority(raw);
     if (state.weights[k] === 15) state.weights[k] = 10;
   });
   state.weights.size = 5;
@@ -2301,6 +2306,9 @@ function wireEvents() {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any'; state.nightOnly = false;
     state.maxPrice = 0; state.priceRange = 0; state.howFar = 0;
+    state.verticalFilter = 'any';
+    state.weights = { snow: 1, drive: 4, size: 5, value: 0, crowd: 1 };
+    state.preset = 'custom';
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
