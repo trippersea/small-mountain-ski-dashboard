@@ -46,7 +46,8 @@ const PRICE_RANGES = Object.freeze([
 const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 
 const DEFAULT_WEIGHTS = Object.freeze({ snow: 1, drive: 0, size: 0, value: 0, crowd: 1 });
-const SCORE_WEIGHTS  = Object.freeze({ snow: 0.35, skiability: 0.25, fit: 0.20, value: 0.10, crowd: 0.10 });
+// Drive is now a real scoring component (15%). Weights sum to 1.0.
+const SCORE_WEIGHTS  = Object.freeze({ snow: 0.30, skiability: 0.20, fit: 0.15, value: 0.10, crowd: 0.10, drive: 0.15 });
 
 
 // Table sort state — dir tracked separately from URL state
@@ -280,16 +281,16 @@ function pushReportUrl(resort) {
   const slug   = slugify(resort.name);
   const params = serializeState();
   const qs     = params.toString() ? '?' + params : '';
-  history.pushState({ reportSlug: slug }, resort.name + ' — Where To Ski?!', '/report/' + slug + qs);
-  document.title = resort.name + ' — Where To Ski?!';
+  history.pushState({ reportSlug: slug }, resort.name + ' — SkiDecision', '/report/' + slug + qs);
+  document.title = resort.name + ' — SkiDecision';
 }
 
 // Pop back to the root URL (called when detail closes or back is pressed)
 function popToRoot() {
   const params = serializeState();
   const qs     = params.toString() ? '?' + params : '';
-  history.replaceState({ reportSlug: null }, 'Where To Ski?!', '/' + qs);
-  document.title = 'Where To Ski?!';
+  history.replaceState({ reportSlug: null }, 'SkiDecision', '/' + qs);
+  document.title = 'SkiDecision';
 }
 
 const pushUrlDebounced = debounce(() => {
@@ -1103,6 +1104,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     fit:        mountainFitIndex(resort),
     value:      valueIndex(resort),
     crowd:      crowdOutlookIndex(crowd),
+    drive:      driveScoreIndex(getDriveMins(resort.id)),
   };
 
   const components = {
@@ -1111,9 +1113,10 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     fit:        normalized.fit        * (w.fit || 0) * 100,
     value:      normalized.value      * (w.value || 0) * 100,
     crowd:      normalized.crowd      * (w.crowd || 0) * 100,
+    drive:      normalized.drive      * (w.drive || 0) * 100,
   };
 
-  const score = components.snow + components.skiability + components.fit + components.value + components.crowd;
+  const score = components.snow + components.skiability + components.fit + components.value + components.crowd + components.drive;
   const passBonus = 0;
   const condIdx = null;
   const condBonus = 0;
@@ -1140,6 +1143,7 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
       fit:        Math.round(base.components.fit),
       value:      Math.round(base.components.value),
       crowd:      Math.round(base.components.crowd),
+      drive:      Math.round(base.components.drive),
     },
   };
 }
@@ -1224,14 +1228,6 @@ function primaryReasons(item) {
   if (cLabel === 'Light' || cLabel === 'Light-Moderate')
     reasons.push('Lighter crowd outlook');
 
-  if (c) {
-    if (c.trailsOpen != null && c.trailsTotal > 0 && c.trailsOpen / c.trailsTotal >= 0.85)
-      reasons.push(`${c.trailsOpen}/${c.trailsTotal} trails open`);
-    else if (c.baseDepth != null && c.baseDepth >= 40)
-      reasons.push(`${c.baseDepth}" base depth`);
-    else if (c.newSnow24h != null && c.newSnow24h >= 4)
-      reasons.push(`${c.newSnow24h}" fresh in last 24h`);
-  }
   if (state.nightOnly && item.resort.night)
     reasons.push('Night skiing available');
   if (state.passFilter && state.passFilter !== 'All' && item.resort.passGroup === state.passFilter)
@@ -1568,11 +1564,12 @@ function cardBreakdown(b) {
     <div>Snow quality: <strong>${c.snow.toFixed(1)}</strong></div>
     <div>Skiability: <strong>${c.skiability.toFixed(1)}</strong></div>
     <div>Mountain fit: <strong>${c.fit.toFixed(1)}</strong></div>
+    <div>Drive: <strong>${c.drive.toFixed(1)}</strong></div>
     <div>Value: <strong>${c.value.toFixed(1)}</strong></div>
     <div>Crowd outlook: <strong>${c.crowd.toFixed(1)}</strong></div>
   </div>`;
 }
-function crowdClass(label) { return `crowd-${label.toLowerCase()}`; }
+function crowdClass(label) { return `crowd-${label.toLowerCase().replace(/\s+/g, '-')}`; }
 
 // ─── Async render panels ──────────────────────────────────────────────────────
 // Single shared pipeline — compute candidates & weather once, pass to all panels
@@ -1651,7 +1648,9 @@ function renderCompareTable(resorts) {
   });
 
   els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }) => {
-    const planner  = breakdown ? breakdown.score : '—';
+    const rawScore = breakdown ? breakdown.score : null;
+    const planner  = rawScore !== null ? Math.round(rawScore) : '—';
+    const scoreCls = rawScore === null ? '' : rawScore >= 70 ? 'score-great' : rawScore >= 50 ? 'score-good' : 'score-low';
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
     const crowd    = crowdForecast(resort).label;
@@ -1661,7 +1660,7 @@ function renderCompareTable(resorts) {
         <td><div class="row-name">${esc(resort.name)}</div></td>
         <td>${esc(resort.state)}</td>
         <td>${esc(resort.passGroup)}</td>
-        <td>${planner}</td>
+        <td><span class="score-badge ${scoreCls}">${planner}</span></td>
         <td>${storm}</td>
         <td class="hist-cell">${histCell}</td>
         <td>${formatDrive(resort.id)}</td>
@@ -1799,6 +1798,7 @@ function renderDetail({ scroll = false } = {}) {
           <div>Snow quality: <strong>${skis.factors.snow}</strong></div>
           <div>Skiability: <strong>${skis.factors.skiability}</strong></div>
           <div>Mountain fit: <strong>${skis.factors.fit}</strong></div>
+          <div>Drive: <strong>${skis.factors.drive}</strong></div>
           <div>Value: <strong>${skis.factors.value}</strong></div>
           <div>Crowd outlook: <strong>${skis.factors.crowd}</strong></div>
           <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">Total Ski Score: <strong>${skis.skiScore}</strong></div>
@@ -2043,7 +2043,7 @@ function renderMobileCards(decorated) {
   if (!els.mobileCardGrid) return;
   const items = decorated.slice(0, state.tableViewAll ? decorated.length : 10);
   els.mobileCardGrid.innerHTML = items.map(({ resort, breakdown, stormTotal }) => {
-    const score  = breakdown ? breakdown.score : null;
+    const score  = breakdown ? Math.round(breakdown.score) : null;
     const storm  = stormTotal !== null ? stormTotal.toFixed(1) + '"' : '…';
     const drive  = formatDrive(resort.id);
     const crowd  = crowdForecast(resort).label;
@@ -2096,7 +2096,7 @@ function shareVerdict(resort, verdictData) {
 
   if (navigator.share) {
     navigator.share({
-      title: `Ski day at ${resort.name} — Where To Ski?!`,
+      title: `Ski day at ${resort.name} — SkiDecision`,
       text:  shareText,
       url,
     }).catch(() => {}); // user cancelled — silent
@@ -2165,10 +2165,124 @@ function render() {
   renderAllCards(filteredResorts());
 }
 
+// ─── Filter badge count ───────────────────────────────────────────────────────
+// Updates the mobile filter button badge with number of active filters
+function updateFilterBadge() {
+  const badge = document.getElementById('filterBadge');
+  if (!badge) return;
+  const count = activeFilters().length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
+
+// ─── Leaflet lazy loader ──────────────────────────────────────────────────────
+// Only loads Leaflet CSS + JS when the map section enters the viewport.
+let leafletLoaded = false;
+function lazyLoadLeaflet(callback) {
+  if (leafletLoaded) { if (callback) callback(); return; }
+  const cssEl = document.getElementById('leafletCss');
+  if (cssEl) cssEl.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  script.onload = () => { leafletLoaded = true; if (callback) callback(); };
+  document.head.appendChild(script);
+}
+
+// ─── Mobile filter drawer ─────────────────────────────────────────────────────
+function wireMobileFilterDrawer() {
+  const triggerBtn = document.getElementById('mobileFilterBtn');
+  const drawer     = document.getElementById('filterDrawer');
+  const overlay    = document.getElementById('filterDrawerOverlay');
+  const closeBtn   = document.getElementById('filterDrawerClose');
+  const doneBtn    = document.getElementById('filterDrawerDone');
+  const resetBtn   = document.getElementById('filterDrawerReset');
+  const drawerBody = document.getElementById('filterDrawerBody');
+  if (!triggerBtn || !drawer) return;
+
+  function openDrawer() {
+    // Clone the planner controls into the drawer body for mobile
+    const plannerDetails = document.getElementById('plannerDetails');
+    const toolbar = document.querySelector('.toolbar-inline');
+    if (drawerBody && plannerDetails) {
+      drawerBody.innerHTML = '';
+      const plannerClone = plannerDetails.cloneNode(true);
+      plannerClone.id = 'plannerDetails-drawer';
+      drawerBody.appendChild(plannerClone);
+      if (toolbar) {
+        const toolbarClone = toolbar.cloneNode(true);
+        toolbarClone.classList.add('toolbar-drawer-copy');
+        drawerBody.appendChild(toolbarClone);
+      }
+      // Wire priority buttons in cloned drawer
+      drawerBody.querySelectorAll('.priority-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.closest('.priority-btns')?.dataset.key;
+          if (!key) return;
+          if (key === 'size')       state.verticalFilter = btn.dataset.val;
+          else if (key === 'temp')  state.tempBucket = btn.dataset.val;
+          else if (key === 'wind')  state.windBucket = btn.dataset.val;
+          else                      state.weights[key] = Number(btn.dataset.val);
+          savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
+          updateFilterBadge();
+          // Re-sync active states in the drawer
+          drawerBody.querySelectorAll(`.priority-btns[data-key="${key}"] .priority-btn`).forEach(b =>
+            b.classList.toggle('active', b.dataset.val === btn.dataset.val));
+        });
+      });
+    }
+    drawer.hidden = false;
+    requestAnimationFrame(() => drawer.classList.add('open'));
+    triggerBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    triggerBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    setTimeout(() => { drawer.hidden = true; }, 300);
+  }
+
+  triggerBtn.addEventListener('click', openDrawer);
+  if (closeBtn)  closeBtn.addEventListener('click', closeDrawer);
+  if (overlay)   overlay.addEventListener('click', closeDrawer);
+  if (doneBtn)   doneBtn.addEventListener('click', closeDrawer);
+  if (resetBtn)  resetBtn.addEventListener('click', () => {
+    document.getElementById('resetFilters')?.click();
+    closeDrawer();
+    updateFilterBadge();
+  });
+  // Close on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !drawer.hidden) closeDrawer();
+  });
+}
+
 // ─── Event wiring ─────────────────────────────────────────────────────────────
 const debouncedRender = debounce(render, 50);
 
 function wireEvents() {
+  // ── Lazy-load Leaflet only when map section enters viewport ─────────────────
+  const mapSection = document.getElementById('mapSection');
+  if (mapSection && typeof IntersectionObserver !== 'undefined') {
+    const mapObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        lazyLoadLeaflet(() => {
+          const resorts = filteredResorts();
+          updateMap(resorts);
+        });
+        mapObserver.disconnect();
+      }
+    }, { threshold: 0.1 });
+    mapObserver.observe(mapSection);
+  } else {
+    // Fallback: load after short delay
+    setTimeout(() => lazyLoadLeaflet(), 2000);
+  }
+
+  // ── Mobile filter drawer ────────────────────────────────────────────────────
+  wireMobileFilterDrawer();
+
   // ── Slider info tooltips ──────────────────────────────────────────────────────
   const SLIDER_TIPS = {
     snow:   'Forecast-led snow score with temperature and wind folded in. High = only mountains with meaningful snow or truly ideal ski weather rise to the top.',
@@ -2279,10 +2393,14 @@ function wireEvents() {
   const _howFarFilterEl = document.getElementById('howFarFilter');
   if (_howFarFilterEl) _howFarFilterEl.addEventListener('change', e => {
     state.howFar = Number(e.target.value);
-    if (state.howFar < 2 && !state.origin) showToast('Set a starting location for distance filtering');
+    if (state.howFar > 0 && !state.origin) {
+      showToast('Add your starting location to activate distance filtering', 4000);
+    }
     // sync verdict tier buttons
     document.querySelectorAll('.vdb-tier-btn').forEach((b,i) => b.classList.toggle('active', i === state.howFar));
+    pushUrlDebounced();
     render();
+    updateFilterBadge();
   });
 
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
@@ -2574,6 +2692,7 @@ function initialize() {
   syncPlannerControls();
   wireEvents();
   render();
+  updateFilterBadge();
 
   // Kick off drive time loading if origin came from URL or saved localStorage
   if (state.origin) {
@@ -2588,7 +2707,7 @@ function initialize() {
     const found = findResortBySlug(reportSlug);
     if (found) {
       state.selectedId = found.id;
-      document.title = found.name + ' — Where To Ski?!';
+      document.title = found.name + ' — SkiDecision';
       setTimeout(() => {
         renderDetail();
         const sec = document.getElementById('detailSection');
@@ -2604,7 +2723,7 @@ function initialize() {
       const found = findResortBySlug(slug);
       if (found) {
         state.selectedId = found.id;
-        document.title = found.name + ' — Where To Ski?!';
+        document.title = found.name + ' — SkiDecision';
         renderDetail({ scroll: true });
           return;
       }
@@ -2612,11 +2731,10 @@ function initialize() {
     // Navigated back to root — close detail card
     state.selectedId = null;
     if (els.detailSection) els.detailSection.classList.add('hidden');
-    document.title = 'Where To Ski?!';
+    document.title = 'SkiDecision';
     render();
   });
 
-  setTimeout(() => initMap(), 100);
 }
 
 initialize();

@@ -3,46 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Where To Ski?!</title>
+  <title>SkiDecision — Your Guide to the Slopes</title>
   <meta name="description" content="256 mountains across 34 states ranked in real time — live snow forecasts, drive times, pass networks, and a straight answer on where to ski next." />
-  <meta property="og:title" content="Where To Ski?! — The Ski Decision Engine" />
+  <meta property="og:title" content="SkiDecision — Your Guide to the Slopes" />
   <meta property="og:description" content="256 mountains nationwide, live weather, ranked for your weekend. Free, no account needed." />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://skidecision.com" />
+  <meta property="og:image" content="https://skidecision.com/ski-decision-logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SkiDecision — Your Guide to the Slopes" />
+  <meta name="twitter:description" content="256 mountains nationwide, live weather, ranked for your weekend. Free, no account needed." />
+  <meta name="twitter:image" content="https://skidecision.com/ski-decision-logo.png" />
+  <link rel="icon" href="ski-decision-logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="ski-decision-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link id="leafletCss" rel="stylesheet" href="" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <a href="#compareSection" class="skip-to-content">Skip to mountain list</a>
   <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
   <div id="sliderTooltip" class="slider-tooltip" role="tooltip"></div>
 
-  <nav class="top-nav">
+  <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
-      <span class="nav-brand">Where To Ski</span>
+      <span class="nav-brand">SkiDecision</span>
       <div class="nav-divider"></div>
       <a href="#verdictSection" class="nav-cta" id="navVerdictLink">My Pick</a>
       <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">Compare</a>
       <div class="nav-divider"></div>
       <a href="#stormSection" class="nav-secondary">Storm Chaser</a>
       <a href="#hiddenGemSection" class="nav-secondary">Hidden Gems</a>
-            <button class="btn-ghost nav-share" onclick="copyShareLink()">Share</button>
+      <button class="btn-ghost nav-share" onclick="copyShareLink()">Share</button>
     </div>
   </nav>
 
   <button id="backToTop" class="back-to-top" aria-label="Back to top">Top</button>
 
   <div class="container">
-<select id="passFilter" class="hidden-pass-filter" aria-hidden="true" tabindex="-1"></select>
+    <!-- Mobile filter drawer trigger — visible only on mobile -->
+    <div class="mobile-filter-bar">
+      <button id="mobileFilterBtn" class="mobile-filter-trigger" aria-haspopup="dialog" aria-expanded="false">
+        ⚙ Filters <span id="filterBadge" class="filter-badge hidden">0</span>
+      </button>
+    </div>
+
+    <!-- Mobile filter drawer -->
+    <div id="filterDrawer" class="filter-drawer" role="dialog" aria-modal="true" aria-label="Filter options" hidden>
+      <div class="filter-drawer-overlay" id="filterDrawerOverlay"></div>
+      <div class="filter-drawer-panel">
+        <div class="filter-drawer-header">
+          <span class="filter-drawer-title">Filters</span>
+          <button id="filterDrawerClose" class="filter-drawer-close" aria-label="Close filters">✕</button>
+        </div>
+        <div class="filter-drawer-body" id="filterDrawerBody">
+          <!-- Populated by JS from the planner section -->
+        </div>
+        <div class="filter-drawer-footer">
+          <button id="filterDrawerReset" class="btn btn-secondary">Reset All</button>
+          <button id="filterDrawerDone" class="btn btn-primary">Show Results</button>
+        </div>
+      </div>
+    </div>
 
     <!-- HERO: centered search-first landing -->
     <section id="searchSection" class="hero card hero-search hero-search-centered">
       <div class="hero-search-shell">
         <div class="hero-search-inner">
           <div class="hero-brand-row hero-brand-row-centered">
-            <div class="hero-brand-name">Where To Ski</div>
-            <div class="hero-brand-tag">The Ski Decision Engine</div>
+            <div class="hero-brand-name">SkiDecision</div>
+            <div class="hero-brand-tag">Your Guide to the Slopes</div>
           </div>
 
           <div class="hero-headline">Where should you ski tomorrow?</div>
@@ -145,7 +177,7 @@
         <div class="planner-col-header">
           <div class="planner-summary-title"><span class="planner-title-copy">Rank by what matters most today<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit</button></div>
           <div id="weightSummary" class="weight-summary"></div>
-          <p class="filter-role-note">These preferences change how mountains are ranked. They do not remove mountains from the list.</p>
+          <p class="filter-role-note">High-priority settings boost rankings and may filter out mountains that clearly don't match your preference. All active filters are shown as pills below.</p>
         </div>
 
         <div id="plannerDetails" class="planner-details">
@@ -283,9 +315,9 @@
           </div>
           <!-- toggleDaytrip removed — distance handled by howFarFilter -->
           <div class="field field-toggle">
-            <label>&nbsp;</label>
-            <span class="filter-hint">&nbsp;</span>
-            <button id="resetFilters" class="btn btn-secondary">Reset</button>
+            <label>Reset</label>
+            <span class="filter-hint">Clear all active filters.</span>
+            <button id="resetFilters" class="btn btn-secondary">Reset All</button>
           </div>
         </div>
       </div>
@@ -301,14 +333,15 @@
 
       <!-- Desktop table (hidden on mobile via CSS) -->
       <div class="table-wrap">
-        <table id="compareTable" class="comparison-table">
+        <table id="compareTable" class="comparison-table" aria-label="Mountain comparison table">
+          <caption class="visually-hidden">Mountains ranked by Ski Score. Click any column header to sort.</caption>
           <thead>
             <tr>
-              <th scope="col"></th>
+              <th scope="col"><span class="visually-hidden">Select for comparison</span></th>
               <th scope="col" class="sortable-th" data-sort="name">Name <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="state">State <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="pass">Pass <span class="sort-indicator"></span></th>
-              <th scope="col" class="sortable-th" data-sort="planner">Score <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="planner" title="Ski Score: composite of snow quality, mountain fit, drive time, value, and crowd outlook (0–100)">Score <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="storm">Storm 3d <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="hist7day" title="Snowfall in the past 7 days">7-Day Snow <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="drive">Drive <span class="sort-indicator"></span></th>
@@ -390,7 +423,6 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
 
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="resorts-national.js"></script>
   <script src="resorts.js"></script>
 </body>
