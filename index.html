@@ -20,14 +20,13 @@
 
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <span class="nav-brand">Where To Ski?!</span>
+      <span class="nav-brand nav-brand-lockup"><img src="ski-decision-logo.png" alt="Where To Ski logo" class="nav-logo" /><span class="nav-brand-text">Where To Ski</span></span>
       <div class="nav-divider"></div>
       <a href="#verdictSection" class="nav-cta" id="navVerdictLink">My Pick</a>
       <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">Compare</a>
       <div class="nav-divider"></div>
       <a href="#stormSection" class="nav-secondary">Storm Chaser</a>
       <a href="#hiddenGemSection" class="nav-secondary">Hidden Gems</a>
-      <a href="#mapSection" class="nav-secondary">Map</a>
       <button class="btn-ghost nav-share" onclick="copyShareLink()">Share</button>
     </div>
   </nav>
@@ -37,56 +36,79 @@
   <div class="container">
 
     <!-- HERO: value prop + location + AI chat -->
-    <section id="searchSection" class="hero card hero-search">
-      <div class="hero-search-inner">
-
-        <div class="hero-headline">Where are you skiing from?</div>
-        <div class="hero-subhead">Enter your ZIP code or city and we&rsquo;ll find your best mountain.</div>
-
-        <!-- Big pill search bar -->
-        <div class="hero-search-bar">
-          <input
-            id="originInput"
-            type="text"
-            class="hero-search-input"
-            placeholder="ZIP code or city &mdash; e.g. 02101 or Boston, MA"
-            autocomplete="off"
-            autofocus
-          />
-          <button id="setLocation" class="hero-search-btn">Find My Mountain</button>
-        </div>
-
-        <!-- Secondary actions -->
-        <div class="hero-search-meta">
-          <button id="detectLocation" class="hero-locate-link">Use my location</button>
-          <span class="hero-meta-divider" aria-hidden="true">·</span>
-          <label class="remember-location-label" id="rememberLocationLabel">
-            <input type="checkbox" id="rememberLocation" />
-            Remember this location
-            <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info
-              <span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span>
-            </span>
-          </label>
-        </div>
-
-        <div id="locationStatus" class="helper-text hero-location-status"></div>
-
-        <!-- AI chat — quiet secondary -->
-        <div class="hero-ai-row">
-          <span class="hero-ai-label">Not sure? Describe your ideal ski day</span>
-          <div class="hero-ai-input-row">
-            <input
-              id="aiChatInput"
-              type="text"
-              class="ai-chat-input hero-ai-input"
-              placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
-              aria-label="Describe your ideal ski day"
-            />
-            <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+    <section id="searchSection" class="hero card hero-search hero-search-premium">
+      <div class="hero-search-shell">
+        <div class="hero-search-copy">
+          <div class="hero-brand-row">
+            <img src="ski-decision-logo.png" alt="Where To Ski logo" class="hero-logo" />
+            <div class="hero-brand-text-wrap">
+              <div class="hero-brand-name">Where To Ski</div>
+              <div class="hero-brand-tag">The Ski Decision Engine</div>
+            </div>
           </div>
-          <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
+
+          <div class="hero-headline">Find the best ski mountain for today.</div>
+          <div class="hero-subhead">Compare live snow, drive time, pass access, crowds, and price — ranked instantly so you can decide in under 20 seconds.</div>
+
+          <div class="hero-search-bar hero-search-bar-premium">
+            <input
+              id="originInput"
+              type="text"
+              class="hero-search-input"
+              placeholder="Enter ZIP code or city — e.g. 02101 or Boston, MA"
+              autocomplete="off"
+              autofocus
+            />
+            <button id="setLocation" class="hero-search-btn">Find My Mountain</button>
+          </div>
+
+          <div class="hero-search-meta hero-search-meta-premium">
+            <button id="detectLocation" class="hero-locate-link">Use my location</button>
+            <span class="hero-meta-divider" aria-hidden="true">•</span>
+            <label class="remember-location-label" id="rememberLocationLabel">
+              <input type="checkbox" id="rememberLocation" />
+              Remember this location
+              <span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info
+                <span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span>
+              </span>
+            </label>
+          </div>
+
+          <div id="locationStatus" class="helper-text hero-location-status"></div>
+
+          <div class="hero-ai-row hero-ai-row-premium">
+            <span class="hero-ai-label">Not sure? Describe your ideal ski day</span>
+            <div class="hero-ai-input-row">
+              <input
+                id="aiChatInput"
+                type="text"
+                class="ai-chat-input hero-ai-input"
+                placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
+                aria-label="Describe your ideal ski day"
+              />
+              <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+            </div>
+            <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
+          </div>
         </div>
 
+        <aside class="hero-proof-card" aria-label="What you get instantly">
+          <div class="hero-proof-kicker">What you get instantly</div>
+          <div class="hero-proof-list">
+            <div class="hero-proof-item">
+              <strong>Top pick</strong>
+              <span>The best mountain for your setup today.</span>
+            </div>
+            <div class="hero-proof-item">
+              <strong>Fast compare</strong>
+              <span>Snow, drive, pass, price, and crowds side by side.</span>
+            </div>
+            <div class="hero-proof-item">
+              <strong>Explore next</strong>
+              <span>Storm Chaser, Hidden Gems, and the full comparison table below.</span>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 
