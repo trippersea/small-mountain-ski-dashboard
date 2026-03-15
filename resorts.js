@@ -538,7 +538,7 @@ function renderVerdict(resorts) {
     ? `<ul class="vcard-points">${subPoints.map(p => `<li>${esc(p)}</li>`).join('')}</ul>`
     : '';
 
-  // Range selector — compact row, only when origin is set
+  // Range selector — lives inside the alts header, only when origin is set
   const rangeLabels = ['≤3h', '≤6h', 'All'];
   const rangeFull   = ['Day Trip', 'Weekend', 'All'];
   const rangeHtml = state.origin
@@ -561,7 +561,10 @@ function renderVerdict(resorts) {
   // Also in the running
   const altsHtml = runningItems.length
     ? `<div class="vcard-alts">
-        <div class="vcard-alts-label">Also in the running</div>
+        <div class="vcard-alts-header">
+          <div class="vcard-alts-label">Also in the running</div>
+          ${rangeHtml}
+        </div>
         <div class="vcard-alts-list">
           ${runningItems.map(item => {
             const altDrive = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : null;
@@ -588,6 +591,8 @@ function renderVerdict(resorts) {
 
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--${tier}">
+
+      <div class="vcard-card-title">Your Recommended Mountain</div>
 
       <div class="vcard-tier-bar">
         <span class="vcard-tier-dot" style="background:${tc.dot}"></span>
@@ -624,7 +629,6 @@ function renderVerdict(resorts) {
 
         <div class="vcard-actions">
           <button class="btn btn-secondary vcard-share-btn" id="verdictShareBtn">Share pick</button>
-          ${rangeHtml}
         </div>
 
       </div>

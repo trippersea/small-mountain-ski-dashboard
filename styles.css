@@ -383,7 +383,18 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .vcard--marginal{ border-left: 4px solid #d97706; }
 .vcard--bad     { border-left: 4px solid #dc2626; }
 
-/* ── Tier bar — top strip: condition label + section label ──────────────── */
+/* ── Card title — "Your Recommended Mountain" ───────────────────────────── */
+.vcard-card-title {
+  padding: 14px 20px 13px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+/* ── Tier bar — condition status strip ──────────────────────────────────── */
 .vcard-tier-bar {
   display: flex;
   align-items: center;
@@ -564,27 +575,35 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .vcard-alts {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
 }
+/* Header row: "Also in the running" label + range selector */
+.vcard-alts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .vcard-alts-label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: .07em;
   text-transform: uppercase;
   color: var(--muted);
 }
 .vcard-alts-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 7px;
 }
 .vcard-alt {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 10px 12px;
+  gap: 6px;
+  padding: 11px 13px;
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -603,7 +622,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   gap: 4px;
 }
 .vcard-alt-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -611,7 +630,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   text-overflow: ellipsis;
 }
 .vcard-alt-snow {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--muted);
   white-space: nowrap;
@@ -621,17 +640,17 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .vcard-alt-meta {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 .vcard-alt-pass {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 999px;
 }
 .vcard-alt-drive {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -639,7 +658,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   background: none;
   border: none;
   padding: 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--accent);
   cursor: pointer;
@@ -648,26 +667,12 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 .vcard-compare-link:hover { opacity: .75; text-decoration: underline; }
 
-/* ── Actions + range ────────────────────────────────────────────────────── */
-.vcard-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding-top: 2px;
-  margin-top: auto;
-}
-.vcard-share-btn {
-  font-size: 13px;
-  padding: 8px 16px;
-}
-
-/* Range selector — compact pill group */
+/* Range selector — lives in .vcard-alts-header */
 .vcard-range {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-left: auto;
+  flex-shrink: 0;
 }
 .vcard-range-label {
   font-size: 10px;
@@ -697,13 +702,26 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   color: #fff;
 }
 
+/* ── Actions — share button only ────────────────────────────────────────── */
+.vcard-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+  margin-top: auto;
+}
+.vcard-share-btn {
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 760px) {
   .vcard-alts-list { grid-template-columns: 1fr 1fr; }
   .vcard-forecast  { grid-template-columns: repeat(3, 1fr); }
-  .vcard-actions   { flex-wrap: wrap; }
-  .vcard-range     { margin-left: 0; }
   .vcard-name      { font-size: 1.35rem; }
+  .vcard-alts-header { flex-wrap: wrap; gap: 6px; }
 }
 @media (max-width: 480px) {
   .vcard-alts-list { grid-template-columns: 1fr; }
