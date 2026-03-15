@@ -280,11 +280,12 @@ button { font: inherit; }
   font-family: 'DM Sans', system-ui, sans-serif;
   color: var(--text); font-size: 13px; font-weight: 700;
   margin-bottom: 10px;
+  letter-spacing: -.01em;
 }
-.score-desc { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.5; font-weight: 400; }
-.slider-hint { font-size: 10px; color: var(--muted); margin-top: 7px; line-height: 1.4; font-style: italic; }
+.score-desc { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.5; font-weight: 400; }
+.slider-hint { font-size: 11px; color: var(--muted); margin-top: 7px; line-height: 1.4; }
 
-/* Priority buttons — descriptive labels, stacked vertically */
+/* Priority buttons — default stacked layout (overridden in planner-col) */
 .priority-btns {
   display: flex;
   flex-direction: column;
@@ -292,12 +293,12 @@ button { font: inherit; }
 }
 .priority-btn {
   flex: 1;
-  padding: 6px 10px;
+  padding: 7px 11px;
   border-radius: 8px;
   border: 1.5px solid var(--border);
   background: #fff;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   text-align: left;
@@ -370,7 +371,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   line-height: 1.55;
 }
 
-/* ── Card wrapper — left accent border per tier ─────────────────────────── */
+/* ── Card wrapper ───────────────────────────────────────────────────────── */
 .vcard {
   display: flex;
   flex-direction: column;
@@ -378,107 +379,110 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   border-radius: inherit;
   overflow: hidden;
 }
-.vcard--great   { border-left: 4px solid #16a34a; }
-.vcard--good    { border-left: 4px solid #2b6de9; }
-.vcard--marginal{ border-left: 4px solid #d97706; }
-.vcard--bad     { border-left: 4px solid #dc2626; }
 
-/* ── Card title — "Your Recommended Mountain" ───────────────────────────── */
-.vcard-card-title {
-  padding: 14px 20px 13px;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: .04em;
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
-  background: var(--panel);
-}
-
-/* ── Tier bar — condition status strip ──────────────────────────────────── */
-.vcard-tier-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 20px 10px;
-  border-bottom: 1px solid var(--border);
-  background: var(--panel-2);
-}
-.vcard-tier-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.vcard-tier-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-  flex: 1;
-}
-.vcard-section-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  opacity: .7;
-}
-
-/* ── Body — scrollable content column ──────────────────────────────────── */
-.vcard-body {
-  flex: 1;
+/* ── Hero header — full-bleed, tinted by condition tier ─────────────────── */
+.vcard-hero {
+  position: relative;
+  padding: 20px 22px 18px;
+  border-bottom: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 20px 18px;
-  overflow-y: auto;
+  gap: 10px;
 }
 
-/* ── Pick block — mountain name + meta chips ────────────────────────────── */
-.vcard-pick { display: flex; flex-direction: column; gap: 8px; }
+/* Tier-tinted wash backgrounds */
+.vcard-hero--great   { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-bottom-color: #bbf7d0; }
+.vcard-hero--good    { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-bottom-color: #bfdbfe; }
+.vcard-hero--marginal{ background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-bottom-color: #fde68a; }
+.vcard-hero--bad     { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border-bottom-color: #fecdd3; }
 
-.vcard-name {
-  font-size: 1.55rem;
+/* "YOUR RECOMMENDED MOUNTAIN" eyebrow */
+.vcard-eyebrow {
+  font-size: 10px;
   font-weight: 800;
-  line-height: 1.1;
-  color: var(--accent);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1;
+}
+
+/* Mountain name — the dominant element */
+.vcard-name {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--text);
   background: none;
   border: none;
   padding: 0;
   text-align: left;
   cursor: pointer;
-  transition: opacity .12s;
+  transition: color .12s;
+  letter-spacing: -.02em;
 }
-.vcard-name:hover { opacity: .75; }
+.vcard-name:hover { color: var(--accent); }
+
+/* Condition badge — pill in bottom-right of hero */
+.vcard-condition-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 5px 12px 5px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+}
+.vcard-condition-badge--great   { background: #dcfce7; border-color: #86efac; color: #15803d; }
+.vcard-condition-badge--good    { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+.vcard-condition-badge--marginal{ background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+.vcard-condition-badge--bad     { background: #ffe4e6; border-color: #fca5a5; color: #be123c; }
+.vcard-condition-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Body — content column below hero ──────────────────────────────────── */
+.vcard-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 22px 18px;
+  overflow-y: auto;
+}
 
 .vcard-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
 }
 .vcard-chip {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
+  padding: 4px 11px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(0,0,0,.12);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
+  backdrop-filter: blur(4px);
 }
 .vcard-chip--pass {
-  /* inline style overrides color/bg per pass brand */
   font-weight: 700;
+  /* inline style sets brand color */
 }
 .vcard-chip--link {
   text-decoration: none;
-  color: var(--accent);
-  border-color: rgba(43,109,233,.3);
+  font-weight: 700;
   transition: background .12s;
 }
-.vcard-chip--link:hover { background: #edf4ff; }
+.vcard-chip--link:hover { background: rgba(255,255,255,.95); }
 
 /* ── AI write-up slot ───────────────────────────────────────────────────── */
 .vcard-writeup {
@@ -718,13 +722,18 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 760px) {
+  .vcard-hero { padding: 18px 18px 16px; }
+  .vcard-name { font-size: 1.7rem; }
   .vcard-alts-list { grid-template-columns: 1fr 1fr; }
   .vcard-forecast  { grid-template-columns: repeat(3, 1fr); }
-  .vcard-name      { font-size: 1.35rem; }
   .vcard-alts-header { flex-wrap: wrap; gap: 6px; }
+  .vcard-body { padding: 16px 18px 16px; }
+  .planner-col .score-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 480px) {
+  .vcard-name { font-size: 1.5rem; }
   .vcard-alts-list { grid-template-columns: 1fr; }
+  .planner-col .score-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Feature grid ───────────────────────────────────────────────────────── */
@@ -861,9 +870,9 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 @media (max-width: 760px) {
   .container { width: calc(100vw - 14px); }
-  .planner-col { padding: 22px 18px 20px; }
-  .planner-col .planner-summary-title { font-size: 22px; }
-  .planner-col .weight-summary { font-size: 14px; }
+  .planner-col { padding: 20px 18px 18px; }
+  .planner-main-title { font-size: 19px; }
+  .planner-subtitle { font-size: 13px; }
   .top-nav-inner { padding-inline: 6px; }
   .hero { padding: 18px; }
   .score-grid, .card-grid, .metric-grid { grid-template-columns: 1fr; }
@@ -1911,92 +1920,135 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   align-items: stretch;
 }
 
-/* Left column — planner */
+/* ── Left column — planner ──────────────────────────────────────────────── */
 .planner-col {
-  padding: 28px 30px 26px;
+  padding: 26px 28px 24px;
 }
 
 .planner-col-header {
-  margin-bottom: 22px;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
 }
 
-.planner-col .planner-summary-title {
-  font-size: 26px;
-  font-weight: 800;
-  margin-bottom: 10px;
+/* Header top row: title + edit button */
+.planner-header-top {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: baseline;
+  gap: 10px;
   flex-wrap: wrap;
-  line-height: 1.18;
+  margin-bottom: 6px;
 }
 
-.planner-title-copy {
-  display: inline;
+/* "Your Ski Preferences — Boston, MA" */
+.planner-main-title {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text);
+  letter-spacing: -.01em;
 }
 
-/* "from [city]" label within the title */
+/* " — City, ST" suffix */
 #plannerFromLabel {
   color: var(--accent);
   font-weight: 800;
 }
 
-/* Small pencil edit button */
+/* "Select what matters…" subtitle */
+.planner-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Edit location button */
 .planner-edit-btn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 2px 7px;
+  border-radius: 20px;
+  padding: 3px 10px;
   font-size: 12px;
+  font-weight: 600;
   color: var(--muted);
   cursor: pointer;
-  line-height: 1.4;
+  white-space: nowrap;
   transition: border-color .12s, color .12s;
   flex-shrink: 0;
-  margin-left: 2px;
 }
 .planner-edit-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.planner-col .weight-summary {
-  font-size: 15px;
-  margin-bottom: 0;
-  line-height: 1.55;
-  max-width: 62ch;
-}
-
-
-/* Sliders — 2-col inside left panel */
+/* Score grid — 2 columns in planner */
 .planner-col .score-grid {
   grid-template-columns: 1fr 1fr;
-  gap: 18px 22px;
+  gap: 12px 16px;
   margin-bottom: 0;
 }
 
-.planner-col .score-control label,
-.planner-col .score-control-label {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 8px;
+/* Each control card */
+.planner-col .score-control {
+  padding: 14px 15px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
 }
 
-.planner-col .score-control {
-  padding: 16px 16px 14px;
+/* Section label */
+.planner-col .score-control-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 9px;
+  letter-spacing: -.01em;
+}
+
+/* Priority buttons — horizontal wrapping pills */
+.planner-col .priority-btns {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .planner-col .priority-btn {
   font-size: 12px;
-  padding: 8px 12px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-light);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s, border-color .12s, color .12s;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  line-height: 1.2;
+  text-align: center;
+}
+.planner-col .priority-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.planner-col .priority-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
+/* Hint text */
 .planner-col .slider-hint {
   font-size: 11px;
-  line-height: 1.45;
+  font-style: normal;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 8px;
 }
 
-/* Hide slider description text in compact mode */
+/* Hide old desc text */
 .planner-col .score-desc { display: none; }
 
 /* Quick Settings rows */

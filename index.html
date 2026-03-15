@@ -169,81 +169,82 @@
         </div>
       </section>
 
-      <!-- RIGHT: Planner controls -->
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
-          <div class="planner-summary-title"><span class="planner-title-copy">Rank by what matters most today<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit</button></div>
-          <div id="weightSummary" class="weight-summary"></div>
-          <p class="filter-role-note">High-priority settings boost rankings and may filter out mountains that clearly don't match your preference. All active filters are shown as pills below.</p>
+          <div class="planner-header-top">
+            <div class="planner-main-title">Your Ski Preferences<span id="plannerFromLabel"></span></div>
+            <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit location</button>
+          </div>
+          <p class="planner-subtitle">Select what matters to you — the engine re-ranks every mountain instantly.</p>
         </div>
 
         <div id="plannerDetails" class="planner-details">
           <div class="score-grid">
 
             <div class="score-control">
-              <div class="score-control-label">Snow Forecast</div>
+              <div class="score-control-label">Fresh Snow</div>
               <div class="priority-btns" data-key="snow">
                 <button class="priority-btn active" data-val="1">Any Snow</button>
-                <button class="priority-btn" data-val="5">3&quot;+ Matters</button>
-                <button class="priority-btn" data-val="10">6&quot;+ Chaser</button>
-                <button class="priority-btn" data-val="15">Powder Day (12&quot;+)</button>
+                <button class="priority-btn" data-val="5">3"+ Preferred</button>
+                <button class="priority-btn" data-val="10">6"+ Storm</button>
+                <button class="priority-btn" data-val="15">Powder Day</button>
               </div>
-              <div class="slider-hint">Uses tomorrow's snowfall target so you can chase any fresh snow, 3&quot;+ value, 6&quot;+ storm totals, or a true 12&quot;+ powder day.</div>
+              <div class="slider-hint">How much new snow do you need to get excited?</div>
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Expected Temperature</div>
+              <div class="score-control-label">Temperature</div>
               <div class="priority-btns" data-key="temp">
                 <button class="priority-btn active" data-val="any">Any Temp</button>
-                <button class="priority-btn" data-val="ideal">0&deg;&ndash;32&deg; Ideal</button>
-                <button class="priority-btn" data-val="spring">33&deg;+ Spring</button>
-                <button class="priority-btn" data-val="cold">Below 0&deg;</button>
+                <button class="priority-btn" data-val="ideal">0°–32° Sweet Spot</button>
+                <button class="priority-btn" data-val="spring">33°+ Spring Day</button>
+                <button class="priority-btn" data-val="cold">Below 0° Cold Snap</button>
               </div>
-              <div class="slider-hint">Acts as an eligibility filter for the type of temperatures you want to ski in.</div>
+              <div class="slider-hint">Filters to mountains matching tomorrow's forecast temp.</div>
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Expected Wind</div>
+              <div class="score-control-label">Wind</div>
               <div class="priority-btns" data-key="wind">
                 <button class="priority-btn active" data-val="any">Any Wind</button>
-                <button class="priority-btn" data-val="light">0&ndash;15 mph</button>
-                <button class="priority-btn" data-val="breezy">16&ndash;25 mph</button>
-                <button class="priority-btn" data-val="holds">25+ mph</button>
+                <button class="priority-btn" data-val="light">Calm (0–15 mph)</button>
+                <button class="priority-btn" data-val="breezy">Breezy (16–25 mph)</button>
+                <button class="priority-btn" data-val="holds">Gusty (25+ mph)</button>
               </div>
-              <div class="slider-hint">Acts as a wind tolerance filter so the result set matches the kind of day you are willing to ski.</div>
+              <div class="slider-hint">Filters to mountains matching tomorrow's wind forecast.</div>
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Mountain Style</div>
+              <div class="score-control-label">Mountain Size</div>
               <div class="priority-btns" data-key="size">
-                <button class="priority-btn active" data-val="any">Any Style</button>
-                <button class="priority-btn" data-val="small">Local / Smaller</button>
-                <button class="priority-btn" data-val="mid">Mid-Mountain Fit</button>
-                <button class="priority-btn" data-val="big">Big-Mountain Feel</button>
+                <button class="priority-btn active" data-val="any">Any Size</button>
+                <button class="priority-btn" data-val="small">Local Hill</button>
+                <button class="priority-btn" data-val="mid">Mid-Size</button>
+                <button class="priority-btn" data-val="big">Big Mountain</button>
               </div>
-              <div class="slider-hint">Filters for the type of mountain you want, then ranks fit inside the remaining set.</div>
+              <div class="slider-hint">Filters and ranks by vertical drop and acreage.</div>
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Price</div>
+              <div class="score-control-label">Ticket Price</div>
               <div class="priority-btns" data-key="value">
-                <button class="priority-btn active" data-val="0">Any</button>
+                <button class="priority-btn active" data-val="0">Any Price</button>
                 <button class="priority-btn" data-val="10">Under $100</button>
-                <button class="priority-btn" data-val="5">$100&ndash;$149</button>
+                <button class="priority-btn" data-val="5">$100–$149</button>
                 <button class="priority-btn" data-val="1">$150+ Fine</button>
               </div>
-              <div class="slider-hint">Acts as a true ticket-price filter first, then ranks value inside the remaining set.</div>
+              <div class="slider-hint">Sets a hard price ceiling — mountains above it are hidden.</div>
             </div>
 
             <div class="score-control">
-              <div class="score-control-label">Crowds</div>
+              <div class="score-control-label">Crowd Level</div>
               <div class="priority-btns" data-key="crowd">
-                <button class="priority-btn active" data-val="1">No Issue!</button>
-                <button class="priority-btn" data-val="5">Not Ideal, But Fine</button>
-                <button class="priority-btn" data-val="10">Fewer the Better</button>
+                <button class="priority-btn active" data-val="1">Don't Mind</button>
+                <button class="priority-btn" data-val="5">Some Is OK</button>
+                <button class="priority-btn" data-val="10">Quiet Slopes</button>
               </div>
-              <div class="slider-hint">Lets you screen out busier mountains when you want a calmer ski day.</div>
+              <div class="slider-hint">Ranks quieter mountains higher. High = crowds filtered out.</div>
             </div>
 
           </div>

@@ -592,26 +592,23 @@ function renderVerdict(resorts) {
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--${tier}">
 
-      <div class="vcard-card-title">Your Recommended Mountain</div>
-
-      <div class="vcard-tier-bar">
-        <span class="vcard-tier-dot" style="background:${tc.dot}"></span>
-        <span class="vcard-tier-label">${tc.label}</span>
-        <span class="vcard-section-label">My Pick</span>
+      <div class="vcard-hero vcard-hero--${tier}">
+        <div class="vcard-eyebrow">Your Recommended Mountain</div>
+        <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
+        <div class="vcard-chips">
+          <span class="vcard-chip">${esc(resort.state)}</span>
+          <span class="vcard-chip vcard-chip--pass" style="background:${passBg}22;color:${passBg};border-color:${passBg}44">${esc(resort.passGroup)}</span>
+          ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
+          <span class="vcard-chip">$${resort.price}</span>
+          ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
+        </div>
+        <div class="vcard-condition-badge vcard-condition-badge--${tier}">
+          <span class="vcard-condition-dot" style="background:${tc.dot}"></span>
+          ${tc.label}
+        </div>
       </div>
 
       <div class="vcard-body">
-
-        <div class="vcard-pick">
-          <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
-          <div class="vcard-chips">
-            <span class="vcard-chip">${esc(resort.state)}</span>
-            <span class="vcard-chip vcard-chip--pass" style="background:${passBg}18;color:${passBg};border-color:${passBg}33">${esc(resort.passGroup)}</span>
-            ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
-            <span class="vcard-chip">$${resort.price}</span>
-            ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
-          </div>
-        </div>
 
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--loading"></div>
 
@@ -796,14 +793,10 @@ function normalizeWeightsToPriority() {
 
 // Update "What makes your perfect ski day from [city]?" label + edit btn visibility
 function updatePlannerOriginLabel() {
-  if (!els.plannerFromLabel) return;
-  if (state.origin && state.origin.label) {
-    els.plannerFromLabel.textContent = ' from ' + state.origin.label;
-    if (els.plannerEditLocation) els.plannerEditLocation.hidden = false;
-  } else {
-    els.plannerFromLabel.textContent = '';
-    if (els.plannerEditLocation) els.plannerEditLocation.hidden = true;
-  }
+  const el = document.getElementById('plannerFromLabel');
+  if (!el) return;
+  el.textContent = (state.origin?.label) ? ' — ' + state.origin.label : '';
+  if (els.plannerEditLocation) els.plannerEditLocation.hidden = !state.origin;
 }
 
 function syncPlannerControls() {
@@ -825,22 +818,11 @@ function syncPlannerControls() {
   const plannerPass = state.passFilter === 'All' ? 'any' : state.passFilter;
   document.querySelectorAll('.pass-pref-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.pass === plannerPass));
 
-  const w = state.weights;
-  const passLabel  = plannerPass === 'any' ? 'Any Pass' : plannerPass;
-  const snowLabel  = { 1: 'Any Snow', 5: '3"+ Matters', 10: '6"+ Chaser', 15: 'Powder Day' }[w.snow] || 'Any Snow';
-  const tempLabel  = { any: 'Any Temp', ideal: '0°–32° Ideal', spring: '33°+ Spring', cold: 'Below 0°' }[state.tempBucket] || 'Any Temp';
-  const windLabel  = { any: 'Any Wind', light: '0–15 mph', breezy: '16–25 mph', holds: '25+ mph' }[state.windBucket] || 'Any Wind';
-  const sizeLabel  = { any: 'Any Style', small: 'Local / Smaller', mid: 'Mid-Mountain Fit', big: 'Big-Mountain Feel' }[state.verticalFilter] || 'Any Style';
-  const priceLabel = { 0: 'Any', 1: '$150+ Fine', 5: '$100–$149', 10: 'Under $100' }[w.value] || 'Any';
-  const crowdLabel = { 1: 'No Issue!', 5: 'Not Ideal, But Fine', 10: 'Fewer the Better' }[w.crowd] || 'No Issue!';
-  els.weightSummary.innerHTML =
-    `Snow: <strong>${snowLabel}</strong> · ` +
-    `Temp: <strong>${tempLabel}</strong> · ` +
-    `Wind: <strong>${windLabel}</strong> · ` +
-    `Style: <strong>${sizeLabel}</strong> · ` +
-    `Price: <strong>${priceLabel}</strong> · ` +
-    `Crowds: <strong>${crowdLabel}</strong>` +
-    (plannerPass !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
+  // Update location suffix in planner title
+  const _fromLabel = document.getElementById('plannerFromLabel');
+  if (_fromLabel) {
+    _fromLabel.textContent = (state.origin?.label) ? ' — ' + state.origin.label : '';
+  }
 
   if (els.passFilter) els.passFilter.value = state.passFilter;
   if (els.heroPassSelect) els.heroPassSelect.value = state.passFilter;
