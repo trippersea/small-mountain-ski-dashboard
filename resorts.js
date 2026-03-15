@@ -45,14 +45,7 @@ const PRICE_RANGES = Object.freeze([
 // Pass break-even prices (audit #39)
 const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 
-const PRESETS = {
-  // snow/size/value/crowd: 1=Low, 5=Medium, 10=High (user-adjustable)
-  // drive: kept for scoring continuity, not exposed in UI (Option C)
-  balanced: { snow:5, drive:4, size:5, value:5, crowd:5  },
-  powder:   { snow:10, drive:4, size:5, value:1, crowd:1  },
-  family:   { snow:5, drive:4, size:1, value:5, crowd:10  },
-  cheap:    { snow:5, drive:4, size:1, value:10, crowd:1  },
-};
+const DEFAULT_WEIGHTS = Object.freeze({ snow: 1, drive: 4, size: 5, value: 0, crowd: 1 });
 
 
 // Table sort state — dir tracked separately from URL state
@@ -79,18 +72,14 @@ const HIST_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 
 function loadSavedWeights() {
-  // Always start with balanced defaults — do not restore from localStorage
+  // Always start with the current defaults — do not restore from localStorage
   try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
-  return { snow: 1, drive: 4, size: 5, value: 0, crowd: 1 };
+  return { ...DEFAULT_WEIGHTS };
 }
 
 function loadSavedPassPreference() {
   // Always default to any — do not restore from localStorage
   return 'any';
-}
-function loadSavedPreset() {
-  // Always default to balanced — do not restore from localStorage
-  return 'custom';
 }
 function loadSavedSkiDays() {
   try { return Number(localStorage.getItem('ski-ski-days') || 5); } catch (e) { return 5; }
@@ -132,7 +121,6 @@ const state = Object.seal({
   weatherCache: {},
   compareSet:   new Set(),
   mapMode:      'drive',
-  preset:       loadSavedPreset(),
   weights:      loadSavedWeights(),
   passPreference: loadSavedPassPreference(),
   skiDays:      loadSavedSkiDays(),
@@ -187,8 +175,7 @@ const els = {
 };
 
 // Cached querySelectorAll results — avoid re-querying on every syncPlannerControls (audit #14)
-let _presetBtns = null, _mapModeBtns = null;
-const presetBtns  = () => _presetBtns  || (_presetBtns  = [...document.querySelectorAll('.preset-btn')]);
+let _mapModeBtns = null;
 const mapModeBtns = () => _mapModeBtns || (_mapModeBtns = [...document.querySelectorAll('.map-mode-btn')]);
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -212,9 +199,8 @@ function debounce(fn, ms) {
 
 function serializeState() {
   const p = new URLSearchParams();
-  if (state.preset !== 'balanced')  p.set('preset', state.preset);
-  if (state.preset === 'custom') {
-    const w = state.weights;
+  const w = state.weights;
+  if ([w.snow, w.size, w.value, w.crowd].join(',') !== [DEFAULT_WEIGHTS.snow, DEFAULT_WEIGHTS.size, DEFAULT_WEIGHTS.value, DEFAULT_WEIGHTS.crowd].join(',')) {
     p.set('w', [w.snow, w.size, w.value, w.crowd].join(','));
   }
   if (state.verticalFilter !== 'any')  p.set('vert',  state.verticalFilter);
@@ -238,23 +224,16 @@ function applyUrlState() {
   const p = new URLSearchParams(window.location.search);
   if (!p.toString()) return false;
 
-  const preset = p.get('preset');
-  if (preset && PRESETS[preset]) {
-    state.preset  = preset;
-    state.weights = { ...PRESETS[preset] };
-  }
-  if (preset === 'custom') {
-    const wStr = p.get('w');
-    if (wStr) {
-      const parts = wStr.split(',').map(Number);
-      if (parts.length === 5 && parts.every(n => !isNaN(n) && n >= 0)) {
-        // Legacy 5-part URL [snow, drive, size, value, crowd] — drop drive
-        const [snow, , size, value, crowd] = parts;
-        state.weights = { ...state.weights, snow, size, value, crowd };
-      } else if (parts.length === 4 && parts.every(n => !isNaN(n) && n >= 0)) {
-        const [snow, size, value, crowd] = parts;
-        state.weights = { ...state.weights, snow, size, value, crowd };
-      }
+  const wStr = p.get('w');
+  if (wStr) {
+    const parts = wStr.split(',').map(Number);
+    if (parts.length === 5 && parts.every(n => !isNaN(n) && n >= 0)) {
+      // Legacy 5-part URL [snow, drive, size, value, crowd] — keep stored drive for compatibility
+      const [snow, drive, size, value, crowd] = parts;
+      state.weights = { ...state.weights, snow, drive, size, value, crowd };
+    } else if (parts.length === 4 && parts.every(n => !isNaN(n) && n >= 0)) {
+      const [snow, size, value, crowd] = parts;
+      state.weights = { ...state.weights, snow, size, value, crowd };
     }
   }
   if (p.has('vert')  && ['any','small','mid','big'].includes(p.get('vert'))) state.verticalFilter = p.get('vert');
@@ -726,7 +705,6 @@ async function injectVerdictWriteup(v) {
 function savePlannerState() {
   try {
     localStorage.setItem('ski-planner-weights', JSON.stringify(state.weights));
-    localStorage.setItem('ski-planner-preset',  state.preset);
     localStorage.setItem('ski-pass-pref',         state.passPreference);
     localStorage.setItem('ski-ski-days',         String(state.skiDays));
   } catch (e) { /* quota exceeded — silent */ }
@@ -801,20 +779,11 @@ function syncPlannerControls() {
     `Price: <strong>${priceLabel}</strong> · ` +
     `Crowds: <strong>${crowdLabel}</strong>` +
     (state.passPreference !== 'any' ? ` · Pass: <strong>${passLabel}</strong>` : '');
-  presetBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.preset === state.preset));
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
 }
 
-function applyPreset(name) {
-  if (!PRESETS[name]) { console.warn(`Unknown preset: ${name}`); return; }
-  state.preset = name;
-  state.weights = { ...PRESETS[name] };
-  savePlannerState();
-  syncPlannerControls();
-  render();
-}
 
 // Compute normalized weights once — callers pass this in to avoid repeated work (audit #5)
 function normalizedWeights() {
@@ -2307,8 +2276,7 @@ function wireEvents() {
     state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any'; state.nightOnly = false;
     state.maxPrice = 0; state.priceRange = 0; state.howFar = 0;
     state.verticalFilter = 'any';
-    state.weights = { snow: 1, drive: 4, size: 5, value: 0, crowd: 1 };
-    state.preset = 'custom';
+    state.weights = { ...DEFAULT_WEIGHTS };
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     els.passFilter.value     = 'All';
@@ -2364,7 +2332,6 @@ function wireEvents() {
       } else {
         state.weights[key] = Number(btn.dataset.val);
       }
-      state.preset = 'custom';
       savePlannerState();
       syncPlannerControls();
       pushUrlDebounced();
@@ -2377,14 +2344,12 @@ function wireEvents() {
   document.querySelectorAll('.pass-pref-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       state.passPreference = btn.dataset.pass;
-      state.preset = 'custom';
       savePlannerState();
       syncPlannerControls();
       pushUrlDebounced();
       debouncedRender();
     });
   });
-  presetBtns().forEach(btn => btn.addEventListener('click', () => { applyPreset(btn.dataset.preset); pushUrlDebounced(); }));
 
   mapModeBtns().forEach(btn => btn.addEventListener('click', () => {
     state.mapMode = btn.dataset.mapMode;
