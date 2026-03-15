@@ -3890,3 +3890,123 @@ body {
     min-height: 180px;
   }
 }
+
+
+/* === March 15 decision-first UX application === */
+.container {
+  width: min(1200px, calc(100vw - 24px));
+  gap: 18px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(15,23,42,.06);
+  box-shadow: 0 12px 32px rgba(15,23,42,.06);
+}
+
+.hero-search-premium {
+  padding: 24px !important;
+}
+
+.hero-search-bar-premium {
+  border: 1px solid rgba(15,23,42,.10);
+  box-shadow: 0 10px 28px rgba(43,109,233,.14);
+}
+
+.hero-proof-card {
+  background: linear-gradient(180deg, #f6faff 0%, #ebf4ff 100%);
+  border: 1px solid rgba(59,130,246,.14);
+}
+
+.hero-proof-kicker {
+  background: rgba(59,130,246,.10);
+  color: #1d4ed8;
+}
+
+.hero-proof-copy {
+  text-wrap: pretty;
+}
+
+.decision-first {
+  grid-template-columns: minmax(0, 1.06fr) minmax(320px, .94fr);
+  align-items: start;
+}
+
+.decision-first .verdict-col {
+  order: 1;
+  padding: 14px 14px 12px;
+}
+
+.decision-first .planner-col {
+  order: 2;
+}
+
+.verdict-col .verdict-header {
+  padding: 0 2px 10px;
+  margin-bottom: 6px;
+}
+
+.verdict-placeholder {
+  min-height: 168px;
+  padding: 16px 18px;
+}
+
+.verdict-placeholder-text {
+  max-width: 34ch;
+  line-height: 1.55;
+}
+
+.verdict-col .verdict-inner {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .96fr);
+}
+
+.verdict-col .verdict-left,
+.verdict-col .verdict-right {
+  padding: 14px 16px 12px;
+}
+
+.planner-col {
+  padding: 18px !important;
+}
+
+.planner-col .planner-summary-title {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.toolbar {
+  padding: 16px 18px;
+}
+
+.comparison-table tbody tr:hover {
+  background: rgba(43,109,233,.05);
+}
+
+@media (max-width: 960px) {
+  .decision-first,
+  .planner-verdict-row {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-first .verdict-col,
+  .decision-first .planner-col {
+    order: initial;
+  }
+}
+
+@media (max-width: 560px) {
+  .container {
+    width: calc(100vw - 14px);
+  }
+
+  .hero-search-premium,
+  .planner-col,
+  .verdict-col,
+  .panel {
+    padding: 16px !important;
+  }
+
+  .verdict-placeholder {
+    min-height: 140px;
+  }
+}

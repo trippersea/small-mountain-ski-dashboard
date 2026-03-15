@@ -46,8 +46,8 @@
             </div>
           </div>
           <div class="hero-kicker">The Ski Decision Engine</div>
-          <div class="hero-headline">Find the best mountain to ski today.</div>
-          <div class="hero-subhead">Live snow, drive time, pass access, crowd profile, and price — ranked instantly so you can decide in under 20 seconds.</div>
+          <div class="hero-headline">Find the best ski mountain for today.</div>
+          <div class="hero-subhead">Compare live snow, drive time, pass access, crowds, and price — ranked instantly so you can decide in under 20 seconds.</div>
 
           <!-- Big pill search bar -->
           <div class="hero-search-bar hero-search-bar-premium">
@@ -104,7 +104,7 @@
         <aside class="hero-proof-card" aria-label="Why this is useful">
           <div class="hero-proof-kicker">What you get instantly</div>
           <div class="hero-proof-title">A straight answer, not just raw conditions.</div>
-          <p class="hero-proof-copy"><strong>Top pick:</strong> the best mountain for your setup today. <strong>Fast compare:</strong> snow, drive, pass, price, and crowds side by side. <strong>Decision-ready:</strong> Storm Chaser, Hidden Gems, and the full comparison table below.</p>
+          <p class="hero-proof-copy"><strong>Top pick:</strong> the best mountain for your setup today. <strong>Fast compare:</strong> snow, drive, pass, price, and crowds side by side. <strong>Explore next:</strong> Storm Chaser, Hidden Gems, and the full comparison table below.</p>
           <div class="hero-proof-metrics">
             <div class="hero-proof-metric">
               <span class="hero-proof-num">256</span>
@@ -148,13 +148,26 @@
     </section>
 
     <!-- PLANNER + VERDICT: two-column layout -->
-    <div class="planner-verdict-row">
+    <div class="planner-verdict-row decision-first">
+
+      <!-- RIGHT: Should I Go? verdict -->
+      <section id="verdictSection" class="verdict-section card verdict-col">
+        <div class="verdict-header">
+          <h2>My Mountain Pick</h2>
+          <p class="muted small">The fastest answer on the page: best fit first, supporting evidence second.</p>
+        </div>
+        <div id="verdictCard">
+          <div class="verdict-placeholder">
+            <div class="verdict-placeholder-text">Your top match will appear here, with forecast, drive time, why it fits, and the best day to go.</div>
+          </div>
+        </div>
+      </section>
 
       <!-- LEFT: Planner controls -->
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
-          <div class="planner-summary-title"><span class="planner-title-copy">What makes your perfect ski day<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit</button></div>
+          <div class="planner-summary-title"><span class="planner-title-copy">Customize your perfect ski day<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit</button></div>
           <div id="weightSummary" class="weight-summary"></div>
         </div>
 
@@ -245,19 +258,6 @@
           </div>
         </div>
 
-      </section>
-
-      <!-- RIGHT: Should I Go? verdict -->
-      <section id="verdictSection" class="verdict-section card verdict-col">
-        <div class="verdict-header">
-          <h2>My Mountain Pick</h2>
-          <p class="muted small">The fastest answer on the page: best fit first, supporting evidence second.</p>
-        </div>
-        <div id="verdictCard">
-          <div class="verdict-placeholder">
-            <div class="verdict-placeholder-text">Your top match will appear here, with forecast, drive time, why it fits, and the best day to go.</div>
-          </div>
-        </div>
       </section>
 
     </div><!-- /planner-verdict-row -->
