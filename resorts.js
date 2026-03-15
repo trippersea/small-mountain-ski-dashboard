@@ -2273,7 +2273,7 @@ function wireEvents() {
     });
   });
 
-  els.passFilter.addEventListener('change',     e => { state.passFilter  = e.target.value; state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter; savePlannerState(); syncPlannerControls(); pushUrlDebounced(); render(); });
+  if (els.passFilter) els.passFilter.addEventListener('change', e => { state.passFilter = e.target.value; state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter; savePlannerState(); syncPlannerControls(); pushUrlDebounced(); render(); });
   els.stateFilter.addEventListener('change',    e => { state.stateFilter = e.target.value; pushUrlDebounced(); render(); });
   // How Far Will You Go? toolbar dropdown
   const _howFarFilterEl = document.getElementById('howFarFilter');
@@ -2328,12 +2328,14 @@ function wireEvents() {
     state.weights = { ...DEFAULT_WEIGHTS };
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
-    els.passFilter.value     = 'All';
+    if (els.passFilter) els.passFilter.value = 'All';
     els.stateFilter.value    = 'All';
     const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '0';
     // sync verdict tier buttons
     document.querySelectorAll('.vdb-tier-btn').forEach((b,i) => b.classList.toggle('active', i===0));
     if (els.maxPriceFilter) els.maxPriceFilter.value = '0'; state.priceRange = 0;
+    if (els.heroPassSelect) els.heroPassSelect.value = 'All';
+    if (els.heroSnowSelect) els.heroSnowSelect.value = '1';
     els.sortBy.value         = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false');
     els.toggleNight.textContent = 'Off';
@@ -2534,7 +2536,7 @@ function wireEvents() {
 
 // ─── Initialize ───────────────────────────────────────────────────────────────
 function initialize() {
-  els.passFilter.innerHTML  = UNIQUE_PASSES.map(v => `<option value="${v}">${v === "All" ? "Any Pass" : v}</option>`).join('');
+  if (els.passFilter) els.passFilter.innerHTML = UNIQUE_PASSES.map(v => `<option value="${v}">${v === "All" ? "Any Pass" : v}</option>`).join('');
   els.stateFilter.innerHTML = UNIQUE_STATES.map(v => `<option value="${v}">${v}</option>`).join('');
 
   loadWeatherCache();    // restore session weather cache
@@ -2560,7 +2562,7 @@ function initialize() {
     }
   }
   if (hadUrlState) {
-    els.passFilter.value     = state.passFilter;
+    if (els.passFilter) els.passFilter.value = state.passFilter;
     els.stateFilter.value    = state.stateFilter;
     els.sortBy.value         = state.sortBy;
     const _hfSync = document.getElementById('howFarFilter'); if (_hfSync) _hfSync.value = String(state.howFar);

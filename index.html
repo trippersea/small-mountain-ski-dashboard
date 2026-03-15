@@ -34,6 +34,7 @@
   <button id="backToTop" class="back-to-top" aria-label="Back to top">Top</button>
 
   <div class="container">
+<select id="passFilter" class="hidden-pass-filter" aria-hidden="true" tabindex="-1"></select>
 
     <!-- HERO: centered search-first landing -->
     <section id="searchSection" class="hero card hero-search hero-search-centered">
@@ -142,24 +143,9 @@
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
-          <div class="planner-summary-title"><span class="planner-title-copy">What makes your perfect ski day<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit</button></div>
+          <div class="planner-summary-title"><span class="planner-title-copy">Rank by what matters most today<span id="plannerFromLabel"></span>?</span><button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit</button></div>
           <div id="weightSummary" class="weight-summary"></div>
-        </div>
-
-        <div class="planner-pass-priority">
-          <div class="qs-card qs-card-pass-priority">
-            <div class="qs-card-header">
-              <span class="qs-card-title">Pass Access</span>
-              <span class="qs-card-desc">Only show mountains available on your pass</span>
-            </div>
-            <div class="qs-card-btns pass-pref-row">
-              <button class="pass-pref-btn active" data-pass="any">Any Pass</button>
-              <button class="pass-pref-btn epic-btn" data-pass="Epic">Epic</button>
-              <button class="pass-pref-btn ikon-btn" data-pass="Ikon">Ikon</button>
-              <button class="pass-pref-btn indy-btn" data-pass="Indy">Indy</button>
-              <button class="pass-pref-btn indep-btn" data-pass="Independent">Independent</button>
-            </div>
-          </div>
+          <p class="filter-role-note">These preferences change how mountains are ranked. They do not remove mountains from the list.</p>
         </div>
 
         <div id="plannerDetails" class="planner-details">
@@ -237,11 +223,20 @@
 
     </div><!-- /planner-verdict-row -->
 
-
-    <!-- FILTERS -->
-    <section class="toolbar card">
+    <!-- COMPARE TABLE -->
+    <section id="compareSection" class="card panel">
+      <div class="section-header">
+        <div>
+          <h2>Compare All Mountains</h2>
+          <p class="muted small">Your ranking preferences decide score order. Database filters below remove mountains from the table.</p>
+        </div>
+        <div id="resultCount" class="helper-text result-count"></div>
+      </div>
+      
+      <div class="database-filter-note">Use these filters to remove mountains from the comparison table. Your ranking preferences above still control score order.</div>
+      <div class="toolbar toolbar-inline">
       <div class="toolbar-row">
-        <span class="toolbar-label">Narrow the Mountain</span>
+        <span class="toolbar-label">Narrow the Mountains</span>
         <div class="toolbar-controls">
           <div class="field">
             <label for="howFarFilter">How Far Will You Go?</label>
@@ -253,8 +248,8 @@
             </select>
           </div>
           <div class="field">
-            <label for="maxPriceFilter">Ticket Price</label>
-            <span class="filter-hint">Choose a budget range.</span>
+            <label for="maxPriceFilter">Price Ceiling</label>
+            <span class="filter-hint">Remove mountains above a target price.</span>
             <select id="maxPriceFilter">
               <option value="0">Any price</option>
               <option value="1">Under $100</option>
@@ -263,24 +258,20 @@
               <option value="4">$200+</option>
             </select>
           </div>
+
           <div class="field">
-            <label for="passFilter">Pass Access</label>
-            <span class="filter-hint">Only show mountains available on that pass.</span>
-            <select id="passFilter"></select>
-          </div>
-          <div class="field">
-            <label for="stateFilter">State</label>
-            <span class="filter-hint">Focus on one state.</span>
+            <label for="stateFilter">State (optional)</label>
+            <span class="filter-hint">Limit the database to one state.</span>
             <select id="stateFilter"></select>
           </div>
           <div class="field">
-            <label for="sortBy">Sort by</label>
-            <span class="filter-hint">Rank results by what matters most.</span>
+            <label for="sortBy">Sort database by</label>
+            <span class="filter-hint">Change the order of the full mountain list.</span>
             <select id="sortBy">
               <option value="planner">Ski Score</option>
               <option value="storm">Storm Snow</option>
               <option value="drive">Drive Time</option>
-              <option value="price">Ticket Price</option>
+              <option value="price">Price Ceiling</option>
               <option value="vertical">Vertical</option>
               <option value="avgSnowfall">Avg Snowfall</option>
             </select>
@@ -299,16 +290,7 @@
         </div>
       </div>
       <div id="activeFilters" class="active-filters"></div>
-    </section>
-
-    <!-- COMPARE TABLE -->
-    <section id="compareSection" class="card panel">
-      <div class="section-header">
-        <div>
-          <h2>Compare All Mountains</h2>
-          <p class="muted small">Ranked by your score settings. Search by name, state, or pass. Click any column to sort.</p>
-        </div>
-        <div id="resultCount" class="helper-text result-count"></div>
+    
       </div>
       <div class="table-toolbar">
         <div class="table-search-wrap">
