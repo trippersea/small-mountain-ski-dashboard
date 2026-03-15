@@ -491,8 +491,10 @@ function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
   const v = computeVerdict(resorts);
   if (!v) {
-    els.verdictCard.innerHTML = `<div class="verdict-placeholder">
-      <div class="verdict-placeholder-text">Loading forecast data for your top picks…</div>
+    els.verdictCard.innerHTML = `<div class="vcard-placeholder">
+      <div class="vcard-placeholder-icon">⛷</div>
+      <div class="vcard-placeholder-title">Loading your top pick…</div>
+      <div class="vcard-placeholder-sub">Fetching live forecast data for your mountains.</div>
     </div>`;
     return;
   }
@@ -502,83 +504,141 @@ function renderVerdict(resorts) {
   const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
   const compareIds = [resort.id, ...runningItems.map(item => item.resort.id)];
 
+  // Tier config
+  const tierConfig = {
+    great:    { label: 'Excellent conditions',  dot: '#16a34a' },
+    good:     { label: 'Good conditions',        dot: '#2b6de9' },
+    marginal: { label: 'Marginal conditions',    dot: '#d97706' },
+    bad:      { label: 'Poor conditions',        dot: '#dc2626' },
+  };
+  const tc = tierConfig[tier] || tierConfig.good;
+
+  // Pass color
+  const passColors = { Epic:'#1a4fa8', Ikon:'#1a1a1a', Indy:'#2d7a3a', Independent:'#6b5e7a' };
+  const passBg = passColors[resort.passGroup] || '#6b5e7a';
+
+  // 3-day forecast chips
+  const wx = state.weatherCache[resort.id]?.data;
+  const forecast3 = wx?.forecast?.slice(0, 3) || [];
+  const forecastHtml = forecast3.length
+    ? `<div class="vcard-forecast">
+        ${forecast3.map(f => {
+          const cls = f.snow >= 4 ? 'vcard-fc-pow' : f.snow >= 1 ? 'vcard-fc-snow' : 'vcard-fc-dry';
+          return `<div class="vcard-fc-chip ${cls}">
+            <span class="vcard-fc-day">${f.day}</span>
+            <span class="vcard-fc-amt">${f.snow > 0 ? f.snow.toFixed(1) + '"' : '—'}</span>
+            <span class="vcard-fc-temps">${f.lo}°–${f.hi}°</span>
+          </div>`;
+        }).join('')}
+      </div>`
+    : '';
+
+  // Sub-points
   const subList = subPoints.length
-    ? `<ul class="verdict-points">${subPoints.map(p => `<li>${p}</li>`).join('')}</ul>`
-    : '';
-  const noOrigin = !state.origin
-    ? `<p class="verdict-no-origin">Set your starting location for drive times and distance-weighted picks.</p>`
+    ? `<ul class="vcard-points">${subPoints.map(p => `<li>${esc(p)}</li>`).join('')}</ul>`
     : '';
 
-  const _tierLabels = ['Day Trip (≤3h)', 'Weekend (≤6h)', 'All Distances'];
-  const driveBanner = state.origin
-    ? `<div class="verdict-drive-banner${state.howFar === 2 ? ' verdict-drive-banner--off' : ''}>
-        <span class="vdb-label">How Far Will You Go?</span>
-        <span class="vdb-tiers">
-          ${[0,1,2].map(i =>
-            `<button class="vdb-tier-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}">${_tierLabels[i]}</button>`
-          ).join('')}
-        </span>
-       </div>`
+  // Range selector — compact row, only when origin is set
+  const rangeLabels = ['≤3h', '≤6h', 'All'];
+  const rangeFull   = ['Day Trip', 'Weekend', 'All'];
+  const rangeHtml = state.origin
+    ? `<div class="vcard-range">
+        <span class="vcard-range-label">Range</span>
+        ${[0,1,2].map(i =>
+          `<button class="vcard-range-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}" title="${rangeFull[i]}">${rangeLabels[i]}</button>`
+        ).join('')}
+      </div>`
     : '';
 
-  const websiteLink = resort.website
-    ? `<a class="verdict-website-link verdict-website-link--inline" href="${resort.website}" target="_blank" rel="noopener">Website</a>`
+  // No-origin nudge
+  const noOriginHtml = !state.origin
+    ? `<div class="vcard-no-origin">
+        <span class="vcard-no-origin-icon">📍</span>
+        <span>Add your starting location for drive-time rankings</span>
+      </div>`
     : '';
 
-  const runningHtml = runningItems.length
-    ? `<div class="verdict-top5 verdict-running-card">
-        <div class="verdict-top5-header">
-          <div class="verdict-top5-label">Also In the Running</div>
+  // Also in the running
+  const altsHtml = runningItems.length
+    ? `<div class="vcard-alts">
+        <div class="vcard-alts-label">Also in the running</div>
+        <div class="vcard-alts-list">
+          ${runningItems.map(item => {
+            const altDrive = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : null;
+            const altWx = state.weatherCache[item.resort.id]?.data;
+            const altSnow = altWx ? (altWx.forecast || []).reduce((s,f) => s + (f.snow||0), 0) : null;
+            const altPassColor = passColors[item.resort.passGroup] || '#6b5e7a';
+            return `<button class="vcard-alt vcard-resort-link" data-resort-id="${item.resort.id}">
+              <div class="vcard-alt-top">
+                <span class="vcard-alt-name">${esc(item.resort.name)}</span>
+                ${altSnow !== null ? `<span class="vcard-alt-snow${altSnow >= 3 ? ' vcard-alt-snow--good' : ''}">${altSnow.toFixed(1)}"</span>` : ''}
+              </div>
+              <div class="vcard-alt-meta">
+                <span class="vcard-alt-pass" style="background:${altPassColor}18;color:${altPassColor};border:1px solid ${altPassColor}33">${esc(item.resort.passGroup)}</span>
+                ${altDrive ? `<span class="vcard-alt-drive">${esc(altDrive)}</span>` : ''}
+              </div>
+            </button>`;
+          }).join('')}
         </div>
-        <div class="verdict-running-list">${runningItems.map(item => {
-          const altDriveText = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : 'TBD';
-          const altDistanceText = formatDistanceFromOrigin(item.resort.id);
-          return `<button class="verdict-running-item verdict-resort-link" data-resort-id="${item.resort.id}">
-            <span class="verdict-running-name">${esc(item.resort.name)}</span>
-            <span class="verdict-running-meta">${esc(item.resort.passGroup || 'Independent')} · ${esc(altDistanceText)} · ${esc(altDriveText)}</span>
-          </button>`;
-        }).join('')}</div>
-        <div class="verdict-compare-row">
-          <button class="btn btn-outline verdict-compare-btn" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare Mountains</button>
-        </div>
+        <button class="vcard-compare-link" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">
+          Compare these mountains side-by-side →
+        </button>
       </div>`
     : '';
 
   els.verdictCard.innerHTML = `
-    <div class="verdict-inner verdict-${tier}">
-      ${driveBanner}
-      <div class="verdict-left">
-        <div class="verdict-pick-block">
-          <div class="verdict-pick-label">Top Pick</div>
-          <div class="verdict-pick-heading-row">
-            <button class="verdict-pick-name verdict-pick-link" id="verdictPickBtn">${esc(resort.name)}</button>
-            ${websiteLink}
+    <div class="vcard vcard--${tier}">
+
+      <div class="vcard-tier-bar">
+        <span class="vcard-tier-dot" style="background:${tc.dot}"></span>
+        <span class="vcard-tier-label">${tc.label}</span>
+        <span class="vcard-section-label">My Pick</span>
+      </div>
+
+      <div class="vcard-body">
+
+        <div class="vcard-pick">
+          <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
+          <div class="vcard-chips">
+            <span class="vcard-chip">${esc(resort.state)}</span>
+            <span class="vcard-chip vcard-chip--pass" style="background:${passBg}18;color:${passBg};border-color:${passBg}33">${esc(resort.passGroup)}</span>
+            ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
+            <span class="vcard-chip">$${resort.price}</span>
+            ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
           </div>
-          <div class="verdict-pick-meta">${esc(resort.state)} · ${esc(resort.passGroup || 'Independent')} · Drive Time: ${esc(driveText || 'TBD')}</div>
         </div>
-        <div id="verdictWriteupSlot" class="verdict-writeup verdict-writeup--loading"></div>
-        <div class="verdict-body">
-          <div class="verdict-headline verdict-headline-${tier}">${headline}</div>
-          <div class="verdict-detail">${detail}</div>
+
+        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--loading"></div>
+
+        <div class="vcard-verdict">
+          <div class="vcard-headline vcard-headline--${tier}">${headline}</div>
+          <div class="vcard-detail">${detail}</div>
           ${subList}
-          ${noOrigin}
         </div>
-        <div class="verdict-action-row">
-          <button class="btn btn-outline verdict-share-btn" id="verdictShareBtn">Share Pick</button>
+
+        ${forecastHtml}
+
+        ${noOriginHtml}
+
+        ${altsHtml}
+
+        <div class="vcard-actions">
+          <button class="btn btn-secondary vcard-share-btn" id="verdictShareBtn">Share pick</button>
+          ${rangeHtml}
         </div>
-        ${runningHtml}
+
       </div>
     </div>`;
 
-  const _shareBtn = $('verdictShareBtn');
-  if (_shareBtn) _shareBtn.addEventListener('click', () => shareVerdict(resort, v));
-  const _pickBtn = $('verdictPickBtn');
-  if (_pickBtn) _pickBtn.addEventListener('click', () => {
+  // Wire events
+  $('verdictPickBtn')?.addEventListener('click', () => {
     state.selectedId = resort.id;
     renderDetail({ scroll: true });
   });
 
-  els.verdictCard.querySelectorAll('.verdict-resort-link[data-resort-id]').forEach(btn => {
+  $('verdictShareBtn')?.addEventListener('click', () => shareVerdict(resort, v));
+
+  els.verdictCard.querySelectorAll('.vcard-resort-link[data-resort-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = RESORTS.find(x => x.id === btn.dataset.resortId);
       if (!r) return;
@@ -587,33 +647,29 @@ function renderVerdict(resorts) {
     });
   });
 
-  injectVerdictWriteup(v);
-
-  const _compareBtn = $('verdictCompareBtn');
-  if (_compareBtn) _compareBtn.addEventListener('click', () => {
-    const ids = (_compareBtn.dataset.compareIds || '').split(',').map(s => s.trim()).filter(Boolean);
+  $('verdictCompareBtn')?.addEventListener('click', e => {
+    const ids = (e.currentTarget.dataset.compareIds || '').split(',').map(s => s.trim()).filter(Boolean);
     state.compareSet = new Set(ids);
     renderCompareTray();
     renderCompareTable(filteredResorts());
-    const sec = document.getElementById('compareSection');
-    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  [0,1,2].forEach(i => {
-    const btn = document.querySelector(`.vdb-tier-btn[data-tier="${i}"]`);
-    if (btn) btn.addEventListener('click', () => {
-      state.howFar = i;
+  els.verdictCard.querySelectorAll('.vcard-range-btn[data-tier]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.howFar = Number(btn.dataset.tier);
       const tb = document.getElementById('howFarFilter');
-      if (tb) tb.value = String(i);
-      const resorts = filteredResorts();
-      renderVerdict(resorts);
-      renderCompareTable(resorts);
+      if (tb) tb.value = String(state.howFar);
+      const updated = filteredResorts();
+      renderVerdict(updated);
+      renderCompareTable(updated);
       savePlannerState();
       syncPlannerControls();
     });
   });
-}
 
+  injectVerdictWriteup(v);
+}
 // ─── AI Verdict Write-up (Option B) ──────────────────────────────────────────
 // Cache: key = `${resortId}:${tier}` → { text, ts }
 const verdictWriteupCache = new Map();
@@ -788,6 +844,8 @@ function syncPlannerControls() {
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
+  // Sync new vcard range buttons (if verdict card is rendered)
+  document.querySelectorAll('.vcard-range-btn[data-tier]').forEach((b,i) => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
 }
 
 
