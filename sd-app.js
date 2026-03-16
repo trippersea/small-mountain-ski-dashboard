@@ -115,6 +115,14 @@ function debounce(fn, ms) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
+// ─── Analytics helper ─────────────────────────────────────────────────────────
+function trackEvent(eventName, params = {}) {
+  try {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: eventName, ...params });
+  } catch (e) {}
+}
+
 // ─── Drive helpers ────────────────────────────────────────────────────────────
 function getDriveMins(id) {
   const v = state.driveCache[id];
@@ -1459,7 +1467,7 @@ function wireEvents() {
   wireMobileFilterDrawer();
 
   // AI chat
-  if (els.aiChatBtn) els.aiChatBtn.addEventListener('click', () => { const q = els.aiChatInput?.value?.trim(); if (q) askAI(q); });
+  if (els.aiChatBtn) els.aiChatBtn.addEventListener('click', () => { const q = els.aiChatInput?.value?.trim(); if (q) { trackEvent('ai_chat_used', { query: q }); askAI(q); } });
   if (els.aiChatInput) els.aiChatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const q = els.aiChatInput.value?.trim(); if (q) askAI(q); } });
   if (els.aiChatResult) {
     els.aiChatResult.addEventListener('click', e => {
@@ -1603,6 +1611,11 @@ function wireEvents() {
       else if (key === 'temp') state.tempBucket = btn.dataset.val;
       else if (key === 'wind') state.windBucket = btn.dataset.val;
       else                     state.weights[key] = Number(btn.dataset.val);
+      trackEvent('ski_preference_set', {
+        preference_type:  key,
+        preference_value: btn.dataset.val,
+        preference_label: btn.textContent.trim(),
+      });
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender(); updateFilterBadge();
     });
   });
@@ -1611,6 +1624,7 @@ function wireEvents() {
     btn.addEventListener('click', () => {
       state.passPreference = btn.dataset.pass;
       state.passFilter = btn.dataset.pass === 'any' ? 'All' : btn.dataset.pass;
+      trackEvent('pass_selected', { pass_type: btn.dataset.pass });
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
     });
   });
@@ -1619,6 +1633,7 @@ function wireEvents() {
     els.heroPassSelect.addEventListener('change', () => {
       state.passFilter = els.heroPassSelect.value || 'All';
       state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter;
+      trackEvent('pass_selected', { pass_type: state.passFilter, source: 'hero' });
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
     });
   }
@@ -1640,6 +1655,8 @@ function wireEvents() {
     const row = e.target.closest('tr[data-id]');
     if (!row || e.target.closest('input')) return;
     state.selectedId = row.dataset.id;
+    const _clickedResort = RESORTS.find(r => r.id === state.selectedId);
+    if (_clickedResort) trackEvent('mountain_viewed', { mountain_name: _clickedResort.name, mountain_state: _clickedResort.state });
     renderDetail({ scroll: true });
     [...els.comparisonBody.querySelectorAll('tr')].forEach(r => r.classList.toggle('active-row', r.dataset.id === state.selectedId));
   });
@@ -1670,6 +1687,7 @@ function wireEvents() {
     if (loc) {
       state.origin = loc; state.driveCache = {};
       els.locationStatus.textContent = `✓ Location set to ${loc.label}`;
+      trackEvent('location_set', { location_label: loc.label, method: 'search' });
       updatePlannerOriginLabel();
       if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
       if (isRememberChecked()) saveOrigin(loc); else clearSavedOrigin();
@@ -1713,6 +1731,7 @@ function wireEvents() {
     navigator.geolocation.getCurrentPosition(async pos => {
       state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
       els.originInput.value = 'Your location';
+      trackEvent('location_set', { location_label: 'GPS', method: 'gps' });
       if (isRememberChecked()) saveOrigin(state.origin); else clearSavedOrigin();
       pushUrlDebounced();
       await loadDriveTimes();
