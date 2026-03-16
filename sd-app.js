@@ -542,6 +542,8 @@ function syncPlannerControls() {
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
+  const howfarGroup = document.querySelector('.priority-btns[data-key="howfar"]');
+  if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
@@ -1628,6 +1630,12 @@ function wireEvents() {
       if (key === 'size')      state.verticalFilter = btn.dataset.val;
       else if (key === 'temp') state.tempBucket = btn.dataset.val;
       else if (key === 'wind') state.windBucket = btn.dataset.val;
+      else if (key === 'howfar') {
+        state.howFar = Number(btn.dataset.val);
+        const _hfEl = document.getElementById('howFarFilter');
+        if (_hfEl) _hfEl.value = String(state.howFar);
+        if (state.howFar > 0 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
+      }
       else                     state.weights[key] = Number(btn.dataset.val);
       trackEvent('ski_preference_set', {
         preference_type:  key,
