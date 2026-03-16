@@ -611,11 +611,30 @@ function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
   const v = computeVerdict(resorts);
   if (!v) {
-    els.verdictCard.innerHTML = `<div class="vcard-placeholder">
-      <div class="vcard-placeholder-icon">⛷</div>
-      <div class="vcard-placeholder-title">Loading your top pick…</div>
-      <div class="vcard-placeholder-sub">Fetching live forecast data for your mountains.</div>
-    </div>`;
+    const filtersActive = resorts.length === 0 && (
+      state.passFilter !== 'All'   ||
+      state.stateFilter !== 'All'  ||
+      state.nightOnly              ||
+      state.verticalFilter !== 'any' ||
+      state.tempBucket !== 'any'   ||
+      state.windBucket !== 'any'   ||
+      state.priceRange > 0         ||
+      state.weights.value === 10   ||
+      state.howFar > 0
+    );
+    if (filtersActive) {
+      els.verdictCard.innerHTML = `<div class="vcard-placeholder">
+        <div class="vcard-placeholder-icon">🔍</div>
+        <div class="vcard-placeholder-title">No mountains match your filters</div>
+        <div class="vcard-placeholder-sub">Try loosening a preference — for example, expanding your distance range, adjusting the ticket price, or changing the snow requirement.</div>
+      </div>`;
+    } else {
+      els.verdictCard.innerHTML = `<div class="vcard-placeholder">
+        <div class="vcard-placeholder-icon">⛷</div>
+        <div class="vcard-placeholder-title">Loading your top pick…</div>
+        <div class="vcard-placeholder-sub">Fetching live forecast data for your mountains.</div>
+      </div>`;
+    }
     return;
   }
 
