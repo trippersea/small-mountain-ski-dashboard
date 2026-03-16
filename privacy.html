@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VK2Q3TTFEW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-VK2Q3TTFEW');
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — SkiDecision</title>
+  <meta name="description" content="SkiDecision privacy policy. We don't collect personal data. Your location stays in your browser." />
+  <link rel="canonical" href="https://wheretoskinext.com/privacy/" />
+  <meta property="og:title" content="Privacy Policy — SkiDecision" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://wheretoskinext.com/privacy/" />
+  <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
+  <link rel="icon" href="/ski-decision-logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:           #f3f8fd;
+      --panel:        #ffffff;
+      --panel-2:      #edf4ff;
+      --text:         #1b2a3a;
+      --muted:        #667a96;
+      --accent:       #2b6de9;
+      --accent-2:     #22b38a;
+      --accent-warm:  #f59e0b;
+      --border:       #d6e1f0;
+      --shadow:       0 12px 30px rgba(30,60,100,.08);
+      --shadow-sm:    0 4px 16px rgba(30,60,100,.06);
+      --radius:       20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: linear-gradient(180deg, #f7fbff 0%, #eef5fb 100%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Nav */
+    .top-nav {
+      position: sticky; top: 0; z-index: 1000;
+      backdrop-filter: blur(14px);
+      background: rgba(255,255,255,.92);
+      border-bottom: 1px solid var(--border);
+    }
+    .top-nav-inner {
+      max-width: 1160px; margin: 0 auto; padding: 10px 18px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .nav-brand { font-weight: 800; font-size: 16px; color: var(--text); letter-spacing: -.01em; margin-right: 6px; }
+    .nav-divider { width: 1px; height: 16px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+    .nav-link {
+      padding: 6px 12px; border-radius: 8px; border: 1.5px solid transparent;
+      text-decoration: none; color: var(--text); font-weight: 600; font-size: 13px;
+      transition: background .12s, color .12s, border-color .12s;
+    }
+    .nav-link:hover { background: #edf4ff; color: var(--accent); border-color: var(--border); }
+    .nav-link-cta { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .nav-link-cta:hover { background: #1d5fd4; border-color: #1d5fd4; color: #fff; }
+    .nav-link-active { color: var(--accent); }
+
+    /* Page */
+    .page { max-width: 720px; margin: 0 auto; padding: 56px 24px 96px; }
+
+    /* Hero */
+    .about-eyebrow {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--accent); background: var(--panel-2);
+      border: 1px solid rgba(43,109,233,.2); border-radius: 999px;
+      padding: 5px 12px; margin-bottom: 20px;
+    }
+    .about-eyebrow::before {
+      content: ''; display: block; width: 6px; height: 6px;
+      border-radius: 50%; background: var(--accent);
+    }
+    .about-headline {
+      font-size: clamp(30px, 5vw, 44px); font-weight: 800; line-height: 1.08;
+      letter-spacing: -.03em; color: var(--text); margin: 0 0 14px;
+    }
+    .about-subhead { font-size: 17px; color: var(--muted); line-height: 1.55; margin: 0; max-width: 52ch; }
+
+    /* Divider */
+    .section-divider { display: flex; align-items: center; gap: 14px; margin: 44px 0 28px; }
+    .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .section-label {
+      font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--muted); white-space: nowrap;
+    }
+
+    /* Sections */
+    .about-section { margin-bottom: 44px; }
+    .about-section h2 { font-size: 21px; font-weight: 800; letter-spacing: -.02em; color: var(--text); margin: 0 0 14px; line-height: 1.2; }
+    .about-section p { font-size: 16px; color: #2e3f54; line-height: 1.72; margin: 0 0 14px; }
+    .about-section p:last-child { margin-bottom: 0; }
+
+    /* Data table */
+    .data-table {
+      width: 100%; border-collapse: collapse; margin: 20px 0;
+      font-size: 14px; border-radius: 12px; overflow: hidden;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+    }
+    .data-table th {
+      background: var(--panel-2); color: var(--text); font-weight: 700;
+      padding: 11px 16px; text-align: left; font-size: 12px;
+      letter-spacing: .04em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 12px 16px; color: #2e3f54; border-bottom: 1px solid var(--border);
+      vertical-align: top; line-height: 1.5;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:nth-child(even) td { background: #f8fbff; }
+
+    /* Highlight box */
+    .highlight-box {
+      background: var(--panel-2); border: 1px solid rgba(43,109,233,.2);
+      border-radius: 14px; padding: 20px 24px; margin: 20px 0;
+    }
+    .highlight-box p { font-size: 15px; margin: 0; color: var(--text); line-height: 1.65; }
+    .highlight-box strong { color: var(--accent); }
+
+    /* Warning box */
+    .note-box {
+      background: #fffbf0; border: 1px solid rgba(245,158,11,.3);
+      border-left: 4px solid var(--accent-warm);
+      border-radius: 0 12px 12px 0; padding: 16px 20px; margin: 20px 0;
+    }
+    .note-box p { font-size: 15px; margin: 0; color: #7a5a1a; line-height: 1.65; }
+
+    /* Contact */
+    .about-contact {
+      margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border);
+      font-size: 14px; color: var(--muted); text-align: center;
+    }
+    .about-contact a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .about-contact a:hover { text-decoration: underline; }
+
+    /* Footer */
+    .site-footer {
+      text-align: center; padding: 32px 16px; font-size: 12px;
+      color: var(--muted); border-top: 1px solid var(--border); background: var(--panel);
+    }
+    .site-footer a { color: var(--accent); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .page { padding: 36px 18px 72px; }
+      .data-table { font-size: 13px; }
+      .data-table th, .data-table td { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="top-nav" role="navigation" aria-label="Main navigation">
+    <div class="top-nav-inner">
+      <span class="nav-brand">SkiDecision</span>
+      <div class="nav-divider"></div>
+      <a href="/" class="nav-link">Find My Mountain</a>
+      <a href="/about/" class="nav-link">About</a>
+      <a href="/privacy/" class="nav-link nav-link-active">Privacy</a>
+      <div class="nav-divider"></div>
+      <a href="/" class="nav-link nav-link-cta">Open App →</a>
+    </div>
+  </nav>
+
+  <main class="page">
+
+    <!-- Hero -->
+    <header style="margin-bottom:48px">
+      <div class="about-eyebrow">Privacy Policy</div>
+      <h1 class="about-headline">Your data stays yours.</h1>
+      <p class="about-subhead">SkiDecision doesn't sell your data, doesn't require an account, and stores as little as possible — most of it never leaves your browser.</p>
+      <p style="margin-top:14px;font-size:13px;color:var(--muted);font-family:'DM Mono',monospace">Last updated: June 2025</p>
+    </header>
+
+    <!-- Short version -->
+    <div class="section-divider"><span class="section-label">The short version</span></div>
+
+    <section class="about-section">
+      <h2>The short version</h2>
+      <div class="highlight-box">
+        <p>We don't collect your name, email, or any account information — we don't have accounts. If you type in a location, it's used only to calculate drive times and is optionally saved <strong>in your own browser</strong>, not on our servers. We use Google Analytics to understand how the site is used in aggregate. That's the whole picture.</p>
+      </div>
+    </section>
+
+    <!-- What we collect -->
+    <div class="section-divider"><span class="section-label">What we collect</span></div>
+
+    <section class="about-section">
+      <h2>What we collect and why</h2>
+
+      <table class="data-table" aria-label="Data collected by SkiDecision">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>How it's used</th>
+            <th>Where it's stored</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Location (ZIP or city)</strong></td>
+            <td>Converted to coordinates to calculate drive times and rank nearby mountains. Never logged or stored on our servers.</td>
+            <td>Your browser only. Saved to <code>localStorage</code> if you check "Remember this location" — you can clear it any time.</td>
+          </tr>
+          <tr>
+            <td><strong>GPS coordinates</strong> (optional, if you click "Use my location")</td>
+            <td>Same as above — used only to compute drive distances. Requires your explicit browser permission.</td>
+            <td>Your browser session only. Saved to <code>localStorage</code> only if you check "Remember this location".</td>
+          </tr>
+          <tr>
+            <td><strong>Filter preferences</strong> (pass, snow priority, mountain size, etc.)</td>
+            <td>Restores your settings on your next visit for convenience.</td>
+            <td>Your browser's <code>localStorage</code> only. Keys: <code>ski-planner-weights</code>, <code>ski-pass-pref</code>, <code>ski-ski-days</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Weather &amp; snowfall data</strong></td>
+            <td>Cached to avoid redundant API calls and speed up the app.</td>
+            <td>Your browser's <code>sessionStorage</code> only. Expires when you close the tab.</td>
+          </tr>
+          <tr>
+            <td><strong>Page analytics</strong></td>
+            <td>Aggregate usage data (pages visited, buttons clicked) to understand how the site is used and improve it.</td>
+            <td>Google Analytics servers. See Google's privacy policy below.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>We do not collect your name, email address, payment information, or any account credentials. There are no accounts.</p>
+    </section>
+
+    <!-- Third-party services -->
+    <div class="section-divider"><span class="section-label">Third-party services</span></div>
+
+    <section class="about-section">
+      <h2>Third-party services the app contacts</h2>
+      <p>When you use SkiDecision, your browser makes requests to the following external services. We do not control their privacy practices and link to their policies where available.</p>
+
+      <table class="data-table" aria-label="Third-party services used by SkiDecision">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Purpose</th>
+            <th>Data sent</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Open-Meteo</strong><br/><a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener">open-meteo.com</a></td>
+            <td>Live weather forecasts for each resort</td>
+            <td>Latitude &amp; longitude of ski resort locations (not your location)</td>
+          </tr>
+          <tr>
+            <td><strong>Open-Meteo Archive</strong><br/><a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener">open-meteo.com</a></td>
+            <td>Historical snowfall data for the past 7 days</td>
+            <td>Latitude &amp; longitude of ski resort locations (not your location)</td>
+          </tr>
+          <tr>
+            <td><strong>Project OSRM</strong><br/><a href="https://router.project-osrm.org" target="_blank" rel="noopener">project-osrm.org</a></td>
+            <td>Calculates real road drive times from your location to resorts</td>
+            <td>Your coordinates and resort coordinates, used only to compute routing. No account or identity data is sent.</td>
+          </tr>
+          <tr>
+            <td><strong>Zippopotam.us</strong><br/><a href="https://www.zippopotam.us" target="_blank" rel="noopener">zippopotam.us</a></td>
+            <td>Converts US ZIP codes to coordinates</td>
+            <td>The ZIP code you type in</td>
+          </tr>
+          <tr>
+            <td><strong>OpenStreetMap Nominatim</strong><br/><a href="https://nominatim.org/release-docs/latest/api/Overview/" target="_blank" rel="noopener">nominatim.org</a></td>
+            <td>Converts city/address searches to coordinates</td>
+            <td>The location text you type in</td>
+          </tr>
+          <tr>
+            <td><strong>Google Analytics &amp; Google Tag Manager</strong><br/><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com</a></td>
+            <td>Aggregate usage analytics — page views, feature usage, traffic sources</td>
+            <td>Standard analytics data: pages visited, browser/device type, approximate region, referrer. No personally identifiable information is intentionally sent.</td>
+          </tr>
+          <tr>
+            <td><strong>Google Fonts</strong><br/><a href="https://developers.google.com/fonts/faq/privacy" target="_blank" rel="noopener">developers.google.com</a></td>
+            <td>Loads the DM Sans typeface used on the site</td>
+            <td>Your IP address and browser info are sent to Google's servers when the font files load.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note-box">
+        <p><strong>Note on location data and OSRM:</strong> When you enter a ZIP code or city, your coordinates are sent to OSRM to calculate drive times. These requests go from your browser directly to OSRM's public routing server. We do not proxy, log, or store those requests on our end.</p>
+      </div>
+    </section>
+
+    <!-- Cookies & local storage -->
+    <div class="section-divider"><span class="section-label">Cookies &amp; storage</span></div>
+
+    <section class="about-section">
+      <h2>Cookies and browser storage</h2>
+      <p>SkiDecision itself does not set cookies. Google Analytics sets its own cookies (<code>_ga</code>, <code>_gid</code>, etc.) to distinguish unique visitors and sessions — this is standard for Google Analytics.</p>
+      <p>SkiDecision stores the following data in your browser's local storage (persists between visits) and session storage (cleared when you close the tab):</p>
+
+      <table class="data-table" aria-label="Browser storage keys used">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Type</th>
+            <th>What it stores</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>ski-saved-origin</code></td>
+            <td>localStorage</td>
+            <td>Your saved location (only if you checked "Remember this location")</td>
+          </tr>
+          <tr>
+            <td><code>ski-planner-weights</code></td>
+            <td>localStorage</td>
+            <td>Your snow, size, value, and crowd priority settings</td>
+          </tr>
+          <tr>
+            <td><code>ski-pass-pref</code></td>
+            <td>localStorage</td>
+            <td>Your selected pass preference (Epic, Ikon, etc.)</td>
+          </tr>
+          <tr>
+            <td><code>ski-ski-days</code></td>
+            <td>localStorage</td>
+            <td>Your typical ski days per season setting</td>
+          </tr>
+          <tr>
+            <td><code>ski-wx-cache</code></td>
+            <td>sessionStorage</td>
+            <td>Cached weather forecast data for the current session</td>
+          </tr>
+          <tr>
+            <td><code>ski-hist-cache</code></td>
+            <td>sessionStorage</td>
+            <td>Cached historical snowfall data for the current session</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>You can clear all of this at any time by clearing your browser's site data for wheretoskinext.com, or by resetting filters in the app.</p>
+    </section>
+
+    <!-- Shareable URLs -->
+    <div class="section-divider"><span class="section-label">Shareable links</span></div>
+
+    <section class="about-section">
+      <h2>Shareable URLs</h2>
+      <p>When you click the "Share" button or share a resort report URL, your current filter settings — including your approximate coordinates and location label — are encoded into the URL. Anyone with that link will be able to see those settings.</p>
+      <p>If you'd prefer not to share your location, clear the location field before copying a share link.</p>
+    </section>
+
+    <!-- Children -->
+    <div class="section-divider"><span class="section-label">Children</span></div>
+
+    <section class="about-section">
+      <h2>Children's privacy</h2>
+      <p>SkiDecision is not directed at children under 13 and we do not knowingly collect any information from children. Because we don't collect personal information from any user, there is nothing to delete — but if you have concerns, contact us at the address below.</p>
+    </section>
+
+    <!-- Changes -->
+    <div class="section-divider"><span class="section-label">Changes</span></div>
+
+    <section class="about-section">
+      <h2>Changes to this policy</h2>
+      <p>If we make material changes to how we handle data, we'll update the "Last updated" date at the top of this page. We won't start collecting personal data without updating this policy first.</p>
+    </section>
+
+    <!-- Contact -->
+    <div class="about-contact">
+      Questions about this policy?<br />
+      Reach us at <a href="mailto:wheretoskinext@gmail.com">wheretoskinext@gmail.com</a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>© <script>document.write(new Date().getFullYear())</script> SkiDecision &nbsp;·&nbsp; <a href="/about/">About</a> &nbsp;·&nbsp; <a href="/privacy/">Privacy</a></p>
+  </footer>
+
+</body>
+</html>
