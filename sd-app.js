@@ -1073,82 +1073,179 @@ function renderDetail({ scroll = false } = {}) {
   const resort = RESORTS.find(r => r.id === state.selectedId);
   if (!resort) { els.detailSection.classList.add('hidden'); return; }
   els.detailSection.classList.remove('hidden');
+
   const wx    = state.weatherCache[resort.id]?.data;
-  const w     = normalizedWeights();
   const skis  = wx ? skiScoreBreakdown(resort, wx, 0) : null;
   const crowd = crowdForecast(resort);
   const tb    = resort.terrainBreakdown;
 
+  // ── Pass badge color class ──────────────────────────────────────────────────
+  const passCls = ({
+    'Epic':        'detail-badge--pass-epic',
+    'Ikon':        'detail-badge--pass-ikon',
+    'Indy':        'detail-badge--pass-indy',
+    'Independent': 'detail-badge--pass-independent',
+  })[resort.passGroup] || '';
+
+  // ── Ski Score ring color ────────────────────────────────────────────────────
+  const ringCls = skis
+    ? (skis.skiScore >= 70 ? 'detail-score-ring--great'
+      : skis.skiScore >= 45 ? ''
+      : 'detail-score-ring--low')
+    : '';
+
+  // ── Score factor rows ───────────────────────────────────────────────────────
+  const factorRows = skis ? [
+    ['Snow Quality',  skis.factors.snow],
+    ['Skiability',    skis.factors.skiability],
+    ['Mountain Fit',  skis.factors.fit],
+    ['Drive',         skis.factors.drive],
+    ['Value',         skis.factors.value],
+    ['Crowd Outlook', skis.factors.crowd],
+  ].map(([label, val]) =>
+    `<div class="detail-factor-row">
+       <span class="detail-factor-lbl">${label}</span>
+       <strong class="detail-factor-val">${val}</strong>
+     </div>`
+  ).join('') : '';
+
+  // ── Snow history + forecast ─────────────────────────────────────────────────
+  const hist  = historyCache.get(resort.id);
+  const spark = hist ? snowSparkline(hist.days) : null;
+  const histHtml = hist
+    ? `<div class="history-row">
+         <span class="history-label">Last 7 days</span>
+         <span class="history-total">${hist.total}"</span>
+         ${spark || ''}
+       </div>`
+    : `<div class="muted small">Loading recent snowfall…</div>`;
+
+  const fcHtml = wx
+    ? `<div class="forecast-rows" style="margin-top:10px">
+         ${(wx.forecast || []).map(f => `
+           <div class="forecast-row">
+             <span class="forecast-day">${f.day}</span>
+             <span class="forecast-snow ${f.snow >= 4 ? 'snow-big' : f.snow >= 1 ? 'snow-med' : ''}">
+               ${f.snow.toFixed(1)}"
+             </span>
+             <span class="forecast-temps">${f.lo}° – ${f.hi}°F · ${f.wind || 0} mph</span>
+           </div>`).join('')}
+       </div>`
+    : '<div class="muted small" style="margin-top:8px">Weather loading…</div>';
+
+  // ── Report slug for "Full Report" link ─────────────────────────────────────
+  const reportSlug = resort.slug || slugify(resort.name);
+
   els.detailCard.innerHTML = `
-    <div class="section-header">
-      <div>
-        <div class="eyebrow">Selected Mountain</div>
-        <h2>${esc(resort.name)}</h2>
-        <p class="muted small">${esc(resort.state)} · ${esc(resort.passGroup)} · ${esc(resort.ownerGroup)}</p>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        ${resort.website ? `<a class="btn btn-primary detail-website-btn" href="${resort.website}" target="_blank" rel="noopener">Visit Website</a>` : ''}
-        <div class="metric-chip">${skis ? `Ski Score ${skis.skiScore}` : 'Loading…'}</div>
+<div class="detail-card-inner">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="detail-header">
+    <div class="detail-header-left">
+      <div class="eyebrow">Selected Mountain</div>
+      <h2 class="detail-name">${esc(resort.name)}</h2>
+      <div class="detail-badges">
+        <span class="detail-badge detail-badge--state">${esc(resort.state)}</span>
+        <span class="detail-badge ${passCls}">${esc(resort.passGroup)}</span>
+        ${resort.ownerGroup ? `<span class="detail-badge detail-badge--owner">${esc(resort.ownerGroup)}</span>` : ''}
       </div>
     </div>
-    <div class="metric-grid">
-      <div class="metric-box"><div class="metric-label">Vertical</div><div class="metric-value">${resort.vertical} ft</div></div>
-      <div class="metric-box"><div class="metric-label">Trails</div><div class="metric-value">${resort.trails}</div></div>
-      <div class="metric-box"><div class="metric-label">Day Ticket*</div><div class="metric-value">$${resort.price}</div></div>
-      <div class="metric-box"><div class="metric-label">Drive</div><div class="metric-value">${formatDrive(resort.id)}</div></div>
-      <div class="metric-box"><div class="metric-label">Crowd</div><div class="metric-value detail-sm">${crowd.label}</div></div>
+    <div class="detail-header-right">
+      ${skis ? `
+        <div class="detail-score-ring ${ringCls}" title="Composite Ski Score out of 100">
+          <div class="detail-score-num">${skis.skiScore}</div>
+          <div class="detail-score-lbl">Ski Score</div>
+        </div>` : ''}
+      <div class="detail-header-actions">
+        ${resort.website
+          ? `<a class="btn btn-primary detail-website-btn" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>`
+          : ''}
+        <a class="btn btn-secondary" href="/report/${esc(reportSlug)}">Full Report</a>
+      </div>
     </div>
-    <div class="detail-grid" style="margin-top:12px">
-      <div class="sub-card">
-        <h3 class="sub-card-title">Terrain Breakdown</h3>
-        <div class="bar-row"><div>Beginner</div><div class="bar"><div class="bar-fill" style="width:${tb.beginner*100}%"></div></div><div>${Math.round(tb.beginner*100)}%</div></div>
-        <div class="bar-row"><div>Intermediate</div><div class="bar"><div class="bar-fill" style="width:${tb.intermediate*100}%"></div></div><div>${Math.round(tb.intermediate*100)}%</div></div>
-        <div class="bar-row"><div>Advanced</div><div class="bar"><div class="bar-fill" style="width:${tb.advanced*100}%"></div></div><div>${Math.round(tb.advanced*100)}%</div></div>
-        <div class="breakdown">
-          <div>Base / summit: <strong>${resort.baseElevation} / ${resort.summitElevation} ft</strong></div>
-          <div>Avg snowfall: <strong>${resort.avgSnowfall}"</strong></div>
-          <div>Night skiing: <strong>${resort.night ? 'Yes' : 'No'}</strong></div>
-          <div>Terrain park: <strong>${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
-        </div>
+  </div>
+
+  <!-- ── Stats Strip ────────────────────────────────────────────────────── -->
+  <div class="detail-stats-strip">
+    <div class="detail-stat">
+      <div class="detail-stat-val">${resort.vertical.toLocaleString()} ft</div>
+      <div class="detail-stat-lbl">Vertical</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-val">${resort.trails}</div>
+      <div class="detail-stat-lbl">Trails</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-val">${resort.avgSnowfall}"</div>
+      <div class="detail-stat-lbl">Avg Snowfall</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-val">$${resort.price}</div>
+      <div class="detail-stat-lbl">Day Ticket*</div>
+    </div>
+    <div class="detail-stat">
+      <div class="detail-stat-val">${formatDrive(resort.id)}</div>
+      <div class="detail-stat-lbl">Drive</div>
+    </div>
+  </div>
+
+  <!-- ── 2×2 Sub-cards ──────────────────────────────────────────────────── -->
+  <div class="detail-grid-new">
+
+    <!-- Terrain Breakdown -->
+    <div class="sub-card-new">
+      <h3 class="sub-card-title-new">Terrain Breakdown</h3>
+      <div class="bar-row"><div>Beginner</div><div class="bar"><div class="bar-fill" style="width:${tb.beginner * 100}%"></div></div><div>${Math.round(tb.beginner * 100)}%</div></div>
+      <div class="bar-row"><div>Intermediate</div><div class="bar"><div class="bar-fill" style="width:${tb.intermediate * 100}%"></div></div><div>${Math.round(tb.intermediate * 100)}%</div></div>
+      <div class="bar-row"><div>Advanced</div><div class="bar"><div class="bar-fill" style="width:${tb.advanced * 100}%"></div></div><div>${Math.round(tb.advanced * 100)}%</div></div>
+      <div class="detail-extra-stats">
+        <div class="detail-extra-row"><span>Base / Summit</span><strong>${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</strong></div>
+        <div class="detail-extra-row"><span>Avg Snowfall</span><strong>${resort.avgSnowfall}"</strong></div>
+        <div class="detail-extra-row"><span>Night Skiing</span><strong>${resort.night ? 'Yes' : 'No'}</strong></div>
+        <div class="detail-extra-row"><span>Terrain Park</span><strong>${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
       </div>
-      <div class="sub-card">
-        <h3 class="sub-card-title">Ski Score Breakdown</h3>
-        ${skis ? `<div class="breakdown">
-          <div>Snow quality: <strong>${skis.factors.snow}</strong></div>
-          <div>Skiability: <strong>${skis.factors.skiability}</strong></div>
-          <div>Mountain fit: <strong>${skis.factors.fit}</strong></div>
-          <div>Drive: <strong>${skis.factors.drive}</strong></div>
-          <div>Value: <strong>${skis.factors.value}</strong></div>
-          <div>Crowd outlook: <strong>${skis.factors.crowd}</strong></div>
-          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">Total: <strong>${skis.skiScore}</strong></div>
-        </div>` : '<div class="muted">Weather loading…</div>'}
+    </div>
+
+    <!-- Snow History & Forecast -->
+    <div class="sub-card-new">
+      <h3 class="sub-card-title-new">Snow History &amp; Forecast</h3>
+      ${histHtml}
+      ${fcHtml}
+    </div>
+
+    <!-- Ski Score Breakdown -->
+    <div class="sub-card-new">
+      <h3 class="sub-card-title-new">Ski Score Breakdown</h3>
+      ${skis ? `
+        <div class="detail-score-factors">
+          ${factorRows}
+          <div class="detail-factor-row detail-factor-row--total">
+            <span class="detail-factor-lbl">Total Score</span>
+            <strong class="detail-factor-val">${skis.skiScore}</strong>
+          </div>
+        </div>` : '<div class="muted small">Weather loading…</div>'}
+    </div>
+
+    <!-- Crowd Outlook -->
+    <div class="sub-card-new">
+      <h3 class="sub-card-title-new">Crowd Outlook</h3>
+      <div class="detail-crowd-label ${crowdClass(crowd.label)}">${crowd.label}</div>
+      <div class="detail-extra-stats">
+        <div class="detail-extra-row"><span>Confidence</span><strong>${crowd.confidence}</strong></div>
       </div>
-      <div class="sub-card">
-        <h3 class="sub-card-title">Crowd Forecast</h3>
-        <div class="breakdown">
-          <div>Expected traffic: <strong>${crowd.label}</strong></div>
-          <div>Confidence: <strong>${crowd.confidence}</strong></div>
-          ${crowd.reasons.length ? `<div style="margin-top:6px">${crowd.reasons.map(r => `<div class="muted small">• ${esc(r)}</div>`).join('')}</div>` : ''}
-        </div>
-      </div>
-      <div class="sub-card">
-        <h3 class="sub-card-title">Snow History &amp; Forecast</h3>
-        ${(() => {
-          const hist  = historyCache.get(resort.id);
-          const spark = hist ? snowSparkline(hist.days) : null;
-          const histRow = hist
-            ? `<div class="history-row"><span class="history-label">Last 7 days</span><span class="history-total">${hist.total}"</span>${spark}</div>`
-            : `<div class="muted small">Loading recent snowfall…</div>`;
-          const fcRows = wx ? (wx.forecast || []).map(f =>
-            `<div class="forecast-row">
-              <span class="forecast-day">${f.day}</span>
-              <span class="forecast-snow ${f.snow >= 4 ? 'snow-big' : f.snow >= 1 ? 'snow-med' : ''}">${f.snow.toFixed(1)}"</span>
-              <span class="forecast-temps">${f.lo}° – ${f.hi}°F · ${f.wind || 0} mph</span>
-            </div>`).join('') : '<div class="muted small">Weather loading…</div>';
-          return histRow + (wx ? `<div class="forecast-rows" style="margin-top:10px">${fcRows}</div>` : '');
-        })()}
-      </div>
-    </div>`;
+      ${crowd.reasons.length
+        ? `<div class="detail-crowd-reasons">
+             ${crowd.reasons.map(r => `<div class="detail-crowd-reason">· ${esc(r)}</div>`).join('')}
+           </div>`
+        : ''}
+    </div>
+
+  </div>
+
+  <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
+
+</div>`;
+
   if (scroll) els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   if (resort) pushReportUrl(resort);
 }

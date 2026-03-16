@@ -2597,3 +2597,207 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .score-great { background: #dcfce7; color: #15803d; }
 .score-good  { background: #dbeafe; color: #1d4ed8; }
 .score-low   { background: #fee2e2; color: #dc2626; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DETAIL CARD — Redesigned (replaces old .metric-grid + .detail-grid layout)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+.detail-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-header-left { flex: 1; min-width: 0; }
+
+.detail-name {
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 800;
+  margin: 6px 0 10px;
+  line-height: 1.1;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.detail-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.detail-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.detail-badge--state            { background: var(--panel-2); }
+.detail-badge--pass-epic        { background: rgba(43,109,233,.1);  color: #1a4fa8; border-color: rgba(43,109,233,.25); }
+.detail-badge--pass-ikon        { background: rgba(138,77,255,.1);  color: #6b2fe8; border-color: rgba(138,77,255,.25); }
+.detail-badge--pass-indy        { background: rgba(34,179,138,.1);  color: #0f7a57; border-color: rgba(34,179,138,.25); }
+.detail-badge--pass-independent { background: rgba(144,164,190,.1); color: #667a96; border-color: rgba(144,164,190,.3); }
+.detail-badge--owner            { background: transparent; color: var(--muted); }
+
+/* ── Score ring + action buttons ─────────────────────────────────────────── */
+.detail-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.detail-score-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2b6de9, #4a92ff);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(43,109,233,.3);
+  flex-shrink: 0;
+}
+
+.detail-score-ring--great { background: linear-gradient(135deg, #059669, #34d399); box-shadow: 0 4px 14px rgba(5,150,105,.28); }
+.detail-score-ring--low   { background: linear-gradient(135deg, #dc2626, #f87171); box-shadow: 0 4px 14px rgba(220,38,38,.28); }
+
+.detail-score-num { font-size: 26px; font-weight: 800; line-height: 1; }
+.detail-score-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; opacity: .88; margin-top: 2px; }
+
+.detail-header-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* ── Stats Strip ─────────────────────────────────────────────────────────── */
+.detail-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.detail-stat {
+  padding: 16px 10px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.detail-stat:last-child { border-right: none; }
+
+.detail-stat-val { font-size: 18px; font-weight: 800; line-height: 1.1; margin-bottom: 4px; color: var(--text); }
+.detail-stat-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+/* ── Sub-card 2×2 grid ───────────────────────────────────────────────────── */
+.detail-grid-new {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.sub-card-new {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.sub-card-title-new {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Extra stat rows ─────────────────────────────────────────────────────── */
+.detail-extra-stats {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.detail-extra-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.detail-extra-row strong { color: var(--text); font-weight: 700; }
+
+/* ── Crowd card ──────────────────────────────────────────────────────────── */
+.detail-crowd-label { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+.detail-crowd-reasons { margin-top: 12px; }
+.detail-crowd-reason { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+/* ── Ski Score factor rows ───────────────────────────────────────────────── */
+.detail-score-factors { display: flex; flex-direction: column; gap: 0; }
+
+.detail-factor-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,.04);
+}
+.detail-factor-row:last-child { border-bottom: none; }
+
+.detail-factor-row--total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: none !important;
+}
+.detail-factor-row--total .detail-factor-lbl,
+.detail-factor-row--total .detail-factor-val { font-size: 15px; color: var(--text); font-weight: 800; }
+
+.detail-factor-lbl { color: var(--muted); }
+.detail-factor-val { color: var(--text); font-weight: 700; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .detail-stats-strip { grid-template-columns: repeat(3, 1fr); }
+  .detail-stat:nth-child(3) { border-right: none; }
+  .detail-stat:nth-child(4),
+  .detail-stat:nth-child(5) { border-top: 1px solid var(--border); }
+  .detail-stat:nth-child(4) { border-right: 1px solid var(--border); }
+}
+
+@media (max-width: 760px) {
+  .detail-grid-new { grid-template-columns: 1fr; }
+  .detail-stats-strip { grid-template-columns: repeat(3, 1fr); }
+  .detail-header-right { width: 100%; justify-content: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .detail-stats-strip { grid-template-columns: repeat(2, 1fr); }
+  .detail-stat:nth-child(2n)  { border-right: none; }
+  .detail-stat:nth-child(n+3) { border-top: 1px solid var(--border); }
+  .detail-stat:nth-child(3)   { border-right: 1px solid var(--border); }
+  .detail-stat:nth-child(4)   { border-right: none; }
+  .detail-stat:nth-child(5)   { grid-column: 1 / -1; border-right: none; }
+}
