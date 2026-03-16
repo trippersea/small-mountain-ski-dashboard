@@ -1134,7 +1134,9 @@ function renderDetail({ scroll = false } = {}) {
     : '<div class="muted small" style="margin-top:8px">Weather loading…</div>';
 
   // ── Report slug for "Full Report" link ─────────────────────────────────────
-  const reportSlug = resort.slug || slugify(resort.name);
+  // Static pages are generated at /ski-report/{resort.id}/ by generate-mountain-pages.mjs.
+  // Vercel rewrites /report/:slug → /ski-report/:slug/, so we must use resort.id.
+  const reportSlug = resort.id;
 
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
