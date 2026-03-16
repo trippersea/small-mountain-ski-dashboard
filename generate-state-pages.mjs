@@ -129,14 +129,14 @@ function generateStatePage(stateAbbr, resorts) {
 
   const tableRows = sorted.map(r => `
     <tr>
-      <td><a href="${esc(r.website || `https://wheretoskinext.com/report/${r.id}`)}" target="_blank" rel="noopener">${esc(r.name)}</a></td>
+      <td><a href="/ski-report/${r.id}/">${esc(r.name)}</a></td>
       <td>${r.vertical.toLocaleString()} ft</td>
       <td>${r.trails}</td>
       <td>${r.avgSnowfall}"</td>
       <td>$${r.price}</td>
       <td>${esc(passLabel(r.passGroup))}</td>
       <td>${r.night ? 'Yes' : 'No'}</td>
-      <td><a href="https://wheretoskinext.com/report/${r.id}" class="view-link">Live data →</a></td>
+      <td><a href="https://wheretoskinext.com/?resort=${r.id}" class="view-link">Live data →</a></td>
     </tr>`).join('');
 
   return `<!DOCTYPE html>

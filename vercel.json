@@ -1,18 +1,22 @@
 {
-  "version": 2,
-  "routes": [
-    { "src": "/api/(.*)",    "dest": "/api/$1"        },
-    { "src": "/report/(.*)", "dest": "/api/report"    },
-    { "src": "/(.*)",        "dest": "/$1"            }
-  ],
-  "headers": [
+  "rewrites": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin",  "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
-      ]
+      "source": "/report/:slug",
+      "destination": "/ski-report/:slug/"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/ski-report/([^/]+)/?$",
+      "dest": "/ski-report/$1/index.html"
+    },
+    {
+      "src": "/ski/([^/]+)/?$",
+      "dest": "/ski/$1/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
