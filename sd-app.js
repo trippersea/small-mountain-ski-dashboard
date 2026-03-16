@@ -118,8 +118,7 @@ function debounce(fn, ms) {
 // ─── Analytics helper ─────────────────────────────────────────────────────────
 function trackEvent(eventName, params = {}) {
   try {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: eventName, ...params });
+    gtag('event', eventName, params);
   } catch (e) {}
 }
 
