@@ -7,7 +7,7 @@
 function activeFilters() {
   const filters = [];
   if (state.search.trim())        filters.push(`Search: "${esc(state.search.trim())}"`);
-  if (state.howFar < 2)           filters.push(`Range: ${HOW_FAR_TIERS[state.howFar]?.label ?? ''}${state.origin ? '' : ' (set location)'}`);
+  if (state.howFar > 0)           filters.push(`Range: ${HOW_FAR_TIERS[state.howFar]?.label ?? ''}${state.origin ? '' : ' (set location)'}`);
   if (state.tempBucket !== 'any') filters.push(`Temp: ${{ideal:'0°–32°', spring:'33°+ Spring', cold:'Below 0°'}[state.tempBucket] || state.tempBucket}`);
   if (state.windBucket !== 'any') filters.push(`Wind: ${{light:'Calm', breezy:'Breezy', holds:'Gusty'}[state.windBucket] || state.windBucket}`);
   if (state.priceRange > 0)       filters.push(`Ticket: ${PRICE_RANGES[state.priceRange]?.label ?? ''}`);

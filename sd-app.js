@@ -33,7 +33,7 @@ const state = Object.seal({
   stateFilter:    'All',
   sortBy:         'planner',
   nightOnly:      false,
-  howFar:         2,
+  howFar:         0,
   maxPrice:       0,
   priceRange:     0,
   verticalFilter: 'any',
@@ -403,7 +403,7 @@ function serializeState() {
   if (state.stateFilter !== 'All')     p.set('st',    state.stateFilter);
   if (state.sortBy      !== 'planner') p.set('sort',  state.sortBy);
   if (state.nightOnly)                 p.set('night', '1');
-  if (state.howFar < 2)                p.set('howfar', state.howFar);
+  if (state.howFar > 0)                p.set('howfar', state.howFar);
   if (state.skiDays !== 5)             p.set('days',  state.skiDays);
   if (state.origin) {
     p.set('lat', state.origin.lat.toFixed(4));
@@ -1725,13 +1725,13 @@ function wireEvents() {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any';
     state.nightOnly = false; state.maxPrice = 0; state.priceRange = 0;
-    state.howFar = 2; state.verticalFilter = 'any';
+    state.howFar = 0; state.verticalFilter = 'any';
     state.weights = { ...DEFAULT_WEIGHTS };
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     if (els.passFilter)     els.passFilter.value = 'All';
     els.stateFilter.value = 'All';
-    const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '2';
+    const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '0';
     if (els.maxPriceFilter) els.maxPriceFilter.value = '0';
     if (els.heroPassSelect) els.heroPassSelect.value = 'All';
     if (els.heroSnowSelect) els.heroSnowSelect.value = '1';
