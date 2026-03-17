@@ -1513,6 +1513,27 @@ function lazyLoadLeaflet(callback) {
   document.head.appendChild(script);
 }
 
+// ─── Sync active button states inside the mobile drawer clone ────────────────
+function syncDrawerControls(root) {
+  const keyMap = {
+    snow:   () => String(state.weights.snow),
+    value:  () => String(state.weights.value),
+    crowd:  () => String(state.weights.crowd),
+    size:   () => state.verticalFilter,
+    temp:   () => state.tempBucket,
+    wind:   () => state.windBucket,
+    howfar: () => String(state.howFar),
+  };
+  Object.entries(keyMap).forEach(([key, getVal]) => {
+    const group = root.querySelector(`.priority-btns[data-key="${key}"]`);
+    if (!group) return;
+    const val = getVal();
+    group.querySelectorAll('.priority-btn').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.val === val)
+    );
+  });
+}
+
 // ─── Mobile filter drawer — FIX: event delegation to avoid listener leak ──────
 function wireMobileFilterDrawer() {
   const triggerBtn = document.getElementById('mobileFilterBtn');
@@ -1532,7 +1553,10 @@ function wireMobileFilterDrawer() {
       const clone = plannerDetails.cloneNode(true);
       clone.id = 'plannerDetails-drawer';
       drawerBody.appendChild(clone);
-      // FIX: Single delegated listener on drawerBody instead of per-button
+      // Sync active button states onto the cloned nodes so selections show immediately
+      syncDrawerControls(clone);
+      // Remove any previous listener before adding fresh one (prevents stacking)
+      drawerBody.removeEventListener('click', handleDrawerClick);
       drawerBody.addEventListener('click', handleDrawerClick);
     }
     drawer.hidden = false;
@@ -1546,10 +1570,16 @@ function wireMobileFilterDrawer() {
     if (!btn) return;
     const key = btn.closest('.priority-btns')?.dataset.key;
     if (!key) return;
-    if (key === 'size')      state.verticalFilter = btn.dataset.val;
-    else if (key === 'temp') state.tempBucket = btn.dataset.val;
-    else if (key === 'wind') state.windBucket = btn.dataset.val;
-    else                     state.weights[key] = Number(btn.dataset.val);
+    if (key === 'size')        state.verticalFilter = btn.dataset.val;
+    else if (key === 'temp')   state.tempBucket = btn.dataset.val;
+    else if (key === 'wind')   state.windBucket = btn.dataset.val;
+    else if (key === 'howfar') {
+      state.howFar = Number(btn.dataset.val);
+      const _hfEl = document.getElementById('howFarFilter');
+      if (_hfEl) _hfEl.value = String(state.howFar);
+      if (state.howFar > 0 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
+    }
+    else                       state.weights[key] = Number(btn.dataset.val);
     savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender(); updateFilterBadge();
     drawerBody.querySelectorAll(`.priority-btns[data-key="${key}"] .priority-btn`).forEach(b =>
       b.classList.toggle('active', b.dataset.val === btn.dataset.val));
