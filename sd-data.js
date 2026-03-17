@@ -62,5 +62,5 @@ const historyCache      = new Map();
 const verdictWriteupCache = new Map();
 const HIST_TTL          = 24 * 60 * 60 * 1000;
 const WX_TTL            = 30 * 60 * 1000;
-const OSRM_LIMIT        = 40;
+const OSRM_LIMIT        = 60;
 const OSRM_CONCURRENCY  = 8;

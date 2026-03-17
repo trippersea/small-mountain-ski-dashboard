@@ -33,7 +33,7 @@ const state = Object.seal({
   stateFilter:    'All',
   sortBy:         'planner',
   nightOnly:      false,
-  howFar:         0,
+  howFar:         2,
   maxPrice:       0,
   priceRange:     0,
   verticalFilter: 'any',
@@ -162,8 +162,11 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 function haversineToDriveMinutes(km) {
-  const speed = km < 30 ? 45 : km < 100 ? 65 : 80;
-  return Math.round(km / speed * 60 + 10);
+  // Ski resorts involve mountain/winding approach roads that add ~15% to straight-line distance.
+  // Use conservative speeds and a larger buffer to avoid under-estimating drive times.
+  const roadKm = km * 1.15;
+  const speed  = roadKm < 40 ? 42 : roadKm < 110 ? 62 : 72;
+  return Math.round(roadKm / speed * 60 + 15);
 }
 function applyHaversineEstimates() {
   if (!state.origin) return;
@@ -400,7 +403,7 @@ function serializeState() {
   if (state.stateFilter !== 'All')     p.set('st',    state.stateFilter);
   if (state.sortBy      !== 'planner') p.set('sort',  state.sortBy);
   if (state.nightOnly)                 p.set('night', '1');
-  if (state.howFar > 0)                p.set('howfar', state.howFar);
+  if (state.howFar < 2)                p.set('howfar', state.howFar);
   if (state.skiDays !== 5)             p.set('days',  state.skiDays);
   if (state.origin) {
     p.set('lat', state.origin.lat.toFixed(4));
@@ -622,7 +625,7 @@ function renderVerdict(resorts) {
       state.windBucket !== 'any'   ||
       state.priceRange > 0         ||
       state.weights.value === 10   ||
-      state.howFar > 0
+      state.howFar < 2
     );
     if (filtersActive) {
       els.verdictCard.innerHTML = `<div class="vcard-placeholder">
@@ -1577,7 +1580,7 @@ function wireMobileFilterDrawer() {
       state.howFar = Number(btn.dataset.val);
       const _hfEl = document.getElementById('howFarFilter');
       if (_hfEl) _hfEl.value = String(state.howFar);
-      if (state.howFar > 0 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
+      if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
     }
     else                       state.weights[key] = Number(btn.dataset.val);
     savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender(); updateFilterBadge();
@@ -1671,7 +1674,7 @@ function wireEvents() {
   const _howFarEl = document.getElementById('howFarFilter');
   if (_howFarEl) _howFarEl.addEventListener('change', e => {
     state.howFar = Number(e.target.value);
-    if (state.howFar > 0 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
+    if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
     pushUrlDebounced(); render(); updateFilterBadge();
   });
 
@@ -1722,13 +1725,13 @@ function wireEvents() {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any';
     state.nightOnly = false; state.maxPrice = 0; state.priceRange = 0;
-    state.howFar = 0; state.verticalFilter = 'any';
+    state.howFar = 2; state.verticalFilter = 'any';
     state.weights = { ...DEFAULT_WEIGHTS };
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     tableSort = { col: 'planner', dir: 'desc' };
     if (els.passFilter)     els.passFilter.value = 'All';
     els.stateFilter.value = 'All';
-    const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '0';
+    const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '2';
     if (els.maxPriceFilter) els.maxPriceFilter.value = '0';
     if (els.heroPassSelect) els.heroPassSelect.value = 'All';
     if (els.heroSnowSelect) els.heroSnowSelect.value = '1';
@@ -1763,7 +1766,7 @@ function wireEvents() {
         state.howFar = Number(btn.dataset.val);
         const _hfEl = document.getElementById('howFarFilter');
         if (_hfEl) _hfEl.value = String(state.howFar);
-        if (state.howFar > 0 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
+        if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
       }
       else                     state.weights[key] = Number(btn.dataset.val);
       trackEvent('ski_preference_set', {
