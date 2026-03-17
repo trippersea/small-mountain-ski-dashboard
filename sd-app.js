@@ -551,9 +551,17 @@ function syncPlannerControls() {
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
 function computeVerdict(resorts) {
-  const verdictCap  = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
-  const verdictPool = (state.origin && verdictCap < Infinity)
-    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= verdictCap; })
+  const verdictTier  = HOW_FAR_TIERS[state.howFar];
+  const verdictCap   = verdictTier?.cap   ?? 180;
+  const verdictFloor = verdictTier?.floor ?? 0;
+  const verdictPool  = state.origin
+    ? resorts.filter(r => {
+        const m = getDriveMins(r.id);
+        if (m === null) return true;
+        if (verdictCap < Infinity && m > verdictCap)    return false;
+        if (verdictFloor > 0      && m <= verdictFloor) return false;
+        return true;
+      })
     : resorts;
   const withWx = verdictPool.filter(r => state.weatherCache[r.id]?.data);
   if (!withWx.length) return null;

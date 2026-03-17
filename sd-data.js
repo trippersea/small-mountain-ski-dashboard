@@ -19,9 +19,9 @@ const SCORING = Object.freeze({
 });
 
 const HOW_FAR_TIERS = Object.freeze([
-  { label: 'Day Trip',  cap: 180,      hint: '≤3h drive'   },
-  { label: 'Weekend',   cap: 360,      hint: '≤6h drive'   },
-  { label: 'All',       cap: Infinity, hint: 'any distance' },
+  { label: 'Day Trip',  floor: 0,   cap: 180,      hint: '≤3h drive'      },
+  { label: 'Weekend',   floor: 180, cap: 360,      hint: '3h–6h drive'    },
+  { label: 'All',       floor: 0,   cap: Infinity, hint: 'any distance'   },
 ]);
 const DRIVE_RANGES = HOW_FAR_TIERS;
 

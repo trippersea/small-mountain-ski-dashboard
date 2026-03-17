@@ -39,12 +39,16 @@ function filteredResorts() {
     // Night skiing
     if (state.nightOnly && !r.night) return false;
 
-    // Distance cap (requires origin)
+    // Distance band filter (requires origin)
+    // Day Trip = 0–3h, Weekend = 3h–6h (exclusive lower band), All = no restriction
     if (state.origin) {
-      const cap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
-      if (cap < Infinity) {
-        const mins = getDriveMins(r.id);
-        if (mins !== null && mins > cap) return false;
+      const tier  = HOW_FAR_TIERS[state.howFar];
+      const cap   = tier?.cap   ?? 180;
+      const floor = tier?.floor ?? 0;
+      const mins  = getDriveMins(r.id);
+      if (mins !== null) {
+        if (cap < Infinity && mins > cap)   return false;
+        if (floor > 0      && mins <= floor) return false;
       }
     }
 
@@ -141,9 +145,17 @@ function nearestCandidates(resorts, n = 20) {
 function buildDecisionBrief(resorts) {
   const context = getDecisionContext();
 
-  const verdictCap = HOW_FAR_TIERS[state.howFar]?.cap ?? 180;
-  const pool = (state.origin && verdictCap < Infinity)
-    ? resorts.filter(r => { const m = getDriveMins(r.id); return m === null || m <= verdictCap; })
+  const verdictTier  = HOW_FAR_TIERS[state.howFar];
+  const verdictCap   = verdictTier?.cap   ?? 180;
+  const verdictFloor = verdictTier?.floor ?? 0;
+  const pool = (state.origin)
+    ? resorts.filter(r => {
+        const m = getDriveMins(r.id);
+        if (m === null) return true;
+        if (verdictCap < Infinity && m > verdictCap)    return false;
+        if (verdictFloor > 0      && m <= verdictFloor) return false;
+        return true;
+      })
     : resorts;
 
   const scored = pool
