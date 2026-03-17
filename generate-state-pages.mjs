@@ -25,24 +25,27 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ─── Load resort data from sd-data.js ────────────────────────────────────────
-// We read the first line (RESORTS_NE) and parse the JSON array inline.
-// If RESORTS_NATIONAL exists, merge it in.
+import { createRequire } from 'module';
+const _require = createRequire(import.meta.url);
+const vm = _require('vm');
 
 function loadResorts() {
   const sdData = fs.readFileSync(path.join(__dirname, 'sd-data.js'), 'utf8');
-  // Extract the RESORTS_NE JSON array from the first line
-  const neMatch = sdData.match(/^const RESORTS_NE = (\[.*\]);/m);
-  if (!neMatch) throw new Error('Could not parse RESORTS_NE from sd-data.js');
-  const resortsNE = JSON.parse(neMatch[1]);
+  const neCtx = {};
+  vm.runInNewContext(sdData + '\nglobalThis.__out = RESORTS_NE;', neCtx);
+  const resortsNE = neCtx.__out || [];
+  if (!resortsNE.length) throw new Error('Could not load RESORTS_NE from sd-data.js');
 
-  // Try to load national data if file exists
   let resortsNational = [];
   const nationalPath = path.join(__dirname, 'resorts-national.js');
   if (fs.existsSync(nationalPath)) {
-    const nationalData = fs.readFileSync(nationalPath, 'utf8');
-    const natMatch = nationalData.match(/const RESORTS_NATIONAL = (\[.*\]);/ms);
-    if (natMatch) {
-      try { resortsNational = JSON.parse(natMatch[1]); } catch (e) {}
+    try {
+      const nationalData = fs.readFileSync(nationalPath, 'utf8');
+      const natCtx = {};
+      vm.runInNewContext(nationalData + '\nglobalThis.__out = RESORTS_NATIONAL;', natCtx);
+      resortsNational = natCtx.__out || [];
+    } catch (e) {
+      console.warn('Warning: could not load resorts-national.js:', e.message);
     }
   }
 
