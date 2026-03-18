@@ -128,7 +128,23 @@ function generateStatePage(stateAbbr, resorts) {
   // Sort by avgSnowfall descending for the table (best snow first)
   const sorted = [...resorts].sort((a, b) => b.avgSnowfall - a.avgSnowfall);
 
-  const jsonLdArray = resorts.map(r => resortJsonLd(r, stateName));
+  const jsonLdArray = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: `Best Ski Mountains in ${stateName}`,
+      description: `${count} ski mountains in ${stateName} ranked by snow, vertical, and value.`,
+      url: canonUrl,
+      numberOfItems: count,
+      itemListElement: sorted.map((r, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: r.name,
+        url: `https://wheretoskinext.com/ski-report/${r.id}/`,
+      })),
+    },
+    ...resorts.map(r => resortJsonLd(r, stateName)),
+  ];
 
   const tableRows = sorted.map(r => `
     <tr>
@@ -147,10 +163,10 @@ function generateStatePage(stateAbbr, resorts) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Best Ski Mountains in ${stateName} (${new Date().getFullYear()}) — SkiDecision</title>
-  <meta name="description" content="${count} ski mountains in ${stateName} ranked by snow, vertical, trails, and price. Live forecasts and drive times at SkiDecision." />
+  <title>Best Ski Mountains in ${stateName} (${new Date().getFullYear()}) — WhereToSkiNext.com</title>
+  <meta name="description" content="${count} ski mountains in ${stateName} ranked by snow, vertical, trails, and price. Live forecasts and drive times at WhereToSkiNext.com." />
   <link rel="canonical" href="${canonUrl}" />
-  <meta property="og:title" content="Best Ski Mountains in ${stateName} — SkiDecision" />
+  <meta property="og:title" content="Best Ski Mountains in ${stateName} — WhereToSkiNext.com" />
   <meta property="og:description" content="${count} mountains in ${stateName}. Top picks: ${topNames}. Live snow forecasts, drive times, pass access." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
@@ -200,7 +216,7 @@ function generateStatePage(stateAbbr, resorts) {
 <body>
 
 <nav>
-  <a href="https://wheretoskinext.com">SkiDecision</a>
+  <a href="https://wheretoskinext.com">WhereToSkiNext.com</a>
   <span class="nav-sub">/ Best Ski Mountains in ${stateName}</span>
 </nav>
 
@@ -263,7 +279,7 @@ function generateStatePage(stateAbbr, resorts) {
 </div>
 
 <footer>
-  <p>Data from SkiDecision · <a href="https://wheretoskinext.com">wheretoskinext.com</a> · Updated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+  <p>Data from WhereToSkiNext.com · <a href="https://wheretoskinext.com">wheretoskinext.com</a> · Updated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 </footer>
 
 </body>

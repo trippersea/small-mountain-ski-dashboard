@@ -41,6 +41,14 @@ body {
   display: flex; align-items: center; gap: 6px;
   overflow-x: auto; padding: 8px 0;
 }
+.nav-brand-link {
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none !important; border: none !important;
+  padding: 0 !important; background: none !important;
+}
+.nav-logo {
+  width: 30px; height: 30px; object-fit: contain; flex-shrink: 0;
+}
 .nav-brand {
   font-weight: 800; font-size: 15px; letter-spacing: -.01em;
   padding: 8px 14px; white-space: nowrap; color: var(--accent);

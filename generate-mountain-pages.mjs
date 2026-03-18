@@ -164,7 +164,7 @@ function buildSchemas(resort, stateName) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'SkiDecision', item: 'https://wheretoskinext.com' },
+      { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext.com', item: 'https://wheretoskinext.com' },
       { '@type': 'ListItem', position: 2, name: `Ski Mountains in ${stateName}`, item: `https://wheretoskinext.com/ski/${slugifyState(resort.state)}/` },
       { '@type': 'ListItem', position: 3, name: resort.name, item: canonUrl },
     ],
@@ -196,7 +196,7 @@ function generateMountainPage(resort, allResorts) {
   const year       = new Date().getFullYear();
 
   // Page title variants for natural keyword targeting
-  const pageTitle  = `${resort.name} Ski Report ${year} — Conditions, Trails & Snow | SkiDecision`;
+  const pageTitle  = `${resort.name} Ski Report ${year} — Conditions, Trails & Snow | WhereToSkiNext.com`;
   const metaDesc   = `${resort.name} in ${stateName}: ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails, $${resort.price} day ticket. ${passLabel(resort.passGroup)} mountain. Check live snow forecast and conditions.`;
 
   const passColor  = { Epic: '#1a56db', Ikon: '#0e9f6e', Indy: '#c27803', Independent: '#6b7280' }[resort.passGroup] || '#6b7280';
@@ -225,7 +225,7 @@ function generateMountainPage(resort, allResorts) {
   <link rel="canonical" href="${canonUrl}" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="${esc(resort.name)} Ski Conditions — SkiDecision" />
+  <meta property="og:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta property="og:description" content="${esc(metaDesc)}" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
@@ -233,7 +233,7 @@ function generateMountainPage(resort, allResorts) {
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions — SkiDecision" />
+  <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
 
   <link rel="icon" href="/ski-decision-logo.png" type="image/png" />
@@ -420,7 +420,7 @@ function generateMountainPage(resort, allResorts) {
   <!-- Nav -->
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
-      <a href="/" class="nav-brand">SkiDecision</a>
+      <a href="/" class="nav-brand">WhereToSkiNext.com</a>
       <div class="nav-divider"></div>
       <a href="/ski/${stateSlug}/" class="nav-link">${stateName} Mountains</a>
       <div class="nav-divider"></div>
@@ -432,7 +432,7 @@ function generateMountainPage(resort, allResorts) {
 
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="/">SkiDecision</a>
+      <a href="/">WhereToSkiNext.com</a>
       <span class="breadcrumb-sep">›</span>
       <a href="/ski/${stateSlug}/">Ski Mountains in ${esc(stateName)}</a>
       <span class="breadcrumb-sep">›</span>
@@ -554,7 +554,7 @@ function generateMountainPage(resort, allResorts) {
       </p>
       <p style="font-size:15px;color:#2e3f54;line-height:1.72;margin:0">
         ${esc(resort.name)} is a <strong>${esc(passLabel(resort.passGroup))}</strong> mountain. Day tickets start around $${resort.price} — prices vary by date and demand.
-        For live snow conditions, drive-time estimates from your location, and a personalized Ski Score, use the SkiDecision app.
+        For live snow conditions, drive-time estimates from your location, and a personalized Ski Score, use WhereToSkiNext.com.
       </p>
     </section>
 
@@ -579,7 +579,7 @@ function generateMountainPage(resort, allResorts) {
   </main>
 
   <footer>
-    <p>© ${year} SkiDecision · <a href="https://wheretoskinext.com">wheretoskinext.com</a> · Data updated seasonally</p>
+    <p>© ${year} WhereToSkiNext.com · <a href="https://wheretoskinext.com">wheretoskinext.com</a> · Data updated seasonally</p>
     <p style="margin-top:6px"><a href="/">Find the best mountain to ski next →</a></p>
   </footer>
 
