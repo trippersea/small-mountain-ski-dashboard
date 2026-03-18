@@ -169,11 +169,11 @@ function mountainFitIndex(resort) {
 function driveScoreIndex(driveMins) {
   const drive = safeNum(driveMins, null);
   if (drive === null) return SCORING.DRIVE_DEFAULT;
-  if (drive <= 75)  return 1.0;
-  if (drive <= 120) return 0.85 - ((drive - 75)  / 45) * 0.20;
-  if (drive <= 180) return 0.65 - ((drive - 120) / 60) * 0.25;
-  if (drive <= 240) return 0.40 - ((drive - 180) / 60) * 0.20;
-  return Math.max(0, 0.20 - ((drive - 240) / 60) * 0.10);
+  if (drive <= 60)  return 0.85;
+  if (drive <= 120) return 0.80 - ((drive - 60)  / 60) * 0.10;
+  if (drive <= 180) return 0.70 - ((drive - 120) / 60) * 0.15;
+  if (drive <= 240) return 0.55 - ((drive - 180) / 60) * 0.15;
+  return Math.max(0.25, 0.40 - ((drive - 240) / 60) * 0.05);
 }
 
 // ─── Price index (pure price inversion — separated from mountain size) ─────────
@@ -228,9 +228,9 @@ function normalizedWeights() {
 
   return {
     snow:       snowW,
-    skiability: remaining * 0.38,
-    fit:        remaining * 0.32,
-    drive:      remaining * 0.30,
+    skiability: remaining * 0.46,
+    fit:        remaining * 0.36,
+    drive:      remaining * 0.18,
     value:      valueW,
     crowd:      crowdW,
   };
