@@ -1,40 +1,20 @@
 {
-  "rewrites": [
-    {
-      "source": "/report/:slug",
-      "destination": "/ski-report/:slug/"
-    }
-  ],
+  "cleanUrls": true,
+  "trailingSlash": false,
   "redirects": [
     {
       "source": "/about.html",
-      "destination": "/about/",
+      "destination": "/about",
       "permanent": true
+    },
+    {
+      "source": "/report/:slug",
+      "destination": "/ski-report/:slug",
+      "permanent": false
     }
   ],
-  "routes": [
-    {
-      "src": "/ski-report/([^/]+)/?$",
-      "dest": "/ski-report/$1/index.html"
-    },
-    {
-      "src": "/ski/([^/]+)/?$",
-      "dest": "/ski/$1/index.html"
-    },
-    {
-      "src": "/about/?$",
-      "dest": "/about.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1",
-      "status": 200,
-      "continue": true
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/404.html",
-      "status": 404
-    }
+  "rewrites": [
+    { "source": "/ski-report/:slug", "destination": "/ski-report/:slug/index.html" },
+    { "source": "/ski/:state", "destination": "/ski/:state/index.html" }
   ]
 }
