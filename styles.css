@@ -2343,10 +2343,8 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 /* ── Responsive: mobile filter bar visibility ───────────────────────────── */
 @media (max-width: 760px) {
-  .mobile-filter-bar { display: flex; }
-  /* On mobile hide the desktop planner column's filter controls
-     since they live in the drawer instead */
-  .planner-col .planner-details .score-grid { display: none; }
+  .mobile-filter-bar { display: none; } /* filters now show inline — drawer trigger not needed */
+  .planner-col .planner-details .score-grid { display: grid; } /* show preference filters inline on mobile */
 }
 @media (min-width: 761px) {
   .mobile-filter-bar { display: none; }
