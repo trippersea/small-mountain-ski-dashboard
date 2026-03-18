@@ -5,6 +5,13 @@
       "destination": "/ski-report/:slug/"
     }
   ],
+  "redirects": [
+    {
+      "source": "/about.html",
+      "destination": "/about/",
+      "permanent": true
+    }
+  ],
   "routes": [
     {
       "src": "/ski-report/([^/]+)/?$",
@@ -13,6 +20,10 @@
     {
       "src": "/ski/([^/]+)/?$",
       "dest": "/ski/$1/index.html"
+    },
+    {
+      "src": "/about/?$",
+      "dest": "/about.html"
     },
     {
       "src": "/(.*)",

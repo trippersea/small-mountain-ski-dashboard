@@ -450,14 +450,14 @@ function pushReportUrl(resort) {
   const slug   = slugify(resort.name);
   const params = serializeState();
   const qs     = params.toString() ? '?' + params : '';
-  history.pushState({ reportSlug: slug }, resort.name + ' — SkiDecision', '/report/' + slug + qs);
-  document.title = resort.name + ' — SkiDecision';
+  history.pushState({ reportSlug: slug }, resort.name + ' — WhereToSkiNext.com', '/report/' + slug + qs);
+  document.title = resort.name + ' — WhereToSkiNext.com';
 }
 function popToRoot() {
   const params = serializeState();
   const qs     = params.toString() ? '?' + params : '';
-  history.replaceState({ reportSlug: null }, 'SkiDecision', '/' + qs);
-  document.title = 'SkiDecision';
+  history.replaceState({ reportSlug: null }, 'WhereToSkiNext.com', '/' + qs);
+  document.title = 'WhereToSkiNext.com';
 }
 const pushUrlDebounced = debounce(() => {
   const p    = serializeState();
@@ -1459,7 +1459,7 @@ function shareVerdict(resort, verdictData) {
   const p   = serializeState();
   const url = `${location.origin}${location.pathname}${p.toString() ? '?' + p : ''}`;
   if (navigator.share) {
-    navigator.share({ title: `Ski day at ${resort.name} — SkiDecision`, text: shareText, url }).catch(() => {});
+    navigator.share({ title: `Ski day at ${resort.name} — WhereToSkiNext.com`, text: shareText, url }).catch(() => {});
   } else {
     const full = `${shareText} ${url}`;
     if (navigator.clipboard?.writeText) {
@@ -1956,6 +1956,7 @@ function initialize() {
 
   syncPlannerControls();
   wireEvents();
+  updateHeroHeadline();
   render();
   updateFilterBadge();
 
@@ -1966,7 +1967,7 @@ function initialize() {
     const found = findResortBySlug(reportSlug);
     if (found) {
       state.selectedId = found.id;
-      document.title = found.name + ' — SkiDecision';
+      document.title = found.name + ' — WhereToSkiNext.com';
       setTimeout(() => {
         renderDetail();
         document.getElementById('detailSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1978,13 +1979,29 @@ function initialize() {
     const slug = getReportSlug();
     if (slug) {
       const found = findResortBySlug(slug);
-      if (found) { state.selectedId = found.id; document.title = found.name + ' — SkiDecision'; renderDetail({ scroll: true }); return; }
+      if (found) { state.selectedId = found.id; document.title = found.name + ' — WhereToSkiNext.com'; renderDetail({ scroll: true }); return; }
     }
     state.selectedId = null;
     if (els.detailSection) els.detailSection.classList.add('hidden');
-    document.title = 'SkiDecision';
+    document.title = 'WhereToSkiNext.com';
     render();
   });
+}
+
+// ─── Day-aware hero headline ──────────────────────────────────────────────────
+function updateHeroHeadline() {
+  const el = document.getElementById('heroHeadline');
+  if (!el) return;
+  const now  = new Date();
+  const day  = now.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const hour = now.getHours();
+  let timeframe;
+  if      (day === 5 && hour >= 15) timeframe = 'this weekend';
+  else if (day === 6)               timeframe = 'this weekend';
+  else if (day === 0)               timeframe = 'today';
+  else if (hour >= 15)              timeframe = 'tomorrow';
+  else                              timeframe = 'today';
+  el.textContent = `Where should you ski ${timeframe}?`;
 }
 
 initialize();

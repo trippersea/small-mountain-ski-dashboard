@@ -18,15 +18,15 @@
     gtag('config', 'G-VK2Q3TTFEW');
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkiDecision — Find the Best Mountain to Ski Next</title>
+  <title>WhereToSkiNext.com — Find the Best Mountain to Ski Next</title>
   <meta name="description" content="Find the best mountain to ski based on live snow forecast, your drive time, pass access, price and crowds. 256 mountains ranked in real time — free, no account needed." />
-  <meta property="og:title" content="SkiDecision — Your Guide to the Slopes" />
+  <meta property="og:title" content="WhereToSkiNext.com — Find Your Next Mountain" />
   <meta property="og:description" content="256 mountains nationwide, live weather, ranked for your weekend. Free, no account needed." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://wheretoskinext.com" />
   <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="SkiDecision — Your Guide to the Slopes" />
+  <meta name="twitter:title" content="WhereToSkiNext.com — Find Your Next Mountain" />
   <meta name="twitter:description" content="256 mountains nationwide, live weather, ranked for your weekend. Free, no account needed." />
   <meta name="twitter:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
   <link rel="canonical" href="https://wheretoskinext.com/" />
@@ -35,14 +35,15 @@
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap&font-display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
   <link id="leafletCss" rel="stylesheet" href="" />
   <link rel="stylesheet" href="styles.css" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "SkiDecision",
+    "name": "WhereToSkiNext.com",
     "url": "https://wheretoskinext.com",
     "description": "256 ski mountains ranked in real time by snow forecast, drive time, pass access and crowds. Free, no account needed.",
     "applicationCategory": "SportsApplication",
@@ -78,14 +79,14 @@
 
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
-      <span class="nav-brand">SkiDecision</span>
+      <span class="nav-brand">WhereToSkiNext.com</span>
       <div class="nav-divider"></div>
       <a href="#verdictSection" class="nav-cta" id="navVerdictLink">My Pick</a>
       <a href="#compareSection" class="nav-cta nav-cta-db" id="navDbLink">Compare</a>
       <div class="nav-divider"></div>
       <a href="#stormSection" class="nav-secondary">Storm Chaser</a>
       <a href="#hiddenGemSection" class="nav-secondary">Hidden Gems</a>
-      <a href="/about.html" class="nav-secondary">About</a>
+      <a href="/about/" class="nav-secondary">About</a>
       <button class="btn-ghost nav-share" onclick="copyShareLink()">Share</button>
     </div>
   </nav>
@@ -123,11 +124,11 @@
       <div class="hero-search-shell">
         <div class="hero-search-inner">
           <div class="hero-brand-row hero-brand-row-centered">
-            <div class="hero-brand-name">SkiDecision</div>
-            <div class="hero-brand-tag">Your Guide to the Slopes</div>
+            <div class="hero-brand-name">WhereToSkiNext.com</div>
+            <div class="hero-brand-tag">SkiDecision — Your Guide to the Slopes</div>
           </div>
 
-          <h1 class="hero-headline">Where should you ski tomorrow?</h1>
+          <h1 id="heroHeadline" class="hero-headline">Where should you ski this weekend?</h1>
           <div class="hero-subhead">Compare snow, drive time, pass access, price, and crowds in one search.</div>
 
           <div class="hero-search-bar hero-search-bar-unified">
@@ -484,14 +485,14 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
 
   </div>
 
-  <script src="resorts-national.js"></script>
-  <script src="sd-data.js"></script>
-  <script src="sd-scoring.js"></script>
-  <script src="sd-filters.js"></script>
-  <script src="sd-app.js"></script>
+  <script defer src="resorts-national.js"></script>
+  <script defer src="sd-data.js"></script>
+  <script defer src="sd-scoring.js"></script>
+  <script defer src="sd-filters.js"></script>
+  <script defer src="sd-app.js"></script>
 
   <footer class="site-footer">
-    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about.html">About</a> &middot; <a href="/privacy/">Privacy Policy</a></p>
+    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a></p>
   </footer>
 </body>
 </html>
