@@ -653,7 +653,7 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText } = v;
   const brief        = buildDecisionBrief(resorts);
-  const runningItems = brief.top5.filter(item => item.resort.id !== resort.id).slice(0, 4);
+  const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
   const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
 
   const tierConfig = {
@@ -997,28 +997,13 @@ function renderCompareTable(resorts) {
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
     const crowd    = crowdForecast(resort).label;
-
-    // Encode score components safely for tooltip (base64 avoids quote conflicts)
-    const bdAttr = breakdown ? (() => {
-      const c = breakdown.components;
-      const bd = JSON.stringify({
-        snow:       +c.snow.toFixed(1),
-        skiability: +c.skiability.toFixed(1),
-        fit:        +c.fit.toFixed(1),
-        drive:      +c.drive.toFixed(1),
-        value:      +c.value.toFixed(1),
-        crowd:      +c.crowd.toFixed(1),
-      });
-      return `data-bd="${btoa(bd)}"`;
-    })() : '';
-
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td><div class="row-name">${esc(resort.name)}</div></td>
         <td>${esc(resort.state)}</td>
         <td>${esc(resort.passGroup)}</td>
-        <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" aria-label="Score ${planner} — click for breakdown">${planner}</span></td>
+        <td><span class="score-badge ${scoreCls}">${planner}</span></td>
         <td>${storm}</td>
         <td class="hist-cell">${histCell}</td>
         <td>${formatDrive(resort.id)}</td>
@@ -1691,25 +1676,41 @@ function wireEvents() {
     });
   });
 
-  if (els.passFilter) els.passFilter.addEventListener('change', e => { state.passFilter = e.target.value; state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter; savePlannerState(); syncPlannerControls(); pushUrlDebounced(); render(); });
-  els.stateFilter.addEventListener('change', e => { state.stateFilter = e.target.value; pushUrlDebounced(); render(); });
+  if (els.passFilter) els.passFilter.addEventListener('change', e => {
+    state.passFilter = e.target.value;
+    state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter;
+    trackEvent('pass_selected', { pass_type: String(state.passFilter), source: 'compare_filter' });
+    savePlannerState(); syncPlannerControls(); pushUrlDebounced(); render();
+  });
+  els.stateFilter.addEventListener('change', e => {
+    state.stateFilter = e.target.value;
+    trackEvent('filter_applied', { filter_type: 'state', filter_value: String(e.target.value) });
+    pushUrlDebounced(); render();
+  });
 
   const _howFarEl = document.getElementById('howFarFilter');
   if (_howFarEl) _howFarEl.addEventListener('change', e => {
     state.howFar = Number(e.target.value);
+    trackEvent('filter_applied', { filter_type: 'distance', filter_value: String(e.target.value), filter_label: _howFarEl.options[_howFarEl.selectedIndex]?.text || '' });
     if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
     pushUrlDebounced(); render(); updateFilterBadge();
   });
 
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
     state.priceRange = Number(e.target.value); state.maxPrice = 0;
+    trackEvent('filter_applied', { filter_type: 'price', filter_value: String(e.target.value), filter_label: els.maxPriceFilter.options[els.maxPriceFilter.selectedIndex]?.text || '' });
     pushUrlDebounced(); render();
   });
-  els.sortBy.addEventListener('change', e => { state.sortBy = e.target.value; pushUrlDebounced(); render(); });
+  els.sortBy.addEventListener('change', e => {
+    state.sortBy = e.target.value;
+    trackEvent('filter_applied', { filter_type: 'sort', filter_value: String(e.target.value) });
+    pushUrlDebounced(); render();
+  });
   els.toggleNight.addEventListener('click', () => {
     state.nightOnly = !state.nightOnly;
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
     els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
+    trackEvent('filter_applied', { filter_type: 'night_skiing', filter_value: String(state.nightOnly) });
     pushUrlDebounced(); render();
   });
 
@@ -1805,7 +1806,7 @@ function wireEvents() {
     btn.addEventListener('click', () => {
       state.passPreference = btn.dataset.pass;
       state.passFilter = btn.dataset.pass === 'any' ? 'All' : btn.dataset.pass;
-      trackEvent('pass_selected', { pass_type: btn.dataset.pass });
+      trackEvent('pass_selected', { pass_type: String(btn.dataset.pass), source: 'planner_btn' });
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
     });
   });
@@ -1821,6 +1822,7 @@ function wireEvents() {
   if (els.heroSnowSelect) {
     els.heroSnowSelect.addEventListener('change', () => {
       state.weights.snow = Number(els.heroSnowSelect.value || 1);
+      trackEvent('ski_preference_set', { preference_type: 'snow', preference_value: String(els.heroSnowSelect.value), preference_label: els.heroSnowSelect.options[els.heroSnowSelect.selectedIndex]?.text || '', source: 'hero' });
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
     });
   }
@@ -1921,94 +1923,6 @@ function wireEvents() {
       if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
     }, () => { els.locationStatus.textContent = 'Could not get location'; });
   });
-
-  // ── Score breakdown tooltip ─────────────────────────────────────────────────
-  (function initScoreTooltip() {
-    const tip = document.getElementById('scoreTooltip');
-    if (!tip) return;
-
-    const ROWS = [
-      { key: 'snow',       label: 'Snow',        color: '#2b6de9' },
-      { key: 'skiability', label: 'Skiability',  color: '#16a34a' },
-      { key: 'fit',        label: 'Mountain Fit',color: '#7c3aed' },
-      { key: 'drive',      label: 'Drive',       color: '#0891b2' },
-      { key: 'value',      label: 'Value',       color: '#d97706' },
-      { key: 'crowd',      label: 'Crowds',      color: '#db2777' },
-    ];
-
-    function buildHtml(bd) {
-      const max = 25;
-      const rows = ROWS.map(({ key, label, color }) => {
-        const val = bd[key] ?? 0;
-        const pct = Math.min(100, Math.round((val / max) * 100));
-        return `<div class="stip-row">
-          <span class="stip-label">${label}</span>
-          <div class="stip-bar-track"><div class="stip-bar-fill" style="width:${pct}%;background:${color}"></div></div>
-          <span class="stip-val">${val}</span>
-        </div>`;
-      }).join('');
-      return `<div class="stip-title">Score Breakdown</div>${rows}<div class="stip-note">Each component out of ~25 pts</div>`;
-    }
-
-    function position(badge) {
-      const rect  = badge.getBoundingClientRect();
-      const tipW  = tip.offsetWidth || 230;
-      const tipH  = tip.offsetHeight || 180;
-      const scrollY = window.scrollY;
-      const scrollX = window.scrollX;
-      // Prefer showing above; fall back to below if not enough room
-      const topAbove = rect.top + scrollY - tipH - 8;
-      const topBelow = rect.bottom + scrollY + 8;
-      const top = topAbove >= scrollY + 4 ? topAbove : topBelow;
-      // Center horizontally on badge, clamp to viewport
-      let left = rect.left + scrollX + rect.width / 2 - tipW / 2;
-      left = Math.max(scrollX + 4, Math.min(left, scrollX + window.innerWidth - tipW - 4));
-      tip.style.top  = `${top}px`;
-      tip.style.left = `${left}px`;
-    }
-
-    function show(badge) {
-      const raw = badge.getAttribute('data-bd');
-      if (!raw) return;
-      let bd;
-      try { bd = JSON.parse(atob(raw)); } catch (e) { return; }
-      tip.innerHTML = buildHtml(bd);
-      tip.style.visibility = 'hidden';
-      tip.removeAttribute('hidden');
-      // Position after paint so offsetWidth/Height are available
-      requestAnimationFrame(() => { position(badge); tip.style.visibility = ''; });
-      tip._badge = badge;
-    }
-
-    function hide() { tip.setAttribute('hidden', ''); tip._badge = null; }
-
-    // Hover (desktop)
-    document.addEventListener('mouseover', e => {
-      const b = e.target.closest('.score-badge--tip');
-      if (b) show(b);
-    });
-    document.addEventListener('mouseout', e => {
-      if (!e.target.closest('.score-badge--tip')) return;
-      const to = e.relatedTarget;
-      if (!to?.closest('.score-badge--tip, #scoreTooltip')) hide();
-    });
-    tip.addEventListener('mouseleave', hide);
-
-    // Tap (mobile) — toggle
-    document.addEventListener('click', e => {
-      const b = e.target.closest('.score-badge--tip');
-      if (b) {
-        e.stopPropagation();
-        if (tip._badge === b && !tip.hasAttribute('hidden')) { hide(); return; }
-        show(b);
-        return;
-      }
-      if (!e.target.closest('#scoreTooltip')) hide();
-    });
-
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
-    window.addEventListener('scroll', () => { if (tip._badge && !tip.hasAttribute('hidden')) position(tip._badge); }, { passive: true });
-  })();
 
   // Back to top
   let scrollTicking = false;
