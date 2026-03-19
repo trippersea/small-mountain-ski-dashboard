@@ -19,6 +19,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+    { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/ski-report/:slug", "destination": "/ski-report/:slug/index.html" },
     { "source": "/ski/:state", "destination": "/ski/:state/index.html" }
   ]
