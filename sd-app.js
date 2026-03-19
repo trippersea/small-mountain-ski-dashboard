@@ -926,9 +926,6 @@ function renderCompareTable(resorts) {
   const q = (state.tableSearch || '').trim().toLowerCase();
   const w = normalizedWeights();
 
-  // ── Default view: no origin + sorting by score = sort by avgSnowfall instead
-  const noOriginDefault = !state.origin && state.sortBy === 'planner' && !q;
-
   const decorated = resorts
     .filter(resort => !q || `${resort.name} ${resort.state} ${resort.passGroup}`.toLowerCase().includes(q))
     .map(resort => {
@@ -940,10 +937,7 @@ function renderCompareTable(resorts) {
     });
 
   const dir = tableSort.dir === 'asc' ? 1 : -1;
-  if (noOriginDefault) {
-    // No location set — rank by average snowfall so the table feels alive
-    decorated.sort((a, b) => b.resort.avgSnowfall - a.resort.avgSnowfall);
-  } else if (state.sortBy === 'planner') {
+  if (state.sortBy === 'planner') {
     decorated.sort((a, b) => dir * ((a.breakdown?.score ?? -Infinity) - (b.breakdown?.score ?? -Infinity)));
   } else if (state.sortBy === 'storm') {
     decorated.sort((a, b) => dir * ((a.stormTotal ?? -1) - (b.stormTotal ?? -1)));
@@ -960,8 +954,6 @@ function renderCompareTable(resorts) {
 
   if (q) {
     els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${q}"`;
-  } else if (noOriginDefault) {
-    els.resultCount.textContent = `${total} mountains — sorted by avg snowfall`;
   } else {
     els.resultCount.textContent = state.tableViewAll ? `All ${total} mountains` : `Top 10 of ${total} mountains`;
   }
@@ -999,16 +991,7 @@ function renderCompareTable(resorts) {
     return;
   }
 
-  els.comparisonBody.innerHTML = (noOriginDefault ? `
-    <tr class="table-location-nudge">
-      <td colspan="12">
-        <div class="tln-inner">
-          <span class="tln-icon">📍</span>
-          <span class="tln-text">Enter your starting location above to rank by live snow forecast, drive time, and your preferences.</span>
-          <button class="tln-btn" onclick="document.getElementById('originInput')?.focus();document.querySelector('.hero-search')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location →</button>
-        </div>
-      </td>
-    </tr>` : '') + displayed.map(({ resort, breakdown, stormTotal, hist }) => {
+  els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }) => {
     const rawScore = breakdown ? breakdown.score : null;
     const planner  = rawScore !== null ? Math.round(rawScore) : '—';
     const scoreCls = scoreBadgeClass(rawScore);
@@ -1434,14 +1417,7 @@ function renderMobileCards(decorated) {
     return;
   }
   const passColors = { Epic:'#1a4fa8', Ikon:'#c8a84b', Indy:'#2d7a3a', Independent:'#6b5e7a' };
-  const noOriginMobile = !state.origin && state.sortBy === 'planner';
-  const nudgeHtml = noOriginMobile ? `
-    <div class="mob-location-nudge">
-      <span>📍</span>
-      <span>Enter your location to rank by live snow + drive time</span>
-      <button onclick="document.getElementById('originInput')?.focus();window.scrollTo({top:0,behavior:'smooth'})">Set location →</button>
-    </div>` : '';
-  els.mobileCardGrid.innerHTML = nudgeHtml + items.map(({ resort, breakdown, stormTotal }) => {
+  els.mobileCardGrid.innerHTML = items.map(({ resort, breakdown, stormTotal }) => {
     const score     = breakdown ? Math.round(breakdown.score) : null;
     const storm     = stormTotal !== null ? stormTotal.toFixed(1) + '"' : '…';
     const drive     = formatDrive(resort.id);
