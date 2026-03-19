@@ -997,13 +997,28 @@ function renderCompareTable(resorts) {
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
     const crowd    = crowdForecast(resort).label;
+
+    // Build score breakdown data for tooltip
+    const bdAttr = breakdown ? (() => {
+      const c = breakdown.components;
+      const bd = JSON.stringify({
+        snow:       +c.snow.toFixed(1),
+        skiability: +c.skiability.toFixed(1),
+        fit:        +c.fit.toFixed(1),
+        drive:      +c.drive.toFixed(1),
+        value:      +c.value.toFixed(1),
+        crowd:      +c.crowd.toFixed(1),
+      });
+      return `data-bd='${bd}'`;
+    })() : '';
+
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td><div class="row-name">${esc(resort.name)}</div></td>
         <td>${esc(resort.state)}</td>
         <td>${esc(resort.passGroup)}</td>
-        <td><span class="score-badge ${scoreCls}">${planner}</span></td>
+        <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" role="button" aria-label="Score breakdown">${planner}</span></td>
         <td>${storm}</td>
         <td class="hist-cell">${histCell}</td>
         <td>${formatDrive(resort.id)}</td>
@@ -1906,6 +1921,87 @@ function wireEvents() {
       if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
     }, () => { els.locationStatus.textContent = 'Could not get location'; });
   });
+
+  // ── Score breakdown tooltip ─────────────────────────────────────────────────
+  (function initScoreTooltip() {
+    const tip = document.getElementById('scoreTooltip');
+    if (!tip) return;
+
+    const LABELS = [
+      { key: 'snow',       label: '❅ Snow',        color: '#2b6de9' },
+      { key: 'skiability', label: '⛷ Skiability',   color: '#16a34a' },
+      { key: 'fit',        label: '🏔 Mountain Fit', color: '#7c3aed' },
+      { key: 'drive',      label: '🚗 Drive',        color: '#0891b2' },
+      { key: 'value',      label: '💰 Value',        color: '#d97706' },
+      { key: 'crowd',      label: '👥 Crowds',       color: '#db2777' },
+    ];
+
+    function buildTipHtml(bd) {
+      const max = 25;
+      return `<div class="stip-title">Score Breakdown</div>` +
+        LABELS.map(({ key, label, color }) => {
+          const val = bd[key] ?? 0;
+          const pct = Math.min(100, Math.round((val / max) * 100));
+          return `<div class="stip-row">
+            <span class="stip-label">${label}</span>
+            <div class="stip-bar-track">
+              <div class="stip-bar-fill" style="width:${pct}%;background:${color}"></div>
+            </div>
+            <span class="stip-val">${val}</span>
+          </div>`;
+        }).join('') +
+        `<div class="stip-note">Each component scored out of ~25 pts</div>`;
+    }
+
+    function showTip(badge) {
+      const raw = badge.getAttribute('data-bd');
+      if (!raw) return;
+      let bd;
+      try { bd = JSON.parse(raw); } catch (e) { return; }
+      tip.innerHTML = buildTipHtml(bd);
+      tip.removeAttribute('hidden');
+      const rect = badge.getBoundingClientRect();
+      const tipW = 230;
+      const left = Math.min(
+        rect.left + window.scrollX + rect.width / 2 - tipW / 2,
+        window.innerWidth + window.scrollX - tipW - 8
+      );
+      tip.style.left = `${Math.max(8, left)}px`;
+      tip.style.top  = `${rect.top + window.scrollY - 8}px`;
+      requestAnimationFrame(() => {
+        const tipH = tip.offsetHeight;
+        const topPos = rect.top + window.scrollY - tipH - 8;
+        tip.style.top = topPos < window.scrollY + 8
+          ? `${rect.bottom + window.scrollY + 8}px`
+          : `${topPos}px`;
+      });
+    }
+
+    function hideTip() { tip.setAttribute('hidden', ''); }
+
+    document.addEventListener('mouseover', e => {
+      const badge = e.target.closest('.score-badge--tip');
+      if (badge) showTip(badge);
+    });
+    document.addEventListener('mouseout', e => {
+      if (e.target.closest('.score-badge--tip') && !e.relatedTarget?.closest('.score-badge--tip, #scoreTooltip')) hideTip();
+    });
+    tip.addEventListener('mouseleave', hideTip);
+
+    document.addEventListener('click', e => {
+      const badge = e.target.closest('.score-badge--tip');
+      if (badge) {
+        e.stopPropagation();
+        if (!tip.hasAttribute('hidden') && tip._activeBadge === badge) { hideTip(); return; }
+        tip._activeBadge = badge;
+        showTip(badge);
+        return;
+      }
+      hideTip();
+    });
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
+  })();
 
   // Back to top
   let scrollTicking = false;

@@ -66,6 +66,87 @@
     .score-control--full .priority-btns {
       justify-content: center;
     }
+    /* ── Score breakdown tooltip ─────────────────────────────────────────── */
+    #scoreTooltip {
+      position: absolute;
+      z-index: 9999;
+      width: 230px;
+      background: #fff;
+      border: 1px solid var(--border, #d6e1f0);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 8px 28px rgba(30,60,100,.14);
+      pointer-events: auto;
+    }
+    #scoreTooltip[hidden] { display: none; }
+    .stip-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--muted, #667a96);
+      margin-bottom: 10px;
+    }
+    .stip-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 7px;
+    }
+    .stip-label {
+      font-size: 12px; color: var(--text, #1b2a3a);
+      width: 96px; flex-shrink: 0; white-space: nowrap;
+    }
+    .stip-bar-track {
+      flex: 1; height: 6px; background: var(--border, #d6e1f0);
+      border-radius: 99px; overflow: hidden;
+    }
+    .stip-bar-fill { height: 100%; border-radius: 99px; transition: width .3s; }
+    .stip-val {
+      font-size: 12px; font-weight: 700; color: var(--text, #1b2a3a);
+      width: 26px; text-align: right; flex-shrink: 0;
+    }
+    .stip-note {
+      font-size: 11px; color: var(--muted, #667a96);
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid var(--border, #d6e1f0);
+    }
+    .score-badge--tip { cursor: pointer; }
+    .score-badge--tip:hover { opacity: .85; transform: scale(1.06); transition: transform .1s, opacity .1s; }
+
+    /* ── AI toggle ───────────────────────────────────────────────────────── */
+    .hero-ai-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: none; padding: 0;
+      font: 600 13px/1 inherit; color: var(--muted, #667a96);
+      cursor: pointer; margin-bottom: 0;
+      transition: color .12s;
+    }
+    .hero-ai-toggle:hover { color: var(--accent, #2b6de9); }
+    .hero-ai-chevron {
+      transition: transform .2s ease;
+      flex-shrink: 0;
+    }
+    .hero-ai-toggle[aria-expanded="true"] .hero-ai-chevron {
+      transform: rotate(180deg);
+    }
+    .hero-ai-panel {
+      margin-top: 10px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .hero-ai-panel[hidden] { display: none; }
+    .hero-ai-examples {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .ai-example-chip {
+      background: var(--panel-2, #edf4ff);
+      border: 1px solid var(--border, #d6e1f0);
+      border-radius: 999px;
+      padding: 6px 13px;
+      font: 600 12px/1 inherit;
+      color: var(--accent, #2b6de9);
+      cursor: pointer;
+      transition: background .12s, border-color .12s;
+      white-space: nowrap;
+    }
+    .ai-example-chip:hover {
+      background: #dbeafe; border-color: var(--accent, #2b6de9);
+    }
   </style>
 </head>
 <body>
@@ -76,6 +157,7 @@
   <a href="#compareSection" class="skip-to-content">Skip to mountain list</a>
   <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
   <div id="sliderTooltip" class="slider-tooltip" role="tooltip"></div>
+  <div id="scoreTooltip" hidden role="tooltip" aria-live="polite"></div>
 
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
@@ -192,18 +274,30 @@
           </aside>
 
           <div class="hero-ai-row hero-ai-row-premium">
-            <span class="hero-ai-label">Or describe your perfect ski day</span>
-            <div class="hero-ai-input-row">
-              <input
-                id="aiChatInput"
-                type="text"
-                class="ai-chat-input hero-ai-input"
-                placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
-                aria-label="Describe your ideal ski day"
-              />
-              <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+            <button class="hero-ai-toggle" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">
+              Or describe your perfect ski day
+              <svg class="hero-ai-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div id="aiChatPanel" class="hero-ai-panel" hidden>
+              <div class="hero-ai-examples" aria-label="Example prompts">
+                <button class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">❅ Powder near Boston</button>
+                <button class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">👨‍👩‍👧 Family trip from NYC</button>
+                <button class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">💎 Hidden gem, low crowds</button>
+              </div>
+              <div class="hero-ai-input-row">
+                <input
+                  id="aiChatInput"
+                  type="text"
+                  class="ai-chat-input hero-ai-input"
+                  placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
+                  aria-label="Describe your ideal ski day"
+                />
+                <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+              </div>
+              <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
             </div>
-            <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
           </div>
         </div>
       </div>
@@ -507,6 +601,34 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
   <script defer src="sd-scoring.js"></script>
   <script defer src="sd-filters.js"></script>
   <script defer src="sd-app.js"></script>
+  <script>
+    // ── AI panel toggle ──────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.getElementById('aiToggleBtn');
+      const panel     = document.getElementById('aiChatPanel');
+      if (toggleBtn && panel) {
+        toggleBtn.addEventListener('click', function() {
+          const open = toggleBtn.getAttribute('aria-expanded') === 'true';
+          toggleBtn.setAttribute('aria-expanded', String(!open));
+          panel.hidden = open;
+          if (!open) {
+            setTimeout(() => document.getElementById('aiChatInput')?.focus(), 50);
+          }
+        });
+      }
+
+      // ── Example chips pre-fill input ────────────────────────────────────
+      document.querySelectorAll('.ai-example-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          const input = document.getElementById('aiChatInput');
+          if (input) {
+            input.value = chip.getAttribute('data-prompt');
+            input.focus();
+          }
+        });
+      });
+    });
+  </script>
 
   <footer class="site-footer">
     <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a></p>
