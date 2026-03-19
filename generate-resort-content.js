@@ -274,6 +274,32 @@ function enrichPage(filePath, r) {
   return html;
 }
 
+// ─── Find nearby resorts by same state + similar vertical ─────────────────────
+function findNearby(resort, allResorts, count = 3) {
+  return allResorts
+    .filter(r => r.id !== resort.id && r.state === resort.state)
+    .sort((a, b) => Math.abs(a.vertical - resort.vertical) - Math.abs(b.vertical - resort.vertical))
+    .slice(0, count);
+}
+
+// ─── Build smart compare CTA HTML ─────────────────────────────────────────────
+function buildCompareCTA(resort, nearby) {
+  const ids     = [resort.id, ...nearby.map(r => r.id)].join(',');
+  const url     = `https://www.wheretoskinext.com/?compare=${ids}`;
+  const names   = nearby.map(r => r.name).join(', ');
+  return `
+    <div style="background:linear-gradient(135deg,#edf4ff,#f7fbff);border:1.5px solid #bfdbfe;border-radius:16px;padding:20px 24px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:#1e40af;margin-bottom:4px;">How does ${resort.name} stack up?</div>
+        <div style="font-size:13px;color:#1d4ed8;">Compare side-by-side with ${names} — snow, drive time, crowds, and more.</div>
+      </div>
+      <a href="${url}" style="display:inline-flex;align-items:center;gap:6px;background:#2b6de9;color:#fff;border-radius:999px;padding:10px 20px;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap;box-shadow:0 4px 14px rgba(43,109,233,.3);">
+        Compare Mountains
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>`;
+}
+
 // ─── CSS to add for Best For section ─────────────────────────────────────────
 const FIT_CSS = `
   <style>
@@ -301,6 +327,18 @@ for (const resort of RESORTS) {
     // Inject CSS once per page if not already there
     if (!html.includes('resort-fit-section')) {
       html = html.replace('</head>', FIT_CSS + '\n</head>');
+    }
+
+    // Replace the existing live-banner CTA with the smart compare CTA
+    const nearby   = findNearby(resort, RESORTS, 3);
+    const compareCTA = buildCompareCTA(resort, nearby);
+
+    // Replace existing live-banner div if present
+    html = html.replace(/<div class="live-banner">[\s\S]*?<\/div>\s*<\/div>/m, compareCTA);
+
+    // If no live-banner found, inject before the stats grid
+    if (!html.includes('Compare Mountains') && html.includes('class="stats-grid"')) {
+      html = html.replace('<div class="stats-grid"', compareCTA + '<div class="stats-grid"');
     }
 
     fs.writeFileSync(filePath, html, 'utf8');
