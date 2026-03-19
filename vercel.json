@@ -1,6 +1,12 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [{ "key": "Content-Type", "value": "application/xml" }]
+    }
+  ],
   "redirects": [
     {
       "source": "/about.html",
@@ -11,16 +17,9 @@
       "source": "/report/:slug",
       "destination": "/ski-report/:slug",
       "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "destination": "https://www.wheretoskinext.com/:path*",
-      "permanent": true
     }
   ],
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
-    { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/ski-report/:slug", "destination": "/ski-report/:slug/index.html" },
     { "source": "/ski/:state", "destination": "/ski/:state/index.html" }
   ]
