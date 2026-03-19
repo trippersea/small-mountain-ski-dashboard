@@ -653,7 +653,7 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText } = v;
   const brief        = buildDecisionBrief(resorts);
-  const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
+  const runningItems = brief.top5.filter(item => item.resort.id !== resort.id).slice(0, 4);
   const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
 
   const tierConfig = {
@@ -998,7 +998,7 @@ function renderCompareTable(resorts) {
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
     const crowd    = crowdForecast(resort).label;
 
-    // Build score breakdown data for tooltip
+    // Encode score components safely for tooltip (base64 avoids quote conflicts)
     const bdAttr = breakdown ? (() => {
       const c = breakdown.components;
       const bd = JSON.stringify({
@@ -1009,7 +1009,7 @@ function renderCompareTable(resorts) {
         value:      +c.value.toFixed(1),
         crowd:      +c.crowd.toFixed(1),
       });
-      return `data-bd='${bd}'`;
+      return `data-bd="${btoa(bd)}"`;
     })() : '';
 
     return `
@@ -1018,7 +1018,7 @@ function renderCompareTable(resorts) {
         <td><div class="row-name">${esc(resort.name)}</div></td>
         <td>${esc(resort.state)}</td>
         <td>${esc(resort.passGroup)}</td>
-        <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" role="button" aria-label="Score breakdown">${planner}</span></td>
+        <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" aria-label="Score ${planner} — click for breakdown">${planner}</span></td>
         <td>${storm}</td>
         <td class="hist-cell">${histCell}</td>
         <td>${formatDrive(resort.id)}</td>
@@ -1927,80 +1927,87 @@ function wireEvents() {
     const tip = document.getElementById('scoreTooltip');
     if (!tip) return;
 
-    const LABELS = [
-      { key: 'snow',       label: '❅ Snow',        color: '#2b6de9' },
-      { key: 'skiability', label: '⛷ Skiability',   color: '#16a34a' },
-      { key: 'fit',        label: '🏔 Mountain Fit', color: '#7c3aed' },
-      { key: 'drive',      label: '🚗 Drive',        color: '#0891b2' },
-      { key: 'value',      label: '💰 Value',        color: '#d97706' },
-      { key: 'crowd',      label: '👥 Crowds',       color: '#db2777' },
+    const ROWS = [
+      { key: 'snow',       label: 'Snow',        color: '#2b6de9' },
+      { key: 'skiability', label: 'Skiability',  color: '#16a34a' },
+      { key: 'fit',        label: 'Mountain Fit',color: '#7c3aed' },
+      { key: 'drive',      label: 'Drive',       color: '#0891b2' },
+      { key: 'value',      label: 'Value',       color: '#d97706' },
+      { key: 'crowd',      label: 'Crowds',      color: '#db2777' },
     ];
 
-    function buildTipHtml(bd) {
+    function buildHtml(bd) {
       const max = 25;
-      return `<div class="stip-title">Score Breakdown</div>` +
-        LABELS.map(({ key, label, color }) => {
-          const val = bd[key] ?? 0;
-          const pct = Math.min(100, Math.round((val / max) * 100));
-          return `<div class="stip-row">
-            <span class="stip-label">${label}</span>
-            <div class="stip-bar-track">
-              <div class="stip-bar-fill" style="width:${pct}%;background:${color}"></div>
-            </div>
-            <span class="stip-val">${val}</span>
-          </div>`;
-        }).join('') +
-        `<div class="stip-note">Each component scored out of ~25 pts</div>`;
+      const rows = ROWS.map(({ key, label, color }) => {
+        const val = bd[key] ?? 0;
+        const pct = Math.min(100, Math.round((val / max) * 100));
+        return `<div class="stip-row">
+          <span class="stip-label">${label}</span>
+          <div class="stip-bar-track"><div class="stip-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+          <span class="stip-val">${val}</span>
+        </div>`;
+      }).join('');
+      return `<div class="stip-title">Score Breakdown</div>${rows}<div class="stip-note">Each component out of ~25 pts</div>`;
     }
 
-    function showTip(badge) {
+    function position(badge) {
+      const rect  = badge.getBoundingClientRect();
+      const tipW  = tip.offsetWidth || 230;
+      const tipH  = tip.offsetHeight || 180;
+      const scrollY = window.scrollY;
+      const scrollX = window.scrollX;
+      // Prefer showing above; fall back to below if not enough room
+      const topAbove = rect.top + scrollY - tipH - 8;
+      const topBelow = rect.bottom + scrollY + 8;
+      const top = topAbove >= scrollY + 4 ? topAbove : topBelow;
+      // Center horizontally on badge, clamp to viewport
+      let left = rect.left + scrollX + rect.width / 2 - tipW / 2;
+      left = Math.max(scrollX + 4, Math.min(left, scrollX + window.innerWidth - tipW - 4));
+      tip.style.top  = `${top}px`;
+      tip.style.left = `${left}px`;
+    }
+
+    function show(badge) {
       const raw = badge.getAttribute('data-bd');
       if (!raw) return;
       let bd;
-      try { bd = JSON.parse(raw); } catch (e) { return; }
-      tip.innerHTML = buildTipHtml(bd);
+      try { bd = JSON.parse(atob(raw)); } catch (e) { return; }
+      tip.innerHTML = buildHtml(bd);
+      tip.style.visibility = 'hidden';
       tip.removeAttribute('hidden');
-      const rect = badge.getBoundingClientRect();
-      const tipW = 230;
-      const left = Math.min(
-        rect.left + window.scrollX + rect.width / 2 - tipW / 2,
-        window.innerWidth + window.scrollX - tipW - 8
-      );
-      tip.style.left = `${Math.max(8, left)}px`;
-      tip.style.top  = `${rect.top + window.scrollY - 8}px`;
-      requestAnimationFrame(() => {
-        const tipH = tip.offsetHeight;
-        const topPos = rect.top + window.scrollY - tipH - 8;
-        tip.style.top = topPos < window.scrollY + 8
-          ? `${rect.bottom + window.scrollY + 8}px`
-          : `${topPos}px`;
-      });
+      // Position after paint so offsetWidth/Height are available
+      requestAnimationFrame(() => { position(badge); tip.style.visibility = ''; });
+      tip._badge = badge;
     }
 
-    function hideTip() { tip.setAttribute('hidden', ''); }
+    function hide() { tip.setAttribute('hidden', ''); tip._badge = null; }
 
+    // Hover (desktop)
     document.addEventListener('mouseover', e => {
-      const badge = e.target.closest('.score-badge--tip');
-      if (badge) showTip(badge);
+      const b = e.target.closest('.score-badge--tip');
+      if (b) show(b);
     });
     document.addEventListener('mouseout', e => {
-      if (e.target.closest('.score-badge--tip') && !e.relatedTarget?.closest('.score-badge--tip, #scoreTooltip')) hideTip();
+      if (!e.target.closest('.score-badge--tip')) return;
+      const to = e.relatedTarget;
+      if (!to?.closest('.score-badge--tip, #scoreTooltip')) hide();
     });
-    tip.addEventListener('mouseleave', hideTip);
+    tip.addEventListener('mouseleave', hide);
 
+    // Tap (mobile) — toggle
     document.addEventListener('click', e => {
-      const badge = e.target.closest('.score-badge--tip');
-      if (badge) {
+      const b = e.target.closest('.score-badge--tip');
+      if (b) {
         e.stopPropagation();
-        if (!tip.hasAttribute('hidden') && tip._activeBadge === badge) { hideTip(); return; }
-        tip._activeBadge = badge;
-        showTip(badge);
+        if (tip._badge === b && !tip.hasAttribute('hidden')) { hide(); return; }
+        show(b);
         return;
       }
-      hideTip();
+      if (!e.target.closest('#scoreTooltip')) hide();
     });
 
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+    window.addEventListener('scroll', () => { if (tip._badge && !tip.hasAttribute('hidden')) position(tip._badge); }, { passive: true });
   })();
 
   // Back to top
