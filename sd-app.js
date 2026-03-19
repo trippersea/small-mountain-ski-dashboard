@@ -118,7 +118,8 @@ function debounce(fn, ms) {
 // ─── Analytics helper ─────────────────────────────────────────────────────────
 function trackEvent(eventName, params = {}) {
   try {
-    gtag('event', eventName, params);
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: eventName, ...params });
   } catch (e) {}
 }
 
@@ -1815,7 +1816,7 @@ function wireEvents() {
     els.heroPassSelect.addEventListener('change', () => {
       state.passFilter = els.heroPassSelect.value || 'All';
       state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter;
-      trackEvent('pass_selected', { pass_type: state.passFilter, source: 'hero' });
+      trackEvent('pass_selected', { pass_type: String(state.passFilter), source: 'hero' });
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
     });
   }
