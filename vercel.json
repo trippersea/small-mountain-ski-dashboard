@@ -10,7 +10,12 @@
     {
       "source": "/report/:slug",
       "destination": "/ski-report/:slug",
-      "permanent": false
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://www.wheretoskinext.com/:path*",
+      "permanent": true
     }
   ],
   "rewrites": [
