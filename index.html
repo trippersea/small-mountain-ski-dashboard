@@ -21,7 +21,7 @@
   <meta name="twitter:title" content="WhereToSkiNext.com — Find Your Next Mountain" />
   <meta name="twitter:description" content="256 mountains nationwide, live weather, ranked for your weekend. Free, no account needed." />
   <meta name="twitter:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
-  <link rel="canonical" href="https://wheretoskinext.com/" />
+  <link rel="canonical" href="https://www.wheretoskinext.com/" />
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   <link rel="icon" href="ski-decision-logo.png" type="image/png" />
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
@@ -71,10 +71,7 @@
       pointer-events: auto;
     }
     #scoreTooltip[hidden] { display: none; }
-    .stip-title {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .06em; color: #667a96; margin-bottom: 10px;
-    }
+    .stip-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #667a96; margin-bottom: 10px; }
     .stip-row { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
     .stip-label { font-size: 12px; color: #1b2a3a; width: 88px; flex-shrink: 0; }
     .stip-bar-track { flex: 1; height: 6px; background: #d6e1f0; border-radius: 99px; overflow: hidden; }
@@ -83,6 +80,28 @@
     .stip-note { font-size: 11px; color: #667a96; margin-top: 8px; padding-top: 8px; border-top: 1px solid #d6e1f0; }
     .score-badge--tip { cursor: pointer; transition: transform .1s, opacity .1s; }
     .score-badge--tip:hover { opacity: .82; transform: scale(1.08); }
+
+    /* ── AI toggle + panel ───────────────────────────────────────────────── */
+    .hero-ai-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: none; padding: 0;
+      font: 600 13px/1 inherit; color: var(--muted, #667a96);
+      cursor: pointer; transition: color .12s;
+    }
+    .hero-ai-toggle:hover { color: var(--accent, #2b6de9); }
+    .hero-ai-chevron { transition: transform .2s ease; flex-shrink: 0; }
+    .hero-ai-toggle[aria-expanded="true"] .hero-ai-chevron { transform: rotate(180deg); }
+    .hero-ai-panel { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .hero-ai-panel[hidden] { display: none; }
+    .hero-ai-examples { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ai-example-chip {
+      background: var(--panel-2, #edf4ff);
+      border: 1px solid var(--border, #d6e1f0);
+      border-radius: 999px; padding: 6px 13px;
+      font: 600 12px/1 inherit; color: var(--accent, #2b6de9);
+      cursor: pointer; transition: background .12s, border-color .12s; white-space: nowrap;
+    }
+    .ai-example-chip:hover { background: #dbeafe; border-color: var(--accent, #2b6de9); }
   </style>
 </head>
 <body>
@@ -210,18 +229,30 @@
           </aside>
 
           <div class="hero-ai-row hero-ai-row-premium">
-            <span class="hero-ai-label">Or describe your perfect ski day</span>
-            <div class="hero-ai-input-row">
-              <input
-                id="aiChatInput"
-                type="text"
-                class="ai-chat-input hero-ai-input"
-                placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
-                aria-label="Describe your ideal ski day"
-              />
-              <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+            <button class="hero-ai-toggle" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">
+              Or describe your perfect ski day
+              <svg class="hero-ai-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div id="aiChatPanel" class="hero-ai-panel" hidden>
+              <div class="hero-ai-examples">
+                <button class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
+                <button class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
+                <button class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">Hidden gem, low crowds</button>
+              </div>
+              <div class="hero-ai-input-row">
+                <input
+                  id="aiChatInput"
+                  type="text"
+                  class="ai-chat-input hero-ai-input"
+                  placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"'
+                  aria-label="Describe your ideal ski day"
+                />
+                <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+              </div>
+              <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
             </div>
-            <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
           </div>
         </div>
       </div>
@@ -525,6 +556,28 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
   <script defer src="sd-scoring.js"></script>
   <script defer src="sd-filters.js"></script>
   <script defer src="sd-app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // AI panel toggle
+      var toggleBtn = document.getElementById('aiToggleBtn');
+      var panel     = document.getElementById('aiChatPanel');
+      if (toggleBtn && panel) {
+        toggleBtn.addEventListener('click', function () {
+          var open = toggleBtn.getAttribute('aria-expanded') === 'true';
+          toggleBtn.setAttribute('aria-expanded', String(!open));
+          panel.hidden = open;
+          if (!open) setTimeout(function () { document.getElementById('aiChatInput')?.focus(); }, 50);
+        });
+      }
+      // Example chips pre-fill input
+      document.querySelectorAll('.ai-example-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var input = document.getElementById('aiChatInput');
+          if (input) { input.value = chip.getAttribute('data-prompt'); input.focus(); }
+        });
+      });
+    });
+  </script>
 
   <footer class="site-footer">
     <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a></p>
