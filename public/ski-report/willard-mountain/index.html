@@ -1,318 +1,4 @@
-#!/usr/bin/env node
-// ═══════════════════════════════════════════════════════════════════════════════
-// generate-mountain-pages.mjs  — UPDATED v2
-//
-// Changes from v1:
-//  1. Dark navy hero with live OpenMeteo snow fetch above the fold
-//  2. Skier Matcher widget (2-question → Yes/No/Maybe verdict + CTA)
-//  3. Nearby cards now show avg snowfall delta vs this resort
-//  4. Mid-page CTA moved to AFTER editorial (not before)
-//  5. Trust signals: freshness date, "No account needed · Free forever"
-//
-// Usage:  node generate-mountain-pages.mjs
-// Output: ./public/ski-report/{resort-id}/index.html  (~256 files)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-import fs   from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// ─── Load resort data ──────────────────────────────────────────────────────────
-import { createRequire } from 'module';
-const _require = createRequire(import.meta.url);
-const vm = _require('vm');
-
-function loadResorts() {
-  const sdData = fs.readFileSync(path.join(__dirname, 'sd-data.js'), 'utf8');
-  const neCtx = {};
-  vm.runInNewContext(sdData + '\nglobalThis.__out = RESORTS_NE;', neCtx);
-  const resortsNE = neCtx.__out || [];
-  if (!resortsNE.length) throw new Error('Could not load RESORTS_NE from sd-data.js');
-
-  let resortsNational = [];
-  const nationalPath = path.join(__dirname, 'resorts-national.js');
-  if (fs.existsSync(nationalPath)) {
-    try {
-      const nationalData = fs.readFileSync(nationalPath, 'utf8');
-      const natCtx = {};
-      vm.runInNewContext(nationalData + '\nglobalThis.__out = RESORTS_NATIONAL;', natCtx);
-      resortsNational = natCtx.__out || [];
-    } catch (e) {
-      console.warn('Warning: could not load resorts-national.js:', e.message);
-    }
-  }
-
-  return [...resortsNE, ...resortsNational];
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function esc(s) {
-  return String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function passLabel(pg) {
-  return { Epic: 'Epic Pass', Ikon: 'Ikon Pass', Indy: 'Indy Pass', Independent: 'Independent' }[pg] || pg;
-}
-
-function stateFullName(abbr) {
-  const names = {
-    AL:'Alabama', AK:'Alaska', AZ:'Arizona', AR:'Arkansas', CA:'California',
-    CO:'Colorado', CT:'Connecticut', DE:'Delaware', FL:'Florida', GA:'Georgia',
-    HI:'Hawaii', ID:'Idaho', IL:'Illinois', IN:'Indiana', IA:'Iowa', KS:'Kansas',
-    KY:'Kentucky', LA:'Louisiana', ME:'Maine', MD:'Maryland', MA:'Massachusetts',
-    MI:'Michigan', MN:'Minnesota', MS:'Mississippi', MO:'Missouri', MT:'Montana',
-    NE:'Nebraska', NV:'Nevada', NH:'New Hampshire', NJ:'New Jersey', NM:'New Mexico',
-    NY:'New York', NC:'North Carolina', ND:'North Dakota', OH:'Ohio', OK:'Oklahoma',
-    OR:'Oregon', PA:'Pennsylvania', RI:'Rhode Island', SC:'South Carolina',
-    SD:'South Dakota', TN:'Tennessee', TX:'Texas', UT:'Utah', VT:'Vermont',
-    VA:'Virginia', WA:'Washington', WV:'West Virginia', WI:'Wisconsin', WY:'Wyoming',
-  };
-  return names[abbr] || abbr;
-}
-
-function slugifyState(abbr) {
-  const names = {
-    AL:'alabama', AK:'alaska', AZ:'arizona', AR:'arkansas', CA:'california',
-    CO:'colorado', CT:'connecticut', DE:'delaware', FL:'florida', GA:'georgia',
-    HI:'hawaii', ID:'idaho', IL:'illinois', IN:'indiana', IA:'iowa', KS:'kansas',
-    KY:'kentucky', LA:'louisiana', ME:'maine', MD:'maryland', MA:'massachusetts',
-    MI:'michigan', MN:'minnesota', MS:'mississippi', MO:'missouri', MT:'montana',
-    NE:'nebraska', NV:'nevada', NH:'new-hampshire', NJ:'new-jersey', NM:'new-mexico',
-    NY:'new-york', NC:'north-carolina', ND:'north-dakota', OH:'ohio', OK:'oklahoma',
-    OR:'oregon', PA:'pennsylvania', RI:'rhode-island', SC:'south-carolina',
-    SD:'south-dakota', TN:'tennessee', TX:'texas', UT:'utah', VT:'vermont',
-    VA:'virginia', WA:'washington', WV:'west-virginia', WI:'wisconsin', WY:'wyoming',
-  };
-  return names[abbr] || abbr.toLowerCase().replace(/\s+/g, '-');
-}
-
-function distanceMiles(lat1, lon1, lat2, lon2) {
-  const R = 3958.8;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-function nearbyResorts(resort, allResorts, limit = 4) {
-  return allResorts
-    .filter(r => r.id !== resort.id)
-    .map(r => ({ r, dist: distanceMiles(resort.lat, resort.lon, r.lat, r.lon) }))
-    .sort((a, b) => a.dist - b.dist)
-    .slice(0, limit)
-    .map(x => x.r);
-}
-
-// ─── JSON-LD schemas ──────────────────────────────────────────────────────────
-function buildSchemas(resort, stateName) {
-  const canonUrl = `https://wheretoskinext.com/ski-report/${resort.id}/`;
-
-  const sportsLocation = {
-    '@context': 'https://schema.org',
-    '@type': 'SportsActivityLocation',
-    name: resort.name,
-    description: `${resort.name} ski resort in ${stateName} — ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails, ${resort.acres} acres. ${passLabel(resort.passGroup)} mountain.`,
-    url: canonUrl,
-    address: { '@type': 'PostalAddress', addressRegion: resort.state, addressCountry: 'US' },
-    geo: { '@type': 'GeoCoordinates', latitude: resort.lat, longitude: resort.lon },
-    priceRange: `$${resort.price} day ticket`,
-    openingHoursSpecification: {
-      '@type': 'OpeningHoursSpecification',
-      description: 'Seasonal winter operation — verify current hours with the resort.',
-    },
-    ...(resort.ratingCount > 0 && {
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: resort.rating,
-        reviewCount: resort.ratingCount,
-        bestRating: 5,
-        worstRating: 1,
-      },
-    }),
-    sameAs: resort.website ? [resort.website] : [],
-  };
-
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext.com', item: 'https://wheretoskinext.com' },
-      { '@type': 'ListItem', position: 2, name: `Ski Mountains in ${stateName}`, item: `https://wheretoskinext.com/ski/${slugifyState(resort.state)}/` },
-      { '@type': 'ListItem', position: 3, name: resort.name, item: canonUrl },
-    ],
-  };
-
-  return [sportsLocation, breadcrumb];
-}
-
-// ─── Terrain bar HTML ─────────────────────────────────────────────────────────
-function terrainBar(label, pct, color) {
-  const w = Math.round(pct * 100);
-  return `
-    <div class="bar-row">
-      <span class="bar-label">${label}</span>
-      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
-      <span class="bar-pct">${w}%</span>
-    </div>`;
-}
-
-// ─── NEW: Nearby card with avg snowfall delta ─────────────────────────────────
-function nearbyCard(r, baseResort) {
-  const delta = r.avgSnowfall - baseResort.avgSnowfall;
-  let deltaHtml = '';
-  if (Math.abs(delta) >= 10) {
-    if (delta > 0) {
-      deltaHtml = `<div class="nearby-delta nearby-delta--more">❄ +${delta}" avg snow</div>`;
-    } else {
-      deltaHtml = `<div class="nearby-delta nearby-delta--less">❄ ${delta}" avg snow</div>`;
-    }
-  } else {
-    deltaHtml = `<div class="nearby-delta nearby-delta--same">❄ Similar snowfall</div>`;
-  }
-
-  // Crowd hint based on trails count (simple proxy)
-  const crowdHint = r.trails < 40 ? '<div class="nearby-crowd">👤 Fewer crowds</div>' : '';
-
-  return `
-    <a href="/ski-report/${r.id}/" class="nearby-card">
-      <div class="nearby-name">${esc(r.name)}</div>
-      <div class="nearby-meta">${esc(r.state)} · ${r.vertical.toLocaleString()} ft · ${esc(passLabel(r.passGroup))}</div>
-      ${deltaHtml}
-      ${crowdHint}
-      <div class="nearby-arrow">Compare →</div>
-    </a>`;
-}
-
-// ─── NEW: Skier matcher JS (inlined, no dependencies) ────────────────────────
-function matcherScript(resort) {
-  const pl = passLabel(resort.passGroup);
-  const tb = resort.terrainBreakdown;
-  const advPct = Math.round(tb.advanced * 100);
-  const begPct = Math.round(tb.beginner * 100);
-  const resortPass = resort.passGroup; // 'Epic', 'Ikon', 'Indy', 'Independent'
-
-  // Build outcome logic as a JS string embedded in the page
-  return `
-<script>
-(function() {
-  var sel = { skill: null, pass: null };
-
-  document.querySelectorAll('.mo').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var g = btn.dataset.g;
-      document.querySelectorAll('.mo[data-g="' + g + '"]').forEach(function(b) { b.classList.remove('selected'); });
-      btn.classList.add('selected');
-      sel[g] = btn.dataset.v;
-      if (sel.skill && sel.pass) evaluate();
-    });
-  });
-
-  function evaluate() {
-    var skill = sel.skill, pass = sel.pass;
-    var type, verdict, reason, ctaText;
-    var resortPass = '${esc(resortPass)}';
-    var advPct = ${advPct};
-    var begPct = ${begPct};
-    var price = ${resort.price};
-    var name = '${esc(resort.name)}';
-
-    var passMatches = (pass === resortPass.toLowerCase());
-
-    if (skill === 'advanced') {
-      if (passMatches) {
-        type = 'yes';
-        verdict = '✓ ' + name + ' is an excellent match for you.';
-        reason = 'Advanced terrain at ' + advPct + '% of the mountain, and your pass covers this resort. Go when conditions are right.';
-        ctaText = 'Compare ' + name + ' with nearby mountains →';
-      } else if (pass === 'none') {
-        type = 'maybe';
-        verdict = '→ Great terrain, but window tickets run $' + price + '+.';
-        reason = 'The mountain suits your skill level perfectly. Just budget accordingly — window rates can add up fast for a multi-day trip.';
-        ctaText = 'Find the best value mountain for your level →';
-      } else {
-        type = 'maybe';
-        verdict = '→ Great terrain, but your pass does not cover ' + name + '.';
-        reason = 'You\'d be paying window rate ($' + price + '+). Check if a nearby mountain on your pass offers comparable terrain.';
-        ctaText = 'Find mountains on your pass nearby →';
-      }
-    } else if (skill === 'intermediate') {
-      if (passMatches) {
-        type = 'yes';
-        verdict = '✓ A solid choice for intermediates with your pass.';
-        reason = 'Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for avoiding crowds.';
-        ctaText = 'See live conditions and compare →';
-      } else if (pass === 'none') {
-        type = 'maybe';
-        verdict = '→ Good terrain, but check if the price fits your budget.';
-        reason = 'At $' + price + '+ per day ticket, a few days here adds up. Compare nearby options that might offer similar intermediate terrain at lower cost.';
-        ctaText = 'Compare by value near here →';
-      } else {
-        type = 'maybe';
-        verdict = '→ Worth considering, but there may be better fits on your pass.';
-        reason = 'Your pass does not cover ' + name + ', so you\'d pay window rate. A nearby mountain on your pass might offer a comparable experience for free.';
-        ctaText = 'Find mountains on your pass →';
-      }
-    } else {
-      // beginner
-      if (begPct >= 35) {
-        type = passMatches ? 'yes' : 'maybe';
-        verdict = passMatches
-          ? '✓ ' + name + ' has a good beginner setup and your pass covers it.'
-          : '→ Decent beginner terrain, but you\'ll pay window rate.';
-        reason = begPct + '% of the mountain is beginner terrain. ' + (passMatches ? 'Your pass makes this a low-risk day out.' : 'At $' + price + '+, it\'s worth comparing nearby options on your pass first.');
-        ctaText = passMatches ? 'See live conditions →' : 'Find beginner-friendly mountains on your pass →';
-      } else {
-        type = 'no';
-        verdict = '✕ ' + name + ' is probably not the right fit for beginners.';
-        reason = 'Only ' + begPct + '% of the mountain is beginner terrain and it skews toward more advanced skiers. You\'d spend the day navigating terrain that\'s above your comfort level.';
-        ctaText = 'Find beginner-friendly mountains near here →';
-      }
-    }
-
-    var el = document.getElementById('matcherResult');
-    el.className = 'matcher-result matcher-result--' + type;
-    el.style.display = 'block';
-    document.getElementById('mVerdict').textContent = verdict;
-    document.getElementById('mReason').textContent = reason;
-    document.getElementById('mCTA').textContent = ctaText;
-    document.getElementById('mCTA').href = 'https://wheretoskinext.com/?resort=${esc(resort.id)}';
-  }
-})();
-</script>`;
-}
-
-// ─── Generate HTML for one mountain page ──────────────────────────────────────
-function generateMountainPage(resort, allResorts) {
-  const stateName  = stateFullName(resort.state);
-  const stateSlug  = slugifyState(resort.state);
-  const canonUrl   = `https://wheretoskinext.com/ski-report/${resort.id}/`;
-  const appUrl     = `https://wheretoskinext.com/?resort=${resort.id}`;
-  const schemas    = buildSchemas(resort, stateName);
-  const nearby     = nearbyResorts(resort, allResorts);
-  const tb         = resort.terrainBreakdown;
-  const year       = new Date().getFullYear();
-  const month      = new Date().toLocaleString('en-US', { month: 'long' });
-
-  const pageTitle  = `${resort.name} Ski Report ${year} — Conditions, Trails & Snow | WhereToSkiNext.com`;
-  const metaDesc   = `${resort.name} in ${stateName}: ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails, $${resort.price} day ticket. ${passLabel(resort.passGroup)} mountain. Check live snow forecast and conditions.`;
-
-  const passColor  = { Epic: '#1a56db', Ikon: '#0e9f6e', Indy: '#c27803', Independent: '#6b7280' }[resort.passGroup] || '#6b7280';
-
-  // Nearby cards with snow delta
-  const nearbyCards = nearby.map(r => nearbyCard(r, resort)).join('');
-
-  // Terrain description for editorial
-  const terrainDesc = tb.advanced >= 0.35
-    ? `${resort.name} skews toward experienced skiers — ${Math.round(tb.advanced*100)}% of the mountain is advanced terrain.`
-    : tb.beginner >= 0.35
-    ? `${resort.name} is welcoming to all levels with ${Math.round(tb.beginner*100)}% beginner terrain.`
-    : `${resort.name} is well-suited to intermediate skiers, with ${Math.round(tb.intermediate*100)}% of trails in that range.`;
-
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -324,21 +10,21 @@ function generateMountainPage(resort, allResorts) {
   })(window,document,'script','dataLayer','GTM-MCCDNQGB');</script>
   <!-- End Google Tag Manager -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${esc(pageTitle)}</title>
-  <meta name="description" content="${esc(metaDesc)}" />
-  <link rel="canonical" href="${canonUrl}" />
+  <title>Willard Mountain Ski Report 2026 — Conditions, Trails &amp; Snow | WhereToSkiNext.com</title>
+  <meta name="description" content="Willard Mountain in New York: 505 ft vertical, 26 trails, $83 day ticket. Independent mountain. Check live snow forecast and conditions." />
+  <link rel="canonical" href="https://wheretoskinext.com/ski-report/willard-mountain/" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
-  <meta property="og:description" content="${esc(metaDesc)}" />
+  <meta property="og:title" content="Willard Mountain Ski Conditions — WhereToSkiNext.com" />
+  <meta property="og:description" content="Willard Mountain in New York: 505 ft vertical, 26 trails, $83 day ticket. Independent mountain. Check live snow forecast and conditions." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="${canonUrl}" />
+  <meta property="og:url" content="https://wheretoskinext.com/ski-report/willard-mountain/" />
   <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
-  <meta name="twitter:description" content="${esc(metaDesc)}" />
+  <meta name="twitter:title" content="Willard Mountain Ski Conditions — WhereToSkiNext.com" />
+  <meta name="twitter:description" content="Willard Mountain in New York: 505 ft vertical, 26 trails, $83 day ticket. Independent mountain. Check live snow forecast and conditions." />
 
   <link rel="icon" href="/ski-decision-logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -346,7 +32,64 @@ function generateMountainPage(resort, allResorts) {
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <script type="application/ld+json">
-  ${JSON.stringify(schemas, null, 2)}
+  [
+  {
+    "@context": "https://schema.org",
+    "@type": "SportsActivityLocation",
+    "name": "Willard Mountain",
+    "description": "Willard Mountain ski resort in New York — 505 ft vertical, 26 trails, 67 acres. Independent mountain.",
+    "url": "https://wheretoskinext.com/ski-report/willard-mountain/",
+    "address": {
+      "@type": "PostalAddress",
+      "addressRegion": "NY",
+      "addressCountry": "US"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 43.02066,
+      "longitude": -73.51588
+    },
+    "priceRange": "$83 day ticket",
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "description": "Seasonal winter operation — verify current hours with the resort."
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": 3.1,
+      "reviewCount": 7,
+      "bestRating": 5,
+      "worstRating": 1
+    },
+    "sameAs": [
+      "https://www.willardmountain.com"
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "WhereToSkiNext.com",
+        "item": "https://wheretoskinext.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Ski Mountains in New York",
+        "item": "https://wheretoskinext.com/ski/new-york/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Willard Mountain",
+        "item": "https://wheretoskinext.com/ski-report/willard-mountain/"
+      }
+    ]
+  }
+]
   </script>
 
   <style>
@@ -426,8 +169,8 @@ function generateMountainPage(resort, allResorts) {
       display: inline-flex; align-items: center; gap: 6px;
       font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
       letter-spacing: .1em; text-transform: uppercase;
-      color: ${passColor}; background: rgba(255,255,255,.08);
-      border: 1px solid ${passColor}60;
+      color: #6b7280; background: rgba(255,255,255,.08);
+      border: 1px solid #6b728060;
       border-radius: 999px; padding: 4px 12px;
     }
     .live-pill {
@@ -547,8 +290,8 @@ function generateMountainPage(resort, allResorts) {
     /* ── Pass badge ── */
     .pass-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: ${passColor}18; color: ${passColor};
-      border: 1px solid ${passColor}40; border-radius: 999px;
+      background: #6b728018; color: #6b7280;
+      border: 1px solid #6b728040; border-radius: 999px;
       padding: 4px 12px; font-size: 13px; font-weight: 700;
     }
 
@@ -704,9 +447,9 @@ function generateMountainPage(resort, allResorts) {
     <div class="top-nav-inner">
       <a href="/" class="nav-brand">WhereToSkiNext.com</a>
       <div class="nav-divider"></div>
-      <a href="/ski/${stateSlug}/" class="nav-link">${stateName} Mountains</a>
+      <a href="/ski/new-york/" class="nav-link">New York Mountains</a>
       <div class="nav-divider"></div>
-      <a href="${esc(appUrl)}" class="nav-link nav-link-cta">Find My Mountain →</a>
+      <a href="https://wheretoskinext.com/?resort=willard-mountain" class="nav-link nav-link-cta">Find My Mountain →</a>
     </div>
   </nav>
 
@@ -716,21 +459,21 @@ function generateMountainPage(resort, allResorts) {
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/">WhereToSkiNext.com</a>
       <span class="breadcrumb-sep">›</span>
-      <a href="/ski/${stateSlug}/">Ski Mountains in ${esc(stateName)}</a>
+      <a href="/ski/new-york/">Ski Mountains in New York</a>
       <span class="breadcrumb-sep">›</span>
-      <span>${esc(resort.name)}</span>
+      <span>Willard Mountain</span>
     </nav>
 
     <!-- ══ HERO — snow data above the fold ══ -->
     <header class="resort-hero">
       <div class="hero-meta-row">
-        <span class="pass-eyebrow">${esc(passLabel(resort.passGroup))}</span>
+        <span class="pass-eyebrow">Independent</span>
         <span class="live-pill"><span class="live-dot"></span>Live Forecast</span>
-        <span class="freshness">Updated ${month} ${year}</span>
+        <span class="freshness">Updated March 2026</span>
       </div>
 
-      <h1 class="resort-name">${esc(resort.name)}</h1>
-      <p class="resort-location">${esc(stateName)} · ${resort.baseElevation.toLocaleString()}–${resort.summitElevation.toLocaleString()} ft elevation</p>
+      <h1 class="resort-name">Willard Mountain</h1>
+      <p class="resort-location">New York · 910–1,415 ft elevation</p>
 
       <!-- Snow spotlight — populated by JS fetch, falls back to avg snowfall -->
       <div class="snow-spotlight" id="snowSpotlight">
@@ -747,24 +490,24 @@ function generateMountainPage(resort, allResorts) {
             <span class="snow-detail-label">Temp Tomorrow</span>
           </div>
           <div class="snow-detail">
-            <span class="snow-detail-val">${resort.avgSnowfall}"</span>
+            <span class="snow-detail-val">140"</span>
             <span class="snow-detail-label">Avg Annual Snow</span>
           </div>
           <div class="snow-detail">
-            <span class="snow-detail-val">${resort.trails}</span>
+            <span class="snow-detail-val">26</span>
             <span class="snow-detail-label">Total Trails</span>
           </div>
         </div>
       </div>
 
       <div class="hero-cta-row">
-        <a href="${esc(appUrl)}" class="btn-hero">
+        <a href="https://wheretoskinext.com/?resort=willard-mountain" class="btn-hero">
           ⛷ See Live Ski Score
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
-        ${resort.website ? `<a href="${esc(resort.website)}" class="btn-hero-ghost" target="_blank" rel="noopener noreferrer">Visit ${esc(resort.name)} →</a>` : ''}
+        <a href="https://www.willardmountain.com" class="btn-hero-ghost" target="_blank" rel="noopener noreferrer">Visit Willard Mountain →</a>
       </div>
       <div class="hero-trust">
         <span>No account needed</span>
@@ -779,27 +522,27 @@ function generateMountainPage(resort, allResorts) {
     <div class="stats-grid" aria-label="Mountain statistics">
       <div class="stat-card">
         <div class="stat-label">Vertical Drop</div>
-        <div class="stat-value">${resort.vertical.toLocaleString()}<span class="stat-unit"> ft</span></div>
+        <div class="stat-value">505<span class="stat-unit"> ft</span></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Trails</div>
-        <div class="stat-value">${resort.trails}<span class="stat-unit"> runs</span></div>
+        <div class="stat-value">26<span class="stat-unit"> runs</span></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Skiable Acres</div>
-        <div class="stat-value">${resort.acres.toLocaleString()}<span class="stat-unit"> ac</span></div>
+        <div class="stat-value">67<span class="stat-unit"> ac</span></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Avg Annual Snow</div>
-        <div class="stat-value">${resort.avgSnowfall}<span class="stat-unit">"</span></div>
+        <div class="stat-value">140<span class="stat-unit">"</span></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Day Ticket*</div>
-        <div class="stat-value">$${resort.price}</div>
+        <div class="stat-value">$83</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Lifts</div>
-        <div class="stat-value">${resort.lifts}</div>
+        <div class="stat-value">5</div>
       </div>
     </div>
 
@@ -809,44 +552,59 @@ function generateMountainPage(resort, allResorts) {
         <h3>Mountain Details</h3>
         <div class="detail-row">
           <span class="detail-key">Pass</span>
-          <span class="detail-val"><span class="pass-badge">${esc(passLabel(resort.passGroup))}</span></span>
+          <span class="detail-val"><span class="pass-badge">Independent</span></span>
         </div>
         <div class="detail-row">
           <span class="detail-key">Base / Summit</span>
-          <span class="detail-val">${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</span>
+          <span class="detail-val">910 / 1,415 ft</span>
         </div>
         <div class="detail-row">
           <span class="detail-key">Longest Run</span>
-          <span class="detail-val">${resort.longestRun} mi</span>
+          <span class="detail-val">0.4 mi</span>
         </div>
         <div class="detail-row">
           <span class="detail-key">Night Skiing</span>
-          <span class="detail-val">${resort.night ? '✓ Yes' : 'No'}</span>
+          <span class="detail-val">No</span>
         </div>
         <div class="detail-row">
           <span class="detail-key">Terrain Park</span>
-          <span class="detail-val">${resort.terrainPark ? '✓ Yes' : 'No'}</span>
+          <span class="detail-val">No</span>
         </div>
-        ${resort.website ? `
+        
         <div class="detail-row">
           <span class="detail-key">Resort Website</span>
-          <span class="detail-val"><a href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer" style="color:#2b6de9;font-weight:700;text-decoration:none">Visit →</a></span>
-        </div>` : ''}
+          <span class="detail-val"><a href="https://www.willardmountain.com" target="_blank" rel="noopener noreferrer" style="color:#2b6de9;font-weight:700;text-decoration:none">Visit →</a></span>
+        </div>
       </div>
 
       <div class="panel">
         <h3>Terrain Breakdown</h3>
-        ${terrainBar('Beginner', tb.beginner, '#22b38a')}
-        ${terrainBar('Intermediate', tb.intermediate, '#2b6de9')}
-        ${terrainBar('Advanced', tb.advanced, '#ef4444')}
+        
+    <div class="bar-row">
+      <span class="bar-label">Beginner</span>
+      <div class="bar-track"><div class="bar-fill" style="width:30%;background:#22b38a"></div></div>
+      <span class="bar-pct">30%</span>
+    </div>
+        
+    <div class="bar-row">
+      <span class="bar-label">Intermediate</span>
+      <div class="bar-track"><div class="bar-fill" style="width:40%;background:#2b6de9"></div></div>
+      <span class="bar-pct">40%</span>
+    </div>
+        
+    <div class="bar-row">
+      <span class="bar-label">Advanced</span>
+      <div class="bar-track"><div class="bar-fill" style="width:30%;background:#ef4444"></div></div>
+      <span class="bar-pct">30%</span>
+    </div>
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid #edf4ff">
           <div class="detail-row" style="padding:4px 0">
             <span class="detail-key">Snowmaking</span>
-            <span class="detail-val">${resort.snowmaking.toLocaleString()} GPM</span>
+            <span class="detail-val">3,500 GPM</span>
           </div>
           <div class="detail-row" style="padding:4px 0">
             <span class="detail-key">State</span>
-            <span class="detail-val">${esc(stateName)}</span>
+            <span class="detail-val">New York</span>
           </div>
         </div>
       </div>
@@ -854,19 +612,19 @@ function generateMountainPage(resort, allResorts) {
 
     <!-- Editorial — At a Glance -->
     <div class="editorial">
-      <h2>${esc(resort.name)} — At a Glance</h2>
+      <h2>Willard Mountain — At a Glance</h2>
       <p>
-        ${esc(resort.name)} is a ski resort in ${esc(stateName)}, rising from ${resort.baseElevation.toLocaleString()} ft to ${resort.summitElevation.toLocaleString()} ft with ${resort.vertical.toLocaleString()} ft of vertical drop.
-        The mountain offers ${resort.trails} trails across ${resort.acres.toLocaleString()} skiable acres — ${Math.round(tb.beginner*100)}% beginner, ${Math.round(tb.intermediate*100)}% intermediate, and ${Math.round(tb.advanced*100)}% advanced terrain.
+        Willard Mountain is a ski resort in New York, rising from 910 ft to 1,415 ft with 505 ft of vertical drop.
+        The mountain offers 26 trails across 67 skiable acres — 30% beginner, 40% intermediate, and 30% advanced terrain.
       </p>
       <p>
-        With an average of ${resort.avgSnowfall}" of snowfall per season and ${resort.snowmaking.toLocaleString()} GPM of snowmaking capacity, ${esc(resort.name)} can typically maintain good coverage throughout the winter.
-        ${terrainDesc}
-        ${resort.night ? 'Night skiing is available.' : ''}
-        ${resort.terrainPark ? 'The mountain features a terrain park.' : ''}
+        With an average of 140" of snowfall per season and 3,500 GPM of snowmaking capacity, Willard Mountain can typically maintain good coverage throughout the winter.
+        Willard Mountain is well-suited to intermediate skiers, with 40% of trails in that range.
+        
+        
       </p>
       <p>
-        ${esc(resort.name)} is a <strong>${esc(passLabel(resort.passGroup))}</strong> mountain. Day tickets start around $${resort.price} — prices vary by date and demand.
+        Willard Mountain is a <strong>Independent</strong> mountain. Day tickets start around $83 — prices vary by date and demand.
         For live snow conditions, drive-time from your location, and a personalized Ski Score, use WhereToSkiNext.com.
       </p>
     </div>
@@ -874,16 +632,16 @@ function generateMountainPage(resort, allResorts) {
     <!-- ══ MID-PAGE CTA — appears AFTER editorial, not before ══ -->
     <div class="mid-cta">
       <div>
-        <div class="mid-cta-title">Not sure ${esc(resort.name)} is your best bet?</div>
+        <div class="mid-cta-title">Not sure Willard Mountain is your best bet?</div>
         <div class="mid-cta-sub">256 mountains ranked in real time — snow, drive time, pass, and crowds.</div>
         <div class="mid-cta-trust">No account needed · Free forever · Updated daily</div>
       </div>
-      <a href="${esc(appUrl)}" class="btn-cta">Find My Best Mountain →</a>
+      <a href="https://wheretoskinext.com/?resort=willard-mountain" class="btn-cta">Find My Best Mountain →</a>
     </div>
 
     <!-- ══ SKIER MATCHER WIDGET ══ -->
     <div class="matcher">
-      <div class="matcher-title">Is ${esc(resort.name)} right for you?</div>
+      <div class="matcher-title">Is Willard Mountain right for you?</div>
       <div class="matcher-sub">Answer 2 quick questions for an instant verdict.</div>
 
       <div class="matcher-q">
@@ -908,35 +666,63 @@ function generateMountainPage(resort, allResorts) {
       <div id="matcherResult" class="matcher-result">
         <div id="mVerdict"></div>
         <div id="mReason"></div>
-        <a id="mCTA" href="${esc(appUrl)}" class="btn-matcher"></a>
+        <a id="mCTA" href="https://wheretoskinext.com/?resort=willard-mountain" class="btn-matcher"></a>
       </div>
     </div>
 
     <!-- ══ ALSO CONSIDERING — nearby with snow deltas ══ -->
-    ${nearby.length ? `
+    
     <section class="nearby-section">
       <div class="nearby-header">
         <h2>Also Considering?</h2>
-        <a href="/ski/${stateSlug}/">See all ${esc(stateName)} mountains →</a>
+        <a href="/ski/new-york/">See all New York mountains →</a>
       </div>
       <div class="nearby-grid">
-        ${nearbyCards}
+        
+    <a href="/ski-report/maple-ski-ridge/" class="nearby-card">
+      <div class="nearby-name">Maple Ski Ridge</div>
+      <div class="nearby-meta">NY · 450 ft · Indy Pass</div>
+      <div class="nearby-delta nearby-delta--same">❄ Similar snowfall</div>
+      <div class="nearby-crowd">👤 Fewer crowds</div>
+      <div class="nearby-arrow">Compare →</div>
+    </a>
+    <a href="/ski-report/stratton-mountain/" class="nearby-card">
+      <div class="nearby-name">Stratton</div>
+      <div class="nearby-meta">VT · 2,003 ft · Ikon Pass</div>
+      <div class="nearby-delta nearby-delta--more">❄ +134" avg snow</div>
+      
+      <div class="nearby-arrow">Compare →</div>
+    </a>
+    <a href="/ski-report/mount-snow/" class="nearby-card">
+      <div class="nearby-name">Mount Snow</div>
+      <div class="nearby-meta">VT · 1,700 ft · Epic Pass</div>
+      <div class="nearby-delta nearby-delta--more">❄ +120" avg snow</div>
+      
+      <div class="nearby-arrow">Compare →</div>
+    </a>
+    <a href="/ski-report/bromley-mountain/" class="nearby-card">
+      <div class="nearby-name">Bromley</div>
+      <div class="nearby-meta">VT · 1,334 ft · Independent</div>
+      <div class="nearby-delta nearby-delta--more">❄ +104" avg snow</div>
+      
+      <div class="nearby-arrow">Compare →</div>
+    </a>
       </div>
-    </section>` : ''}
+    </section>
 
     <!-- State page link -->
     <div class="state-link-row">
-      → See all <a href="/ski/${stateSlug}/">${esc(stateName)} ski mountains</a> ranked by snow, vertical, and value.
+      → See all <a href="/ski/new-york/">New York ski mountains</a> ranked by snow, vertical, and value.
     </div>
 
     <p style="font-size:12px;color:#94a3b8;margin-top:20px">
-      *Day ticket prices are approximate and vary by date, demand, age, and promotions. Always confirm pricing directly with ${esc(resort.name)} before purchasing.
+      *Day ticket prices are approximate and vary by date, demand, age, and promotions. Always confirm pricing directly with Willard Mountain before purchasing.
     </p>
 
   </main>
 
   <footer>
-    <p>© ${year} WhereToSkiNext.com · <a href="https://wheretoskinext.com">wheretoskinext.com</a> · Data updated seasonally</p>
+    <p>© 2026 WhereToSkiNext.com · <a href="https://wheretoskinext.com">wheretoskinext.com</a> · Data updated seasonally</p>
     <p style="margin-top:6px"><a href="/">Find the best mountain to ski next →</a></p>
   </footer>
 
@@ -946,8 +732,8 @@ function generateMountainPage(resort, allResorts) {
        Fails silently — static avg data is always shown as fallback. -->
   <script>
   (function() {
-    var lat = ${resort.lat};
-    var lon = ${resort.lon};
+    var lat = 43.02066;
+    var lon = -73.51588;
     var url = 'https://api.open-meteo.com/v1/forecast'
       + '?latitude=' + lat
       + '&longitude=' + lon
@@ -992,57 +778,93 @@ function generateMountainPage(resort, allResorts) {
   })();
   </script>
 
-  ${matcherScript(resort)}
+  
+<script>
+(function() {
+  var sel = { skill: null, pass: null };
+
+  document.querySelectorAll('.mo').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var g = btn.dataset.g;
+      document.querySelectorAll('.mo[data-g="' + g + '"]').forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      sel[g] = btn.dataset.v;
+      if (sel.skill && sel.pass) evaluate();
+    });
+  });
+
+  function evaluate() {
+    var skill = sel.skill, pass = sel.pass;
+    var type, verdict, reason, ctaText;
+    var resortPass = 'Independent';
+    var advPct = 30;
+    var begPct = 30;
+    var price = 83;
+    var name = 'Willard Mountain';
+
+    var passMatches = (pass === resortPass.toLowerCase());
+
+    if (skill === 'advanced') {
+      if (passMatches) {
+        type = 'yes';
+        verdict = '✓ ' + name + ' is an excellent match for you.';
+        reason = 'Advanced terrain at ' + advPct + '% of the mountain, and your pass covers this resort. Go when conditions are right.';
+        ctaText = 'Compare ' + name + ' with nearby mountains →';
+      } else if (pass === 'none') {
+        type = 'maybe';
+        verdict = '→ Great terrain, but window tickets run $' + price + '+.';
+        reason = 'The mountain suits your skill level perfectly. Just budget accordingly — window rates can add up fast for a multi-day trip.';
+        ctaText = 'Find the best value mountain for your level →';
+      } else {
+        type = 'maybe';
+        verdict = '→ Great terrain, but your pass does not cover ' + name + '.';
+        reason = 'You'd be paying window rate ($' + price + '+). Check if a nearby mountain on your pass offers comparable terrain.';
+        ctaText = 'Find mountains on your pass nearby →';
+      }
+    } else if (skill === 'intermediate') {
+      if (passMatches) {
+        type = 'yes';
+        verdict = '✓ A solid choice for intermediates with your pass.';
+        reason = 'Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for avoiding crowds.';
+        ctaText = 'See live conditions and compare →';
+      } else if (pass === 'none') {
+        type = 'maybe';
+        verdict = '→ Good terrain, but check if the price fits your budget.';
+        reason = 'At $' + price + '+ per day ticket, a few days here adds up. Compare nearby options that might offer similar intermediate terrain at lower cost.';
+        ctaText = 'Compare by value near here →';
+      } else {
+        type = 'maybe';
+        verdict = '→ Worth considering, but there may be better fits on your pass.';
+        reason = 'Your pass does not cover ' + name + ', so you'd pay window rate. A nearby mountain on your pass might offer a comparable experience for free.';
+        ctaText = 'Find mountains on your pass →';
+      }
+    } else {
+      // beginner
+      if (begPct >= 35) {
+        type = passMatches ? 'yes' : 'maybe';
+        verdict = passMatches
+          ? '✓ ' + name + ' has a good beginner setup and your pass covers it.'
+          : '→ Decent beginner terrain, but you'll pay window rate.';
+        reason = begPct + '% of the mountain is beginner terrain. ' + (passMatches ? 'Your pass makes this a low-risk day out.' : 'At $' + price + '+, it's worth comparing nearby options on your pass first.');
+        ctaText = passMatches ? 'See live conditions →' : 'Find beginner-friendly mountains on your pass →';
+      } else {
+        type = 'no';
+        verdict = '✕ ' + name + ' is probably not the right fit for beginners.';
+        reason = 'Only ' + begPct + '% of the mountain is beginner terrain and it skews toward more advanced skiers. You'd spend the day navigating terrain that's above your comfort level.';
+        ctaText = 'Find beginner-friendly mountains near here →';
+      }
+    }
+
+    var el = document.getElementById('matcherResult');
+    el.className = 'matcher-result matcher-result--' + type;
+    el.style.display = 'block';
+    document.getElementById('mVerdict').textContent = verdict;
+    document.getElementById('mReason').textContent = reason;
+    document.getElementById('mCTA').textContent = ctaText;
+    document.getElementById('mCTA').href = 'https://wheretoskinext.com/?resort=willard-mountain';
+  }
+})();
+</script>
 
 </body>
-</html>`;
-}
-
-// ─── Generate sitemap.xml ──────────────────────────────────────────────────────
-function generateSitemap(resorts) {
-  const states = [...new Set(resorts.map(r => r.state))];
-  const today  = new Date().toISOString().split('T')[0];
-  const urls = [
-    `  <url><loc>https://wheretoskinext.com/</loc><changefreq>daily</changefreq><priority>1.0</priority><lastmod>${today}</lastmod></url>`,
-    `  <url><loc>https://wheretoskinext.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>${today}</lastmod></url>`,
-    ...states.map(s =>
-      `  <url><loc>https://wheretoskinext.com/ski/${slugifyState(s)}/</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>${today}</lastmod></url>`
-    ),
-    ...resorts.map(r =>
-      `  <url><loc>https://wheretoskinext.com/ski-report/${r.id}/</loc><changefreq>daily</changefreq><priority>0.9</priority><lastmod>${today}</lastmod></url>`
-    ),
-  ];
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
-async function main() {
-  const resorts = loadResorts();
-  console.log(`Loaded ${resorts.length} resorts`);
-
-  const outBase = path.join(__dirname, 'public', 'ski-report');
-  fs.mkdirSync(outBase, { recursive: true });
-
-  let generated = 0;
-  for (const resort of resorts) {
-    const dir  = path.join(outBase, resort.id);
-    fs.mkdirSync(dir, { recursive: true });
-    const html = generateMountainPage(resort, resorts);
-    fs.writeFileSync(path.join(dir, 'index.html'), html, 'utf8');
-    generated++;
-    if (generated % 25 === 0) console.log(`  Generated ${generated}/${resorts.length}...`);
-  }
-  console.log(`✓ Generated ${generated} mountain pages → public/ski-report/`);
-
-  const sitemapPath = path.join(__dirname, 'public', 'sitemap.xml');
-  fs.mkdirSync(path.join(__dirname, 'public'), { recursive: true });
-  fs.writeFileSync(sitemapPath, generateSitemap(resorts), 'utf8');
-  console.log(`✓ Generated sitemap.xml → public/sitemap.xml  (${resorts.length + 5} URLs)`);
-
-  console.log('\nDone. Next steps:');
-  console.log('  1. node generate-mountain-pages.mjs   ← run this');
-  console.log('  2. git add public/ski-report/ && git commit -m "Redesign: hero snow data, matcher, nearby deltas"');
-  console.log('  3. git push → Vercel auto-deploys');
-}
-
-main().catch(err => { console.error(err); process.exit(1); });
+</html>
