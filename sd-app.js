@@ -931,6 +931,9 @@ function renderCompareTable(resorts) {
   const q = (state.tableSearch || '').trim().toLowerCase();
   const w = normalizedWeights();
 
+  // No location + sorting by planner score = sort by avgSnowfall so table feels alive
+  const noOriginDefault = !state.origin && state.sortBy === 'planner' && !q;
+
   const decorated = resorts
     .filter(resort => !q || `${resort.name} ${resort.state} ${resort.passGroup}`.toLowerCase().includes(q))
     .map(resort => {
@@ -942,7 +945,9 @@ function renderCompareTable(resorts) {
     });
 
   const dir = tableSort.dir === 'asc' ? 1 : -1;
-  if (state.sortBy === 'planner') {
+  if (noOriginDefault) {
+    decorated.sort((a, b) => b.resort.avgSnowfall - a.resort.avgSnowfall);
+  } else if (state.sortBy === 'planner') {
     decorated.sort((a, b) => dir * ((a.breakdown?.score ?? -Infinity) - (b.breakdown?.score ?? -Infinity)));
   } else if (state.sortBy === 'storm') {
     decorated.sort((a, b) => dir * ((a.stormTotal ?? -1) - (b.stormTotal ?? -1)));
@@ -959,6 +964,8 @@ function renderCompareTable(resorts) {
 
   if (q) {
     els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${q}"`;
+  } else if (noOriginDefault) {
+    els.resultCount.textContent = `${total} mountains — sorted by avg snowfall`;
   } else {
     els.resultCount.textContent = state.tableViewAll ? `All ${total} mountains` : `Top 10 of ${total} mountains`;
   }
@@ -996,20 +1003,43 @@ function renderCompareTable(resorts) {
     return;
   }
 
-  els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }) => {
+  els.comparisonBody.innerHTML = (noOriginDefault ? `
+    <tr class="table-location-nudge">
+      <td colspan="12">
+        <div class="tln-inner">
+          <span class="tln-icon">📍</span>
+          <span class="tln-text">Enter your starting location above to rank by live snow forecast, drive time, and your preferences.</span>
+          <button class="tln-btn" onclick="document.getElementById('originInput')?.focus();document.querySelector('.hero-search')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location →</button>
+        </div>
+      </td>
+    </tr>` : '') + displayed.map(({ resort, breakdown, stormTotal, hist }) => {
     const rawScore = breakdown ? breakdown.score : null;
     const planner  = rawScore !== null ? Math.round(rawScore) : '—';
     const scoreCls = scoreBadgeClass(rawScore);
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
     const crowd    = crowdForecast(resort).label;
+
+    const bdAttr = breakdown ? (() => {
+      const c = breakdown.components;
+      const bd = JSON.stringify({
+        snow:       +c.snow.toFixed(1),
+        skiability: +c.skiability.toFixed(1),
+        fit:        +c.fit.toFixed(1),
+        drive:      +c.drive.toFixed(1),
+        value:      +c.value.toFixed(1),
+        crowd:      +c.crowd.toFixed(1),
+      });
+      return `data-bd="${btoa(bd)}"`;
+    })() : '';
+
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td><div class="row-name">${esc(resort.name)}</div></td>
         <td>${esc(resort.state)}</td>
         <td>${esc(resort.passGroup)}</td>
-        <td><span class="score-badge ${scoreCls}">${planner}</span></td>
+        <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" aria-label="Score ${planner} — hover for breakdown">${planner}</span></td>
         <td>${storm}</td>
         <td class="hist-cell">${histCell}</td>
         <td>${formatDrive(resort.id)}</td>
@@ -1422,7 +1452,14 @@ function renderMobileCards(decorated) {
     return;
   }
   const passColors = { Epic:'#1a4fa8', Ikon:'#c8a84b', Indy:'#2d7a3a', Independent:'#6b5e7a' };
-  els.mobileCardGrid.innerHTML = items.map(({ resort, breakdown, stormTotal }) => {
+  const noOriginMobile = !state.origin && state.sortBy === 'planner';
+  const nudgeHtml = noOriginMobile ? `
+    <div class="mob-location-nudge">
+      <span>📍</span>
+      <span>Enter your location to rank by live snow + drive time</span>
+      <button onclick="document.getElementById('originInput')?.focus();window.scrollTo({top:0,behavior:'smooth'})">Set location →</button>
+    </div>` : '';
+  els.mobileCardGrid.innerHTML = nudgeHtml + items.map(({ resort, breakdown, stormTotal }) => {
     const score     = breakdown ? Math.round(breakdown.score) : null;
     const storm     = stormTotal !== null ? stormTotal.toFixed(1) + '"' : '…';
     const drive     = formatDrive(resort.id);
@@ -1929,6 +1966,91 @@ function wireEvents() {
       if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
     }, () => { els.locationStatus.textContent = 'Could not get location'; });
   });
+
+  // ── Score breakdown tooltip ─────────────────────────────────────────────────
+  (function initScoreTooltip() {
+    const tip = document.getElementById('scoreTooltip');
+    if (!tip) return;
+
+    const ROWS = [
+      { key: 'snow',       label: 'Snow',         color: '#2b6de9' },
+      { key: 'skiability', label: 'Skiability',   color: '#16a34a' },
+      { key: 'fit',        label: 'Mountain Fit', color: '#7c3aed' },
+      { key: 'drive',      label: 'Drive',        color: '#0891b2' },
+      { key: 'value',      label: 'Value',        color: '#d97706' },
+      { key: 'crowd',      label: 'Crowds',       color: '#db2777' },
+    ];
+
+    function buildHtml(bd) {
+      const max = 25;
+      return `<div class="stip-title">Score Breakdown</div>` +
+        ROWS.map(({ key, label, color }) => {
+          const val = bd[key] ?? 0;
+          const pct = Math.min(100, Math.round((val / max) * 100));
+          return `<div class="stip-row">
+            <span class="stip-label">${label}</span>
+            <div class="stip-bar-track"><div class="stip-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+            <span class="stip-val">${val}</span>
+          </div>`;
+        }).join('') +
+        `<div class="stip-note">Each component out of ~25 pts</div>`;
+    }
+
+    function position(badge) {
+      const rect  = badge.getBoundingClientRect();
+      const tipW  = tip.offsetWidth  || 230;
+      const tipH  = tip.offsetHeight || 180;
+      const topAbove = rect.top  + window.scrollY - tipH - 8;
+      const topBelow = rect.bottom + window.scrollY + 8;
+      const top  = topAbove >= window.scrollY + 4 ? topAbove : topBelow;
+      let   left = rect.left + window.scrollX + rect.width / 2 - tipW / 2;
+      left = Math.max(window.scrollX + 4, Math.min(left, window.scrollX + window.innerWidth - tipW - 4));
+      tip.style.top  = `${top}px`;
+      tip.style.left = `${left}px`;
+    }
+
+    function show(badge) {
+      const raw = badge.getAttribute('data-bd');
+      if (!raw) return;
+      let bd;
+      try { bd = JSON.parse(atob(raw)); } catch (e) { return; }
+      tip.innerHTML = buildHtml(bd);
+      tip.style.visibility = 'hidden';
+      tip.removeAttribute('hidden');
+      requestAnimationFrame(() => { position(badge); tip.style.visibility = ''; });
+      tip._badge = badge;
+    }
+
+    function hide() { tip.setAttribute('hidden', ''); tip._badge = null; }
+
+    // Hover (desktop)
+    document.addEventListener('mouseover', e => {
+      const b = e.target.closest('.score-badge--tip');
+      if (b) show(b);
+    });
+    document.addEventListener('mouseout', e => {
+      if (!e.target.closest('.score-badge--tip')) return;
+      if (!e.relatedTarget?.closest('.score-badge--tip, #scoreTooltip')) hide();
+    });
+    tip.addEventListener('mouseleave', hide);
+
+    // Tap/click (mobile)
+    document.addEventListener('click', e => {
+      const b = e.target.closest('.score-badge--tip');
+      if (b) {
+        e.stopPropagation();
+        if (tip._badge === b && !tip.hasAttribute('hidden')) { hide(); return; }
+        show(b);
+        return;
+      }
+      if (!e.target.closest('#scoreTooltip')) hide();
+    });
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+    window.addEventListener('scroll', () => {
+      if (tip._badge && !tip.hasAttribute('hidden')) position(tip._badge);
+    }, { passive: true });
+  })();
 
   // Back to top
   let scrollTicking = false;

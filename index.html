@@ -21,7 +21,7 @@
   <meta name="twitter:title" content="WhereToSkiNext.com — Find Your Next Mountain" />
   <meta name="twitter:description" content="256 mountains nationwide, live weather, ranked for your weekend. Free, no account needed." />
   <meta name="twitter:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
-  <link rel="canonical" href="https://wheretoskinext.com/" />
+  <link rel="canonical" href="https://www.wheretoskinext.com/" />
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   <link rel="icon" href="ski-decision-logo.png" type="image/png" />
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
@@ -59,28 +59,25 @@
       justify-content: center;
     }
 
-    /* ── Score breakdown tooltip ─────────────────────────────────────────── */
+    /* ── Score breakdown tooltip ────────────────────────────────────────── */
     #scoreTooltip {
       position: absolute; z-index: 9999;
       width: 230px;
       background: #fff;
-      border: 1px solid var(--border, #d6e1f0);
+      border: 1px solid #d6e1f0;
       border-radius: 14px;
       padding: 14px 16px;
       box-shadow: 0 8px 28px rgba(30,60,100,.15);
       pointer-events: auto;
     }
     #scoreTooltip[hidden] { display: none; }
-    .stip-title {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .06em; color: var(--muted, #667a96); margin-bottom: 10px;
-    }
+    .stip-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #667a96; margin-bottom: 10px; }
     .stip-row { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
-    .stip-label { font-size: 12px; color: var(--text, #1b2a3a); width: 88px; flex-shrink: 0; }
-    .stip-bar-track { flex: 1; height: 6px; background: var(--border, #d6e1f0); border-radius: 99px; overflow: hidden; }
-    .stip-bar-fill { height: 100%; border-radius: 99px; }
-    .stip-val { font-size: 12px; font-weight: 700; color: var(--text, #1b2a3a); width: 24px; text-align: right; flex-shrink: 0; }
-    .stip-note { font-size: 11px; color: var(--muted, #667a96); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border, #d6e1f0); }
+    .stip-label { font-size: 12px; color: #1b2a3a; width: 88px; flex-shrink: 0; }
+    .stip-bar-track { flex: 1; height: 6px; background: #d6e1f0; border-radius: 99px; overflow: hidden; }
+    .stip-bar-fill  { height: 100%; border-radius: 99px; }
+    .stip-val { font-size: 12px; font-weight: 700; color: #1b2a3a; width: 24px; text-align: right; flex-shrink: 0; }
+    .stip-note { font-size: 11px; color: #667a96; margin-top: 8px; padding-top: 8px; border-top: 1px solid #d6e1f0; }
     .score-badge--tip { cursor: pointer; transition: transform .1s, opacity .1s; }
     .score-badge--tip:hover { opacity: .82; transform: scale(1.08); }
 
@@ -168,7 +165,7 @@
         <div class="hero-search-inner">
           <div class="hero-brand-row hero-brand-row-centered">
             <div class="hero-brand-name">WhereToSkiNext.com</div>
-            <div class="hero-brand-tag">SkiDecision — Your Guide to the Slopes</div>
+            <div class="hero-brand-tag">Find Your Next Mountain</div>
           </div>
 
           <h1 id="heroHeadline" class="hero-headline">Where should you ski this weekend?</h1>
