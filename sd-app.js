@@ -553,6 +553,8 @@ function syncPlannerControls() {
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
   const howfarGroup = document.querySelector('.priority-btns[data-key="howfar"]');
   if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
+  const skidaysGroup = document.querySelector('.priority-btns[data-key="skidays"]');
+  if (skidaysGroup) skidaysGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.skiDays));
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
@@ -1834,6 +1836,10 @@ function wireEvents() {
         const _hfEl = document.getElementById('howFarFilter');
         if (_hfEl) _hfEl.value = String(state.howFar);
         if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
+      }
+      else if (key === 'skidays') {
+        state.skiDays = Number(btn.dataset.val);
+        try { localStorage.setItem('ski-ski-days', String(state.skiDays)); } catch(e) {}
       }
       else                     state.weights[key] = Number(btn.dataset.val);
       trackEvent('ski_preference_set', {
