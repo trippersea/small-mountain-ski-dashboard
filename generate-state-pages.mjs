@@ -162,6 +162,14 @@ function generateStatePage(stateAbbr, resorts) {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VK2Q3TTFEW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-VK2Q3TTFEW');
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Best Ski Mountains in ${stateName} (${new Date().getFullYear()}) — WhereToSkiNext.com</title>
   <meta name="description" content="${count} ski mountains in ${stateName} ranked by snow, vertical, trails, and price. Live forecasts and drive times at WhereToSkiNext.com." />
