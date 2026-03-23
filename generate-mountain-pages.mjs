@@ -1020,7 +1020,7 @@ async function main() {
   const resorts = loadResorts();
   console.log(`Loaded ${resorts.length} resorts`);
 
-  const outBase = path.join(__dirname, 'public', 'ski-report');
+  const outBase = path.join(__dirname, 'ski-report');
   fs.mkdirSync(outBase, { recursive: true });
 
   let generated = 0;
@@ -1034,8 +1034,8 @@ async function main() {
   }
   console.log(`✓ Generated ${generated} mountain pages → public/ski-report/`);
 
-  const sitemapPath = path.join(__dirname, 'public', 'sitemap.xml');
-  fs.mkdirSync(path.join(__dirname, 'public'), { recursive: true });
+  const sitemapPath = path.join(__dirname, 'sitemap.xml');
+  fs.mkdirSync(path.join(__dirname), { recursive: true });
   fs.writeFileSync(sitemapPath, generateSitemap(resorts), 'utf8');
   console.log(`✓ Generated sitemap.xml → public/sitemap.xml  (${resorts.length + 5} URLs)`);
 
