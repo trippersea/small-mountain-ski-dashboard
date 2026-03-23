@@ -449,14 +449,14 @@ function findResortBySlug(slug) {
   return RESORTS.find(r => slugify(r.name) === slug || r.id === slug) || null;
 }
 function getReportSlug() {
-  const m = window.location.pathname.match(/^\/ski-report\/([^/?#]+)/);
+  const m = window.location.pathname.match(/^\/report\/([^/?#]+)/);
   return m ? m[1] : null;
 }
 function pushReportUrl(resort) {
   const slug   = slugify(resort.name);
   const params = serializeState();
   const qs     = params.toString() ? '?' + params : '';
-  history.pushState({ reportSlug: slug }, resort.name + ' — WhereToSkiNext.com', '/ski-report/' + slug + qs);
+  history.pushState({ reportSlug: slug }, resort.name + ' — WhereToSkiNext.com', '/report/' + slug + qs);
   document.title = resort.name + ' — WhereToSkiNext.com';
 }
 function popToRoot() {
@@ -469,7 +469,7 @@ const pushUrlDebounced = debounce(() => {
   const p    = serializeState();
   const qs   = p.toString() ? '?' + p : '';
   const base = state.selectedId
-    ? '/ski-report/' + slugify(RESORTS.find(r => r.id === state.selectedId)?.name || state.selectedId)
+    ? '/report/' + slugify(RESORTS.find(r => r.id === state.selectedId)?.name || state.selectedId)
     : '/';
   history.replaceState(null, '', base + qs);
 }, 600);
@@ -1211,7 +1211,7 @@ function renderDetail({ scroll = false } = {}) {
         ${resort.website
           ? `<a class="btn btn-primary detail-website-btn" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>`
           : ''}
-        <a class="btn btn-secondary" href="/ski-report/${esc(reportSlug)}">Full Report</a>
+        <a class="btn btn-secondary" href="/report/${esc(reportSlug)}">Full Report</a>
       </div>
     </div>
   </div>
@@ -2113,7 +2113,9 @@ function initialize() {
 
   if (state.origin) { applyHaversineEstimates(); loadDriveTimes(); }
 
-  const reportSlug = window.__REPORT_SLUG__ || getReportSlug();
+  // Support ?resort=resort-id from static page CTA banners, as well as path-based slugs
+  const resortParam = new URLSearchParams(window.location.search).get('resort');
+  const reportSlug  = window.__REPORT_SLUG__ || getReportSlug() || resortParam;
   if (reportSlug) {
     const found = findResortBySlug(reportSlug);
     if (found) {
