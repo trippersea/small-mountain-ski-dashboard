@@ -166,12 +166,12 @@ function nearbyCard(r, baseResort) {
   let deltaHtml = '';
   if (Math.abs(delta) >= 10) {
     if (delta > 0) {
-      deltaHtml = `<div class="nearby-delta nearby-delta--more">❄ +${delta}" avg snow</div>`;
+      deltaHtml = `<div class="nearby-delta nearby-delta--more">❄ ${r.avgSnowfall}" avg snow (+${delta}")</div>`;
     } else {
-      deltaHtml = `<div class="nearby-delta nearby-delta--less">❄ ${delta}" avg snow</div>`;
+      deltaHtml = `<div class="nearby-delta nearby-delta--less">❄ ${r.avgSnowfall}" avg snow (${delta}")</div>`;
     }
   } else {
-    deltaHtml = `<div class="nearby-delta nearby-delta--same">❄ Similar snowfall</div>`;
+    deltaHtml = `<div class="nearby-delta nearby-delta--same">❄ ${r.avgSnowfall}" avg snow</div>`;
   }
 
   // Crowd hint based on trails count (simple proxy)
