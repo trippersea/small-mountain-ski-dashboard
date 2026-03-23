@@ -783,11 +783,11 @@
 (function() {
   var sel = { skill: null, pass: null };
 
-  document.querySelectorAll('.mo').forEach(function(btn) {
-    btn.addEventListener('click', function() {
+  document.querySelectorAll(".mo").forEach(function(btn) {
+    btn.addEventListener("click", function() {
       var g = btn.dataset.g;
-      document.querySelectorAll('.mo[data-g="' + g + '"]').forEach(function(b) { b.classList.remove('selected'); });
-      btn.classList.add('selected');
+      document.querySelectorAll(".mo[data-g=" + JSON.stringify(g) + "]").forEach(function(b) { b.classList.remove("selected"); });
+      btn.classList.add("selected");
       sel[g] = btn.dataset.v;
       if (sel.skill && sel.pass) evaluate();
     });
@@ -796,72 +796,72 @@
   function evaluate() {
     var skill = sel.skill, pass = sel.pass;
     var type, verdict, reason, ctaText;
-    var resortPass = 'Ikon';
+    var resortPass = "ikon";
     var advPct = 25;
     var begPct = 25;
     var price = 90;
-    var name = 'The Summit at Snoqualmie';
+    var name = "The Summit at Snoqualmie";
+    var appUrl = "https://wheretoskinext.com/?resort=" + "summit-at-snoqualmie";
 
-    var passMatches = (pass === resortPass.toLowerCase());
+    var passMatches = (pass === resortPass);
 
-    if (skill === 'advanced') {
+    if (skill === "advanced") {
       if (passMatches) {
-        type = 'yes';
-        verdict = '✓ ' + name + ' is an excellent match for you.';
-        reason = 'Advanced terrain at ' + advPct + '% of the mountain, and your pass covers this resort. Go when conditions are right.';
-        ctaText = 'Compare ' + name + ' with nearby mountains →';
-      } else if (pass === 'none') {
-        type = 'maybe';
-        verdict = '→ Great terrain, but window tickets run $' + price + '+.';
-        reason = 'The mountain suits your skill level perfectly. Just budget accordingly — window rates can add up fast for a multi-day trip.';
-        ctaText = 'Find the best value mountain for your level →';
+        type = "yes";
+        verdict = "Great match — " + name + " is built for advanced skiers on your pass.";
+        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when conditions are right.";
+        ctaText = "Compare " + name + " with nearby mountains";
+      } else if (pass === "none") {
+        type = "maybe";
+        verdict = "Great terrain, but window tickets run $" + price + "+.";
+        reason = "The mountain suits your skill level well. Just budget accordingly — window rates add up fast for a multi-day trip.";
+        ctaText = "Find the best value mountain for your level";
       } else {
-        type = 'maybe';
-        verdict = '→ Great terrain, but your pass does not cover ' + name + '.';
-        reason = 'You'd be paying window rate ($' + price + '+). Check if a nearby mountain on your pass offers comparable terrain.';
-        ctaText = 'Find mountains on your pass nearby →';
+        type = "maybe";
+        verdict = "Great terrain, but your pass does not cover " + name + ".";
+        reason = "You would be paying window rate ($" + price + "+). Check if a nearby mountain on your pass offers comparable terrain.";
+        ctaText = "Find mountains on your pass nearby";
       }
-    } else if (skill === 'intermediate') {
+    } else if (skill === "intermediate") {
       if (passMatches) {
-        type = 'yes';
-        verdict = '✓ A solid choice for intermediates with your pass.';
-        reason = 'Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for avoiding crowds.';
-        ctaText = 'See live conditions and compare →';
-      } else if (pass === 'none') {
-        type = 'maybe';
-        verdict = '→ Good terrain, but check if the price fits your budget.';
-        reason = 'At $' + price + '+ per day ticket, a few days here adds up. Compare nearby options that might offer similar intermediate terrain at lower cost.';
-        ctaText = 'Compare by value near here →';
+        type = "yes";
+        verdict = "A solid choice for intermediates with your pass.";
+        reason = "Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for lift lines.";
+        ctaText = "See live conditions and compare";
+      } else if (pass === "none") {
+        type = "maybe";
+        verdict = "Good terrain, but check if the price fits your budget.";
+        reason = "At $" + price + "+ per day ticket, a few days here adds up. Compare nearby options that might offer similar intermediate terrain at lower cost.";
+        ctaText = "Compare by value near here";
       } else {
-        type = 'maybe';
-        verdict = '→ Worth considering, but there may be better fits on your pass.';
-        reason = 'Your pass does not cover ' + name + ', so you'd pay window rate. A nearby mountain on your pass might offer a comparable experience for free.';
-        ctaText = 'Find mountains on your pass →';
+        type = "maybe";
+        verdict = "Worth considering, but there may be better fits on your pass.";
+        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer a comparable experience included.";
+        ctaText = "Find mountains on your pass";
       }
     } else {
-      // beginner
       if (begPct >= 35) {
-        type = passMatches ? 'yes' : 'maybe';
+        type = passMatches ? "yes" : "maybe";
         verdict = passMatches
-          ? '✓ ' + name + ' has a good beginner setup and your pass covers it.'
-          : '→ Decent beginner terrain, but you'll pay window rate.';
-        reason = begPct + '% of the mountain is beginner terrain. ' + (passMatches ? 'Your pass makes this a low-risk day out.' : 'At $' + price + '+, it's worth comparing nearby options on your pass first.');
-        ctaText = passMatches ? 'See live conditions →' : 'Find beginner-friendly mountains on your pass →';
+          ? name + " has a solid beginner setup and your pass covers it."
+          : "Decent beginner terrain, but you will pay window rate.";
+        reason = begPct + "% of the mountain is beginner terrain. " + (passMatches ? "Your pass makes this a low-risk day out." : "At $" + price + "+, compare nearby options on your pass first.");
+        ctaText = passMatches ? "See live conditions" : "Find beginner-friendly mountains on your pass";
       } else {
-        type = 'no';
-        verdict = '✕ ' + name + ' is probably not the right fit for beginners.';
-        reason = 'Only ' + begPct + '% of the mountain is beginner terrain and it skews toward more advanced skiers. You'd spend the day navigating terrain that's above your comfort level.';
-        ctaText = 'Find beginner-friendly mountains near here →';
+        type = "no";
+        verdict = name + " is probably not the right fit for beginners.";
+        reason = "Only " + begPct + "% of the mountain is beginner terrain and it skews toward advanced skiers. A more beginner-focused mountain nearby would be a better day out.";
+        ctaText = "Find beginner-friendly mountains near here";
       }
     }
 
-    var el = document.getElementById('matcherResult');
-    el.className = 'matcher-result matcher-result--' + type;
-    el.style.display = 'block';
-    document.getElementById('mVerdict').textContent = verdict;
-    document.getElementById('mReason').textContent = reason;
-    document.getElementById('mCTA').textContent = ctaText;
-    document.getElementById('mCTA').href = 'https://wheretoskinext.com/?resort=summit-at-snoqualmie';
+    var el = document.getElementById("matcherResult");
+    el.className = "matcher-result matcher-result--" + type;
+    el.style.display = "block";
+    document.getElementById("mVerdict").textContent = verdict;
+    document.getElementById("mReason").textContent = reason;
+    document.getElementById("mCTA").textContent = ctaText;
+    document.getElementById("mCTA").href = appUrl;
   }
 })();
 </script>
