@@ -11,10 +11,10 @@
     gtag('config', 'G-VK2Q3TTFEW');
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy — SkiDecision</title>
-  <meta name="description" content="SkiDecision privacy policy. We don't collect personal data. Your location stays in your browser." />
+  <title>Privacy Policy — WhereToSkiNext.com</title>
+  <meta name="description" content="WhereToSkiNext.com privacy policy. We don't collect personal data. Your location stays in your browser." />
   <link rel="canonical" href="https://wheretoskinext.com/privacy/" />
-  <meta property="og:title" content="Privacy Policy — SkiDecision" />
+  <meta property="og:title" content="Privacy Policy — WhereToSkiNext.com" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://wheretoskinext.com/privacy/" />
   <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
@@ -52,30 +52,42 @@
     }
 
     /* Nav */
+/* ── Nav ─────────────────────────────────────────────────────────── */
     .top-nav {
-      position: sticky; top: 0; z-index: 1000;
+      position: sticky; top: 0; z-index: 100;
       backdrop-filter: blur(14px);
       background: rgba(255,255,255,.92);
       border-bottom: 1px solid var(--border);
     }
     .top-nav-inner {
-      max-width: 1160px; margin: 0 auto; padding: 10px 18px;
+      max-width: 1100px; margin: 0 auto;
+      padding: 10px 20px;
       display: flex; align-items: center; gap: 6px;
     }
-    .nav-brand { font-weight: 800; font-size: 16px; color: var(--text); letter-spacing: -.01em; margin-right: 6px; }
+    .nav-brand-link {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; margin-right: 4px;
+    }
+    .nav-logo { width: 30px; height: 30px; border-radius: 6px; }
+    .nav-brand { font-weight: 800; font-size: 15px; color: var(--accent); }
     .nav-divider { width: 1px; height: 16px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
     .nav-link {
-      padding: 6px 12px; border-radius: 8px; border: 1.5px solid transparent;
-      text-decoration: none; color: var(--text); font-weight: 600; font-size: 13px;
-      transition: background .12s, color .12s, border-color .12s;
+      padding: 7px 12px; border-radius: 8px; text-decoration: none;
+      color: var(--text); font-weight: 600; font-size: 13px;
+      border: 1px solid transparent;
+      transition: background .12s, color .12s;
     }
-    .nav-link:hover { background: #edf4ff; color: var(--accent); border-color: var(--border); }
-    .nav-link-cta { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .nav-link-cta:hover { background: #1d5fd4; border-color: #1d5fd4; color: #fff; }
+    .nav-link:hover { background: #edf4ff; color: var(--accent); }
+    .nav-link-active { color: var(--accent); }
+    .nav-link-cta {
+      background: var(--accent); color: #fff !important;
+      border-radius: 999px; padding: 7px 16px;
+    }
+    .nav-link-cta:hover { background: #1d5fd4 !important; }
     .nav-link-active { color: var(--accent); }
 
     /* Page */
-    .page { max-width: 720px; margin: 0 auto; padding: 56px 24px 96px; }
+    .page { max-width: 860px; margin: 0 auto; padding: 56px 20px 100px; }
 
     /* Hero */
     .about-eyebrow {
@@ -170,15 +182,19 @@
 <body>
 
   <!-- Nav -->
+  <!-- Nav -->
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
-      <span class="nav-brand">SkiDecision</span>
+      <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+        <img src="/ski-decision-logo.png" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
+        <span class="nav-brand">WhereToSkiNext.com</span>
+      </a>
       <div class="nav-divider"></div>
       <a href="/" class="nav-link">Find My Mountain</a>
       <a href="/about/" class="nav-link">About</a>
-      <a href="/privacy/" class="nav-link nav-link-active">Privacy</a>
+      <a href="/partners/" class="nav-link">Partners</a>
       <div class="nav-divider"></div>
-      <a href="/" class="nav-link nav-link-cta">Open App →</a>
+      <a href="/" class="nav-link nav-link-cta">Find My Mountain →</a>
     </div>
   </nav>
 
@@ -188,7 +204,7 @@
     <header style="margin-bottom:48px">
       <div class="about-eyebrow">Privacy Policy</div>
       <h1 class="about-headline">Your data stays yours.</h1>
-      <p class="about-subhead">SkiDecision doesn't sell your data, doesn't require an account, and stores as little as possible — most of it never leaves your browser.</p>
+      <p class="about-subhead">WhereToSkiNext.com doesn't sell your data, doesn't require an account, and stores as little as possible — most of it never leaves your browser.</p>
       <p style="margin-top:14px;font-size:13px;color:var(--muted);font-family:'DM Mono',monospace">Last updated: June 2025</p>
     </header>
 
@@ -208,7 +224,7 @@
     <section class="about-section">
       <h2>What we collect and why</h2>
 
-      <table class="data-table" aria-label="Data collected by SkiDecision">
+      <table class="data-table" aria-label="Data collected by WhereToSkiNext.com">
         <thead>
           <tr>
             <th>Data</th>
@@ -253,9 +269,9 @@
 
     <section class="about-section">
       <h2>Third-party services the app contacts</h2>
-      <p>When you use SkiDecision, your browser makes requests to the following external services. We do not control their privacy practices and link to their policies where available.</p>
+      <p>When you use WhereToSkiNext.com, your browser makes requests to the following external services. We do not control their privacy practices and link to their policies where available.</p>
 
-      <table class="data-table" aria-label="Third-party services used by SkiDecision">
+      <table class="data-table" aria-label="Third-party services used by WhereToSkiNext.com">
         <thead>
           <tr>
             <th>Service</th>
@@ -312,8 +328,8 @@
 
     <section class="about-section">
       <h2>Cookies and browser storage</h2>
-      <p>SkiDecision itself does not set cookies. Google Analytics sets its own cookies (<code>_ga</code>, <code>_gid</code>, etc.) to distinguish unique visitors and sessions — this is standard for Google Analytics.</p>
-      <p>SkiDecision stores the following data in your browser's local storage (persists between visits) and session storage (cleared when you close the tab):</p>
+      <p>WhereToSkiNext.com itself does not set cookies. Google Analytics sets its own cookies (<code>_ga</code>, <code>_gid</code>, etc.) to distinguish unique visitors and sessions — this is standard for Google Analytics.</p>
+      <p>WhereToSkiNext.com stores the following data in your browser's local storage (persists between visits) and session storage (cleared when you close the tab):</p>
 
       <table class="data-table" aria-label="Browser storage keys used">
         <thead>
@@ -374,7 +390,7 @@
 
     <section class="about-section">
       <h2>Children's privacy</h2>
-      <p>SkiDecision is not directed at children under 13 and we do not knowingly collect any information from children. Because we don't collect personal information from any user, there is nothing to delete — but if you have concerns, contact us at the address below.</p>
+      <p>WhereToSkiNext.com is not directed at children under 13 and we do not knowingly collect any information from children. Because we don't collect personal information from any user, there is nothing to delete — but if you have concerns, contact us at the address below.</p>
     </section>
 
     <!-- Changes -->
@@ -394,7 +410,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about.html">About</a> &middot; <a href="/privacy/">Privacy Policy</a></p>
+    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
   </footer>
 
 </body>

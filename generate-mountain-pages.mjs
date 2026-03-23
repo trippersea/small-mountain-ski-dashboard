@@ -363,23 +363,29 @@ function generateMountainPage(resort, allResorts) {
       min-height: 100vh;
     }
 
-    /* ── Nav ── */
+    /* ── Nav ─────────────────────────────────────────────────────────── */
     .top-nav {
       position: sticky; top: 0; z-index: 100;
       backdrop-filter: blur(14px);
-      background: rgba(255,255,255,.95);
+      background: rgba(255,255,255,.92);
       border-bottom: 1px solid #d6e1f0;
     }
     .top-nav-inner {
-      max-width: 960px; margin: 0 auto;
+      max-width: 1100px; margin: 0 auto;
       padding: 10px 20px;
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: center; gap: 6px;
     }
-    .nav-brand { font-weight: 800; font-size: 15px; color: #1b2a3a; text-decoration: none; margin-right: 4px; }
+    .nav-brand-link {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; margin-right: 4px;
+    }
+    .nav-logo { width: 30px; height: 30px; border-radius: 6px; }
+    .nav-brand { font-weight: 800; font-size: 15px; color: #2b6de9; }
     .nav-divider { width: 1px; height: 16px; background: #d6e1f0; margin: 0 4px; flex-shrink: 0; }
     .nav-link {
-      padding: 6px 12px; border-radius: 8px; text-decoration: none;
+      padding: 7px 12px; border-radius: 8px; text-decoration: none;
       color: #1b2a3a; font-weight: 600; font-size: 13px;
+      border: 1px solid transparent;
       transition: background .12s, color .12s;
     }
     .nav-link:hover { background: #edf4ff; color: #2b6de9; }
@@ -390,7 +396,7 @@ function generateMountainPage(resort, allResorts) {
     .nav-link-cta:hover { background: #1d5fd4; }
 
     /* ── Page layout ── */
-    .page { max-width: 960px; margin: 0 auto; padding: 24px 20px 80px; }
+    .page { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
 
     /* ── Breadcrumb ── */
     .breadcrumb {
@@ -678,14 +684,15 @@ function generateMountainPage(resort, allResorts) {
     .state-link-row a { color: #2b6de9; font-weight: 600; text-decoration: none; }
     .state-link-row a:hover { text-decoration: underline; }
 
-    /* ── Footer ── */
-    footer {
+/* ── Footer ── */
+    .site-footer {
       text-align: center; padding: 28px 16px;
       font-size: 12px; color: #94a3b8;
-      border-top: 1px solid #d6e1f0; background: #fff;
-      margin-top: 40px;
+      border-top: 1px solid #d6e1f0;
+      background: #fff; margin-top: 40px;
     }
-    footer a { color: #2b6de9; text-decoration: none; }
+    .site-footer a { color: #2b6de9; text-decoration: none; }
+    .site-footer a:hover { text-decoration: underline; }
 
     /* ── Responsive ── */
     @media (max-width: 600px) {
@@ -704,9 +711,15 @@ function generateMountainPage(resort, allResorts) {
   <!-- Nav -->
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
-      <a href="/" class="nav-brand">WhereToSkiNext.com</a>
+      <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+        <img src="/ski-decision-logo.png" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
+        <span class="nav-brand">WhereToSkiNext.com</span>
+      </a>
       <div class="nav-divider"></div>
+      <a href="/" class="nav-link">Find My Mountain</a>
       <a href="/ski/${stateSlug}/" class="nav-link">${stateName} Mountains</a>
+      <a href="/about/" class="nav-link">About</a>
+      <a href="/partners/" class="nav-link">Partners</a>
       <div class="nav-divider"></div>
       <a href="${esc(appUrl)}" class="nav-link nav-link-cta">Find My Mountain →</a>
     </div>
@@ -937,9 +950,8 @@ function generateMountainPage(resort, allResorts) {
 
   </main>
 
-  <footer>
-    <p>© ${year} WhereToSkiNext.com · <a href="https://wheretoskinext.com">wheretoskinext.com</a> · Data updated seasonally</p>
-    <p style="margin-top:6px"><a href="/">Find the best mountain to ski next →</a></p>
+  <footer class="site-footer">
+    <p>© ${year} WhereToSkiNext.com &mdash; <a href="/">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
   </footer>
 
   <!-- ══ Live snow fetch from OpenMeteo ══
