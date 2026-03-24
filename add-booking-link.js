@@ -31,32 +31,32 @@ const SPONSORS = {
 
 // ─── CSS injected once per patched page ───────────────────────────────────────
 const SIDEBAR_CSS = `
-    /* ── Featured Partner sidebar ── */
-    .sponsor-sidebar-block {
-      background: #edf4ff;
-      border: 1.5px solid #bfdbfe;
-      border-radius: 14px;
-      padding: 18px 20px;
-      margin-bottom: 20px;
+    /* ── Featured Partner hero block ── */
+    .hero-sponsor-block {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-top: 16px;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 14px;
+      flex-wrap: wrap;
     }
-    .sponsor-sidebar-lbl {
+    .hero-sponsor-left { display: flex; flex-direction: column; gap: 2px; }
+    .hero-sponsor-badge {
       font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: #2b6de9; margin-bottom: 8px;
+      letter-spacing: .1em; color: #6ee7b7; margin-bottom: 3px;
     }
-    .sponsor-sidebar-name {
-      font-size: 15px; font-weight: 800; color: #1b2a3a; margin-bottom: 4px;
-    }
-    .sponsor-sidebar-tagline {
-      font-size: 12px; color: #667a96; margin-bottom: 14px; line-height: 1.55;
-    }
-    .sponsor-sidebar-btn {
-      display: block; text-align: center;
+    .hero-sponsor-name { font-size: 14px; font-weight: 800; color: #fff; }
+    .hero-sponsor-tagline { font-size: 11px; color: rgba(255,255,255,.55); }
+    .hero-sponsor-btn {
       background: #2b6de9; color: #fff !important;
       font-size: 13px; font-weight: 700;
-      padding: 11px; border-radius: 8px;
-      text-decoration: none; transition: background .12s;
+      padding: 10px 20px; border-radius: 999px;
+      text-decoration: none; white-space: nowrap;
+      transition: background .12s; flex-shrink: 0;
     }
-    .sponsor-sidebar-btn:hover { background: #1d5fd4; }`;
+    .hero-sponsor-btn:hover { background: #1d5fd4; }`;
 
 function escHtml(s) {
   return String(s || '')
@@ -66,12 +66,14 @@ function escHtml(s) {
 
 function buildSidebarHtml(resortName, sponsor) {
   return `
-      <!-- Featured Partner Sidebar -->
-      <div class="sponsor-sidebar-block" data-sponsor-id="${escHtml(resortName)}">
-        <div class="sponsor-sidebar-lbl">Featured Partner</div>
-        <div class="sponsor-sidebar-name">${escHtml(resortName)}</div>
-        <div class="sponsor-sidebar-tagline">${escHtml(sponsor.tagline)}</div>
-        <a href="${escHtml(sponsor.bookingUrl)}" class="sponsor-sidebar-btn" target="_blank" rel="noopener noreferrer">Book at ${escHtml(resortName)} →</a>
+      <!-- Featured Partner Hero Block -->
+      <div class="hero-sponsor-block" data-sponsor-id="${escHtml(resortName)}">
+        <div class="hero-sponsor-left">
+          <div class="hero-sponsor-badge">Featured Partner</div>
+          <div class="hero-sponsor-name">${escHtml(resortName)}</div>
+          <div class="hero-sponsor-tagline">${escHtml(sponsor.tagline)}</div>
+        </div>
+        <a href="${escHtml(sponsor.bookingUrl)}" class="hero-sponsor-btn" target="_blank" rel="noopener noreferrer">Book Direct →</a>
       </div>`;
 }
 
@@ -94,7 +96,7 @@ for (const resortId of subDirs) {
 
   // ── Always remove previously injected sponsor blocks first ──────────────────
   html = html.replace(/\n\s*\/\* ── Featured Partner sidebar ──[\s\S]*?\.sponsor-sidebar-btn:hover \{[^}]*\}/m, '');
-  html = html.replace(/\s*<!-- Featured Partner Sidebar -->[\s\S]*?<\/div>\s*(?=\n)/gm, '');
+  html = html.replace(/\s*<!-- Featured Partner Hero Block -->[\s\S]*?<\/div>\s*(?=\n)/gm, '');
 
   const sponsor = SPONSORS[resortId];
 
@@ -120,27 +122,18 @@ for (const resortId of subDirs) {
   const nameMatch = html.match(/<h1[^>]*class="resort-name"[^>]*>([^<]+)<\/h1>/);
   const resortName = nameMatch ? nameMatch[1].trim() : resortId;
 
-  // ── Inject sidebar before the stats strip ───────────────────────────────────
-  // Insert right after the hero section closing div, before the stats grid
-  const insertAnchor = '<div class="stats-grid">';
-  if (html.includes(insertAnchor)) {
+  // ── Inject sponsor block inside hero, before </header> ─────────────────────
+  const heroEnd = '</header>';
+  if (html.includes(heroEnd)) {
     const sidebarHtml = buildSidebarHtml(resortName, sponsor);
-    html = html.replace(insertAnchor, sidebarHtml + '\n    <div class="stats-grid">');
+    // Insert before closing </header> tag (inside the hero)
+    html = html.replace(heroEnd, sidebarHtml + '\n    </header>');
     console.log(`  ✓ Patched: ski-report/${resortId}/index.html`);
     patched++;
   } else {
-    // Fallback: insert after the hero section
-    const heroEnd = '</header>';
-    if (html.includes(heroEnd)) {
-      const sidebarHtml = buildSidebarHtml(resortName, sponsor);
-      html = html.replace(heroEnd, heroEnd + '\n' + sidebarHtml);
-      console.log(`  ✓ Patched (fallback): ski-report/${resortId}/index.html`);
-      patched++;
-    } else {
-      console.warn(`  ⚠️  Could not find insertion point: ski-report/${resortId}/index.html`);
-      skipped++;
-      continue;
-    }
+    console.warn(`  ⚠️  Could not find </header> in: ski-report/${resortId}/index.html`);
+    skipped++;
+    continue;
   }
 
   fs.writeFileSync(filePath, html, 'utf8');

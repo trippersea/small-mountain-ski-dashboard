@@ -26,17 +26,13 @@ function isRememberChecked() {
 
 // ─── Sponsor configuration ────────────────────────────────────────────────────
 // Add active paying partners here. Key = resort ID from RESORTS data.
-// To activate: add entry, deploy. To remove: delete entry, deploy.
 const SPONSORS = {
   'ragged-mountain-resort': {
-    label:      'Your Mountain',          // Display label (override resort name in badge)
     bookingUrl: 'https://www.raggedmountainresort.com/tickets',
     tagline:    'Indy Pass accepted · Book direct for best rates',
   },
 };
-// Helper — returns sponsor data if resort is a paying partner, else null
 function getSponsor(resortId) { return SPONSORS[resortId] || null; }
-
 
 // ─── Inject sponsor CSS once ──────────────────────────────────────────────────
 (function injectSponsorCSS() {
@@ -58,20 +54,23 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
     }
     .sponsor-detail-block {
       background: #edf4ff; border: 1.5px solid #bfdbfe;
-      border-radius: 12px; padding: 16px 18px; margin-top: 14px;
+      border-radius: 12px; padding: 16px 20px;
+      margin: 0 auto 14px; max-width: 360px;
+      text-align: center;
     }
     .sponsor-detail-lbl {
       font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: #2b6de9; margin-bottom: 6px;
+      letter-spacing: .1em; color: #2b6de9; margin-bottom: 5px;
     }
+    .sponsor-detail-name { font-size: 14px; font-weight: 800; color: #1b2a3a; margin-bottom: 3px; }
     .sponsor-detail-tagline { font-size: 12px; color: #667a96; margin-bottom: 12px; line-height: 1.5; }
     .sponsor-detail-btn {
-      display: block; text-align: center;
-      background: #2b6de9; color: #fff; font-size: 13px; font-weight: 700;
-      padding: 10px; border-radius: 8px; text-decoration: none;
+      display: inline-block;
+      background: #2b6de9; color: #fff !important; font-size: 13px; font-weight: 700;
+      padding: 9px 22px; border-radius: 999px; text-decoration: none;
       transition: background .12s;
     }
-    .sponsor-detail-btn:hover { background: #1d5fd4; color: #fff; }
+    .sponsor-detail-btn:hover { background: #1d5fd4; }
   `;
   document.head.appendChild(style);
 })();
@@ -1233,6 +1232,13 @@ function renderDetail({ scroll = false } = {}) {
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
+  ${(() => { const _dSp = getSponsor(resort.id); return _dSp ? `
+  <div class="sponsor-detail-block">
+    <div class="sponsor-detail-lbl">Featured Partner</div>
+    <div class="sponsor-detail-name">${esc(resort.name)}</div>
+    <div class="sponsor-detail-tagline">${esc(_dSp.tagline)}</div>
+    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Direct →</a>
+  </div>` : ''; })()}
   <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <div class="detail-header">
     <div class="detail-header-left">
@@ -1258,12 +1264,6 @@ function renderDetail({ scroll = false } = {}) {
       </div>
     </div>
   </div>
-  ${(() => { const _dSp = getSponsor(resort.id); return _dSp ? `
-  <div class="sponsor-detail-block">
-    <div class="sponsor-detail-lbl">Featured Partner</div>
-    <div class="sponsor-detail-tagline">${esc(_dSp.tagline)}</div>
-    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book at ${esc(resort.name)} →</a>
-  </div>` : ''; })()}
 
   <!-- ── Stats Strip ────────────────────────────────────────────────────── -->
   <div class="detail-stats-strip">
@@ -1516,7 +1516,7 @@ function renderMobileCards(decorated) {
     const drive     = formatDrive(resort.id);
     const crowd     = crowdForecast(resort).label;
     const passColor = passColors[resort.passGroup] || '#90a4be';
-    const _mobSp    = getSponsor(resort.id);
+    const _mobSp = getSponsor(resort.id);
     return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
       <div class="mob-card-top">
         <div class="mob-card-name">${esc(resort.name)}</div>

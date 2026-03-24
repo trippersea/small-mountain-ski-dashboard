@@ -54,42 +54,56 @@
       min-height: 100vh;
     }
 
-    /* ── Nav ─────────────────────────────────────────────────────────── */
+    /* ── Nav — identical to main site ──────────────────────────────────── */
     .top-nav {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
       backdrop-filter: blur(14px);
       background: rgba(255,255,255,.92);
       border-bottom: 1px solid var(--border);
     }
     .top-nav-inner {
-      max-width: 1100px; margin: 0 auto;
-      padding: 10px 20px;
-      display: flex; align-items: center; gap: 6px;
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .nav-brand-link {
-      display: flex; align-items: center; gap: 8px;
-      text-decoration: none; margin-right: 4px;
+    .nav-brand {
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--text);
+      letter-spacing: -.01em;
+      margin-right: 6px;
     }
-    .nav-logo { width: 30px; height: 30px; border-radius: 6px; }
-    .nav-brand { font-weight: 800; font-size: 15px; color: var(--accent); }
     .nav-divider { width: 1px; height: 16px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
     .nav-link {
-      padding: 7px 12px; border-radius: 8px; text-decoration: none;
-      color: var(--text); font-weight: 600; font-size: 13px;
-      border: 1px solid transparent;
-      transition: background .12s, color .12s;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1.5px solid transparent;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 13px;
+      transition: background .12s, color .12s, border-color .12s;
     }
-    .nav-link:hover { background: #edf4ff; color: var(--accent); }
-    .nav-link-active { color: var(--accent); }
+    .nav-link:hover { background: #edf4ff; color: var(--accent); border-color: var(--border); }
     .nav-link-cta {
-      background: var(--accent); color: #fff !important;
-      border-radius: 999px; padding: 7px 16px;
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
     }
-    .nav-link-cta:hover { background: #1d5fd4 !important; }
+    .nav-link-cta:hover { background: #1d5fd4; border-color: #1d5fd4; color: #fff; }
     .nav-link-active { color: var(--accent); }
 
     /* ── Page wrapper ───────────────────────────────────────────────────── */
-    .page { max-width: 860px; margin: 0 auto; padding: 56px 20px 100px; }
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 24px 96px;
+    }
 
     /* ── Hero ───────────────────────────────────────────────────────────── */
     .about-hero {
@@ -350,7 +364,6 @@
 <body>
 
   <!-- Nav -->
-  <!-- Nav -->
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
       <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
@@ -358,7 +371,6 @@
         <span class="nav-brand">WhereToSkiNext.com</span>
       </a>
       <div class="nav-divider"></div>
-      <a href="/" class="nav-link">Find My Mountain</a>
       <a href="/about/" class="nav-link nav-link-active">About</a>
       <a href="/partners/" class="nav-link">Partners</a>
       <div class="nav-divider"></div>
@@ -457,7 +469,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
+    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a></p>
   </footer>
 
 </body>
