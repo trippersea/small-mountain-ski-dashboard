@@ -16,8 +16,25 @@
 import fs   from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import vm   from 'vm';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// ─── Load featured partners config ────────────────────────────────────────────
+function loadFeaturedPartners() {
+  const partnersPath = path.join(__dirname, 'featured-partners.js');
+  if (!fs.existsSync(partnersPath)) return {};
+  try {
+    const ctx = {};
+    const code = fs.readFileSync(partnersPath, 'utf8');
+    vm.runInNewContext(code, ctx);
+    return ctx.FEATURED_PARTNERS || {};
+  } catch (e) {
+    console.warn('Warning: could not load featured-partners.js:', e.message);
+    return {};
+  }
+}
+const FEATURED_PARTNERS = loadFeaturedPartners();
 
 // ─── Load resort data ──────────────────────────────────────────────────────────
 import { createRequire } from 'module';
@@ -313,6 +330,14 @@ function generateMountainPage(resort, allResorts) {
     : tb.beginner >= 0.35
     ? `${resort.name} is welcoming to all levels with ${Math.round(tb.beginner*100)}% beginner terrain.`
     : `${resort.name} is well-suited to intermediate skiers, with ${Math.round(tb.intermediate*100)}% of trails in that range.`;
+
+  // Build sponsor hero block if this resort is a featured partner
+  const _fp = FEATURED_PARTNERS[resort.id];
+  const SPONSOR_HERO_PLACEHOLDER = _fp ? `
+      <div class="hero-sponsor-block">
+        <span class="hero-sponsor-badge">Featured Partner</span>
+        <a href="${_fp.bookingUrl}" class="hero-sponsor-btn" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
+      </div>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -668,7 +693,7 @@ function generateMountainPage(resort, allResorts) {
       margin-top: 2px; width: fit-content;
     }
     .nearby-delta--more { background: #dcfce7; color: #15803d; }
-    .nearby-delta--less { background: #fee2e2; color: #b91c1c; }
+    .nearby-delta--less { background: #f1f5f9; color: #64748b; }
     .nearby-delta--same { background: #edf4ff; color: #1d4ed8; }
     .nearby-crowd { font-size: 11px; color: #667a96; }
     .nearby-arrow { font-size: 12px; font-weight: 700; color: #2b6de9; margin-top: auto; padding-top: 6px; }
@@ -708,6 +733,29 @@ function generateMountainPage(resort, allResorts) {
       padding: 9px 20px; border-radius: 999px;
       text-decoration: none; white-space: nowrap;
       transition: background .12s; flex-shrink: 0;
+    }
+    .hero-sponsor-btn:hover { background: #1d5fd4; }
+
+    /* ── Featured Partner hero strip ── */
+    .hero-sponsor-block {
+      background: rgba(0,0,0,.28);
+      border-top: 1px solid rgba(255,255,255,.14);
+      padding: 13px 28px;
+      margin: 16px -28px 0;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 14px;
+      flex-wrap: wrap;
+    }
+    .hero-sponsor-badge {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: #6ee7b7;
+    }
+    .hero-sponsor-btn {
+      background: #2b6de9; color: #fff !important;
+      font-size: 13px; font-weight: 700;
+      padding: 9px 20px; border-radius: 999px;
+      text-decoration: none; white-space: nowrap;
+      transition: background .12s;
     }
     .hero-sponsor-btn:hover { background: #1d5fd4; }
 
@@ -887,18 +935,15 @@ function generateMountainPage(resort, allResorts) {
     <div class="editorial">
       <h2>${esc(resort.name)} — At a Glance</h2>
       <p>
-        ${esc(resort.name)} is a ski resort in ${esc(stateName)}, rising from ${resort.baseElevation.toLocaleString()} ft to ${resort.summitElevation.toLocaleString()} ft with ${resort.vertical.toLocaleString()} ft of vertical drop.
-        The mountain offers ${resort.trails} trails across ${resort.acres.toLocaleString()} skiable acres — ${Math.round(tb.beginner*100)}% beginner, ${Math.round(tb.intermediate*100)}% intermediate, and ${Math.round(tb.advanced*100)}% advanced terrain.
+        ${esc(resort.name)} sits in ${esc(stateName)} with ${resort.vertical.toLocaleString()} ft of vertical drop, ${resort.trails} trails, and ${resort.acres.toLocaleString()} skiable acres.
+        ${terrainDesc}${resort.night ? ' Night skiing available.' : ''}${resort.terrainPark ? ' Terrain park on site.' : ''}
       </p>
       <p>
-        With an average of ${resort.avgSnowfall}" of snowfall per season and ${resort.snowmaking.toLocaleString()} GPM of snowmaking capacity, ${esc(resort.name)} can typically maintain good coverage throughout the winter.
-        ${terrainDesc}
-        ${resort.night ? 'Night skiing is available.' : ''}
-        ${resort.terrainPark ? 'The mountain features a terrain park.' : ''}
+        The mountain averages ${resort.avgSnowfall}" of snowfall per season${resort.snowmaking > 0 ? ` backed by ${resort.snowmaking.toLocaleString()} GPM of snowmaking` : ''}.
+        Lift tickets start around $${resort.price} — day-of pricing varies. ${esc(resort.name)} is a <strong>${esc(passLabel(resort.passGroup))}</strong> mountain.
       </p>
       <p>
-        ${esc(resort.name)} is a <strong>${esc(passLabel(resort.passGroup))}</strong> mountain. Day tickets start around $${resort.price} — prices vary by date and demand.
-        For live snow conditions, drive-time from your location, and a personalized Ski Score, use WhereToSkiNext.com.
+        Snow conditions update daily. Check back before you go — a fresh forecast can change everything.
       </p>
     </div>
 
@@ -1023,6 +1068,7 @@ function generateMountainPage(resort, allResorts) {
   })();
   </script>
 
+  <script src="/featured-partners.js"></script>
   ${matcherScript(resort)}
 
 </body>
