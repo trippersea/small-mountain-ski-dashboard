@@ -129,6 +129,35 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
       text-decoration: none; transition: color .12s;
     }
     .dhr-link-secondary:hover { color: #2b6de9; }
+
+    /* ── Selected Mountain sponsor pill + CTA ── */
+    .featured-pill {
+      background: #edf4ff;
+      border: 1px solid #2b6de9;
+      color: #2b6de9;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: .06em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .btn-book {
+      background: #22b38a;
+      color: #fff !important;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background .12s;
+      white-space: nowrap;
+    }
+    .btn-book:hover { background: #1f9e78; }
   `;
   document.head.appendChild(style);
 })();
@@ -1227,6 +1256,7 @@ function renderDetail({ scroll = false } = {}) {
   const skis  = wx ? skiScoreBreakdown(resort, wx, 0) : null;
   const crowd = crowdForecast(resort);
   const tb    = resort.terrainBreakdown;
+  const sponsor = getSponsor(resort.id);
 
   const forecast = wx?.forecast || [];
   const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
@@ -1286,25 +1316,24 @@ function renderDetail({ scroll = false } = {}) {
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
-  ${(() => { const _dSp = getSponsor(resort.id); return _dSp ? `
-  <div class="sponsor-detail-block">
-    <span class="sponsor-detail-lbl">Featured Partner</span>
-    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
-  </div>` : ''; })()}
-
   <div class="detail-header-rebuilt" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch">
 
     <div class="detail-top-card" style="background:linear-gradient(135deg, rgba(43,109,233,.10), rgba(43,109,233,.18));border:1px solid rgba(43,109,233,.22);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:210px">
       <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Selected Mountain</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Selected Mountain</div>
+          ${sponsor ? `<div class="featured-pill">Featured Partner</div>` : ''}
+        </div>
         <div style="font-size:28px;font-weight:800;line-height:1.06;letter-spacing:-.03em;color:var(--text);margin-top:10px">${esc(resort.name)}</div>
         <div style="font-size:13px;color:var(--muted);margin-top:8px">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
+        ${sponsor?.tagline ? `<div style="font-size:13px;line-height:1.55;color:var(--muted);margin-top:10px">${esc(sponsor.tagline)}</div>` : ''}
         <div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:12px">
           ${wx ? `Forecast-driven pick with terrain, price, and crowds taken into account for this mountain.` : `Mountain details are loading — weather and score will fill in as live data arrives.`}
         </div>
       </div>
       <div class="dhr-actions" style="margin-top:14px;flex-wrap:wrap;gap:8px">
         <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See Full Report →</a>
+        ${sponsor ? `<a class="btn-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Now →</a>` : ''}
         ${resort.website ? `<a class="dhr-link-secondary" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ''}
       </div>
     </div>
