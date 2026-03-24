@@ -25,8 +25,17 @@ function isRememberChecked() {
 
 
 // ─── Sponsor configuration ────────────────────────────────────────────────────
-// Partners are configured in featured-partners.js — edit that file to add/remove.
-const SPONSORS = (typeof FEATURED_PARTNERS !== 'undefined') ? FEATURED_PARTNERS : {};
+// Add active paying partners here. Key = resort ID from RESORTS data.
+const SPONSORS = {
+  'ragged-mountain-resort': {
+    bookingUrl: 'https://www.raggedmountainresort.com/tickets',
+    tagline:    'Indy Pass accepted · Book direct for best rates',
+  },
+    'bousquet-ski-area': {
+    bookingUrl: 'https://bousquetmountain.com/season-passes/',
+    tagline:    'Next Year Season Passes On Sale',
+  },
+};
 function getSponsor(resortId) { return SPONSORS[resortId] || null; }
 
 // ─── Inject sponsor CSS once ──────────────────────────────────────────────────
@@ -135,6 +144,10 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
   letter-spacing: .04em;
   box-shadow: 0 4px 12px rgba(43,109,233,.18);
 }
+    .row-name-link {
+      color: inherit; text-decoration: none; font-weight: inherit;
+    }
+    .row-name-link:hover { color: #2b6de9; text-decoration: underline; }
 `;
   document.head.appendChild(style);
 })();
@@ -256,7 +269,6 @@ function formatDrive(resortId) {
 }
 function formatDistanceFromOrigin(resortId) {
   const resort = RESORTS.find(r => r.id === resortId);
-  const sponsor = (typeof getSponsor === 'function') ? getSponsor(resort.id) : null;
   if (!resort || !state.origin) return 'Distance: TBD';
   let km = null;
   const cached = state.driveCache[resortId];
@@ -1145,7 +1157,7 @@ function renderCompareTable(resorts) {
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
-        <td><div class="row-name">${esc(resort.name)}</div></td>
+        <td><div class="row-name"><a href="/ski-report/${resort.id}/" class="row-name-link">${esc(resort.name)}</a></div></td>
         <td>${esc(resort.state)}</td>
         <td>${esc(resort.passGroup)}</td>
         <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" aria-label="Score ${planner} — hover for breakdown">${planner}</span></td>
@@ -1308,6 +1320,7 @@ function renderDetail({ scroll = false } = {}) {
     return `data-bd="${btoa(bd)}"`;
   })() : '';
 
+  const sponsor = getSponsor(resort.id);
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
