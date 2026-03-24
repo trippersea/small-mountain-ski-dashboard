@@ -53,24 +53,30 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
       padding: 2px 7px; border-radius: 999px; vertical-align: middle;
     }
     .sponsor-detail-block {
-      background: #0f1f35;
-      padding: 13px 18px;
-      display: flex; align-items: center;
-      justify-content: space-between; gap: 12px;
-      margin-bottom: 0;
+      background: #edf4ff; border: 1.5px solid #bfdbfe;
+      border-radius: 12px; padding: 16px 20px;
+      margin: 0 auto 14px; max-width: 360px;
+      text-align: center;
     }
     .sponsor-detail-lbl {
       font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: #6ee7b7;
+      letter-spacing: .1em; color: #2b6de9; margin-bottom: 5px;
     }
+    .sponsor-detail-name { font-size: 14px; font-weight: 800; color: #1b2a3a; margin-bottom: 3px; }
+    .sponsor-detail-tagline { font-size: 12px; color: #667a96; margin-bottom: 12px; line-height: 1.5; }
     .sponsor-detail-btn {
       display: inline-block;
       background: #2b6de9; color: #fff !important; font-size: 13px; font-weight: 700;
-      padding: 9px 20px; border-radius: 999px; text-decoration: none;
-      white-space: nowrap; flex-shrink: 0;
+      padding: 9px 22px; border-radius: 999px; text-decoration: none;
       transition: background .12s;
     }
     .sponsor-detail-btn:hover { background: #1d5fd4; }
+    .detail-text-link {
+      font-size: 12px; font-weight: 600; color: #667a96;
+      text-decoration: none; padding: 4px 0;
+      transition: color .12s;
+    }
+    .detail-text-link:hover { color: #2b6de9; }
   `;
   document.head.appendChild(style);
 })();
@@ -1229,13 +1235,29 @@ function renderDetail({ scroll = false } = {}) {
   // Vercel rewrites /report/:slug → /ski-report/:slug/, so we must use resort.id.
   const reportSlug = resort.id;
 
+  // Build tooltip data-bd attr for the score ring (same format as table tooltip)
+  const detailBdAttr = skis ? (() => {
+    const f = skis.factors;
+    const bd = JSON.stringify({
+      snow:       +f.snow.toFixed(1),
+      skiability: +f.skiability.toFixed(1),
+      fit:        +f.fit.toFixed(1),
+      drive:      +f.drive.toFixed(1),
+      value:      +f.value.toFixed(1),
+      crowd:      +f.crowd.toFixed(1),
+    });
+    return `data-bd="${btoa(bd)}"`;
+  })() : '';
+
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
   ${(() => { const _dSp = getSponsor(resort.id); return _dSp ? `
   <div class="sponsor-detail-block">
-    <span class="sponsor-detail-lbl">Featured Partner</span>
-    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
+    <div class="sponsor-detail-lbl">Featured Partner</div>
+    <div class="sponsor-detail-name">${esc(resort.name)}</div>
+    <div class="sponsor-detail-tagline">${esc(_dSp.tagline)}</div>
+    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Direct →</a>
   </div>` : ''; })()}
   <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <div class="detail-header">
@@ -1250,15 +1272,15 @@ function renderDetail({ scroll = false } = {}) {
     </div>
     <div class="detail-header-right">
       ${skis ? `
-        <div class="detail-score-ring ${ringCls}" title="Composite Ski Score out of 100">
+        <div class="detail-score-ring ${ringCls} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown" style="cursor:pointer">
           <div class="detail-score-num">${skis.skiScore}</div>
           <div class="detail-score-lbl">Ski Score</div>
         </div>` : ''}
-      <div class="detail-header-actions">
+      <div class="detail-header-actions" style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+        <a class="btn btn-secondary" href="/ski-report/${esc(reportSlug)}/" style="padding:7px 16px;font-size:13px;">See Full Report →</a>
         ${resort.website
-          ? `<a class="btn btn-primary detail-website-btn" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>`
+          ? `<a class="detail-text-link" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>`
           : ''}
-        <a class="btn btn-secondary" href="/report/${esc(reportSlug)}">Full Report</a>
       </div>
     </div>
   </div>
