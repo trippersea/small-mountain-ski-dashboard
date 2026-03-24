@@ -1228,66 +1228,48 @@ function renderDetail({ scroll = false } = {}) {
   const crowd = crowdForecast(resort);
   const tb    = resort.terrainBreakdown;
 
-  // ── Pass badge color class ──────────────────────────────────────────────────
-  const passCls = ({
-    'Epic':        'detail-badge--pass-epic',
-    'Ikon':        'detail-badge--pass-ikon',
-    'Indy':        'detail-badge--pass-indy',
-    'Independent': 'detail-badge--pass-independent',
-  })[resort.passGroup] || '';
-
-  // ── Ski Score ring color ────────────────────────────────────────────────────
-  const ringCls = skis
-    ? (skis.skiScore >= 70 ? 'detail-score-ring--great'
-      : skis.skiScore >= 45 ? ''
-      : 'detail-score-ring--low')
-    : '';
-
-  // ── Score factor rows ───────────────────────────────────────────────────────
-  const factorRows = skis ? [
-    ['Snow Quality',  skis.factors.snow],
-    ['Skiability',    skis.factors.skiability],
-    ['Mountain Fit',  skis.factors.fit],
-    ['Drive',         skis.factors.drive],
-    ['Value',         skis.factors.value],
-    ['Decision Summary', skis.factors.crowd],
-  ].map(([label, val]) =>
-    `<div class="detail-factor-row">
-       <span class="detail-factor-lbl">${label}</span>
-       <strong class="detail-factor-val">${val}</strong>
-     </div>`
-  ).join('') : '';
-
-  // ── Snow history + forecast ─────────────────────────────────────────────────
+  const forecast = wx?.forecast || [];
+  const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
+  const bestDay = forecast.length ? forecast.reduce((best, day) => (day.snow > best.snow ? day : best), forecast[0]) : null;
   const hist  = historyCache.get(resort.id);
-  const spark = hist ? snowSparkline(hist.days) : null;
-  const histHtml = hist
-    ? `<div class="history-row">
-         <span class="history-label">Last 7 days</span>
-         <span class="history-total">${hist.total}"</span>
-         ${spark || ''}
-       </div>`
-    : `<div class="muted small">Loading recent snowfall…</div>`;
 
-  const fcHtml = wx
-    ? `<div class="forecast-rows" style="margin-top:10px">
-         ${(wx.forecast || []).map(f => `
-           <div class="forecast-row">
-             <span class="forecast-day">${f.day}</span>
-             <span class="forecast-snow ${f.snow >= 4 ? 'snow-big' : f.snow >= 1 ? 'snow-med' : ''}">
-               ${f.snow.toFixed(1)}"
-             </span>
-             <span class="forecast-temps">${f.lo}° – ${f.hi}°F · ${f.wind || 0} mph</span>
-           </div>`).join('')}
-       </div>`
-    : '<div class="muted small" style="margin-top:8px">Weather loading…</div>';
+  const factorEntries = skis ? [
+    ['Snow Quality', skis.factors.snow, skis.factors.snow >= 18 ? 'Strong' : skis.factors.snow >= 12 ? 'Solid' : 'Mixed'],
+    ['Skiability', skis.factors.skiability, skis.factors.skiability >= 22 ? 'High' : skis.factors.skiability >= 16 ? 'Good' : 'Limited'],
+    ['Mountain Fit', skis.factors.fit, skis.factors.fit >= 18 ? 'Good fit' : skis.factors.fit >= 12 ? 'Balanced' : 'Niche'],
+    ['Drive', skis.factors.drive, skis.factors.drive >= 14 ? 'Easy' : skis.factors.drive >= 8 ? 'Manageable' : 'Longer'],
+    ['Value', skis.factors.value, skis.factors.value >= 14 ? 'Strong' : skis.factors.value >= 8 ? 'Fair' : 'Premium'],
+    ['Crowds', skis.factors.crowd, skis.factors.crowd >= 14 ? 'Favorable' : skis.factors.crowd >= 8 ? 'Moderate' : 'Busy'],
+  ] : [];
 
-  // ── Report slug for "Full Report" link ─────────────────────────────────────
-  // Static pages are generated at /ski-report/{resort.id}/ by generate-mountain-pages.mjs.
-  // Vercel rewrites /report/:slug → /ski-report/:slug/, so we must use resort.id.
+  const factorGridHtml = skis ? `
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;align-content:start;">
+      ${factorEntries.map(([label, val, note]) => `
+        <div style="padding:12px 13px;border:1px solid var(--border);border-radius:14px;background:#fff;min-height:78px;display:flex;flex-direction:column;justify-content:space-between;">
+          <div style="font-size:12px;font-weight:700;color:var(--text);line-height:1.25">${label}</div>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:10px">
+            <span style="font-size:13px;color:var(--muted)">${note}</span>
+            <strong style="font-size:22px;line-height:1;color:var(--text)">${val}</strong>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;font-weight:700;color:var(--text)">Total Score</span>
+      <span style="font-size:30px;font-weight:800;line-height:1;color:var(--text)">${skis.skiScore}</span>
+    </div>` : '<div class="muted small" style="margin-top:12px">Weather loading…</div>';
+
+  const snowRowsHtml = wx ? `
+    <div style="display:grid;gap:8px;margin-top:12px;">
+      ${forecast.map(f => `
+        <div style="display:grid;grid-template-columns:48px 72px 1fr auto;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:${bestDay && f.day === bestDay.day ? 'rgba(43,109,233,.06)' : '#fff'};">
+          <div style="font-size:14px;font-weight:700;color:var(--text)">${f.day}</div>
+          <div style="font-size:24px;font-weight:800;line-height:1;color:${f.snow >= 1 ? 'var(--accent)' : 'var(--text)'}">${f.snow.toFixed(1)}<span style="font-size:16px">\"</span></div>
+          <div style="font-size:13px;color:var(--muted)">${f.lo}° – ${f.hi}°F · ${f.wind || 0} mph</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:${bestDay && f.day === bestDay.day ? 'var(--accent)' : 'var(--muted)'}">${bestDay && f.day === bestDay.day && f.snow > 0 ? 'Best Day' : ''}</div>
+        </div>`).join('')}
+    </div>` : '<div class="muted small" style="margin-top:12px">Weather loading…</div>';
+
   const reportSlug = resort.id;
-
-  // Build tooltip data-bd attr for the score ring (same format as table tooltip)
   const detailBdAttr = skis ? (() => {
     const f = skis.factors;
     const bd = JSON.stringify({
@@ -1309,15 +1291,15 @@ function renderDetail({ scroll = false } = {}) {
     <span class="sponsor-detail-lbl">Featured Partner</span>
     <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
   </div>` : ''; })()}
-  <!-- ── Top recommendation cards ───────────────────────────────────── -->
+
   <div class="detail-header-rebuilt" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch">
 
-    <div class="detail-top-card" style="background:linear-gradient(135deg, rgba(43,109,233,.08), rgba(43,109,233,.16));border:1px solid rgba(43,109,233,.22);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:220px">
+    <div class="detail-top-card" style="background:linear-gradient(135deg, rgba(43,109,233,.10), rgba(43,109,233,.18));border:1px solid rgba(43,109,233,.22);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:210px">
       <div>
         <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Selected Mountain</div>
         <div style="font-size:28px;font-weight:800;line-height:1.06;letter-spacing:-.03em;color:var(--text);margin-top:10px">${esc(resort.name)}</div>
         <div style="font-size:13px;color:var(--muted);margin-top:8px">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
-        <div style="font-size:13px;line-height:1.7;color:var(--muted);margin-top:12px">
+        <div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:12px">
           ${wx ? `Forecast-driven pick with terrain, price, and crowds taken into account for this mountain.` : `Mountain details are loading — weather and score will fill in as live data arrives.`}
         </div>
       </div>
@@ -1327,7 +1309,7 @@ function renderDetail({ scroll = false } = {}) {
       </div>
     </div>
 
-    <div class="detail-top-card" style="background:var(--panel-2);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:220px">
+    <div class="detail-top-card" style="background:var(--panel-2);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:210px">
       <div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
           <div>
@@ -1341,22 +1323,28 @@ function renderDetail({ scroll = false } = {}) {
             </div>` : ''}
         </div>
 
-        <div style="font-size:13px;line-height:1.7;color:var(--muted);margin-top:14px">
-          Crowds: <strong style="color:var(--text)">${esc(crowd.label)}</strong><br>
-          Confidence: <strong style="color:var(--text)">${esc(crowd.confidence)}</strong>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+          <div style="padding:11px 12px;border-radius:14px;background:#fff;border:1px solid var(--border)">
+            <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Crowds</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:6px">${esc(crowd.label)}</div>
+          </div>
+          <div style="padding:11px 12px;border-radius:14px;background:#fff;border:1px solid var(--border)">
+            <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">3-Day Snow</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:6px">${wx ? `${stormTotal.toFixed(1)}\"` : '—'}</div>
+          </div>
         </div>
       </div>
 
       <div style="font-size:12px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid rgba(27,42,58,.08)">
         <div style="font-weight:700;margin-bottom:8px;color:var(--text)">Why this works</div>
         ${wx ? `
-          <div style="margin-top:6px">• ${(wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0).toFixed(1)}" over the next 3 days</div>
+          <div style="margin-top:6px">• ${bestDay && bestDay.snow > 0 ? `${bestDay.day} is the best day with ${bestDay.snow.toFixed(1)}\" expected` : `${stormTotal.toFixed(1)}\" over the next 3 days`}</div>
           <div style="margin-top:6px">• ${resort.price < 125 ? 'Solid value pricing' : 'Premium terrain and access'}</div>
           <div style="margin-top:6px">• ${crowd.label} crowd outlook</div>` : `<div>• Conditions are still loading.</div>`}
       </div>
     </div>
 
-    <div class="detail-top-card" style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;min-height:220px">
+    <div class="detail-top-card" style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;min-height:210px">
       <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Mountain Stats</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:14px;flex:1">
         <div>
@@ -1368,7 +1356,7 @@ function renderDetail({ scroll = false } = {}) {
           <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Trails</div>
         </div>
         <div>
-          <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${resort.avgSnowfall}"</div>
+          <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${resort.avgSnowfall}\"</div>
           <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Avg Snowfall</div>
         </div>
         <div>
@@ -1388,61 +1376,57 @@ function renderDetail({ scroll = false } = {}) {
 
   </div>
 
-  <!-- ── 2×2 Sub-cards ──────────────────────────────────────────────────── -->
-  <div class="detail-grid-new" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch;grid-auto-rows:1fr">
+  <div class="detail-grid-new" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch;grid-auto-rows:minmax(320px, auto)">
 
-    <!-- Terrain Mix -->
-    <div class="sub-card-new" style="display:flex;flex-direction:column;min-height:100%;height:100%">
-      <h3 class="sub-card-title-new">Terrain Breakdown</h3>
-      <div class="bar-row"><div>Beginner</div><div class="bar"><div class="bar-fill" style="width:${tb.beginner * 100}%"></div></div><div>${Math.round(tb.beginner * 100)}%</div></div>
-      <div class="bar-row"><div>Intermediate</div><div class="bar"><div class="bar-fill" style="width:${tb.intermediate * 100}%"></div></div><div>${Math.round(tb.intermediate * 100)}%</div></div>
-      <div class="bar-row"><div>Advanced</div><div class="bar"><div class="bar-fill" style="width:${tb.advanced * 100}%"></div></div><div>${Math.round(tb.advanced * 100)}%</div></div>
-      <div class="detail-extra-stats">
-        <div class="detail-extra-row"><span>Base / Summit</span><strong>${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</strong></div>
-        <div class="detail-extra-row"><span>Avg Snowfall</span><strong>${resort.avgSnowfall}"</strong></div>
-        <div class="detail-extra-row"><span>Night Skiing</span><strong>${resort.night ? 'Yes' : 'No'}</strong></div>
-        <div class="detail-extra-row"><span>Terrain Park</span><strong>${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
+    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
+      <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Terrain Mix</h3>
+      <div style="display:grid;gap:10px;">
+        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Beginner</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.beginner * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.beginner * 100)}%</div></div>
+        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Intermediate</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.intermediate * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.intermediate * 100)}%</div></div>
+        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Advanced</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.advanced * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.advanced * 100)}%</div></div>
+      </div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:grid;gap:10px;">
+        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Base / Summit</span><strong style="color:var(--text)">${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</strong></div>
+        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Avg Snowfall</span><strong style="color:var(--text)">${resort.avgSnowfall}\"</strong></div>
+        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Night Skiing</span><strong style="color:var(--text)">${resort.night ? 'Yes' : 'No'}</strong></div>
+        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Terrain Park</span><strong style="color:var(--text)">${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
       </div>
     </div>
 
-    <!-- Snow History & Forecast -->
-    <div class="sub-card-new" style="display:flex;flex-direction:column;min-height:100%;height:100%">
-      <h3 class="sub-card-title-new">Next 3 Days Snow</h3>
-      ${histHtml}
-      ${fcHtml}
+    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
+        <h3 class="sub-card-title-new" style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Next 3 Days Snow</h3>
+        ${wx && bestDay && bestDay.snow > 0 ? `<div style="font-size:12px;color:var(--muted)">Best day: <strong style="color:var(--text)">${bestDay.day}</strong></div>` : ''}
+      </div>
+      <div style="margin-top:10px;font-size:13px;color:var(--muted)">${hist ? `Recent 7-day snowfall: <strong style="color:var(--text)">${hist.total}\"</strong>` : 'Loading recent snowfall…'}</div>
+      ${snowRowsHtml}
     </div>
 
-    <!-- Why It Scores Well -->
-    <div class="sub-card-new" style="display:flex;flex-direction:column;min-height:100%;height:100%">
-      <h3 class="sub-card-title-new">Ski Score Breakdown</h3>
-      ${skis ? `
-        <div class="detail-score-factors">
-          ${factorRows}
-          <div class="detail-factor-row detail-factor-row--total">
-            <span class="detail-factor-lbl">Total Score</span>
-            <strong class="detail-factor-val">${skis.skiScore}</strong>
-          </div>
-        </div>` : '<div class="muted small">Weather loading…</div>'}
+    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
+        <h3 class="sub-card-title-new" style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Why It Scores Well</h3>
+        ${skis ? `<div style="font-size:12px;color:var(--muted)">6-factor view</div>` : ''}
+      </div>
+      ${factorGridHtml}
     </div>
 
-    <!-- Crowd Outlook -->
-    <div class="sub-card-new" style="display:flex;flex-direction:column;min-height:100%;height:100%">
-      <h3 class="sub-card-title-new">Crowd Outlook</h3>
-      <div style="display:flex;flex-direction:column;gap:14px;height:100%">
+    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
+      <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Decision Summary</h3>
+      <div style="display:grid;gap:14px;align-content:start;height:100%">
         <div>
-          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px">Best for</div>
+          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Best for</div>
           <div style="font-size:13px;line-height:1.7;color:var(--muted)">Skiers who want ${crowd.label.toLowerCase()} traffic, ${resort.price < 125 ? 'solid value' : 'destination-style terrain'}, and ${resort.avgSnowfall >= 200 ? 'reliable snowfall.' : 'a balanced all-around day.'}</div>
         </div>
         <div style="padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--border)">
           <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Watch-out</div>
           <div style="font-size:13px;line-height:1.7;color:var(--muted)">${resort.price >= 175 ? 'Expect a higher ticket price than average.' : 'Check conditions if fresh snow is your top priority.'}</div>
         </div>
-        <div>
-          <div class="detail-crowd-label ${crowdClass(crowd.label)}" style="margin-bottom:6px">${crowd.label} crowds</div>
+        <div style="margin-top:auto;padding-top:4px">
+          <div class="detail-crowd-label ${crowdClass(crowd.label)}" style="margin-bottom:6px;font-size:18px;font-weight:800;color:var(--accent)">${crowd.label} crowds</div>
           <div style="font-size:12px;color:var(--muted)">Confidence: <strong style="color:var(--text)">${crowd.confidence}</strong></div>
           ${crowd.reasons.length
-            ? `<div class="detail-crowd-reasons">
-                 ${crowd.reasons.map(r => `<div class="detail-crowd-reason">• ${esc(r)}</div>`).join('')}
+            ? `<div class="detail-crowd-reasons" style="margin-top:10px;display:grid;gap:6px">
+                 ${crowd.reasons.map(r => `<div class="detail-crowd-reason" style="font-size:13px;color:var(--muted)">• ${esc(r)}</div>`).join('')}
                </div>`
             : ''}
         </div>
