@@ -31,6 +31,10 @@ const SPONSORS = {
     bookingUrl: 'https://www.raggedmountainresort.com/tickets',
     tagline:    'Indy Pass accepted · Book direct for best rates',
   },
+    'bousquet-ski-area': {
+    bookingUrl: 'https://bousquetmountain.com/season-passes/',
+    tagline:    'Next Year Season Passes On Sale',
+  },
 };
 function getSponsor(resortId) { return SPONSORS[resortId] || null; }
 
