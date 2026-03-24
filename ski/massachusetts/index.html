@@ -361,6 +361,46 @@
     }
     .site-footer a { color: #2b6de9; text-decoration: none; }
     .site-footer a:hover { text-decoration: underline; }
+  
+    /* ── Featured partner row ── */
+    tr.featured-partner-row td {
+      background: #edf4ff;
+      border-bottom: 1px solid #bfdbfe;
+    }
+    tr.featured-partner-row td:first-child {
+      border-left: 3px solid #2b6de9;
+    }
+    .featured-badge {
+      display: inline-block;
+      background: #2b6de9;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      margin-left: 7px;
+      vertical-align: middle;
+    }
+    .featured-booking-link {
+      display: inline-block;
+      background: #2b6de9;
+      color: #fff !important;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 999px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .12s;
+    }
+    .featured-booking-link:hover { background: #1d5fd4; }
+    .featured-disclosure {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 6px;
+      padding: 0 2px;
+    }
   </style>
 </head>
 <body>
@@ -420,6 +460,20 @@
         </tr>
       </thead>
       <tbody>
+        <tr class="featured-partner-row" data-featured-id="bousquet-ski-area">
+          <td>
+            <a href="/ski-report/bousquet-ski-area/" style="font-weight:700;color:#1a2030;text-decoration:none;">Bousquet</a>
+            <span class="featured-badge">Featured</span>
+            <div style="font-size:11px;color:#64748b;margin-top:3px;">Next Year Season Passes On Sale</div>
+          </td>
+          <td>750 ft</td>
+          <td>33</td>
+          <td>90"</td>
+          <td>$70</td>
+          <td>Indy Pass</td>
+          <td>Yes</td>
+          <td><a href="https://bousquetmountain.com/season-passes/" class="featured-booking-link" target="_blank" rel="noopener noreferrer">Book →</a></td>
+        </tr>
         
     <tr>
       <td><a href="/ski-report/jiminy-peak/">Jiminy Peak</a></td>
@@ -535,6 +589,7 @@
     </table>
   </div>
   <p style="font-size:12px;color:#94a3b8;margin-top:8px">*Ticket prices vary by date, demand, and age. Verify with the mountain before purchasing.</p>
+  <p class="featured-disclosure">Featured mountains are paid partners. Organic rankings are determined by conditions data only. <a href="/partners/" style="color:#94a3b8;">Learn more</a></p>
 
   <div class="nearby-links">
     <h2>Explore other states</h2>
