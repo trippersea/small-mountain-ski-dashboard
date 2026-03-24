@@ -1218,6 +1218,85 @@ function renderComparePanel() {
   els.comparePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+
+function detailSnowTotal(wx) {
+  return (wx?.forecast || []).reduce((sum, f) => sum + (f.snow || 0), 0);
+}
+
+function detailBestForecastDay(wx) {
+  const forecast = wx?.forecast || [];
+  if (!forecast.length) return null;
+  return forecast.reduce((best, day) => ((day.snow || 0) > (best?.snow || -1) ? day : best), null);
+}
+
+function detailReasonText(resort, wx, crowd) {
+  const reasons = [];
+  const snowTotal = detailSnowTotal(wx);
+  const bestDay = detailBestForecastDay(wx);
+  if (snowTotal >= 6) reasons.push(`Strong ${snowTotal.toFixed(1)}" snowfall setup over the next 3 days`);
+  else if (snowTotal >= 2) reasons.push(`Fresh ${snowTotal.toFixed(1)}" of forecast snow keeps conditions feeling worthwhile`);
+  if ((resort.night === true) || (resort.nightSkiing === true)) reasons.push('Night skiing adds flexibility if you are squeezing in extra laps');
+  if (typeof resort.price === 'number' && resort.price <= 99) reasons.push('Good value pricing compared with many destination mountains');
+  if (typeof resort.vertical === 'number' && resort.vertical >= 1800) reasons.push('Enough vertical to feel like a real day, not just a few quick laps');
+  if (crowd?.label && /low|light/i.test(crowd.label)) reasons.push('Lighter crowd outlook improves your odds of a smoother day');
+  if (bestDay && bestDay.snow >= 4) reasons.push(`${bestDay.day} looks like the best window to ski with ${bestDay.snow.toFixed(1)}" forecast`);
+  return reasons.slice(0, 3);
+}
+
+function detailRecommendationLabel(skis) {
+  if (!skis) return 'Conditions Loading';
+  if (skis.skiScore >= 75) return 'Go Now';
+  if (skis.skiScore >= 60) return 'Good Choice';
+  if (skis.skiScore >= 45) return 'Worth Considering';
+  return 'Maybe Skip';
+}
+
+function detailConfidenceLabel(skis) {
+  if (!skis) return 'Low';
+  if (skis.skiScore >= 75) return 'High';
+  if (skis.skiScore >= 60) return 'Medium';
+  return 'Low';
+}
+
+function detailInsightText(resort, wx, crowd) {
+  const snowTotal = detailSnowTotal(wx);
+  if (snowTotal >= 6) return `Strong snowfall makes ${resort.name} one of the better bets right now, especially if you want softer conditions and better coverage.`;
+  if (snowTotal >= 2) return `${resort.name} looks like a balanced pick with enough fresh snow to matter and enough terrain variety to make the trip feel worthwhile.`;
+  if (crowd?.label && /low|light/i.test(crowd.label)) return `${resort.name} stands out as a lower-stress option if you care more about avoiding crowds than chasing a powder day.`;
+  if ((resort.night === true) || (resort.nightSkiing === true)) return `${resort.name} is a flexible choice thanks to night skiing, approachable pricing, and enough variety for a full day on the hill.`;
+  return `${resort.name} is a dependable all-around option based on terrain mix, accessibility, and overall value.`;
+}
+
+function detailBestForText(resort, wx, crowd) {
+  const snowTotal = detailSnowTotal(wx);
+  const audience = [];
+  if ((resort.terrainBreakdown?.intermediate || 0) >= 0.4) audience.push('intermediate skiers');
+  if ((resort.night === true) || (resort.nightSkiing === true)) audience.push('people who want schedule flexibility');
+  if (typeof resort.price === 'number' && resort.price <= 99) audience.push('value-focused trips');
+  if (crowd?.label && /low|light/i.test(crowd.label)) audience.push('skiers trying to avoid crowds');
+  if (snowTotal >= 4) audience.push('anyone chasing fresher snow');
+  if (!audience.length) audience.push('skiers looking for a balanced all-around day');
+  return `Best for ${audience.slice(0, 3).join(', ')}.`;
+}
+
+function detailWatchoutText(resort, wx) {
+  const bestDay = detailBestForecastDay(wx);
+  const notes = [];
+  if (typeof resort.price === 'number' && resort.price >= 160) notes.push('ticket prices can climb quickly');
+  if (typeof resort.vertical === 'number' && resort.vertical < 900) notes.push('vertical is on the smaller side');
+  if ((resort.terrainBreakdown?.advanced || 0) < 0.2) notes.push('expert terrain is limited');
+  if (bestDay && bestDay.wind >= 20) notes.push(`${bestDay.day} could ski windier than ideal`);
+  if (!notes.length) notes.push('conditions still depend on timing, weather shifts, and your preferred terrain style');
+  return `Watch-out: ${notes[0]}.`;
+}
+
+function detailFactorSummary(label, value) {
+  if (value >= 8.5) return { icon: '✔', text: 'Strong' };
+  if (value >= 6.5) return { icon: '✔', text: 'Solid' };
+  if (value >= 4.5) return { icon: '•', text: 'Balanced' };
+  return { icon: '⚠', text: 'Weaker' };
+}
+
 function renderDetail({ scroll = false } = {}) {
   const resort = RESORTS.find(r => r.id === state.selectedId);
   if (!resort) { els.detailSection.classList.add('hidden'); return; }
@@ -1227,38 +1306,24 @@ function renderDetail({ scroll = false } = {}) {
   const skis  = wx ? skiScoreBreakdown(resort, wx, 0) : null;
   const crowd = crowdForecast(resort);
   const tb    = resort.terrainBreakdown;
+  const reasons = detailReasonText(resort, wx, crowd);
+  const bestDay = detailBestForecastDay(wx);
 
-  // ── Pass badge color class ──────────────────────────────────────────────────
-  const passCls = ({
-    'Epic':        'detail-badge--pass-epic',
-    'Ikon':        'detail-badge--pass-ikon',
-    'Indy':        'detail-badge--pass-indy',
-    'Independent': 'detail-badge--pass-independent',
-  })[resort.passGroup] || '';
-
-  // ── Ski Score ring color ────────────────────────────────────────────────────
-  const ringCls = skis
-    ? (skis.skiScore >= 70 ? 'detail-score-ring--great'
-      : skis.skiScore >= 45 ? ''
-      : 'detail-score-ring--low')
-    : '';
-
-  // ── Score factor rows ───────────────────────────────────────────────────────
   const factorRows = skis ? [
     ['Snow Quality',  skis.factors.snow],
     ['Skiability',    skis.factors.skiability],
-    ['Mountain Fit',  skis.factors.fit],
+    ['Terrain Fit',   skis.factors.fit],
     ['Drive',         skis.factors.drive],
     ['Value',         skis.factors.value],
     ['Crowd Outlook', skis.factors.crowd],
-  ].map(([label, val]) =>
-    `<div class="detail-factor-row">
-       <span class="detail-factor-lbl">${label}</span>
-       <strong class="detail-factor-val">${val}</strong>
-     </div>`
-  ).join('') : '';
+  ].map(([label, val]) => {
+    const summary = detailFactorSummary(label, val);
+    return `<div class="detail-factor-row" style="padding:10px 12px;border-bottom:none;border-radius:12px;background:var(--bg);margin-bottom:8px">
+       <span class="detail-factor-lbl" style="display:flex;align-items:center;gap:8px;color:var(--text)"><span style="font-size:14px">${summary.icon}</span>${label}</span>
+       <strong class="detail-factor-val">${summary.text}</strong>
+     </div>`;
+  }).join('') : '';
 
-  // ── Snow history + forecast ─────────────────────────────────────────────────
   const hist  = historyCache.get(resort.id);
   const spark = hist ? snowSparkline(hist.days) : null;
   const histHtml = hist
@@ -1270,24 +1335,26 @@ function renderDetail({ scroll = false } = {}) {
     : `<div class="muted small">Loading recent snowfall…</div>`;
 
   const fcHtml = wx
-    ? `<div class="forecast-rows" style="margin-top:10px">
-         ${(wx.forecast || []).map(f => `
-           <div class="forecast-row">
-             <span class="forecast-day">${f.day}</span>
-             <span class="forecast-snow ${f.snow >= 4 ? 'snow-big' : f.snow >= 1 ? 'snow-med' : ''}">
-               ${f.snow.toFixed(1)}"
-             </span>
-             <span class="forecast-temps">${f.lo}° – ${f.hi}°F · ${f.wind || 0} mph</span>
-           </div>`).join('')}
+    ? `<div class="forecast-rows" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+         ${(wx.forecast || []).map(f => {
+            const isBest = bestDay && f.day === bestDay.day && (bestDay.snow || 0) > 0;
+            return `
+           <div class="forecast-row" style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:${isBest ? 'rgba(43,109,233,.06)' : 'var(--panel)'}">
+             <div>
+               <span class="forecast-day" style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">${f.day}</span>
+               <span class="forecast-snow ${f.snow >= 4 ? 'snow-big' : f.snow >= 1 ? 'snow-med' : ''}" style="display:flex;align-items:center;gap:8px;margin-top:4px;font-size:22px;font-weight:800">
+                 ${f.snow.toFixed(1)}"
+                 ${isBest ? '<span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(43,109,233,.12);color:var(--accent);padding:4px 8px;border-radius:999px">Best Day</span>' : ''}
+               </span>
+             </div>
+             <span class="forecast-temps" style="text-align:right;font-size:12px;line-height:1.5;color:var(--muted)">${f.lo}° – ${f.hi}°F<br>${f.wind || 0} mph wind</span>
+           </div>`;
+         }).join('')}
        </div>`
     : '<div class="muted small" style="margin-top:8px">Weather loading…</div>';
 
-  // ── Report slug for "Full Report" link ─────────────────────────────────────
-  // Static pages are generated at /ski-report/{resort.id}/ by generate-mountain-pages.mjs.
-  // Vercel rewrites /report/:slug → /ski-report/:slug/, so we must use resort.id.
   const reportSlug = resort.id;
 
-  // Build tooltip data-bd attr for the score ring (same format as table tooltip)
   const detailBdAttr = skis ? (() => {
     const f = skis.factors;
     const bd = JSON.stringify({
@@ -1309,28 +1376,45 @@ function renderDetail({ scroll = false } = {}) {
     <span class="sponsor-detail-lbl">Featured Partner</span>
     <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
   </div>` : ''; })()}
-  <!-- ── Header ── -->
-  <div class="detail-header-rebuilt">
-    <div class="dhr-top">
-      <div class="dhr-name-col">
-        <div class="dhr-eyebrow">Selected Mountain</div>
-        <h2>${esc(resort.name)}</h2>
-        <div class="dhr-sub">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
+
+  <div class="detail-header-rebuilt detail-header-rebuilt--v2" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:20px;align-items:start">
+    <div>
+      <div class="dhr-eyebrow">Selected Mountain</div>
+      <h2 style="font-size:30px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px">${esc(resort.name)}</h2>
+      <div class="dhr-sub">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
+      <p style="margin-top:12px;font-size:14px;line-height:1.7;color:var(--muted);max-width:60ch">${esc(detailInsightText(resort, wx, crowd))}</p>
+      <div class="dhr-actions" style="margin-top:16px;flex-wrap:wrap">
+        <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">View Full Breakdown →</a>
+        ${resort.website ? `<a class="dhr-link-secondary" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ''}
       </div>
-      ${skis ? `
-        <div class="detail-score-ring-new ${skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low'} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown">
-          <div class="dsrn-num">${skis.skiScore}</div>
-          <div class="dsrn-lbl">Ski Score</div>
-        </div>` : ''}
     </div>
-    <div class="dhr-actions">
-      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See Full Report →</a>
-      ${resort.website ? `<a class="dhr-link-secondary" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ''}
+
+    <div class="detail-decision-panel" style="background:var(--panel-2);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:var(--shadow-sm)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Recommendation</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text);margin-top:6px">${detailRecommendationLabel(skis)}</div>
+        </div>
+        ${skis ? `
+          <div class="detail-score-ring-new ${skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low'} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown">
+            <div class="dsrn-num">${skis.skiScore}</div>
+            <div class="dsrn-lbl">Ski Score</div>
+          </div>` : ''}
+      </div>
+
+      <div style="font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:12px">
+        Crowds: <strong style="color:var(--text)">${esc(crowd.label)}</strong><br>
+        Confidence: <strong style="color:var(--text)">${esc(detailConfidenceLabel(skis))}</strong>
+      </div>
+
+      <div style="font-size:12px;color:var(--muted)">
+        <div style="font-weight:700;margin-bottom:8px;color:var(--text)">Why this works</div>
+        ${reasons.length ? reasons.map(r => `<div style="margin-top:6px">• ${esc(r)}</div>`).join('') : '<div>• Conditions are still loading.</div>'}
+      </div>
     </div>
   </div>
 
-  <!-- ── Stats Strip ────────────────────────────────────────────────────── -->
-  <div class="detail-stats-strip">
+  <div class="detail-stats-strip" style="margin-top:8px">
     <div class="detail-stat">
       <div class="detail-stat-val">${resort.vertical.toLocaleString()} ft</div>
       <div class="detail-stat-lbl">Vertical</div>
@@ -1353,55 +1437,54 @@ function renderDetail({ scroll = false } = {}) {
     </div>
   </div>
 
-  <!-- ── 2×2 Sub-cards ──────────────────────────────────────────────────── -->
-  <div class="detail-grid-new">
+  <div class="detail-grid-new" style="margin-top:12px">
 
-    <!-- Terrain Breakdown -->
     <div class="sub-card-new">
-      <h3 class="sub-card-title-new">Terrain Breakdown</h3>
+      <h3 class="sub-card-title-new">Terrain Mix</h3>
       <div class="bar-row"><div>Beginner</div><div class="bar"><div class="bar-fill" style="width:${tb.beginner * 100}%"></div></div><div>${Math.round(tb.beginner * 100)}%</div></div>
       <div class="bar-row"><div>Intermediate</div><div class="bar"><div class="bar-fill" style="width:${tb.intermediate * 100}%"></div></div><div>${Math.round(tb.intermediate * 100)}%</div></div>
       <div class="bar-row"><div>Advanced</div><div class="bar"><div class="bar-fill" style="width:${tb.advanced * 100}%"></div></div><div>${Math.round(tb.advanced * 100)}%</div></div>
       <div class="detail-extra-stats">
         <div class="detail-extra-row"><span>Base / Summit</span><strong>${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</strong></div>
-        <div class="detail-extra-row"><span>Avg Snowfall</span><strong>${resort.avgSnowfall}"</strong></div>
-        <div class="detail-extra-row"><span>Night Skiing</span><strong>${resort.night ? 'Yes' : 'No'}</strong></div>
+        <div class="detail-extra-row"><span>Night Skiing</span><strong>${(resort.night === true) || (resort.nightSkiing === true) ? 'Yes' : 'No'}</strong></div>
         <div class="detail-extra-row"><span>Terrain Park</span><strong>${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
+        <div class="detail-extra-row"><span>Best For</span><strong style="max-width:58%;text-align:right">${esc(detailBestForText(resort, wx, crowd).replace(/^Best for\s*/i, '').replace(/\.$/, ''))}</strong></div>
       </div>
     </div>
 
-    <!-- Snow History & Forecast -->
     <div class="sub-card-new">
-      <h3 class="sub-card-title-new">Snow History &amp; Forecast</h3>
+      <h3 class="sub-card-title-new">Next 3 Days Snow</h3>
       ${histHtml}
       ${fcHtml}
     </div>
 
-    <!-- Ski Score Breakdown -->
     <div class="sub-card-new">
-      <h3 class="sub-card-title-new">Ski Score Breakdown</h3>
+      <h3 class="sub-card-title-new">Why It Scores Well</h3>
       ${skis ? `
         <div class="detail-score-factors">
           ${factorRows}
-          <div class="detail-factor-row detail-factor-row--total">
-            <span class="detail-factor-lbl">Total Score</span>
-            <strong class="detail-factor-val">${skis.skiScore}</strong>
-          </div>
         </div>` : '<div class="muted small">Weather loading…</div>'}
     </div>
 
-    <!-- Crowd Outlook -->
     <div class="sub-card-new">
-      <h3 class="sub-card-title-new">Crowd Outlook</h3>
-      <div class="detail-crowd-label ${crowdClass(crowd.label)}">${crowd.label}</div>
-      <div class="detail-extra-stats">
-        <div class="detail-extra-row"><span>Confidence</span><strong>${crowd.confidence}</strong></div>
+      <h3 class="sub-card-title-new">Decision Summary</h3>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px">Best for</div>
+          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${esc(detailBestForText(resort, wx, crowd))}</div>
+        </div>
+        <div style="padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--border)">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Watch-out</div>
+          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${esc(detailWatchoutText(resort, wx))}</div>
+        </div>
+        <div>
+          <div class="detail-crowd-label ${crowdClass(crowd.label)}" style="font-size:18px;margin-bottom:6px">${esc(crowd.label)} crowds</div>
+          <div style="font-size:12px;color:var(--muted)">Confidence: <strong style="color:var(--text)">${esc(crowd.confidence)}</strong></div>
+          ${crowd.reasons.length
+            ? `<div class="detail-crowd-reasons">${crowd.reasons.map(r => `<div class="detail-crowd-reason">• ${esc(r)}</div>`).join('')}</div>`
+            : ''}
+        </div>
       </div>
-      ${crowd.reasons.length
-        ? `<div class="detail-crowd-reasons">
-             ${crowd.reasons.map(r => `<div class="detail-crowd-reason">· ${esc(r)}</div>`).join('')}
-           </div>`
-        : ''}
     </div>
 
   </div>
