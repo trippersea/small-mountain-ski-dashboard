@@ -53,21 +53,21 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
       padding: 2px 7px; border-radius: 999px; vertical-align: middle;
     }
     .sponsor-detail-block {
-      background: #edf4ff; border: 1.5px solid #bfdbfe;
-      border-radius: 12px; padding: 16px 20px;
-      margin: 0 auto 14px; max-width: 360px;
-      text-align: center;
+      background: #0f1f35;
+      padding: 13px 18px;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+      margin-bottom: 0;
     }
     .sponsor-detail-lbl {
       font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: #2b6de9; margin-bottom: 5px;
+      letter-spacing: .1em; color: #6ee7b7;
     }
-    .sponsor-detail-name { font-size: 14px; font-weight: 800; color: #1b2a3a; margin-bottom: 3px; }
-    .sponsor-detail-tagline { font-size: 12px; color: #667a96; margin-bottom: 12px; line-height: 1.5; }
     .sponsor-detail-btn {
       display: inline-block;
       background: #2b6de9; color: #fff !important; font-size: 13px; font-weight: 700;
-      padding: 9px 22px; border-radius: 999px; text-decoration: none;
+      padding: 9px 20px; border-radius: 999px; text-decoration: none;
+      white-space: nowrap; flex-shrink: 0;
       transition: background .12s;
     }
     .sponsor-detail-btn:hover { background: #1d5fd4; }
@@ -1234,10 +1234,8 @@ function renderDetail({ scroll = false } = {}) {
 
   ${(() => { const _dSp = getSponsor(resort.id); return _dSp ? `
   <div class="sponsor-detail-block">
-    <div class="sponsor-detail-lbl">Featured Partner</div>
-    <div class="sponsor-detail-name">${esc(resort.name)}</div>
-    <div class="sponsor-detail-tagline">${esc(_dSp.tagline)}</div>
-    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Direct →</a>
+    <span class="sponsor-detail-lbl">Featured Partner</span>
+    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
   </div>` : ''; })()}
   <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <div class="detail-header">

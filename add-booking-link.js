@@ -31,28 +31,24 @@ const SPONSORS = {
 
 // ─── CSS injected once per patched page ───────────────────────────────────────
 const SIDEBAR_CSS = `
-    /* ── Featured Partner hero block ── */
+    /* ── Featured Partner hero strip ── */
     .hero-sponsor-block {
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-top: 16px;
+      background: rgba(0,0,0,.25);
+      border-top: 1px solid rgba(255,255,255,.12);
+      padding: 13px 28px;
+      margin: 16px -28px 0;
       display: flex; align-items: center;
       justify-content: space-between; gap: 14px;
       flex-wrap: wrap;
     }
-    .hero-sponsor-left { display: flex; flex-direction: column; gap: 2px; }
     .hero-sponsor-badge {
       font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: #6ee7b7; margin-bottom: 3px;
+      letter-spacing: .1em; color: #6ee7b7;
     }
-    .hero-sponsor-name { font-size: 14px; font-weight: 800; color: #fff; }
-    .hero-sponsor-tagline { font-size: 11px; color: rgba(255,255,255,.55); }
     .hero-sponsor-btn {
       background: #2b6de9; color: #fff !important;
       font-size: 13px; font-weight: 700;
-      padding: 10px 20px; border-radius: 999px;
+      padding: 9px 20px; border-radius: 999px;
       text-decoration: none; white-space: nowrap;
       transition: background .12s; flex-shrink: 0;
     }
@@ -68,12 +64,8 @@ function buildSidebarHtml(resortName, sponsor) {
   return `
       <!-- Featured Partner Hero Block -->
       <div class="hero-sponsor-block" data-sponsor-id="${escHtml(resortName)}">
-        <div class="hero-sponsor-left">
-          <div class="hero-sponsor-badge">Featured Partner</div>
-          <div class="hero-sponsor-name">${escHtml(resortName)}</div>
-          <div class="hero-sponsor-tagline">${escHtml(sponsor.tagline)}</div>
-        </div>
-        <a href="${escHtml(sponsor.bookingUrl)}" class="hero-sponsor-btn" target="_blank" rel="noopener noreferrer">Book Direct →</a>
+        <span class="hero-sponsor-badge">Featured Partner</span>
+        <a href="${escHtml(sponsor.bookingUrl)}" class="hero-sponsor-btn" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
       </div>`;
 }
 
