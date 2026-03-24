@@ -9,9 +9,6 @@ function loadSavedWeights() {
   return { ...DEFAULT_WEIGHTS };
 }
 function loadSavedPassPreference() { return 'any'; }
-function loadSavedSkiDays() {
-  try { return Number(localStorage.getItem('ski-ski-days') || 5); } catch (e) { return 5; }
-}
 function getSavedOrigin() {
   try { const r = localStorage.getItem('ski-saved-origin'); return r ? JSON.parse(r) : null; } catch (e) { return null; }
 }
@@ -47,7 +44,6 @@ const state = Object.seal({
   mapMode:        'drive',
   weights:        loadSavedWeights(),
   passPreference: loadSavedPassPreference(),
-  skiDays:        loadSavedSkiDays(),
   tableSearch:    '',
   tableViewAll:   false,
 });
@@ -405,7 +401,6 @@ function serializeState() {
   if (state.sortBy      !== 'planner') p.set('sort',  state.sortBy);
   if (state.nightOnly)                 p.set('night', '1');
   if (state.howFar > 0)                p.set('howfar', state.howFar);
-  if (state.skiDays !== 5)             p.set('days',  state.skiDays);
   if (state.origin) {
     p.set('lat', state.origin.lat.toFixed(4));
     p.set('lon', state.origin.lon.toFixed(4));
@@ -431,7 +426,6 @@ function applyUrlState() {
   if (p.has('sort'))   state.sortBy   = p.get('sort');
   if (p.has('night'))  state.nightOnly = true;
   if (p.has('howfar')) state.howFar = Math.min(2, Number(p.get('howfar')) || 0);
-  if (p.has('days'))   state.skiDays = Math.max(1, Number(p.get('days')) || 5);
   const lat = parseFloat(p.get('lat')), lon = parseFloat(p.get('lon')), loc = p.get('loc');
   if (!isNaN(lat) && !isNaN(lon) && loc) state.origin = { lat, lon, label: loc };
   // Pre-populate compare set from URL e.g. ?compare=stowe-mountain-resort,killington-resort
@@ -494,7 +488,6 @@ function savePlannerState() {
   try {
     localStorage.setItem('ski-planner-weights', JSON.stringify(state.weights));
     localStorage.setItem('ski-pass-pref',       state.passPreference);
-    localStorage.setItem('ski-ski-days',        String(state.skiDays));
   } catch (e) {}
 }
 
@@ -553,8 +546,6 @@ function syncPlannerControls() {
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
   const howfarGroup = document.querySelector('.priority-btns[data-key="howfar"]');
   if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
-  const skidaysGroup = document.querySelector('.priority-btns[data-key="skidays"]');
-  if (skidaysGroup) skidaysGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.skiDays));
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
@@ -911,7 +902,6 @@ function renderHiddenGems(resorts) {
   els.hiddenGemGrid.innerHTML = top.map(({ r }) => {
     const crowd    = crowdForecast(r);
     const drive    = formatDrive(r.id);
-    const passBE   = state.skiDays > 0 ? passBreakEven(r.passGroup, state.skiDays, r.price) : null;
     const reasons  = [
       `${crowd.label} crowds`,
       `$${r.price} ticket`,
@@ -923,7 +913,6 @@ function renderHiddenGems(resorts) {
       <div class="planner-title">${esc(r.name)}</div>
       <div class="planner-meta">${esc(r.state)} · ${esc(r.passGroup)}</div>
       <div class="gem-reasons">${reasons.map(re => `<span class="metric-chip">${esc(re)}</span>`).join('')}</div>
-      ${passBE && passBE.worthIt ? `<div class="gem-breakeven">Pass saves ~$${passBE.savings} over ${state.skiDays} days</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1836,10 +1825,6 @@ function wireEvents() {
         const _hfEl = document.getElementById('howFarFilter');
         if (_hfEl) _hfEl.value = String(state.howFar);
         if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
-      }
-      else if (key === 'skidays') {
-        state.skiDays = Number(btn.dataset.val);
-        try { localStorage.setItem('ski-ski-days', String(state.skiDays)); } catch(e) {}
       }
       else                     state.weights[key] = Number(btn.dataset.val);
       trackEvent('ski_preference_set', {
