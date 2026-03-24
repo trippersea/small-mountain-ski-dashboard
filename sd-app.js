@@ -130,20 +130,6 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
     }
     .dhr-link-secondary:hover { color: #2b6de9; }
   
-.featured-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #2b6de9;
-  color: #fff;
-  border: 1px solid #2b6de9;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 999px;
-  letter-spacing: .04em;
-  box-shadow: 0 4px 12px rgba(43,109,233,.18);
-}
     .row-name-link {
       color: inherit; text-decoration: none; font-weight: inherit;
     }
@@ -1324,14 +1310,17 @@ function renderDetail({ scroll = false } = {}) {
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
+  ${sponsor ? `
+  <div class="sponsor-detail-block">
+    <span class="sponsor-detail-lbl">Featured Partner</span>
+    <a class="sponsor-detail-btn" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
+  </div>` : ''}
+
   <!-- ── Header ── -->
   <div class="detail-header-rebuilt">
     <div class="dhr-top">
       <div class="dhr-name-col">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
-  <div class="dhr-eyebrow">Selected Mountain</div>
-  ${sponsor ? `<div class="featured-pill">Featured Partner</div>` : ``}
-</div>
+        <div class="dhr-eyebrow">Selected Mountain</div>
         <h2>${esc(resort.name)}</h2>
         <div class="dhr-sub">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
       </div>
@@ -1344,13 +1333,7 @@ function renderDetail({ scroll = false } = {}) {
     <div class="dhr-actions">
       <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See Full Report →</a>
       ${resort.website ? `<a class="dhr-link-secondary" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ''}
-    
-${sponsor ? `
-  <a class="btn-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer">
-    Book Now →
-  </a>
-` : ``}
-</div>
+    </div>
   </div>
 
   <!-- ── Stats Strip ────────────────────────────────────────────────────── -->
