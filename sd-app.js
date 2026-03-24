@@ -23,6 +23,59 @@ function isRememberChecked() {
   return cb ? cb.checked : false;
 }
 
+
+// ─── Sponsor configuration ────────────────────────────────────────────────────
+// Add active paying partners here. Key = resort ID from RESORTS data.
+// To activate: add entry, deploy. To remove: delete entry, deploy.
+const SPONSORS = {
+  'ragged-mountain-resort': {
+    label:      'Your Mountain',          // Display label (override resort name in badge)
+    bookingUrl: 'https://www.raggedmountainresort.com/tickets',
+    tagline:    'Indy Pass accepted · Book direct for best rates',
+  },
+};
+// Helper — returns sponsor data if resort is a paying partner, else null
+function getSponsor(resortId) { return SPONSORS[resortId] || null; }
+
+
+// ─── Inject sponsor CSS once ──────────────────────────────────────────────────
+(function injectSponsorCSS() {
+  const style = document.createElement('style');
+  style.textContent = `
+    .sponsored-row { outline: 2px solid #2b6de9; outline-offset: -1px; background: #edf4ff !important; }
+    .sponsored-row .row-name::after {
+      content: 'Featured'; margin-left: 8px;
+      background: #2b6de9; color: #fff;
+      font-size: 9px; font-weight: 700; letter-spacing: .05em;
+      padding: 2px 7px; border-radius: 999px; vertical-align: middle;
+    }
+    .mob-card-sponsored { border: 2px solid #2b6de9 !important; background: #f0f6ff !important; }
+    .mob-card-sponsored .mob-card-name::after {
+      content: 'Featured'; margin-left: 8px;
+      background: #2b6de9; color: #fff;
+      font-size: 9px; font-weight: 700; letter-spacing: .05em;
+      padding: 2px 7px; border-radius: 999px; vertical-align: middle;
+    }
+    .sponsor-detail-block {
+      background: #edf4ff; border: 1.5px solid #bfdbfe;
+      border-radius: 12px; padding: 16px 18px; margin-top: 14px;
+    }
+    .sponsor-detail-lbl {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: #2b6de9; margin-bottom: 6px;
+    }
+    .sponsor-detail-tagline { font-size: 12px; color: #667a96; margin-bottom: 12px; line-height: 1.5; }
+    .sponsor-detail-btn {
+      display: block; text-align: center;
+      background: #2b6de9; color: #fff; font-size: 13px; font-weight: 700;
+      padding: 10px; border-radius: 8px; text-decoration: none;
+      transition: background .12s;
+    }
+    .sponsor-detail-btn:hover { background: #1d5fd4; color: #fff; }
+  `;
+  document.head.appendChild(style);
+})();
+
 // ─── Application state ────────────────────────────────────────────────────────
 const state = Object.seal({
   search:         '',
@@ -1024,8 +1077,9 @@ function renderCompareTable(resorts) {
       return `data-bd="${btoa(bd)}"`;
     })() : '';
 
+    const _sp = getSponsor(resort.id);
     return `
-      <tr class="${resort.id === state.selectedId ? 'active-row' : ''}" data-id="${resort.id}">
+      <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td><div class="row-name">${esc(resort.name)}</div></td>
         <td>${esc(resort.state)}</td>
@@ -1204,6 +1258,12 @@ function renderDetail({ scroll = false } = {}) {
       </div>
     </div>
   </div>
+  ${(() => { const _dSp = getSponsor(resort.id); return _dSp ? `
+  <div class="sponsor-detail-block">
+    <div class="sponsor-detail-lbl">Featured Partner</div>
+    <div class="sponsor-detail-tagline">${esc(_dSp.tagline)}</div>
+    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book at ${esc(resort.name)} →</a>
+  </div>` : ''; })()}
 
   <!-- ── Stats Strip ────────────────────────────────────────────────────── -->
   <div class="detail-stats-strip">
@@ -1456,7 +1516,8 @@ function renderMobileCards(decorated) {
     const drive     = formatDrive(resort.id);
     const crowd     = crowdForecast(resort).label;
     const passColor = passColors[resort.passGroup] || '#90a4be';
-    return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
+    const _mobSp    = getSponsor(resort.id);
+    return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
       <div class="mob-card-top">
         <div class="mob-card-name">${esc(resort.name)}</div>
         ${score !== null ? `<div class="mob-card-score" title="Ski Score">${score}</div>` : ''}
