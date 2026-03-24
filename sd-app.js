@@ -38,6 +38,7 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
 (function injectSponsorCSS() {
   const style = document.createElement('style');
   style.textContent = `
+    /* ── Table sponsored row ── */
     .sponsored-row { outline: 2px solid #2b6de9; outline-offset: -1px; background: #edf4ff !important; }
     .sponsored-row .row-name::after {
       content: 'Featured'; margin-left: 8px;
@@ -45,6 +46,7 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
       font-size: 9px; font-weight: 700; letter-spacing: .05em;
       padding: 2px 7px; border-radius: 999px; vertical-align: middle;
     }
+    /* ── Mobile card sponsored ── */
     .mob-card-sponsored { border: 2px solid #2b6de9 !important; background: #f0f6ff !important; }
     .mob-card-sponsored .mob-card-name::after {
       content: 'Featured'; margin-left: 8px;
@@ -52,31 +54,77 @@ function getSponsor(resortId) { return SPONSORS[resortId] || null; }
       font-size: 9px; font-weight: 700; letter-spacing: .05em;
       padding: 2px 7px; border-radius: 999px; vertical-align: middle;
     }
+    /* ── Detail panel sponsor strip ── */
     .sponsor-detail-block {
       background: #0f1f35;
-      padding: 12px 18px;
+      padding: 11px 18px;
       display: flex; align-items: center;
       justify-content: space-between; gap: 12px;
-      margin-bottom: 0;
     }
     .sponsor-detail-lbl {
       font-size: 9px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .1em; color: #6ee7b7;
     }
     .sponsor-detail-btn {
-      display: inline-block;
-      background: #2b6de9; color: #fff !important; font-size: 13px; font-weight: 700;
-      padding: 9px 20px; border-radius: 999px; text-decoration: none;
-      white-space: nowrap; flex-shrink: 0;
+      background: #2b6de9; color: #fff !important;
+      font-size: 12px; font-weight: 700;
+      padding: 7px 16px; border-radius: 999px;
+      text-decoration: none; white-space: nowrap;
       transition: background .12s;
     }
     .sponsor-detail-btn:hover { background: #1d5fd4; }
-    .detail-text-link {
-      font-size: 12px; font-weight: 600; color: #667a96;
-      text-decoration: none; padding: 4px 0;
-      transition: color .12s;
+    /* ── Detail panel header ── */
+    .detail-header-rebuilt {
+      padding: 14px 18px 10px;
     }
-    .detail-text-link:hover { color: #2b6de9; }
+    .detail-header-rebuilt .dhr-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 12px;
+      margin-bottom: 10px;
+    }
+    .detail-header-rebuilt .dhr-name-col { flex: 1; min-width: 0; }
+    .detail-header-rebuilt .dhr-eyebrow {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: #667a96; margin-bottom: 4px;
+    }
+    .detail-header-rebuilt h2 {
+      font-size: 20px; font-weight: 800; color: #1b2a3a;
+      letter-spacing: -.02em; margin: 0 0 4px;
+    }
+    .detail-header-rebuilt .dhr-sub {
+      font-size: 12px; color: #667a96;
+    }
+    .detail-score-ring-new {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #22b38a;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer;
+    }
+    .detail-score-ring-new.ring-low { background: #d95b5b; }
+    .detail-score-ring-new.ring-mid { background: #f59e0b; }
+    .detail-score-ring-new .dsrn-num {
+      font-size: 20px; font-weight: 800; color: #fff; line-height: 1;
+    }
+    .detail-score-ring-new .dsrn-lbl {
+      font-size: 7px; font-weight: 600; color: rgba(255,255,255,.8);
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .detail-header-rebuilt .dhr-actions {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .dhr-btn-primary {
+      background: #2b6de9; color: #fff !important;
+      font-size: 13px; font-weight: 700;
+      padding: 8px 18px; border-radius: 999px;
+      text-decoration: none; transition: background .12s;
+    }
+    .dhr-btn-primary:hover { background: #1d5fd4; }
+    .dhr-link-secondary {
+      font-size: 12px; font-weight: 600; color: #667a96;
+      text-decoration: none; transition: color .12s;
+    }
+    .dhr-link-secondary:hover { color: #2b6de9; }
   `;
   document.head.appendChild(style);
 })();
@@ -1257,29 +1305,23 @@ function renderDetail({ scroll = false } = {}) {
     <span class="sponsor-detail-lbl">Featured Partner</span>
     <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
   </div>` : ''; })()}
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
-  <div class="detail-header">
-    <div class="detail-header-left">
-      <div class="eyebrow">Selected Mountain</div>
-      <h2 class="detail-name">${esc(resort.name)}</h2>
-      <div class="detail-badges">
-        <span class="detail-badge detail-badge--state">${esc(resort.state)}</span>
-        <span class="detail-badge ${passCls}">${esc(resort.passGroup)}</span>
-        ${resort.ownerGroup ? `<span class="detail-badge detail-badge--owner">${esc(resort.ownerGroup)}</span>` : ''}
+  <!-- ── Header ── -->
+  <div class="detail-header-rebuilt">
+    <div class="dhr-top">
+      <div class="dhr-name-col">
+        <div class="dhr-eyebrow">Selected Mountain</div>
+        <h2>${esc(resort.name)}</h2>
+        <div class="dhr-sub">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
       </div>
-    </div>
-    <div class="detail-header-right">
       ${skis ? `
-        <div class="detail-score-ring ${ringCls} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown" style="cursor:pointer">
-          <div class="detail-score-num">${skis.skiScore}</div>
-          <div class="detail-score-lbl">Ski Score</div>
+        <div class="detail-score-ring-new ${skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low'} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown">
+          <div class="dsrn-num">${skis.skiScore}</div>
+          <div class="dsrn-lbl">Ski Score</div>
         </div>` : ''}
-      <div class="detail-header-actions" style="display:flex;align-items:center;gap:10px;margin-top:10px;">
-        <a class="btn btn-secondary" href="/ski-report/${esc(reportSlug)}/" style="padding:7px 16px;font-size:13px;">See Full Report →</a>
-        ${resort.website
-          ? `<a class="detail-text-link" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>`
-          : ''}
-      </div>
+    </div>
+    <div class="dhr-actions">
+      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See Full Report →</a>
+      ${resort.website ? `<a class="dhr-link-secondary" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ''}
     </div>
   </div>
 
