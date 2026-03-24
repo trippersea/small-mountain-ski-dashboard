@@ -17,21 +17,20 @@
 import fs   from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import vm from 'vm';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ─── SPONSOR CONFIGURATION ────────────────────────────────────────────────────
-// Must match the SPONSORS object in sd-app.js
-const SPONSORS = {
-  'ragged-mountain-resort': {
-    bookingUrl: 'https://www.raggedmountainresort.com/tickets',
-    tagline:    'Indy Pass accepted · Book direct for best rates',
-  },
-  'bousquet-ski-area': {
-    bookingUrl: 'https://bousquetmountain.com/season-passes/',
-    tagline:    'Next Year Season Passes On Sale',
-  },
-};
+// Shared config is loaded from featured-partners.js
+function loadSponsors() {
+  const ctx = {};
+  const code = fs.readFileSync(path.join(__dirname, 'featured-partners.js'), 'utf8');
+  vm.runInNewContext(code, ctx);
+  return ctx.FEATURED_PARTNERS || {};
+}
+
+const SPONSORS = loadSponsors();
 
 // ─── CSS injected once per patched page ───────────────────────────────────────
 const SIDEBAR_CSS = `
@@ -142,6 +141,6 @@ if (Object.keys(SPONSORS).length === 0) {
   console.log(`✅ Done! ${patched} pages patched, ${cleared} cleared, ${skipped} unchanged.`);
 }
 console.log(`\nTo add a partner:`);
-console.log(`  1. Add to SPONSORS in this file AND in sd-app.js SPONSORS object`);
+console.log(`  1. Add to featured-partners.js`);
 console.log(`  2. node add-booking-link.js`);
 console.log(`  3. Commit and push`);

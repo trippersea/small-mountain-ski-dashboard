@@ -24,29 +24,15 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ─── SPONSOR CONFIGURATION ────────────────────────────────────────────────────
-// Add active paying partners here.
-// Key = resort ID (must match the folder name in /ski-report/)
-// bookingUrl = their direct booking/ticketing page
-// tagline    = one short line shown under their name (max ~60 chars)
-//
-// Example (uncomment and fill in when you have a partner):
-// const SPONSORS = {
-//   'ragged-mountain-resort': {
-//     bookingUrl: 'https://www.raggedmountainresort.com/tickets',
-//     tagline: 'Indy Pass accepted · Book direct for best rates',
-//   },
-// };
+// Shared config is loaded from featured-partners.js
+function loadSponsors() {
+  const ctx = {};
+  const code = fs.readFileSync(path.join(__dirname, 'featured-partners.js'), 'utf8');
+  vm.runInNewContext(code, ctx);
+  return ctx.FEATURED_PARTNERS || {};
+}
 
-const SPONSORS = {
-  'ragged-mountain-resort': {
-    bookingUrl: 'https://www.raggedmountainresort.com/tickets',
-    tagline:    'Indy Pass accepted · Book direct for best rates',
-  },
-  'bousquet-ski-area': {
-    bookingUrl: 'https://bousquetmountain.com/season-passes/',
-    tagline:    'Next Year Season Passes On Sale',
-  },
-};
+const SPONSORS = loadSponsors();
 
 // ─── CSS injected once per patched page ───────────────────────────────────────
 const FEATURED_CSS = `
@@ -252,16 +238,16 @@ for (const stateSlug of stateDirs) {
 console.log(`\n─────────────────────────────────────────────`);
 if (Object.keys(SPONSORS).length === 0) {
   console.log(`ℹ️  No sponsors configured yet.`);
-  console.log(`   Add entries to the SPONSORS object at the top of this file,`);
+  console.log(`   Add entries to featured-partners.js,`);
   console.log(`   then run the script again to apply featured rows.`);
 } else {
   console.log(`✅  Done! ${patched} state pages patched, ${cleared} cleared, ${skipped} unchanged.`);
 }
 console.log(`\nTo add a partner:`);
-console.log(`  1. Add their resort ID + booking URL to the SPONSORS object above`);
+console.log(`  1. Add their resort ID + booking URL to featured-partners.js`);
 console.log(`  2. Run: node add-featured-state-row.js`);
 console.log(`  3. Commit and push in GitHub Desktop`);
 console.log(`\nTo remove a partner:`);
-console.log(`  1. Delete their entry from SPONSORS`);
+console.log(`  1. Delete their entry from featured-partners.js`);
 console.log(`  2. Run: node add-featured-state-row.js  (cleans up automatically)`);
 console.log(`  3. Commit and push`);
