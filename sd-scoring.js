@@ -301,6 +301,149 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
   };
 }
 
+// ─── Unified verdict from a pre-computed breakdown ────────────────────────────
+// Single source of truth for tier + label + detail used by BOTH the verdict
+// card (computeVerdict) and the detail panel (renderDetail). Replaces the
+// static score threshold labels that previously caused contradictory results.
+function verdictFromBreakdown(resort, wx, breakdown) {
+  const forecast   = wx?.forecast || [];
+  const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
+  const tomorrowIn = forecast[0]?.snow || 0;
+  const hist       = historyCache.get(resort.id);
+  const histTotal  = hist?.total ?? null;
+
+  const baseLo      = forecast[0]?.lo ?? 30;
+  const sLo         = summitTempF(baseLo, resort.baseElevation, resort.summitElevation);
+  const rainLikely  = sLo > 34;
+  const warmCaution = sLo > 28 && !rainLikely;
+  const coldSnow    = sLo <= 24;
+
+  const target  = snowPreferenceTarget();
+  const snowMet = target === 0 || stormTotal >= target;
+
+  let tier, label, detail, subPoints = [];
+
+  if (rainLikely) {
+    tier  = 'bad';
+    label = 'Skip — rain likely';
+    detail = `Temperatures look too warm — rain likely above ${resort.baseElevation.toLocaleString()} ft.`;
+  } else if (target >= 6 && !snowMet) {
+    // User wants storm snow or powder but forecast falls short
+    tier  = 'marginal';
+    label = 'Below your snow target';
+    detail = `You're looking for ${target}"+ of snow — only ${stormTotal.toFixed(1)}" in the forecast here.`;
+    subPoints.push('Try widening your snow filter or checking Storm Chaser for better options');
+  } else if (stormTotal >= 6 || tomorrowIn >= 4) {
+    tier  = 'great';
+    label = 'Go — excellent conditions';
+    detail = tomorrowIn >= 4
+      ? `${tomorrowIn.toFixed(1)}" expected tomorrow. That's a powder day.`
+      : `${stormTotal.toFixed(1)}" forecast over 3 days — this is what you wait all season for.`;
+    if (coldSnow) subPoints.push('Ideal temps — light, dry snow expected');
+    if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week — base is deep`);
+  } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6)) {
+    tier  = 'good';
+    label = 'Good conditions';
+    detail = stormTotal >= 2
+      ? `${stormTotal.toFixed(1)}" in the 3-day forecast — fresh snow makes a real difference.`
+      : `${histTotal}" fell this week — expect a solid, consolidated base.`;
+    if (warmCaution) subPoints.push('Snow may be dense/wet — get out early for best runs');
+  } else if (stormTotal >= 0.5) {
+    tier  = 'marginal';
+    label = 'Marginal — manage expectations';
+    detail = `Only ${stormTotal.toFixed(1)}" in the forecast. Mostly working with the existing base — groomed runs will be fine.`;
+    subPoints.push('Stick to groomed trails, get out early, avoid south-facing terrain');
+  } else {
+    tier  = 'bad';
+    label = 'Poor conditions';
+    detail = 'Less than half an inch forecast and limited recent snowfall.';
+  }
+
+  return { tier, label, detail, subPoints, rainLikely, stormTotal, tomorrowIn, histTotal };
+}
+
+// ─── Personalized "why this works" reasons ────────────────────────────────────
+// Generates bullet points based on the user's actual preference settings,
+// so the detail panel explains the score in terms the user recognises.
+function preferenceReasons(resort, wx, breakdown) {
+  const reasons    = [];
+  const forecast   = wx?.forecast || [];
+  const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
+  const snowPref   = state.weights.snow  || 1;
+  const crowdPref  = state.weights.crowd || 1;
+  const valuePref  = state.weights.value || 0;
+  const target     = snowPreferenceTarget();
+
+  // ── Snow ──────────────────────────────────────────────────────────────────
+  if (snowPref >= 15) {
+    if (stormTotal >= 12) reasons.push(`${stormTotal.toFixed(1)}" forecast — meets your powder target`);
+    else if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" forecast — approaching powder territory`);
+    else reasons.push(`Only ${stormTotal.toFixed(1)}" in forecast — below your powder preference`);
+  } else if (snowPref >= 10) {
+    if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" meets your storm snow target`);
+    else reasons.push(`${stormTotal.toFixed(1)}" in forecast — below your 6"+ preference`);
+  } else if (snowPref >= 5) {
+    if (stormTotal >= 3) reasons.push(`${stormTotal.toFixed(1)}" forecast meets your snow preference`);
+    else reasons.push(`${stormTotal.toFixed(1)}" — lighter than your 3"+ preference`);
+  } else {
+    if (stormTotal > 0) reasons.push(`${stormTotal.toFixed(1)}" in the 3-day forecast`);
+    else reasons.push('No new snow forecast — groomed base expected');
+  }
+
+  // ── Mountain size fit ──────────────────────────────────────────────────────
+  const vert = resort.vertical;
+  if (state.verticalFilter === 'small') {
+    if (vert <= 900) reasons.push(`${vert.toLocaleString()} ft vertical — matches your small mountain preference`);
+    else reasons.push(`${vert.toLocaleString()} ft vertical — larger than your small hill preference`);
+  } else if (state.verticalFilter === 'mid') {
+    if (vert >= 800 && vert <= 1800) reasons.push(`${vert.toLocaleString()} ft vertical — mid-size, matches your preference`);
+    else reasons.push(`${vert.toLocaleString()} ft vertical`);
+  } else if (state.verticalFilter === 'big') {
+    if (vert >= 1400) reasons.push(`${vert.toLocaleString()} ft vertical — matches your big mountain preference`);
+    else reasons.push(`${vert.toLocaleString()} ft vertical — smaller than your big mountain preference`);
+  }
+
+  // ── Pass match ────────────────────────────────────────────────────────────
+  if (state.passFilter !== 'All') {
+    if (resort.passGroup === state.passFilter) {
+      reasons.push(`${resort.passGroup} pass access — no window ticket needed`);
+    } else {
+      reasons.push(`No ${state.passFilter} pass here — window ticket at $${resort.price}`);
+    }
+  }
+
+  // ── Crowd preference ──────────────────────────────────────────────────────
+  const crowd = crowdForecast(resort);
+  if (crowdPref >= 10) {
+    if (crowd.label === 'Light' || crowd.label === 'Light-Moderate') {
+      reasons.push(`${crowd.label} crowds — matches your quiet slopes preference`);
+    } else {
+      reasons.push(`${crowd.label} crowds — busier than your preference`);
+    }
+  } else if (crowd.label === 'Light') {
+    reasons.push('Light crowd outlook');
+  } else {
+    reasons.push(`${crowd.label} crowd outlook`);
+  }
+
+  // ── Value ─────────────────────────────────────────────────────────────────
+  if (valuePref >= 5) {
+    if (resort.price <= 85)       reasons.push(`$${resort.price} ticket — strong value`);
+    else if (resort.price <= 125) reasons.push(`$${resort.price} ticket — fair value`);
+    else                          reasons.push(`$${resort.price} ticket — above your value preference`);
+  }
+
+  // ── Drive ─────────────────────────────────────────────────────────────────
+  const drive = getDriveMins(resort.id);
+  if (drive !== null) {
+    if (drive <= 90)       reasons.push(`${formatDrive(resort.id)} drive — easy day trip`);
+    else if (drive <= 150) reasons.push(`${formatDrive(resort.id)} drive`);
+    else if (drive > 240)  reasons.push(`${formatDrive(resort.id)} drive — plan accordingly`);
+  }
+
+  return reasons.slice(0, 4);
+}
+
 // ─── Pass break-even calculator ───────────────────────────────────────────────
 // Returns: { savings, daysToBreakEven, recommendPass } for a given pass type
 function passBreakEven(passGroup, skiDays, avgTicketPrice) {

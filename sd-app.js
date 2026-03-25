@@ -1209,7 +1209,22 @@ function renderDetail({ scroll = false } = {}) {
   els.detailSection.classList.remove('hidden');
 
   const wx    = state.weatherCache[resort.id]?.data;
-  const skis  = wx ? skiScoreBreakdown(resort, wx, 0) : null;
+  const w    = normalizedWeights();
+  const bd   = wx ? plannerScoreBreakdown(resort, wx, 0, w) : null;
+  const vd   = (wx && bd) ? verdictFromBreakdown(resort, wx, bd) : null;
+  // Build skis-shaped object so all downstream rendering stays the same
+  const skis = bd ? {
+    ...bd,
+    skiScore: Math.round(bd.score),
+    factors: {
+      snow:       Math.round(bd.components.snow),
+      skiability: Math.round(bd.components.skiability),
+      fit:        Math.round(bd.components.fit),
+      drive:      Math.round(bd.components.drive),
+      value:      Math.round(bd.components.value),
+      crowd:      Math.round(bd.components.crowd),
+    },
+  } : null;
   const crowd = crowdForecast(resort);
   const tb    = resort.terrainBreakdown;
 
@@ -1305,10 +1320,10 @@ function renderDetail({ scroll = false } = {}) {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
         <div>
           <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Recommendation</div>
-          <div style="font-size:24px;font-weight:800;color:var(--text);margin-top:10px;line-height:1.08">${skis ? (skis.skiScore >= 75 ? 'Go Now' : skis.skiScore >= 60 ? 'Good Choice' : skis.skiScore >= 45 ? 'Worth Considering' : 'Maybe Skip') : 'Loading Score'}</div>
+          <div style="font-size:24px;font-weight:800;color:var(--text);margin-top:10px;line-height:1.08">${vd ? vd.label : skis ? 'Loading…' : 'Loading Score'}</div>
         </div>
         ${skis ? `
-          <div class="detail-score-ring-new ${skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low'} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown">
+          <div class="detail-score-ring-new ${vd ? (vd.tier === 'marginal' ? 'ring-mid' : vd.tier === 'bad' ? 'ring-low' : '') : (skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low')} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown">
             <div class="dsrn-num">${skis.skiScore}</div>
             <div class="dsrn-lbl">Ski Score</div>
           </div>` : ''}
@@ -1327,11 +1342,9 @@ function renderDetail({ scroll = false } = {}) {
     </div>
 
     <div style="font-size:12px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid rgba(27,42,58,.08)">
-      <div style="font-weight:700;margin-bottom:8px;color:var(--text)">Why this works</div>
-      ${wx ? `
-        <div style="margin-top:6px">• ${bestDay && bestDay.snow > 0 ? `${bestDay.day} is the best day with ${bestDay.snow.toFixed(1)}" expected` : `${stormTotal.toFixed(1)}" over the next 3 days`}</div>
-        <div style="margin-top:6px">• ${resort.price < 125 ? 'Solid value pricing' : 'Premium terrain and access'}</div>
-        <div style="margin-top:6px">• ${crowd.label} crowd outlook</div>` : `<div>• Conditions are still loading.</div>`}
+      <div style="font-weight:700;margin-bottom:8px;color:var(--text)">Why this scores for you</div>
+      ${(wx && bd) ? preferenceReasons(resort, wx, bd).map(r => `<div style="margin-top:6px">• ${esc(r)}</div>`).join('') : '<div>• Conditions are still loading.</div>'}
+      ${vd?.detail ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(27,42,58,.06);font-size:11px;color:var(--muted);line-height:1.6">${esc(vd.detail)}</div>` : ''}
     </div>
   </div>
 
@@ -1405,12 +1418,18 @@ function renderDetail({ scroll = false } = {}) {
       <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Decision Summary</h3>
       <div style="display:grid;gap:14px;align-content:start;height:100%">
         <div>
-          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Best for</div>
-          <div style="font-size:13px;line-height:1.7;color:var(--muted)">Skiers who want ${crowd.label.toLowerCase()} traffic, ${resort.price < 125 ? 'solid value' : 'destination-style terrain'}, and ${resort.avgSnowfall >= 200 ? 'reliable snowfall.' : 'a balanced all-around day.'}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Conditions verdict</div>
+          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${vd ? esc(vd.detail) : 'Loading conditions data…'}</div>
+          ${vd?.subPoints?.length ? `<div style="margin-top:8px;display:grid;gap:4px">${vd.subPoints.map(p => `<div style="font-size:12px;color:var(--muted)">• ${esc(p)}</div>`).join('')}</div>` : ''}
         </div>
         <div style="padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--border)">
           <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Watch-out</div>
-          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${resort.price >= 175 ? 'Expect a higher ticket price than average.' : 'Check conditions if fresh snow is your top priority.'}</div>
+          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${
+            vd?.rainLikely ? 'Rain is likely at this elevation — conditions will be wet and slushy.' :
+            vd?.tier === 'bad' && !vd?.rainLikely ? 'Very little new snow in the forecast — base conditions only.' :
+            resort.price >= 175 ? 'Higher ticket price than average — factor that into your day.' :
+            'Check conditions the morning of — forecasts can shift 24 hours out.'
+          }</div>
         </div>
         <div style="margin-top:auto;padding-top:4px">
           <div class="detail-crowd-label ${crowdClass(crowd.label)}" style="margin-bottom:6px;font-size:18px;font-weight:800;color:var(--accent)">${crowd.label} crowds</div>
