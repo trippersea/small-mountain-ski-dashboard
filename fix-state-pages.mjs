@@ -17,7 +17,10 @@ const _require  = createRequire(import.meta.url);
 const vm        = _require('vm');
 
 // ─── States to fix — add or remove as needed ──────────────────────────────────
-const STATES_TO_FIX = ['MA', 'NH'];
+const STATES_TO_FIX = [
+  'CT','MA','ME','NH','VT','NY','NJ','PA','RI',
+  'CO','UT','WA','OR','CA','ID','MT','WY',
+];
 
 // ─── Load resort data ─────────────────────────────────────────────────────────
 function loadResorts() {
