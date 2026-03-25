@@ -361,6 +361,54 @@
     }
     .site-footer a { color: #2b6de9; text-decoration: none; }
     .site-footer a:hover { text-decoration: underline; }
+  
+    /* ── State page sponsor ad ── */
+    .state-sponsor-ad {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 14px 18px;
+      margin: 0 0 18px;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      background: #edf4ff;
+    }
+    .state-sponsor-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .state-sponsor-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #185FA5;
+    }
+    .state-sponsor-headline {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0C447C;
+    }
+    .state-sponsor-tagline {
+      font-size: 12px;
+      color: #185FA5;
+    }
+    .state-sponsor-btn {
+      background: #2b6de9;
+      color: #fff !important;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 9px 20px;
+      border-radius: 999px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .12s;
+      flex-shrink: 0;
+    }
+    .state-sponsor-btn:hover { background: #1d5fd4; }
   </style>
 </head>
 <body>
@@ -406,7 +454,17 @@
   </div>
 
   <div class="table-wrap">
-    <table>
+    
+  <!-- State Sponsor Ad -->
+  <div class="state-sponsor-ad">
+    <div class="state-sponsor-copy">
+      <span class="state-sponsor-label">Sponsored</span>
+      <div class="state-sponsor-headline">Ski gear rental — pick up at the mountain</div>
+      <div class="state-sponsor-tagline">Helmets, boots, skis. Book ahead, skip the rental line.</div>
+    </div>
+    <a href="https://www.indyskipass.com/" class="state-sponsor-btn" target="_blank" rel="noopener noreferrer sponsored">Book gear →</a>
+  </div>
+  <table>
       <thead>
         <tr>
           <th>Mountain</th>
