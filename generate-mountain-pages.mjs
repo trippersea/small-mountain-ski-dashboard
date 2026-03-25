@@ -371,7 +371,7 @@ function generateMountainPage(resort, allResorts) {
   <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
 
-  <link rel="icon" href="/ski-decision-logo.png" type="image/png" />
+  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -822,7 +822,7 @@ function generateMountainPage(resort, allResorts) {
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
       <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-        <img src="/ski-decision-logo.png" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" style="flex-shrink:0" />
+        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" style="flex-shrink:0" />
         <span class="nav-brand">
           <span class="nav-brand-name">WhereToSkiNext.com</span>
           <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
