@@ -825,7 +825,7 @@ function generateMountainPage(resort, allResorts) {
         <img src="/ski-decision-logo.png" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" style="flex-shrink:0" />
         <span class="nav-brand">
           <span class="nav-brand-name">WhereToSkiNext.com</span>
-          <span class="nav-brand-tag">256 mountains · live forecasts</span>
+          <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
         </span>
       </a>
       <div class="nav-divider"></div>

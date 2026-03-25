@@ -1915,20 +1915,7 @@ function wireEvents() {
   if (els.plannerDetails) els.plannerDetails.hidden = false;
 
   // Sticky nav highlight
-  (function initNavHighlight() {
-    const sectionIds = ['searchSection','plannerSection','verdictSection','compareSection','stormSection','mapSection'];
-    const navLinks   = document.querySelectorAll('.top-nav a[href^="#"]');
-    function onScroll() {
-      let current = '';
-      for (const id of sectionIds) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 80) current = id;
-      }
-      navLinks.forEach(a => a.classList.toggle('nav-active', a.getAttribute('href').slice(1) === current));
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-  })();
+  // Nav highlight removed — anchor links no longer in primary nav
 
   // Compare section filter panel toggle
   const _filterToggleBtn = document.getElementById('filterToggleBtn');

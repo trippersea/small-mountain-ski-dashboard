@@ -990,45 +990,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   flex-shrink: 0; margin: 0 4px;
 }
 
-/* Primary CTA nav links — anchor links to homepage sections */
-.nav-cta {
-  text-decoration: none;
-  font-weight: 700 !important;
-  font-size: 13px !important;
-  padding: 7px 14px !important;
-  border-radius: 999px !important;
-  border: 1.5px solid rgba(255,255,255,.2) !important;
-  color: #cbd5e1 !important;
-  white-space: nowrap;
-  transition: background .12s, color .12s !important;
-  flex-shrink: 0;
-}
-.nav-cta:hover, .nav-cta.nav-active {
-  background: rgba(255,255,255,.1) !important;
-  color: #fff !important;
-  border-color: rgba(255,255,255,.3) !important;
-}
-.nav-cta-db {
-  border-color: rgba(45,122,58,.5) !important;
-  color: #6ee7b7 !important;
-}
-.nav-cta-db:hover, .nav-cta-db.nav-active {
-  background: rgba(45,122,58,.2) !important;
-  color: #6ee7b7 !important;
-}
-
-/* Secondary nav links */
-.nav-secondary {
-  font-size: 12px !important;
-  color: #64748b !important;
-  font-weight: 500 !important;
-  padding: 6px 10px !important;
-}
-.nav-secondary:hover, .nav-secondary.nav-active {
-  background: rgba(255,255,255,.08) !important;
-  color: #94a3b8 !important;
-  border-color: transparent !important;
-}
+/* nav-cta and nav-secondary anchor link styles removed — anchor nav links retired */
 
 /* ─── Collapsible planner ─────────────────────────────────────────────────── */
 .planner-summary-row {
