@@ -4,12 +4,12 @@
 // Adds the Featured Partner sidebar (with booking link) to /ski-report/ pages.
 //
 // HOW TO ADD A PARTNER:
-//   Add their resort ID + booking URL to SPONSORS below.
+//   Add their resort ID + booking URL to featured-partners.js
 //   Run: node add-booking-link.js
 //   Commit and push — Vercel auto-deploys.
 //
 // HOW TO REMOVE:
-//   Delete their entry from SPONSORS, run again — cleans up automatically.
+//   Delete their entry from featured-partners.js, run again — cleans up automatically.
 //
 // Usage: node add-booking-link.js
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ import vm from 'vm';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ─── SPONSOR CONFIGURATION ────────────────────────────────────────────────────
-// Shared config is loaded from featured-partners.js
+// Single source of truth: featured-partners.js
 function loadSponsors() {
   const ctx = {};
   const code = fs.readFileSync(path.join(__dirname, 'featured-partners.js'), 'utf8');
@@ -90,13 +90,13 @@ for (const resortId of subDirs) {
   let html = fs.readFileSync(filePath, 'utf8');
 
   // ── Always remove previously injected sponsor blocks first ──────────────────
-  html = html.replace(/\n\s*\/\* ── Featured Partner sidebar ──[\s\S]*?\.sponsor-sidebar-btn:hover \{[^}]*\}/m, '');
+  // FIXED: regex now matches the actual injected label "Featured Partner hero strip"
+  html = html.replace(/\n?\s*\/\* ── Featured Partner hero strip ──[\s\S]*?\.hero-sponsor-btn:hover \{[^}]*\}\s*/m, '');
   html = html.replace(/\s*<!-- Featured Partner Hero Block -->[\s\S]*?<\/div>\s*(?=\n)/gm, '');
 
   const sponsor = SPONSORS[resortId];
 
   if (!sponsor) {
-    // No sponsor — save cleaned version if changed
     const orig = fs.readFileSync(filePath, 'utf8');
     if (orig !== html) {
       fs.writeFileSync(filePath, html, 'utf8');
@@ -109,7 +109,8 @@ for (const resortId of subDirs) {
   }
 
   // ── Inject CSS before </style> ───────────────────────────────────────────────
-  if (!html.includes('sponsor-sidebar-block')) {
+  // FIXED: guard check now uses the correct class name "hero-sponsor-block"
+  if (!html.includes('hero-sponsor-block')) {
     html = html.replace('</style>', SIDEBAR_CSS + '\n  </style>');
   }
 
@@ -121,7 +122,6 @@ for (const resortId of subDirs) {
   const heroEnd = '</header>';
   if (html.includes(heroEnd)) {
     const sidebarHtml = buildSidebarHtml(resortName, sponsor);
-    // Insert before closing </header> tag (inside the hero)
     html = html.replace(heroEnd, sidebarHtml + '\n    </header>');
     console.log(`  ✓ Patched: ski-report/${resortId}/index.html`);
     patched++;
@@ -136,7 +136,7 @@ for (const resortId of subDirs) {
 
 console.log(`\n─────────────────────────────────────────────`);
 if (Object.keys(SPONSORS).length === 0) {
-  console.log(`ℹ️  No sponsors configured. Add entries to SPONSORS at the top of this file.`);
+  console.log(`ℹ️  No sponsors configured. Add entries to featured-partners.js to get started.`);
 } else {
   console.log(`✅ Done! ${patched} pages patched, ${cleared} cleared, ${skipped} unchanged.`);
 }

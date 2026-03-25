@@ -25,18 +25,11 @@ function isRememberChecked() {
 
 
 // ─── Sponsor configuration ────────────────────────────────────────────────────
-// Add active paying partners here. Key = resort ID from RESORTS data.
-const SPONSORS = {
-  'ragged-mountain-resort': {
-    bookingUrl: 'https://www.raggedmountainresort.com/tickets',
-    tagline:    'Indy Pass accepted · Book direct for best rates',
-  },
-    'bousquet-ski-area': {
-    bookingUrl: 'https://bousquetmountain.com/season-passes/',
-    tagline:    'Next Year Season Passes On Sale',
-  },
-};
-function getSponsor(resortId) { return SPONSORS[resortId] || null; }
+// Single source of truth: featured-partners.js (loaded before this script).
+// To add or remove a partner, edit featured-partners.js only — never edit here.
+function getSponsor(resortId) {
+  return (typeof getFeaturedPartner === 'function') ? getFeaturedPartner(resortId) : null;
+}
 
 // ─── Inject sponsor CSS once ──────────────────────────────────────────────────
 (function injectSponsorCSS() {

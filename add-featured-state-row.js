@@ -5,12 +5,12 @@
 // on the relevant state pages.
 //
 // HOW TO ADD A NEW PARTNER:
-//   Add an entry to the SPONSORS object below with their resort ID as the key.
+//   Add an entry to featured-partners.js with the resort ID as the key.
 //   Run: node add-featured-state-row.js
 //   Commit and push — Vercel auto-deploys.
 //
 // HOW TO REMOVE A PARTNER:
-//   Delete their entry from SPONSORS, run the script again.
+//   Delete their entry from featured-partners.js, run the script again.
 //   The script cleanly removes any previously injected featured rows first.
 //
 // Usage:
@@ -20,11 +20,14 @@
 import fs   from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+import vm from 'vm';  // FIXED: moved to top with all other imports
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const _require  = createRequire(import.meta.url);
 
 // ─── SPONSOR CONFIGURATION ────────────────────────────────────────────────────
-// Shared config is loaded from featured-partners.js
+// Single source of truth: featured-partners.js
 function loadSponsors() {
   const ctx = {};
   const code = fs.readFileSync(path.join(__dirname, 'featured-partners.js'), 'utf8');
@@ -76,6 +79,17 @@ const FEATURED_CSS = `
       padding: 0 2px;
     }`;
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function passLabel(pg) {
+  return { Epic: 'Epic Pass', Ikon: 'Ikon Pass', Indy: 'Indy Pass', Independent: 'Independent' }[pg] || pg;
+}
+
 // ─── Helper: build the featured <tr> HTML for one sponsor ─────────────────────
 function buildFeaturedRow(resort, sponsor) {
   const { bookingUrl, tagline } = sponsor;
@@ -96,21 +110,7 @@ function buildFeaturedRow(resort, sponsor) {
         </tr>`;
 }
 
-function escHtml(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function passLabel(pg) {
-  return { Epic: 'Epic Pass', Ikon: 'Ikon Pass', Indy: 'Indy Pass', Independent: 'Independent' }[pg] || pg;
-}
-
 // ─── Load resort data to look up details by ID ────────────────────────────────
-import { createRequire } from 'module';
-import vm from 'vm';
-const _require = createRequire(import.meta.url);
-
 function loadResorts() {
   const sdData = fs.readFileSync(path.join(__dirname, 'sd-data.js'), 'utf8');
   const neCtx  = {};
@@ -187,18 +187,14 @@ for (const stateSlug of stateDirs) {
   let html = fs.readFileSync(filePath, 'utf8');
 
   // ── Step 1: Always remove any previously injected featured content ──────────
-  // Remove featured CSS block
   html = html.replace(/\n\s*\/\* ── Featured partner row ──[\s\S]*?\.featured-disclosure \{[\s\S]*?\}/m, '');
-  // Remove featured rows
   html = html.replace(/<tr class="featured-partner-row"[\s\S]*?<\/tr>/gm, '');
-  // Remove disclosure line
   html = html.replace(/<p class="featured-disclosure">[\s\S]*?<\/p>\n?/gm, '');
 
   // Find which state this folder corresponds to
   const stateAbbr = Object.keys(byState).find(abbr => slugifyState(abbr) === stateSlug);
 
   if (!stateAbbr || !byState[stateAbbr]?.length) {
-    // No active sponsor for this state — save the cleaned version
     const orig = fs.readFileSync(filePath, 'utf8');
     if (orig !== html) {
       fs.writeFileSync(filePath, html, 'utf8');
