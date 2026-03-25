@@ -39,8 +39,6 @@ const FEATURED_PARTNERS = loadFeaturedPartners();
 // ─── Load resort data ──────────────────────────────────────────────────────────
 import { createRequire } from 'module';
 const _require = createRequire(import.meta.url);
-const vm = _require('vm');
-
 function loadResorts() {
   const sdData = fs.readFileSync(path.join(__dirname, 'sd-data.js'), 'utf8');
   const neCtx = {};
@@ -334,8 +332,14 @@ function generateMountainPage(resort, allResorts) {
   // Build sponsor hero block if this resort is a featured partner
   const _fp = FEATURED_PARTNERS[resort.id];
   const SPONSOR_HERO_PLACEHOLDER = _fp ? `
-      <div class="hero-sponsor-block">
-        <span class="hero-sponsor-badge">Featured Partner</span>
+      <div class="hero-sponsor-card">
+        <div class="hero-sponsor-copy">
+          <span class="hero-sponsor-badge">Featured Partner</span>
+          <div class="hero-sponsor-text-wrap">
+            <div class="hero-sponsor-title">${esc(resort.name)} booking</div>
+            <div class="hero-sponsor-text">${esc(_fp.tagline || 'Book direct for best rates.')}</div>
+          </div>
+        </div>
         <a href="${_fp.bookingUrl}" class="hero-sponsor-btn" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
       </div>` : '';
 
@@ -504,6 +508,7 @@ function generateMountainPage(resort, allResorts) {
     /* Hero CTA row */
     .hero-cta-row {
       display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 2px;
     }
     .btn-hero {
       display: inline-flex; align-items: center; gap: 7px;
@@ -713,51 +718,75 @@ function generateMountainPage(resort, allResorts) {
     footer a { color: #2b6de9; text-decoration: none; }
 
 
-    /* ── Featured Partner hero strip ── */
-    .hero-sponsor-block {
-      background: rgba(0,0,0,.25);
-      border-top: 1px solid rgba(255,255,255,.12);
-      padding: 13px 28px;
-      margin: 16px -28px 0;
-      display: flex; align-items: center;
-      justify-content: space-between; gap: 14px;
+    /* ── Featured Partner hero card ── */
+    .hero-sponsor-card {
+      margin-top: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
       flex-wrap: wrap;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    .hero-sponsor-copy {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1 1 420px;
     }
     .hero-sponsor-badge {
-      font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: #6ee7b7;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(34,179,138,.14);
+      border: 1px solid rgba(110,231,183,.32);
+      color: #6ee7b7;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      border-radius: 999px;
+      padding: 6px 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .hero-sponsor-text-wrap {
+      min-width: 0;
+    }
+    .hero-sponsor-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+    .hero-sponsor-text {
+      font-size: 13px;
+      color: rgba(255,255,255,.68);
+      line-height: 1.45;
     }
     .hero-sponsor-btn {
-      background: #2b6de9; color: #fff !important;
-      font-size: 13px; font-weight: 700;
-      padding: 9px 20px; border-radius: 999px;
-      text-decoration: none; white-space: nowrap;
-      transition: background .12s; flex-shrink: 0;
+      background: #2b6de9;
+      color: #fff !important;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .12s, transform .1s;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(43,109,233,.32);
     }
-    .hero-sponsor-btn:hover { background: #1d5fd4; }
-
-    /* ── Featured Partner hero strip ── */
-    .hero-sponsor-block {
-      background: rgba(0,0,0,.28);
-      border-top: 1px solid rgba(255,255,255,.14);
-      padding: 13px 28px;
-      margin: 16px -28px 0;
-      display: flex; align-items: center;
-      justify-content: space-between; gap: 14px;
-      flex-wrap: wrap;
+    .hero-sponsor-btn:hover {
+      background: #1d5fd4;
+      transform: translateY(-1px);
     }
-    .hero-sponsor-badge {
-      font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: #6ee7b7;
-    }
-    .hero-sponsor-btn {
-      background: #2b6de9; color: #fff !important;
-      font-size: 13px; font-weight: 700;
-      padding: 9px 20px; border-radius: 999px;
-      text-decoration: none; white-space: nowrap;
-      transition: background .12s;
-    }
-    .hero-sponsor-btn:hover { background: #1d5fd4; }
 
     /* ── Responsive ── */
     @media (max-width: 600px) {
@@ -765,6 +794,19 @@ function generateMountainPage(resort, allResorts) {
       .mid-cta { flex-direction: column; }
       .snow-spotlight { flex-direction: column; gap: 12px; }
       .snow-divider { display: none; }
+      .hero-sponsor-card {
+        align-items: stretch;
+      }
+      .hero-sponsor-copy {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .hero-sponsor-btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -843,6 +885,7 @@ function generateMountainPage(resort, allResorts) {
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
+        ${resort.website ? `<a href="${esc(resort.website)}" class="btn-hero-ghost" target="_blank" rel="noopener noreferrer">Visit ${esc(resort.name)} →</a>` : ``}
       </div>
       <div class="hero-trust">
         <span>No account needed</span>

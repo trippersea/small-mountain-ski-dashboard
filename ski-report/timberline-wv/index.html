@@ -104,29 +104,23 @@
       min-height: 100vh;
     }
 
-    /* ── Nav ─────────────────────────────────────────────────────────── */
+    /* ── Nav ── */
     .top-nav {
       position: sticky; top: 0; z-index: 100;
       backdrop-filter: blur(14px);
-      background: rgba(255,255,255,.92);
+      background: rgba(255,255,255,.95);
       border-bottom: 1px solid #d6e1f0;
     }
     .top-nav-inner {
-      max-width: 1100px; margin: 0 auto;
+      max-width: 960px; margin: 0 auto;
       padding: 10px 20px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .nav-brand-link {
       display: flex; align-items: center; gap: 8px;
-      text-decoration: none; margin-right: 4px;
     }
-    .nav-logo { width: 30px; height: 30px; border-radius: 6px; }
-    .nav-brand { font-weight: 800; font-size: 15px; color: #2b6de9; }
+    .nav-brand { font-weight: 800; font-size: 15px; color: #1b2a3a; text-decoration: none; margin-right: 4px; }
     .nav-divider { width: 1px; height: 16px; background: #d6e1f0; margin: 0 4px; flex-shrink: 0; }
     .nav-link {
-      padding: 7px 12px; border-radius: 8px; text-decoration: none;
+      padding: 6px 12px; border-radius: 8px; text-decoration: none;
       color: #1b2a3a; font-weight: 600; font-size: 13px;
-      border: 1px solid transparent;
       transition: background .12s, color .12s;
     }
     .nav-link:hover { background: #edf4ff; color: #2b6de9; }
@@ -226,6 +220,7 @@
     /* Hero CTA row */
     .hero-cta-row {
       display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 2px;
     }
     .btn-hero {
       display: inline-flex; align-items: center; gap: 7px;
@@ -426,14 +421,84 @@
     .state-link-row a:hover { text-decoration: underline; }
 
     /* ── Footer ── */
-    .site-footer {
+    footer {
       text-align: center; padding: 28px 16px;
       font-size: 12px; color: #94a3b8;
-      border-top: 1px solid #d6e1f0;
-      background: #fff; margin-top: 40px;
+      border-top: 1px solid #d6e1f0; background: #fff;
+      margin-top: 40px;
     }
-    .site-footer a { color: #2b6de9; text-decoration: none; }
-    .site-footer a:hover { text-decoration: underline; }
+    footer a { color: #2b6de9; text-decoration: none; }
+
+
+    /* ── Featured Partner hero card ── */
+    .hero-sponsor-card {
+      margin-top: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    .hero-sponsor-copy {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1 1 420px;
+    }
+    .hero-sponsor-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(34,179,138,.14);
+      border: 1px solid rgba(110,231,183,.32);
+      color: #6ee7b7;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      border-radius: 999px;
+      padding: 6px 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .hero-sponsor-text-wrap {
+      min-width: 0;
+    }
+    .hero-sponsor-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+    .hero-sponsor-text {
+      font-size: 13px;
+      color: rgba(255,255,255,.68);
+      line-height: 1.45;
+    }
+    .hero-sponsor-btn {
+      background: #2b6de9;
+      color: #fff !important;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .12s, transform .1s;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(43,109,233,.32);
+    }
+    .hero-sponsor-btn:hover {
+      background: #1d5fd4;
+      transform: translateY(-1px);
+    }
 
     /* ── Responsive ── */
     @media (max-width: 600px) {
@@ -441,71 +506,19 @@
       .mid-cta { flex-direction: column; }
       .snow-spotlight { flex-direction: column; gap: 12px; }
       .snow-divider { display: none; }
-    }
-  
-    /* ── Sticky Live CTA Banner ── */
-    .live-cta-banner {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 999;
-      background: linear-gradient(135deg, #0f1f35 0%, #1b3356 100%);
-      border-top: 1px solid rgba(43,109,233,.4);
-      box-shadow: 0 -4px 24px rgba(0,0,0,.25);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      transform: translateY(100%);
-      transition: transform .35s cubic-bezier(.4,0,.2,1);
-    }
-    .live-cta-banner.visible { transform: translateY(0); }
-    .live-cta-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-    .live-cta-pulse {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #34d399; flex-shrink: 0;
-      animation: livePulse 1.8s ease-in-out infinite;
-    }
-    .live-cta-text {
-      display: flex; flex-direction: column; min-width: 0;
-    }
-    .live-cta-title {
-      font-size: 14px; font-weight: 700; color: #fff;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .live-cta-sub {
-      font-size: 12px; color: rgba(255,255,255,.55);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .live-cta-right {
-      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-    }
-    .live-cta-btn {
-      background: #2b6de9;
-      color: #fff;
-      font-size: 13px; font-weight: 700;
-      padding: 9px 18px;
-      border-radius: 999px;
-      text-decoration: none;
-      white-space: nowrap;
-      transition: background .15s;
-    }
-    .live-cta-btn:hover { background: #1d5fd4; }
-    .live-cta-dismiss {
-      background: none; border: none; cursor: pointer;
-      color: rgba(255,255,255,.4); font-size: 20px; line-height: 1;
-      padding: 4px 6px;
-      transition: color .15s;
-    }
-    .live-cta-dismiss:hover { color: rgba(255,255,255,.8); }
-    @media (max-width: 480px) {
-      .live-cta-sub { display: none; }
-      .live-cta-btn { font-size: 12px; padding: 8px 14px; }
+      .hero-sponsor-card {
+        align-items: stretch;
+      }
+      .hero-sponsor-copy {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .hero-sponsor-btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -593,6 +606,7 @@
         <span class="hero-trust-sep">·</span>
         <span>256 mountains ranked in real time</span>
       </div>
+      
     </header>
 
     <!-- Key Stats — 2-col mobile grid -->
@@ -691,18 +705,15 @@
     <div class="editorial">
       <h2>Timberline Mountain — At a Glance</h2>
       <p>
-        Timberline Mountain is a ski resort in West Virginia, rising from 3,268 ft to 4,268 ft with 1,000 ft of vertical drop.
-        The mountain offers 37 trails across 140 skiable acres — 15% beginner, 40% intermediate, and 45% advanced terrain.
-      </p>
-      <p>
-        With an average of 180" of snowfall per season and 6,000 GPM of snowmaking capacity, Timberline Mountain can typically maintain good coverage throughout the winter.
+        Timberline Mountain sits in West Virginia with 1,000 ft of vertical drop, 37 trails, and 140 skiable acres.
         Timberline Mountain skews toward experienced skiers — 45% of the mountain is advanced terrain.
-        
-        
       </p>
       <p>
-        Timberline Mountain is a <strong>Indy Pass</strong> mountain. Day tickets start around $65 — prices vary by date and demand.
-        For live snow conditions, drive-time from your location, and a personalized Ski Score, use WhereToSkiNext.com.
+        The mountain averages 180" of snowfall per season backed by 6,000 GPM of snowmaking.
+        Lift tickets start around $65 — day-of pricing varies. Timberline Mountain is a <strong>Indy Pass</strong> mountain.
+      </p>
+      <p>
+        Snow conditions update daily. Check back before you go — a fresh forecast can change everything.
       </p>
     </div>
 
@@ -759,7 +770,7 @@
     <a href="/ski-report/canaan-valley-resort/" class="nearby-card">
       <div class="nearby-name">Canaan Valley</div>
       <div class="nearby-meta">WV · 850 ft · Indy Pass</div>
-      <div class="nearby-delta nearby-delta--same">❄ Similar snowfall</div>
+      <div class="nearby-delta nearby-delta--same">❄ 180" avg snow</div>
       
       <div class="nearby-arrow">Compare →</div>
     </a>
@@ -780,7 +791,7 @@
     <a href="/ski-report/snowshoe-mountain/" class="nearby-card">
       <div class="nearby-name">Snowshoe Mountain</div>
       <div class="nearby-meta">WV · 1,500 ft · Ikon Pass</div>
-      <div class="nearby-delta nearby-delta--same">❄ Similar snowfall</div>
+      <div class="nearby-delta nearby-delta--same">❄ 180" avg snow</div>
       
       <div class="nearby-arrow">Compare →</div>
     </a>
@@ -798,8 +809,9 @@
 
   </main>
 
-    <footer class="site-footer">
-    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
+  <footer>
+    <p>© 2026 WhereToSkiNext.com · <a href="https://wheretoskinext.com">wheretoskinext.com</a> · Data updated seasonally</p>
+    <p style="margin-top:6px"><a href="/">Find the best mountain to ski next →</a></p>
   </footer>
 
   <!-- ══ Live snow fetch from OpenMeteo ══
@@ -854,6 +866,7 @@
   })();
   </script>
 
+  <script src="/featured-partners.js"></script>
   
 <script>
 (function() {
@@ -942,38 +955,5 @@
 })();
 </script>
 
-
-  <!-- ── Sticky Live Conditions CTA Banner ── -->
-  <div class="live-cta-banner" id="liveCta" role="complementary" aria-label="Live conditions available">
-    <div class="live-cta-left">
-      <div class="live-cta-pulse"></div>
-      <div class="live-cta-text">
-        <span class="live-cta-title">Live Ski Score &amp; Snow Forecast</span>
-        <span class="live-cta-sub">Drive time, crowd outlook &amp; personalized score for Timberline Mountain</span>
-      </div>
-    </div>
-    <div class="live-cta-right">
-      <a href="https://wheretoskinext.com/?resort=timberline-wv" class="live-cta-btn">See Live Conditions →</a>
-      <button class="live-cta-dismiss" id="liveCtaDismiss" aria-label="Dismiss">×</button>
-    </div>
-  </div>
-  <script>
-    (function() {
-      var banner = document.getElementById('liveCta');
-      var dismiss = document.getElementById('liveCtaDismiss');
-      // Show banner after 2 seconds if not previously dismissed
-      var dismissed = sessionStorage.getItem('liveCtaDismissed');
-      if (!dismissed) {
-        setTimeout(function() {
-          banner.classList.add('visible');
-        }, 2000);
-      }
-      // Dismiss button
-      dismiss.addEventListener('click', function() {
-        banner.classList.remove('visible');
-        sessionStorage.setItem('liveCtaDismissed', '1');
-      });
-    })();
-  </script>
 </body>
 </html>
