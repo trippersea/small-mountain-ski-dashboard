@@ -155,7 +155,7 @@ function buildFeaturedRow(resort, sponsor) {
 function generateStatePage(stateAbbr, resorts) {
   const stateName  = stateFullName(stateAbbr);
   const stateSlug  = slugifyState(stateAbbr);
-  const appUrl     = `https://wheretoskinext.com/?st=${stateAbbr}`;
+  const appUrl     = `https://wheretoskinext.com/?st=${stateAbbr}#compareSection`;
   const canonUrl   = `https://wheretoskinext.com/ski/${stateSlug}/`;
   const count      = resorts.length;
   const sorted     = [...resorts].sort((a, b) => b.avgSnowfall - a.avgSnowfall);
