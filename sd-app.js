@@ -1287,12 +1287,6 @@ function renderDetail({ scroll = false } = {}) {
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
-  ${(() => { const _dSp = getSponsor(resort.id); return _dSp ? `
-  <div class="sponsor-detail-block">
-    <span class="sponsor-detail-lbl">Featured Partner</span>
-    <a class="sponsor-detail-btn" href="${esc(_dSp.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Tickets →</a>
-  </div>` : ''; })()}
-
 <div class="detail-header-rebuilt" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch">
 
   <div class="detail-top-card" style="background:linear-gradient(135deg, rgba(43,109,233,.10), rgba(43,109,233,.18));border:1px solid rgba(43,109,233,.22);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:210px">
