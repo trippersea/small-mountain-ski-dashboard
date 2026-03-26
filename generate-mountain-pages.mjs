@@ -399,8 +399,8 @@ function generateMountainPage(resort, allResorts) {
       border-bottom: 1px solid rgba(255,255,255,.08);
     }
     .top-nav-inner {
-      max-width: 960px; margin: 0 auto;
-      padding: 10px 20px;
+      max-width: 1100px; margin: 0 auto;
+      padding: 10px 24px;
       display: flex; align-items: center; gap: 8px;
     }
     .nav-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; }

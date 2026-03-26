@@ -384,7 +384,8 @@
     a { color: #2b6de9; }
 
     /* ── Nav — dark navy, matches homepage ── */
-    nav { background: #1a2030; border-bottom: 1px solid rgba(255,255,255,.08); padding: 10px 24px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+    nav { background: #1a2030; border-bottom: 1px solid rgba(255,255,255,.08); padding: 0 24px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1100px; margin: 0 auto; width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 0; }
     .nav-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
     .nav-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
     .nav-brand { display: flex; flex-direction: column; gap: 1px; margin-right: 8px; }
@@ -433,18 +434,20 @@
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <nav role="navigation" aria-label="Main navigation">
-    <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
-      <span class="nav-brand">
-        <span class="nav-brand-name">WhereToSkiNext.com</span>
-        <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
-      </span>
-    </a>
-    <div class="nav-divider"></div>
-    <div class="nav-links">
-      <a href="/about/">About</a>
-      <a href="/partners/">Partners</a>
-      <a href="https://wheretoskinext.com/?st=CA" class="nav-cta">Find My Mountain →</a>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
+        <span class="nav-brand">
+          <span class="nav-brand-name">WhereToSkiNext.com</span>
+          <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
+        </span>
+      </a>
+      <div class="nav-divider"></div>
+      <div class="nav-links">
+        <a href="/about/">About</a>
+        <a href="/partners/">Partners</a>
+        <a href="https://wheretoskinext.com/?st=CA" class="nav-cta">Find My Mountain →</a>
+      </div>
     </div>
   </nav>
 

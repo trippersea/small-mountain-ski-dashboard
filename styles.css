@@ -36,10 +36,10 @@ body {
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 .top-nav-inner {
-  width: calc(100vw - 24px);
+  max-width: 1100px;
   margin: 0 auto;
   display: flex; align-items: center; gap: 6px;
-  overflow-x: auto; padding: 8px 0;
+  overflow-x: auto; padding: 10px 24px;
 }
 .nav-brand-link {
   display: flex; align-items: center; gap: 8px;
@@ -1874,7 +1874,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 
 /* ===== 2026 hero + decision-flow overrides ===== */
-.top-nav-inner { width: 100%; padding: 10px 18px; }
+.top-nav-inner { max-width: 1100px; padding: 10px 24px; }
 .container { width: 100%; padding: 18px 0 64px; gap: 18px; }
 .card { border-radius: 22px; }
 .hero-search-centered { padding: 40px 20px 34px !important; }
