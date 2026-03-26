@@ -6,10 +6,10 @@
   // To add: insert an entry below, then run: node generate-mountain-pages.mjs
   // To remove: delete the entry, run the same script
   const FEATURED_PARTNERS = {
-'ragged-mountain-resort': { bookingUrl: 'https://www.raggedmountainresort.com/tickets', 
-tagline: 'Indy Pass accepted · Book direct for best rates', 
+'bousquet-ski-area': { bookingUrl: 'https://bousquetmountain.com/season-passes/', 
+tagline: 'Next Year Season Passes On Sale', 
 
-}, 
+},
   };
 
   function getFeaturedPartner(resortId) {
@@ -22,7 +22,7 @@ tagline: 'Indy Pass accepted · Book direct for best rates',
   // To remove: delete the entry, run: node add-state-ad.js (cleans up automatically)
   // Active states: massachusetts, vermont, new-hampshire, connecticut
   const STATE_ADS = {
-        'massachusetts': {
+        'new-york': {
       headline: 'Ski gear rental — pick up at the mountain',
       tagline:  'Helmets, boots, skis. Book ahead, skip the rental line.',
       ctaText:  'Book gear →',
