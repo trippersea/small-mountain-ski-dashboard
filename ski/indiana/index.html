@@ -2,34 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VK2Q3TTFEW"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-VK2Q3TTFEW');
-  </script>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MCCDNQGB');</script>
+  <!-- End Google Tag Manager -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Best Ski Mountains in Indiana (2026) — WhereToSkiNext</title>
-  <meta name="description" content="1 ski mountains in Indiana ranked by snow, vertical, trails, and price. Live forecasts and drive times at WhereToSkiNext." />
+  <meta name="description" content="1 ski mountains in Indiana ranked by snow, vertical, trails, and price. Live forecasts and drive times at WhereToSkiNext.com." />
   <link rel="canonical" href="https://wheretoskinext.com/ski/indiana/" />
-  <meta property="og:title" content="Best Ski Mountains in Indiana — WhereToSkiNext" />
-  <meta property="og:description" content="1 mountains in Indiana. Top picks: Paoli Peaks. Live snow forecasts, drive times, pass access." />
+  <meta property="og:title" content="Best Ski Mountains in Indiana — WhereToSkiNext.com" />
+  <meta property="og:description" content="1 mountains in Indiana. Top picks: Paoli Peaks. Stop guessing. Start skiing." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://wheretoskinext.com/ski/indiana/" />
-  <meta property="og:image" content="https://wheretoskinext.com/wheretoskinext-logo.png" />
+  <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script type="application/ld+json">
   [
   {
     "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Best Ski Mountains in Indiana",
+    "description": "1 ski mountains in Indiana ranked by snow, vertical, and value.",
+    "url": "https://wheretoskinext.com/ski/indiana/",
+    "numberOfItems": 1,
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Paoli Peaks",
+        "url": "https://wheretoskinext.com/ski-report/paoli-peaks/"
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
     "@type": "SportsActivityLocation",
     "name": "Paoli Peaks",
-    "description": "Paoli Peaks is a ski resort in Indiana with 300 ft vertical, 18 trails, and a Indy Pass.",
     "address": {
       "@type": "PostalAddress",
       "addressRegion": "IN",
@@ -41,13 +52,7 @@
       "longitude": -86.457
     },
     "url": "https://www.paolipeaks.com",
-    "priceRange": "$55 day ticket",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": 3.1,
-      "reviewCount": 22,
-      "bestRating": 5
-    }
+    "priceRange": "$55 day ticket"
   }
 ]
   </script>
@@ -55,38 +60,24 @@
     *, *::before, *::after { box-sizing: border-box; }
     body { font-family: 'DM Sans', system-ui, sans-serif; background: #f8fafc; color: #1a2030; margin: 0; line-height: 1.5; }
     a { color: #2b6de9; }
-        /* ── Nav ─────────────────────────────────────────────────────────── */
-    .top-nav {
-      position: sticky; top: 0; z-index: 100;
-      backdrop-filter: blur(14px);
-      background: rgba(255,255,255,.92);
-      border-bottom: 1px solid #d6e1f0;
-    }
-    .top-nav-inner {
-      max-width: 1100px; margin: 0 auto;
-      padding: 10px 20px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .nav-brand-link {
-      display: flex; align-items: center; gap: 8px;
-      text-decoration: none; margin-right: 4px;
-    }
-    .nav-logo { width: 30px; height: 30px; border-radius: 6px; }
-    .nav-brand { font-weight: 800; font-size: 15px; color: #2b6de9; }
-    .nav-divider { width: 1px; height: 16px; background: #d6e1f0; margin: 0 4px; flex-shrink: 0; }
-    .nav-link {
-      padding: 7px 12px; border-radius: 8px; text-decoration: none;
-      color: #1b2a3a; font-weight: 600; font-size: 13px;
-      border: 1px solid transparent;
-      transition: background .12s, color .12s;
-    }
-    .nav-link:hover { background: #edf4ff; color: #2b6de9; }
-    .nav-link-cta {
-      background: #2b6de9; color: #fff !important;
-      border-radius: 999px; padding: 7px 16px;
-    }
-    .nav-link-cta:hover { background: #1d5fd4; }
-    .container { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    /* ── Nav — dark navy, matches homepage ── */
+    nav { background: #1a2030; border-bottom: 1px solid rgba(255,255,255,.08); padding: 10px 24px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+    .nav-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .nav-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+    .nav-brand { display: flex; flex-direction: column; gap: 1px; margin-right: 8px; }
+    .nav-brand-name { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .nav-brand-tag  { font-size: 10px; color: #4a5568; font-weight: 400; line-height: 1.2; }
+    .nav-divider { width: 1px; height: 16px; background: rgba(255,255,255,.12); margin: 0 4px; flex-shrink: 0; }
+    .nav-links { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+    .nav-links a { font-size: 13px; font-weight: 600; color: #94a3b8; text-decoration: none; padding: 6px 11px; border-radius: 8px; transition: background .12s, color .12s; white-space: nowrap; }
+    .nav-links a:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .nav-cta { background: #2b6de9 !important; color: #fff !important; padding: 7px 16px !important; border-radius: 999px !important; font-weight: 700 !important; }
+    .nav-cta:hover { background: #1d5fd4 !important; }
+    @media (max-width: 600px) { .nav-links a:not(.nav-cta) { display: none; } .nav-divider { display: none; } }
+
+    /* ── Page layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
     h1 { font-size: clamp(24px, 4vw, 38px); font-weight: 800; line-height: 1.1; margin: 0 0 12px; }
     .subhead { font-size: 18px; color: #475569; margin: 0 0 28px; line-height: 1.55; }
     .cta-banner { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 24px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
@@ -111,76 +102,71 @@
     .state-link { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 14px; font-size: 14px; font-weight: 600; text-decoration: none; color: #1a2030; transition: border-color .12s; }
     .state-link:hover { border-color: #2b6de9; color: #2b6de9; }
     footer { text-align: center; padding: 32px 16px; font-size: 13px; color: #94a3b8; }
+    footer a { color: #2b6de9; text-decoration: none; }
     @media (max-width: 600px) { .cta-banner { flex-direction: column; } }
-  
-    .site-footer {
-      text-align: center; padding: 28px 16px;
-      font-size: 12px; color: #94a3b8;
-      border-top: 1px solid #d6e1f0;
-      background: #fff; margin-top: 40px;
-    }
-    .site-footer a { color: #2b6de9; text-decoration: none; }
-    .site-footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
+  <!-- GTM noscript -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
-<nav class="top-nav" role="navigation" aria-label="Main navigation">
-    <div class="top-nav-inner">
-      <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-        <img src="/ski-decision-logo.png" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
-        <span class="nav-brand">WhereToSkiNext.com</span>
-      </a>
-      <div class="nav-divider"></div>
-      <a href="/ski/indiana/" class="nav-link">Indiana Mountains</a>
-      <a href="/about/" class="nav-link">About</a>
-      <a href="/partners/" class="nav-link">Partners</a>
-      <div class="nav-divider"></div>
-      <a href="https://wheretoskinext.com/?st=IN" class="nav-link nav-link-cta">Find My Mountain →</a>
+  <nav role="navigation" aria-label="Main navigation">
+    <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
+      <span class="nav-brand">
+        <span class="nav-brand-name">WhereToSkiNext.com</span>
+        <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
+      </span>
+    </a>
+    <div class="nav-divider"></div>
+    <div class="nav-links">
+      <a href="/about/">About</a>
+      <a href="/partners/">Partners</a>
+      <a href="https://wheretoskinext.com/?st=IN" class="nav-cta">Find My Mountain →</a>
     </div>
   </nav>
 
-<div class="container">
+  <div class="container">
 
-  <h1>Best Ski Mountains in Indiana</h1>
-  <p class="subhead">
-    1 ski mountain in Indiana — ranked by snow history, vertical drop, and value.
-    Get live forecasts and personalized drive-time rankings in the app.
-  </p>
+    <h1>Best Ski Mountains in Indiana</h1>
+    <p class="subhead">
+      1 ski mountain in Indiana — ranked by snow history, vertical drop, and value.
+      Get live forecasts and personalized drive-time rankings in the app.
+    </p>
 
-  <div class="cta-banner">
-    <div>
-      <h2>See live snow forecasts for Indiana mountains</h2>
-      <p>Real-time rankings updated daily with forecast snow, drive times, crowd outlook, and pass access.</p>
+    <div class="cta-banner">
+      <div>
+        <h2>See live snow forecasts for Indiana mountains</h2>
+        <p>Real-time rankings updated daily with forecast snow, drive times, crowd outlook, and pass access.</p>
+      </div>
+      <a href="https://wheretoskinext.com/?st=IN" class="cta-btn">Open Live Rankings →</a>
     </div>
-    <a href="https://wheretoskinext.com/?st=IN" class="cta-btn">Open Live Rankings →</a>
-  </div>
 
-  <div class="stats">
-    <div class="stat-chip"><strong>1</strong> Mountains</div>
-    <div class="stat-chip"><strong>0</strong> Epic Pass</div>
-    <div class="stat-chip"><strong>0</strong> Ikon Pass</div>
-    <div class="stat-chip"><strong>1</strong> Indy Pass</div>
-    <div class="stat-chip"><strong>1</strong> Night Skiing</div>
-    <div class="stat-chip"><strong>25"</strong> Avg Annual Snow</div>
-  </div>
+    <div class="stats">
+      <div class="stat-chip"><strong>1</strong> Mountains</div>
+      <div class="stat-chip"><strong>0</strong> Epic Pass</div>
+      <div class="stat-chip"><strong>0</strong> Ikon Pass</div>
+      <div class="stat-chip"><strong>1</strong> Indy Pass</div>
+      <div class="stat-chip"><strong>1</strong> Night Skiing</div>
+      <div class="stat-chip"><strong>25"</strong> Avg Annual Snow</div>
+    </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Mountain</th>
-          <th>Vertical</th>
-          <th>Trails</th>
-          <th>Avg Snow/yr</th>
-          <th>Day Ticket*</th>
-          <th>Pass</th>
-          <th>Night Skiing</th>
-          <th>Live Data</th>
-        </tr>
-      </thead>
-      <tbody>
-        
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mountain</th>
+            <th>Vertical</th>
+            <th>Trails</th>
+            <th>Avg Snow/yr</th>
+            <th>Day Ticket*</th>
+            <th>Pass</th>
+            <th>Night Skiing</th>
+            <th>Live Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          
     <tr>
       <td><a href="/ski-report/paoli-peaks/">Paoli Peaks</a></td>
       <td>300 ft</td>
@@ -191,23 +177,21 @@
       <td>Yes</td>
       <td><a href="https://wheretoskinext.com/?resort=paoli-peaks" class="view-link">Live data →</a></td>
     </tr>
-      </tbody>
-    </table>
-  </div>
-  <p style="font-size:12px;color:#94a3b8;margin-top:8px">*Ticket prices vary by date, demand, and age. Verify with the mountain before purchasing.</p>
-
-  <div class="nearby-links">
-    <h2>Explore other states</h2>
-    <div class="state-grid">
-      <a href="/ski/connecticut/" class="state-link">Connecticut</a><a href="/ski/massachusetts/" class="state-link">Massachusetts</a><a href="/ski/maine/" class="state-link">Maine</a><a href="/ski/new-hampshire/" class="state-link">New Hampshire</a><a href="/ski/vermont/" class="state-link">Vermont</a><a href="/ski/new-york/" class="state-link">New York</a><a href="/ski/new-jersey/" class="state-link">New Jersey</a><a href="/ski/pennsylvania/" class="state-link">Pennsylvania</a><a href="/ski/rhode-island/" class="state-link">Rhode Island</a><a href="/ski/colorado/" class="state-link">Colorado</a><a href="/ski/utah/" class="state-link">Utah</a><a href="/ski/washington/" class="state-link">Washington</a><a href="/ski/oregon/" class="state-link">Oregon</a><a href="/ski/california/" class="state-link">California</a><a href="/ski/idaho/" class="state-link">Idaho</a><a href="/ski/montana/" class="state-link">Montana</a><a href="/ski/wyoming/" class="state-link">Wyoming</a>
+        </tbody>
+      </table>
     </div>
+    <p style="font-size:12px;color:#94a3b8;margin-top:8px">*Ticket prices vary by date, demand, and age. Verify with the mountain before purchasing.</p>
+
+    <div class="nearby-links">
+      <h2>Explore other states</h2>
+      <div class="state-grid"><a href="/ski/connecticut/" class="state-link">Connecticut</a><a href="/ski/massachusetts/" class="state-link">Massachusetts</a><a href="/ski/maine/" class="state-link">Maine</a><a href="/ski/new-hampshire/" class="state-link">New Hampshire</a><a href="/ski/vermont/" class="state-link">Vermont</a><a href="/ski/new-york/" class="state-link">New York</a><a href="/ski/new-jersey/" class="state-link">New Jersey</a><a href="/ski/pennsylvania/" class="state-link">Pennsylvania</a><a href="/ski/rhode-island/" class="state-link">Rhode Island</a><a href="/ski/colorado/" class="state-link">Colorado</a><a href="/ski/utah/" class="state-link">Utah</a><a href="/ski/washington/" class="state-link">Washington</a><a href="/ski/oregon/" class="state-link">Oregon</a><a href="/ski/california/" class="state-link">California</a><a href="/ski/idaho/" class="state-link">Idaho</a><a href="/ski/montana/" class="state-link">Montana</a><a href="/ski/wyoming/" class="state-link">Wyoming</a></div>
+    </div>
+
   </div>
 
-</div>
-
-<footer class="site-footer">
-  <p>© 2026 WhereToSkiNext.com &mdash; <a href="/">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
-</footer>
+  <footer>
+    <p>© 2026 WhereToSkiNext.com — <a href="/">Find My Mountain</a> · <a href="/about/">About</a> · <a href="/privacy/">Privacy Policy</a> · <a href="/partners/">Partners</a></p>
+  </footer>
 
 </body>
 </html>

@@ -10,14 +10,15 @@
   <meta name="description" content="34 ski mountains in New York ranked by snow, vertical, trails, and price. Live forecasts and drive times at WhereToSkiNext.com." />
   <link rel="canonical" href="https://wheretoskinext.com/ski/new-york/" />
   <meta property="og:title" content="Best Ski Mountains in New York — WhereToSkiNext.com" />
-  <meta property="og:description" content="34 mountains in New York. Top picks: Whiteface, Gore Mountain, Plattekill. Live snow forecasts, drive times, pass access." />
+  <meta property="og:description" content="34 mountains in New York. Top picks: Whiteface, Gore Mountain, Plattekill. Stop guessing. Start skiing." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://wheretoskinext.com/ski/new-york/" />
   <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script type="application/ld+json">
   [
   {
@@ -818,8 +819,11 @@
     *, *::before, *::after { box-sizing: border-box; }
     body { font-family: 'DM Sans', system-ui, sans-serif; background: #f8fafc; color: #1a2030; margin: 0; line-height: 1.5; }
     a { color: #2b6de9; }
-    nav { background: #1a2030; border-bottom: 1px solid rgba(255,255,255,.08); padding: 10px 24px; display: flex; align-items: center; gap: 10px; }
-    .nav-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+
+    /* ── Nav — dark navy, matches homepage ── */
+    nav { background: #1a2030; border-bottom: 1px solid rgba(255,255,255,.08); padding: 10px 24px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+    .nav-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .nav-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
     .nav-brand { display: flex; flex-direction: column; gap: 1px; margin-right: 8px; }
     .nav-brand-name { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
     .nav-brand-tag  { font-size: 10px; color: #4a5568; font-weight: 400; line-height: 1.2; }
@@ -827,7 +831,11 @@
     .nav-links { display: flex; align-items: center; gap: 4px; margin-left: auto; }
     .nav-links a { font-size: 13px; font-weight: 600; color: #94a3b8; text-decoration: none; padding: 6px 11px; border-radius: 8px; transition: background .12s, color .12s; white-space: nowrap; }
     .nav-links a:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .nav-links .nav-cta { background: #2b6de9; color: #fff !important; padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+    .nav-cta { background: #2b6de9 !important; color: #fff !important; padding: 7px 16px !important; border-radius: 999px !important; font-weight: 700 !important; }
+    .nav-cta:hover { background: #1d5fd4 !important; }
+    @media (max-width: 600px) { .nav-links a:not(.nav-cta) { display: none; } .nav-divider { display: none; } }
+
+    /* ── Page layout ── */
     .container { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
     h1 { font-size: clamp(24px, 4vw, 38px); font-weight: 800; line-height: 1.1; margin: 0 0 12px; }
     .subhead { font-size: 18px; color: #475569; margin: 0 0 28px; line-height: 1.55; }
@@ -853,17 +861,17 @@
     .state-link { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 14px; font-size: 14px; font-weight: 600; text-decoration: none; color: #1a2030; transition: border-color .12s; }
     .state-link:hover { border-color: #2b6de9; color: #2b6de9; }
     footer { text-align: center; padding: 32px 16px; font-size: 13px; color: #94a3b8; }
-    footer a { color: #2b6de9; }
-    @media (max-width: 600px) { .cta-banner { flex-direction: column; } .nav-links a:not(.nav-cta) { display: none; } .nav-divider { display: none; } }
+    footer a { color: #2b6de9; text-decoration: none; }
+    @media (max-width: 600px) { .cta-banner { flex-direction: column; } }
   </style>
 </head>
 <body>
   <!-- GTM noscript -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
-  <nav>
+  <nav role="navigation" aria-label="Main navigation">
     <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" width="28" height="28" style="flex-shrink:0" />
+      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
       <span class="nav-brand">
         <span class="nav-brand-name">WhereToSkiNext.com</span>
         <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
