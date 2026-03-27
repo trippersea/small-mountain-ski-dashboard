@@ -726,7 +726,7 @@ function renderVerdict(resorts) {
       state.tempBucket !== 'any'   ||
       state.windBucket !== 'any'   ||
       state.priceRange > 0         ||
-      state.weights.value === 10   ||
+      (state.weights.value === 10 || state.weights.value === 5) ||
       state.howFar < 2
     );
     if (filtersActive) {

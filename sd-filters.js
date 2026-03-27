@@ -58,10 +58,11 @@ function filteredResorts() {
       if (pr && (r.price < pr.min || r.price > pr.max)) return false;
     }
 
-    // Planner ticket price filters — only applied when user sets a non-zero preference
-    // NOTE: These are separate from state.priceRange; both can filter simultaneously.
+    // Planner ticket price filters — hard ceiling applied per button selection.
+    // These are separate from state.priceRange (compare dropdown); both can filter simultaneously.
     // If user sets both, only mountains matching BOTH pass through.
-    if (state.weights.value === 10 && r.price >= 100) return false;
+    if (state.weights.value === 10 && r.price >= 100)  return false;  // Under $100
+    if (state.weights.value === 5  && r.price > 149)   return false;  // $100–$149 ceiling
 
     // Mountain size filter
     if (state.verticalFilter === 'small' && r.vertical >= 1000) return false;
