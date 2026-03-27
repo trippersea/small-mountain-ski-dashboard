@@ -55,7 +55,7 @@ body {
   margin-right: 4px; display: flex; flex-direction: column; gap: 1px;
 }
 .nav-brand-name { color: #fff; font-weight: 700; font-size: 15px; line-height: 1.2; }
-.nav-brand-tag  { color: #4a5568; font-size: 10px; font-weight: 400; line-height: 1.2; }
+.nav-brand-tag  { color: #94a3b8; font-size: 12px; font-weight: 400; line-height: 1.2; }
 .top-nav a {
   text-decoration: none; color: #94a3b8; font-weight: 600; font-size: 13px;
   padding: 7px 11px; border-radius: 8px; border: 1px solid transparent;
@@ -180,6 +180,16 @@ p, .muted, .helper-text { color: var(--muted); margin: 0; }
 .summary-value { font-size: 20px; font-weight: 800; }
 .summary-sub   { font-size: 11px; color: var(--muted); }
 
+
+/* ── Hero quick-filter label ─────────────────────────────────────────────── */
+.hero-quick-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
 /* ── Search suggest panel ───────────────────────────────────────────────── */
 .search-suggest-panel {
   background: #fff;
@@ -643,17 +653,21 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 }
 
 .vcard-compare-link {
-  background: none;
-  border: none;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  padding: 7px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--text);
   cursor: pointer;
   text-align: left;
-  transition: opacity .12s;
+  transition: background .12s, border-color .12s, color .12s;
+  align-self: flex-start;
 }
-.vcard-compare-link:hover { opacity: .75; text-decoration: underline; }
+.vcard-compare-link:hover { background: #f0f6ff; border-color: var(--accent); color: var(--accent); }
 
 /* Range selector — lives in .vcard-alts-header */
 .vcard-range {
@@ -690,18 +704,26 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   color: #fff;
 }
 
-/* ── Actions — share button only ────────────────────────────────────────── */
+/* ── Actions ─────────────────────────────────────────────────────────────── */
 .vcard-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  padding-top: 2px;
-  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
 }
 .vcard-share-btn {
-  font-size: 13px;
-  padding: 8px 16px;
+  font-size: 12px;
+  padding: 6px 14px;
+  color: var(--muted);
+  border-color: var(--border);
+}
+.vcard-share-btn:hover {
+  color: var(--text);
+  border-color: var(--border-light);
+  background: #f8fafc;
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */

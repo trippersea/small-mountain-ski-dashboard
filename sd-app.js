@@ -817,7 +817,7 @@ function renderVerdict(resorts) {
           }).join('')}
         </div>
         <button class="vcard-compare-link" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">
-          Compare these mountains side-by-side →
+          Compare side-by-side
         </button>
       </div>` : '';
 
@@ -849,7 +849,7 @@ function renderVerdict(resorts) {
         ${noOriginHtml}
         ${altsHtml}
         <div class="vcard-actions">
-          <button class="btn btn-secondary vcard-share-btn" id="verdictShareBtn">Share pick</button>
+          <button class="btn vcard-share-btn" id="verdictShareBtn">Share this pick</button>
         </div>
       </div>
     </div>`;
