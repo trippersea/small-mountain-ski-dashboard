@@ -3,6 +3,10 @@
 // Depends on: sd-data.js, sd-scoring.js, sd-filters.js (loaded before this)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Weather fetch phases — used only for friendlier verdict/storm loading vs unavailable copy
+let weatherFetchPhase1Done = false;
+let weatherFetchPhase2Done = false;
+
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function loadSavedWeights() {
   try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
@@ -366,7 +370,9 @@ async function fetchWeather(resort) {
       `&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4` +
       `&timezone=America%2FNew_York&models=best_match`;
     const res  = await fetchWithTimeout(url);
+    if (!res.ok) return null;
     const data = await res.json();
+    if (!data?.current || !Array.isArray(data.daily?.time) || data.daily.time.length < 2) return null;
     const wx = {
       temp: Math.round(data.current.temperature_2m),
       code: data.current.weathercode,
@@ -395,6 +401,7 @@ async function ensureWeather(resorts) {
   await Promise.all(Array.from({ length: 8 }, async () => {
     while (q1.length) { const r = q1.shift(); if (r) await fetchWeather(r); }
   }));
+  weatherFetchPhase1Done = true;
 
   // Phase 2: Rest in background — don't block first render
   const q2 = [...rest.filter(r => !state.weatherCache[r.id]?.data)];
@@ -402,6 +409,7 @@ async function ensureWeather(resorts) {
     while (q2.length) { const r = q2.shift(); if (r) await fetchWeather(r); }
   })).then(() => {
     saveWeatherCache();
+    weatherFetchPhase2Done = true;
     repaintMainUI(filteredResorts());
   });
 
@@ -440,16 +448,21 @@ async function loadDriveTimes() {
 
   const queue = [...closest];
   let fetchCount = 0;
+  let osrmSuccessCount = 0;
   await Promise.all(Array.from({ length: OSRM_CONCURRENCY }, async () => {
     while (queue.length) {
       const r = queue.shift();
       if (!r) break;
       await fetchOsrmTime(r);
+      if (typeof state.driveCache[r.id] === 'number') osrmSuccessCount++;
       if (++fetchCount % 8 === 0) render();
     }
   }));
   render();
-  showToast('Drive times ready', 1800);
+  if (osrmSuccessCount > 0) showToast('Drive times updated with routes', 2200);
+  else if (closest.length > 0) {
+    showToast('Using estimated drive times — routing service did not return routes', 4500);
+  } else showToast('Drive times ready', 1800);
 }
 
 // ─── Geocoding ────────────────────────────────────────────────────────────────
@@ -709,7 +722,7 @@ function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
   const v = computeVerdict(resorts);
   if (!v) {
-    const filtersActive = resorts.length === 0 && (
+    const filtersTightenEmpty = resorts.length === 0 && (
       state.passFilter !== 'All'   ||
       state.stateFilter !== 'All'  ||
       state.nightOnly              ||
@@ -720,12 +733,51 @@ function renderVerdict(resorts) {
       (state.weights.value === 10 || state.weights.value === 5) ||
       state.howFar < 2
     );
-    if (filtersActive) {
+    if (filtersTightenEmpty) {
+      const driveHint = state.origin && state.howFar < 2
+        ? 'If nothing is within day-trip distance, try <strong>Weekend</strong> or <strong>All distances</strong>, or adjust your starting location.'
+        : 'Try expanding your distance range, easing the ticket or snow filters, or choosing a different pass.';
       els.verdictCard.innerHTML = `<div class="vcard-placeholder">
         <div class="vcard-placeholder-icon">🔍</div>
         <div class="vcard-placeholder-title">No mountains match your filters</div>
-        <div class="vcard-placeholder-sub">Try loosening a preference — for example, expanding your distance range, adjusting the ticket price, or changing the snow requirement.</div>
+        <div class="vcard-placeholder-sub">${driveHint}</div>
+        <button type="button" class="vcard-placeholder-btn" id="verdictEmptyReset">Clear filters &amp; try again</button>
       </div>`;
+      document.getElementById('verdictEmptyReset')?.addEventListener('click', () => { document.getElementById('resetFilters')?.click(); });
+    } else if (resorts.length > 0) {
+      const pool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
+      const anyWx = pool.some(r => state.weatherCache[r.id]?.data);
+      if (pool.length === 0) {
+        els.verdictCard.innerHTML = `<div class="vcard-placeholder">
+          <div class="vcard-placeholder-icon">🚗</div>
+          <div class="vcard-placeholder-title">No mountains in this drive window</div>
+          <div class="vcard-placeholder-sub">Your list is empty for the selected range. Widen <strong>Drive time</strong> in Your Ski Preferences or pick a different starting point.</div>
+        </div>`;
+      } else if (!anyWx && !weatherFetchPhase1Done) {
+        els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
+          <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
+          <div class="vcard-placeholder-title">Loading live forecasts…</div>
+          <div class="vcard-placeholder-sub">Hang on — we are pulling snow and weather for mountains near you. Scores and the top pick appear as soon as data arrives.</div>
+        </div>`;
+      } else if (!anyWx && weatherFetchPhase1Done && weatherFetchPhase2Done) {
+        els.verdictCard.innerHTML = `<div class="vcard-placeholder">
+          <div class="vcard-placeholder-icon">☁</div>
+          <div class="vcard-placeholder-title">Forecast data unavailable</div>
+          <div class="vcard-placeholder-sub">We could not load weather from our data provider. Drive times and the mountain list below still work — try refreshing the page in a minute.</div>
+        </div>`;
+      } else if (!anyWx) {
+        els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
+          <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
+          <div class="vcard-placeholder-title">Still loading forecasts…</div>
+          <div class="vcard-placeholder-sub">Filling in snow totals for more mountains. The compare table may update first for resorts closest to you.</div>
+        </div>`;
+      } else {
+        els.verdictCard.innerHTML = `<div class="vcard-placeholder">
+          <div class="vcard-placeholder-icon">⛷</div>
+          <div class="vcard-placeholder-title">Almost ready</div>
+          <div class="vcard-placeholder-sub">Pick completes as soon as scores finish computing.</div>
+        </div>`;
+      }
     } else {
       els.verdictCard.innerHTML = `<div class="vcard-placeholder">
         <div class="vcard-placeholder-icon">⛷</div>
@@ -928,7 +980,15 @@ async function injectVerdictWriteup(v) {
   slot.classList.add('vcard-writeup--loading');
   const text = await fetchVerdictWriteup(v, state.origin);
   const liveSlot = document.getElementById('verdictWriteupSlot');
-  if (liveSlot && text) { liveSlot.textContent = text; liveSlot.classList.remove('vcard-writeup--loading'); }
+  if (!liveSlot) return;
+  liveSlot.classList.remove('vcard-writeup--loading');
+  if (text) {
+    liveSlot.textContent = text;
+    liveSlot.classList.remove('vcard-writeup--fallback');
+  } else {
+    liveSlot.textContent = 'Tip: Everything above still uses live snow and drive data. This extra blurb could not be loaded right now.';
+    liveSlot.classList.add('vcard-writeup--fallback');
+  }
 }
 
 // ─── Summary cards ────────────────────────────────────────────────────────────
@@ -965,7 +1025,13 @@ function _renderStorm(resorts) {
     .sort((a, b) => b.storm - a.storm)
     .slice(0, 4);
   if (!enriched.length) {
-    els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data…</div>';
+    if (!weatherFetchPhase1Done) {
+      els.stormGrid.innerHTML = '<div class="planner-card storm-card--loading"><span class="storm-loading-dot"></span> Loading storm outlook…</div>';
+    } else if (weatherFetchPhase2Done) {
+      els.stormGrid.innerHTML = '<div class="planner-card storm-card--muted">Storm totals will show when forecast data is available. Drive and resort details below still work.</div>';
+    } else {
+      els.stormGrid.innerHTML = '<div class="planner-card storm-card--loading"><span class="storm-loading-dot"></span> Loading more mountains…</div>';
+    }
     return;
   }
   els.stormGrid.innerHTML = enriched.map((item, i) => {
@@ -981,6 +1047,10 @@ function _renderStorm(resorts) {
 // ─── Hidden Gems — improved human-readable reasons ─────────────────────────
 function renderHiddenGems(resorts) {
   if (!els.hiddenGemGrid) return;
+  if (!resorts.length) {
+    els.hiddenGemGrid.innerHTML = '<div class="planner-card hidden-gems-empty" role="status">No picks here yet — widen your filters to see hidden gems.</div>';
+    return;
+  }
   const withScore = resorts.map(r => ({ r, score: hiddenGemScore(r) }));
   withScore.sort((a, b) => b.score - a.score);
   const top = withScore.slice(0, 3);
@@ -1004,7 +1074,8 @@ function renderHiddenGems(resorts) {
 
 // ─── Compare table — with empty state ─────────────────────────────────────────
 function renderCompareTable(resorts) {
-  const q = (state.tableSearch || '').trim().toLowerCase();
+  const qRaw = (state.tableSearch || '').trim();
+  const q = qRaw.toLowerCase();
   const w = normalizedWeights();
 
   // No location + sorting by planner score = sort by avgSnowfall so table feels alive
@@ -1039,7 +1110,7 @@ function renderCompareTable(resorts) {
   const total     = resorts.length;
 
   if (q) {
-    els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${q}"`;
+    els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${qRaw}"`;
   } else if (noOriginDefault) {
     els.resultCount.textContent = `${total} mountains — sorted by avg snowfall`;
   } else {
@@ -1064,18 +1135,32 @@ function renderCompareTable(resorts) {
 
   // FILTERING FIX: empty state when no mountains match
   if (displayed.length === 0) {
+    const qActive = !!q;
+    const title = qActive
+      ? `No mountains match “${esc(qRaw)}”`
+      : (resorts.length === 0 ? 'No mountains match your current filters' : 'No rows to show');
+    const sub = qActive
+      ? 'Try a shorter search, check spelling, or clear the search box. Filters still apply to what you see.'
+      : 'Try widening distance, easing snow or price limits, or pick another pass.';
+    els.resultCount.textContent = qActive ? `0 results for “${qRaw}”` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
       <tr><td colspan="12" class="compare-empty-state">
         <div class="ces-icon">🎿</div>
-        <div class="ces-title">No mountains match your current filters</div>
-        <div class="ces-sub">Try widening your distance, removing price limits, or
-          <button class="ces-reset-link" id="emptyStateReset">clearing all filters</button>
+        <div class="ces-title">${title}</div>
+        <div class="ces-sub">${sub}
+          <button type="button" class="ces-reset-link" id="emptyStateReset">${qActive ? 'Clear search' : 'Clear all filters'}</button>
         </div>
       </td></tr>`;
     document.getElementById('emptyStateReset')?.addEventListener('click', () => {
-      document.getElementById('resetFilters')?.click();
+      if (qActive && els.tableSearch) {
+        els.tableSearch.value = '';
+        state.tableSearch = '';
+        renderCompareTable(filteredResorts());
+      } else {
+        document.getElementById('resetFilters')?.click();
+      }
     });
-    renderMobileCards([]);
+    renderMobileCards([], { mode: 'empty', qActive, resortsLen: resorts.length });
     return;
   }
 
@@ -1524,10 +1609,21 @@ async function askAI(query) {
   if (els.aiChatBtn)    els.aiChatBtn.disabled = true;
   if (els.aiChatResult) {
     els.aiChatResult.className = 'ai-chat-result ai-chat-loading';
-    els.aiChatResult.innerHTML = `<span class="ai-spinner"></span> Analyzing ${RESORTS.length} mountains for you…`;
+    els.aiChatResult.removeAttribute('hidden');
+    els.aiChatResult.innerHTML = `<span class="ai-spinner"></span> Analyzing mountains that match your filters…`;
   }
 
   const current = filteredResorts();
+  if (current.length === 0) {
+    aiChatLoading = false;
+    if (els.aiChatBtn) els.aiChatBtn.disabled = false;
+    if (els.aiChatResult) {
+      els.aiChatResult.className = 'ai-chat-result ai-chat-error';
+      els.aiChatResult.removeAttribute('hidden');
+      els.aiChatResult.innerHTML = '<span>No mountains match your current filters. Widen distance, pass, or snow settings — or reset filters — then ask again.</span>';
+    }
+    return;
+  }
   const w       = normalizedWeights();
   const payload = current.slice(0, 25).map(r => {
     const wx      = state.weatherCache[r.id]?.data;
@@ -1549,13 +1645,20 @@ async function askAI(query) {
 
   try {
     const res  = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, resorts: payload }) });
-    const data = await res.json();
-    if (data.error || !data.resortName) throw new Error(data.error || 'No resort returned');
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (_) {
+      throw new Error(res.ok ? 'Bad response from server' : `Server error (${res.status})`);
+    }
+    if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+    if (!data || data.error || !data.resortName) throw new Error(data?.error || 'No recommendation returned. Try a simpler question or check back shortly.');
     const nameLower = data.resortName.toLowerCase();
     const matched   = RESORTS.find(r => r.name.toLowerCase() === nameLower || r.name.toLowerCase().includes(nameLower) || nameLower.includes(r.name.toLowerCase()));
     const resortLink = matched ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>` : '';
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-success';
+      els.aiChatResult.removeAttribute('hidden');
       // SECURITY FIX: escape explanation text
       els.aiChatResult.innerHTML =
         `<div class="ai-result-header"><strong>AI Pick: ${esc(data.resortName)}</strong></div>` +
@@ -1573,6 +1676,7 @@ async function askAI(query) {
   } catch (err) {
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-error';
+      els.aiChatResult.removeAttribute('hidden');
       els.aiChatResult.innerHTML = `<span>${esc(err.message || 'AI unavailable — try again shortly')}</span>`;
     }
   } finally {
@@ -1582,11 +1686,19 @@ async function askAI(query) {
 }
 
 // ─── Mobile card grid ─────────────────────────────────────────────────────────
-function renderMobileCards(decorated) {
+function renderMobileCards(decorated, emptyOpts) {
   if (!els.mobileCardGrid) return;
   const items = decorated.slice(0, state.tableViewAll ? decorated.length : 10);
   if (items.length === 0) {
-    els.mobileCardGrid.innerHTML = '';
+    if (emptyOpts?.mode === 'empty') {
+      const qActive = emptyOpts.qActive;
+      const longMsg = qActive
+        ? 'No mountains match your search. Try different words or clear search.'
+        : (emptyOpts.resortsLen === 0
+          ? 'Nothing matches your filters. Loosen a preference or reset filters below.'
+          : 'Nothing to show in this view.');
+      els.mobileCardGrid.innerHTML = `<div class="mob-grid-empty" role="status"><div class="mob-grid-empty-icon">🎿</div><p class="mob-grid-empty-title">${qActive ? 'No search results' : 'No mountains here'}</p><p class="mob-grid-empty-sub">${longMsg}</p></div>`;
+    } else els.mobileCardGrid.innerHTML = '';
     return;
   }
   const passColors = { Epic:'#1a4fa8', Ikon:'#c8a84b', Indy:'#2d7a3a', Independent:'#6b5e7a' };
@@ -1661,9 +1773,8 @@ function repaintMainUI(resorts) {
   renderDetail();
   updateMap(resorts);
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
-  const hasWeather = resorts.some(r => state.weatherCache[r.id]?.data);
-  if (hasWeather) { renderVerdict(resorts); _renderStorm(resorts); }
-  else { els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data…</div>'; }
+  renderVerdict(resorts);
+  _renderStorm(resorts);
 }
 
 async function renderAsyncPanels(resorts) {
@@ -1676,6 +1787,11 @@ async function renderAsyncPanels(resorts) {
 }
 
 function renderAllCards(resorts) {
+  const needWx = plannerCandidates(resorts).some(r => !state.weatherCache[r.id]?.data);
+  if (needWx) {
+    weatherFetchPhase1Done = false;
+    weatherFetchPhase2Done = false;
+  }
   repaintMainUI(resorts);
   renderAsyncPanels(resorts);
 }
@@ -2041,13 +2157,16 @@ function wireEvents() {
     if (!q) {
       state.origin = null; state.driveCache = {}; clearSavedOrigin();
       els.locationStatus.textContent = '';
+      els.locationStatus.classList.remove('hero-location-status--error');
       render(); return;
     }
     els.locationStatus.textContent = 'Finding location…';
+    els.locationStatus.classList.remove('hero-location-status--error');
     const loc = await geocodeOrigin(q);
     if (loc) {
       state.origin = loc; state.driveCache = {};
       els.locationStatus.textContent = `✓ Location set to ${loc.label}`;
+      els.locationStatus.classList.remove('hero-location-status--error');
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
       updatePlannerOriginLabel();
       if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
@@ -2055,8 +2174,13 @@ function wireEvents() {
       pushUrlDebounced();
       await loadDriveTimes();
     } else {
-      els.locationStatus.textContent = 'Location not found';
-      showToast('Could not find that ZIP or location');
+      const raw = els.originInput.value.trim();
+      const zipOnly = /^\d{5}$/.test(raw);
+      els.locationStatus.textContent = zipOnly
+        ? 'No match for that ZIP — try city & state (e.g. Denver, CO) or a street address.'
+        : 'Location not found — try a U.S. ZIP, city, or landmark.';
+      els.locationStatus.classList.add('hero-location-status--error');
+      showToast(zipOnly ? 'Invalid or unsupported ZIP — try a city name' : 'Could not find that place');
     }
   };
 
@@ -2097,9 +2221,14 @@ function wireEvents() {
       pushUrlDebounced();
       await loadDriveTimes();
       els.locationStatus.textContent = '✓ Using your location';
+      els.locationStatus.classList.remove('hero-location-status--error');
       updatePlannerOriginLabel();
       if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
-    }, () => { els.locationStatus.textContent = 'Could not get location'; });
+    }, () => {
+      els.locationStatus.textContent = 'Location blocked or unavailable — allow access in your browser, or type a ZIP or city.';
+      els.locationStatus.classList.add('hero-location-status--error');
+      showToast('Location permission needed — use search instead');
+    });
   });
 
   // ── Score breakdown tooltip ─────────────────────────────────────────────────
