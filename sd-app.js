@@ -611,17 +611,21 @@ function updatePlannerOriginLabel() {
 }
 
 function syncPlannerControls() {
+  // Must scope to #plannerDetails only: #filterDrawer sits earlier in the DOM and keeps a clone
+  // of the planner after the mobile drawer is opened—document.querySelector would sync the wrong node.
+  const plannerRoot = document.getElementById('plannerDetails');
+
   ['snow', 'value', 'crowd'].forEach(key => {
-    const group = document.querySelector(`.priority-btns[data-key="${key}"]`);
+    const group = plannerRoot?.querySelector(`.priority-btns[data-key="${key}"]`);
     if (!group) return;
     const val = state.weights[key] ?? 1;
     group.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === val));
   });
-  const vertGroup = document.querySelector('.priority-btns[data-key="size"]');
+  const vertGroup = plannerRoot?.querySelector('.priority-btns[data-key="size"]');
   if (vertGroup) vertGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.verticalFilter));
-  const tempGroup = document.querySelector('.priority-btns[data-key="temp"]');
+  const tempGroup = plannerRoot?.querySelector('.priority-btns[data-key="temp"]');
   if (tempGroup) tempGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.tempBucket));
-  const windGroup = document.querySelector('.priority-btns[data-key="wind"]');
+  const windGroup = plannerRoot?.querySelector('.priority-btns[data-key="wind"]');
   if (windGroup) windGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.windBucket));
 
   const plannerPass = state.passFilter === 'All' ? 'any' : state.passFilter;
@@ -637,24 +641,13 @@ function syncPlannerControls() {
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
-  const howfarGroup = document.querySelector('.priority-btns[data-key="howfar"]');
+  const howfarGroup = plannerRoot?.querySelector('.priority-btns[data-key="howfar"]');
   if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
 function computeVerdict(resorts) {
-  const verdictTier  = HOW_FAR_TIERS[state.howFar];
-  const verdictCap   = verdictTier?.cap   ?? 180;
-  const verdictFloor = verdictTier?.floor ?? 0;
-  const verdictPool  = state.origin
-    ? resorts.filter(r => {
-        const m = getDriveMins(r.id);
-        if (m === null) return true;
-        if (verdictCap < Infinity && m > verdictCap)    return false;
-        if (verdictFloor > 0      && m <= verdictFloor) return false;
-        return true;
-      })
-    : resorts;
+  const verdictPool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
   const withWx = verdictPool.filter(r => state.weatherCache[r.id]?.data);
   if (!withWx.length) return null;
 
