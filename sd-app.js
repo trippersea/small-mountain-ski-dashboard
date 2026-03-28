@@ -876,11 +876,11 @@ function renderVerdict(resorts) {
       state.howFar = Number(btn.dataset.tier);
       const tb = document.getElementById('howFarFilter');
       if (tb) tb.value = String(state.howFar);
-      const updated = filteredResorts();
-      renderVerdict(updated);
-      renderCompareTable(updated);
       savePlannerState();
       syncPlannerControls();
+      pushUrlDebounced();
+      render();
+      updateFilterBadge();
     });
   });
   injectVerdictWriteup(v);
@@ -1783,7 +1783,15 @@ function wireMobileFilterDrawer() {
       if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
     }
     else                       state.weights[key] = Number(btn.dataset.val);
-    savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender(); updateFilterBadge();
+    savePlannerState(); syncPlannerControls(); pushUrlDebounced();
+    if (key === 'howfar') {
+      render();
+      updateFilterBadge();
+      requestAnimationFrame(() => closeDrawer());
+    } else {
+      debouncedRender();
+      updateFilterBadge();
+    }
     drawerBody.querySelectorAll(`.priority-btns[data-key="${key}"] .priority-btn`).forEach(b =>
       b.classList.toggle('active', b.dataset.val === btn.dataset.val));
   }
@@ -1977,7 +1985,10 @@ function wireEvents() {
         preference_value: btn.dataset.val,
         preference_label: btn.textContent.trim(),
       });
-      savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender(); updateFilterBadge();
+      savePlannerState(); syncPlannerControls(); pushUrlDebounced();
+      if (key === 'howfar') render();
+      else debouncedRender();
+      updateFilterBadge();
     });
   });
 

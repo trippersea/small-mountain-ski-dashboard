@@ -2198,6 +2198,12 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   color: var(--muted);
   white-space: nowrap;
 }
+.fp-micro-hint {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--muted);
+}
 .fp-select {
   width: 100%;
   padding: 8px 10px;

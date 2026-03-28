@@ -288,11 +288,21 @@
             <div class="planner-main-title">Your Ski Preferences<span id="plannerFromLabel"></span></div>
             <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit location</button>
           </div>
-          <p class="planner-subtitle">Refine further — these controls tune the same ranking engine as the search above.</p>
+          <p class="planner-subtitle">Start with how far you’ll drive, then tune snow, weather, and mountain style.</p>
         </div>
 
         <div id="plannerDetails" class="planner-details">
           <div class="score-grid">
+
+            <div class="score-control score-control--full">
+              <div class="score-control-label">Drive time</div>
+              <div class="priority-btns" data-key="howfar">
+                <button class="priority-btn active" data-val="0">Day Trip (≤3h)</button>
+                <button class="priority-btn" data-val="1">Weekend (3h–6h)</button>
+                <button class="priority-btn" data-val="2">All distances</button>
+              </div>
+              <div class="slider-hint">Narrows the list using times from your location above. Until you set a location, every mountain stays in play.</div>
+            </div>
 
             <div class="score-control">
               <div class="score-control-label">Fresh Snow</div>
@@ -359,18 +369,6 @@
               <div class="slider-hint">Ranks quieter mountains higher. High = crowds filtered out.</div>
             </div>
 
-            <div class="score-control score-control--full">
-              <div class="score-control-label">Distance</div>
-              <div class="priority-btns" data-key="howfar">
-                <button class="priority-btn active" data-val="0">Day Trip (≤3h)</button>
-                <button class="priority-btn" data-val="1">Weekend (3h–6h)</button>
-                <button class="priority-btn" data-val="2">All Distances</button>
-              </div>
-              <div class="slider-hint">Day Trip shows mountains within 3h. Weekend shows new options 3–6h away. All shows everything.</div>
-            </div>
-
-
-
           </div>
         </div>
 
@@ -385,7 +383,7 @@
       <div class="compare-section-header">
         <div class="compare-section-title-block">
           <h2>Compare All Mountains</h2>
-          <span id="resultCount" class="result-count"></span>
+          <span id="resultCount" class="result-count" aria-live="polite"></span>
         </div>
         <button id="filterToggleBtn" class="filter-toggle-btn" aria-expanded="false" aria-controls="filterPanel">
           <svg class="filter-toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -399,12 +397,13 @@
         <div class="filter-panel-grid">
 
           <div class="fp-field">
-            <label class="fp-label" for="howFarFilter">Distance</label>
+            <label class="fp-label" for="howFarFilter">Drive time</label>
             <select id="howFarFilter" class="fp-select">
               <option value="0" selected>Day Trip (≤3h)</option>
               <option value="1">Weekend (3h–6h)</option>
-              <option value="2">All Distances</option>
+              <option value="2">All distances</option>
             </select>
+            <span class="fp-micro-hint">Synced with Your Ski Preferences—change either place.</span>
           </div>
 
           <div class="fp-field">
