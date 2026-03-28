@@ -23,8 +23,6 @@ const HOW_FAR_TIERS = Object.freeze([
   { label: 'Weekend',   floor: 180, cap: 360,      hint: '3h–6h drive'    },
   { label: 'All',       floor: 0,   cap: Infinity, hint: 'any distance'   },
 ]);
-const DRIVE_RANGES = HOW_FAR_TIERS;
-
 const PRICE_RANGES = Object.freeze([
   { label: 'Any price',      min: 0,   max: Infinity },
   { label: 'Under $100',     min: 0,   max: 99       },

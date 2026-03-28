@@ -126,7 +126,6 @@ const state = Object.seal({
   sortBy:         'planner',
   nightOnly:      false,
   howFar:         0,
-  maxPrice:       0,
   priceRange:     0,
   verticalFilter: 'any',
   tempBucket:     'any',
@@ -403,8 +402,7 @@ async function ensureWeather(resorts) {
     while (q2.length) { const r = q2.shift(); if (r) await fetchWeather(r); }
   })).then(() => {
     saveWeatherCache();
-    renderVerdict(filteredResorts());
-    renderCompareTable(filteredResorts());
+    repaintMainUI(filteredResorts());
   });
 
   saveWeatherCache();
@@ -867,8 +865,7 @@ function renderVerdict(resorts) {
   $('verdictCompareBtn')?.addEventListener('click', e => {
     const ids = (e.currentTarget.dataset.compareIds || '').split(',').map(s => s.trim()).filter(Boolean);
     state.compareSet = new Set(ids);
-    renderCompareTray();
-    renderCompareTable(filteredResorts());
+    render();
     document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   els.verdictCard.querySelectorAll('.vcard-range-btn[data-tier]').forEach(btn => {
@@ -1661,23 +1658,8 @@ function shareVerdict(resort, verdictData) {
 }
 
 // ─── Render pipeline ──────────────────────────────────────────────────────────
-async function renderAsyncPanels(resorts) {
-  const candidates = plannerCandidates(resorts);
-  await ensureWeather(candidates);
-  renderCompareTable(resorts);
-  updateMap(resorts);
-  renderDetail();
-  renderVerdict(resorts);
-  _renderStorm(resorts);
-  // History: limit to 20 mountains
-  ensureHistory(candidates.slice(0, 20)).then(() => {
-    renderVerdict(resorts);
-    renderDetail();
-    renderCompareTable(resorts);
-  });
-}
-
-function renderAllCards(resorts) {
+/** Full UI paint for current `resorts` (already filtered). Does not fetch data or call renderAsyncPanels — safe from background callbacks. */
+function repaintMainUI(resorts) {
   renderSummaryCards(resorts);
   renderActiveFilters();
   renderHiddenGems(resorts);
@@ -1686,10 +1668,22 @@ function renderAllCards(resorts) {
   renderDetail();
   updateMap(resorts);
   mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
-  const candidates = plannerCandidates(resorts);
   const hasWeather = resorts.some(r => state.weatherCache[r.id]?.data);
   if (hasWeather) { renderVerdict(resorts); _renderStorm(resorts); }
   else { els.stormGrid.innerHTML = '<div class="planner-card">Loading storm data…</div>'; }
+}
+
+async function renderAsyncPanels(resorts) {
+  const candidates = plannerCandidates(resorts);
+  await ensureWeather(candidates);
+  repaintMainUI(resorts);
+  ensureHistory(candidates.slice(0, 20)).then(() => {
+    repaintMainUI(filteredResorts());
+  });
+}
+
+function renderAllCards(resorts) {
+  repaintMainUI(resorts);
   renderAsyncPanels(resorts);
 }
 
@@ -1812,6 +1806,7 @@ function wireMobileFilterDrawer() {
 }
 
 // ─── Event wiring ─────────────────────────────────────────────────────────────
+/** Debounced full render. Prefer immediate `render()` for drive tier and location so results snap in. */
 const debouncedRender = debounce(render, 50);
 
 function wireEvents() {
@@ -1897,7 +1892,7 @@ function wireEvents() {
   });
 
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
-    state.priceRange = Number(e.target.value); state.maxPrice = 0;
+    state.priceRange = Number(e.target.value);
     trackEvent('filter_applied', { filter_type: 'price', filter_value: String(e.target.value), filter_label: els.maxPriceFilter.options[els.maxPriceFilter.selectedIndex]?.text || '' });
     pushUrlDebounced(); render();
   });
@@ -1935,7 +1930,7 @@ function wireEvents() {
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any';
-    state.nightOnly = false; state.maxPrice = 0; state.priceRange = 0;
+    state.nightOnly = false; state.priceRange = 0;
     state.howFar = 0; state.verticalFilter = 'any';
     state.weights = { ...DEFAULT_WEIGHTS };
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;

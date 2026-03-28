@@ -2554,3 +2554,73 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   .detail-stat:nth-child(4)   { border-right: none; }
   .detail-stat:nth-child(5)   { grid-column: 1 / -1; border-right: none; }
 }
+
+/* ── Planner: full-width drive control ───────────────────────────────────── */
+.score-control--full {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 4px;
+}
+.score-control--full .priority-btns {
+  justify-content: center;
+}
+
+/* ── Score breakdown tooltip ─────────────────────────────────────────────── */
+#scoreTooltip {
+  position: absolute;
+  z-index: 9999;
+  width: 230px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 28px rgba(30,60,100,.15);
+  pointer-events: auto;
+}
+#scoreTooltip[hidden] { display: none; }
+.stip-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+.stip-row { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+.stip-label { font-size: 12px; color: var(--text); width: 88px; flex-shrink: 0; }
+.stip-bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.stip-bar-fill  { height: 100%; border-radius: 99px; }
+.stip-val { font-size: 12px; font-weight: 700; color: var(--text); width: 24px; text-align: right; flex-shrink: 0; }
+.stip-note { font-size: 11px; color: var(--muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.score-badge--tip { cursor: pointer; transition: transform .1s, opacity .1s; }
+.score-badge--tip:hover { opacity: .82; transform: scale(1.08); }
+
+/* ── Hero AI toggle + panel ──────────────────────────────────────────────── */
+.hero-ai-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: 600 13px/1 inherit;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .12s;
+}
+.hero-ai-toggle:hover { color: var(--accent); }
+.hero-ai-chevron { transition: transform .2s ease; flex-shrink: 0; }
+.hero-ai-toggle[aria-expanded="true"] .hero-ai-chevron { transform: rotate(180deg); }
+.hero-ai-panel { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.hero-ai-panel[hidden] { display: none; }
+.hero-ai-examples { display: flex; flex-wrap: wrap; gap: 8px; }
+.ai-example-chip {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font: 600 12px/1 inherit;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+  white-space: nowrap;
+}
+.ai-example-chip:hover { background: #dbeafe; border-color: var(--accent); }

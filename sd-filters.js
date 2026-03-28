@@ -3,6 +3,19 @@
 // Depends on: sd-data.js, sd-scoring.js, state (in sd-app.js)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ─── Drive tier (single source for list filter + verdict pool) ─────────────────
+function resortMatchesDriveTier(resortId) {
+  if (!state.origin) return true;
+  const tier  = HOW_FAR_TIERS[state.howFar];
+  const cap   = tier?.cap   ?? 180;
+  const floor = tier?.floor ?? 0;
+  const mins  = getDriveMins(resortId);
+  if (mins === null) return true;
+  if (cap < Infinity && mins > cap) return false;
+  if (floor > 0 && mins <= floor) return false;
+  return true;
+}
+
 // ─── Active filter list (for pills + badge count) ─────────────────────────────
 function activeFilters() {
   const filters = [];
@@ -39,18 +52,7 @@ function filteredResorts() {
     // Night skiing
     if (state.nightOnly && !r.night) return false;
 
-    // Distance band filter (requires origin)
-    // Day Trip = 0–3h, Weekend = 3h–6h (exclusive lower band), All = no restriction
-    if (state.origin) {
-      const tier  = HOW_FAR_TIERS[state.howFar];
-      const cap   = tier?.cap   ?? 180;
-      const floor = tier?.floor ?? 0;
-      const mins  = getDriveMins(r.id);
-      if (mins !== null) {
-        if (cap < Infinity && mins > cap)   return false;
-        if (floor > 0      && mins <= floor) return false;
-      }
-    }
+    if (!resortMatchesDriveTier(r.id)) return false;
 
     // Price range filter (compare section dropdown)
     if (state.priceRange > 0) {
@@ -146,18 +148,7 @@ function nearestCandidates(resorts, n = 20) {
 function buildDecisionBrief(resorts) {
   const context = getDecisionContext();
 
-  const verdictTier  = HOW_FAR_TIERS[state.howFar];
-  const verdictCap   = verdictTier?.cap   ?? 180;
-  const verdictFloor = verdictTier?.floor ?? 0;
-  const pool = (state.origin)
-    ? resorts.filter(r => {
-        const m = getDriveMins(r.id);
-        if (m === null) return true;
-        if (verdictCap < Infinity && m > verdictCap)    return false;
-        if (verdictFloor > 0      && m <= verdictFloor) return false;
-        return true;
-      })
-    : resorts;
+  const pool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
 
   const scored = pool
     .map(resort => {
