@@ -852,7 +852,6 @@ function generateMountainPage(resort, allResorts) {
       <div class="hero-meta-row">
         <span class="pass-eyebrow">${esc(passLabel(resort.passGroup))}</span>
         <span class="live-pill"><span class="live-dot"></span>Live Forecast</span>
-        <span id="liveSurfacePill" style="display:none;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#6ee7b7;background:rgba(34,179,138,.2);border:1px solid rgba(34,179,138,.35);border-radius:999px;padding:4px 10px"></span>
         <span class="freshness">Updated ${month} ${year}</span>
       </div>
 
@@ -878,12 +877,8 @@ function generateMountainPage(resort, allResorts) {
             <span class="snow-detail-label">Avg Annual Snow</span>
           </div>
           <div class="snow-detail">
-            <span class="snow-detail-val" id="liveTrailsOpen">${resort.trails}</span>
-            <span class="snow-detail-label" id="liveTrailsLabel">Total Trails</span>
-          </div>
-          <div class="snow-detail" id="liveConditionDetail" style="display:none">
-            <span class="snow-detail-val" id="liveBaseDepth">—</span>
-            <span class="snow-detail-label">Base Depth</span>
+            <span class="snow-detail-val">${resort.trails}</span>
+            <span class="snow-detail-label">Total Trails</span>
           </div>
         </div>
       </div>
@@ -1121,52 +1116,6 @@ function generateMountainPage(resort, allResorts) {
   })();
   </script>
 
-
-  <!-- ══ SnoCountry live conditions fetch ══
-       Fetches reported snow, trails open, surface condition, base depth.
-       Runs after page load and fails silently — static data always shows as fallback. -->
-  <script>
-  (function() {
-    var resortSlug = ${JSON.stringify(resort.id)};
-    fetch('/api/conditions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ resortSlug: resortSlug })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(json) {
-      if (!json || json.disabled || !json.conditions || !json.conditions.length) return;
-      var c = json.conditions[0];
-
-      // Surface condition pill
-      if (c.surfaceCondition) {
-        var pill = document.getElementById('liveSurfacePill');
-        if (pill) { pill.textContent = c.surfaceCondition; pill.style.display = 'inline-flex'; }
-      }
-
-      // Trails open — update the spotlight detail
-      if (c.trailsOpen != null && c.trailsTotal != null) {
-        var trailsEl = document.getElementById('liveTrailsOpen');
-        var labelEl  = document.getElementById('liveTrailsLabel');
-        if (trailsEl) trailsEl.textContent = c.trailsOpen + '/' + c.trailsTotal;
-        if (labelEl)  labelEl.textContent  = 'Trails Open';
-      }
-
-      // Base depth
-      if (c.baseDepthMin != null) {
-        var baseEl     = document.getElementById('liveBaseDepth');
-        var condDetail = document.getElementById('liveConditionDetail');
-        var depthStr   = c.baseDepthMin + (c.baseDepthMax ? '\u2013' + c.baseDepthMax : '') + '"';
-        if (baseEl)     baseEl.textContent = depthStr;
-        if (condDetail) condDetail.style.display = 'flex';
-      }
-    })
-    .catch(function() {
-      // Fail silently — static mountain data still shows
-    });
-  })();
-  </script>
-
   <script src="/featured-partners.js"></script>
   ${matcherScript(resort)}
 
@@ -1178,9 +1127,17 @@ function generateMountainPage(resort, allResorts) {
 function generateSitemap(resorts) {
   const states = [...new Set(resorts.map(r => r.state))];
   const today  = new Date().toISOString().split('T')[0];
+  // ── Static content pages — add new pages here as you build them ──────────
+  const STATIC_PAGES = [
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast/', changefreq: 'monthly', priority: '0.8' },
+  ];
+
   const urls = [
     `  <url><loc>https://wheretoskinext.com/</loc><changefreq>daily</changefreq><priority>1.0</priority><lastmod>${today}</lastmod></url>`,
     `  <url><loc>https://wheretoskinext.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>${today}</lastmod></url>`,
+    ...STATIC_PAGES.map(p =>
+      `  <url><loc>${p.loc}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority><lastmod>${today}</lastmod></url>`
+    ),
     ...states.map(s =>
       `  <url><loc>https://wheretoskinext.com/ski/${slugifyState(s)}/</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>${today}</lastmod></url>`
     ),

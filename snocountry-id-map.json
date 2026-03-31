@@ -1,0 +1,1256 @@
+{
+  "matched": [],
+  "unmatched": [
+    {
+      "slug": "mohawk-mountain",
+      "name": "Mohawk Mountain",
+      "state": "CT"
+    },
+    {
+      "slug": "mount-southington-ski-area",
+      "name": "Mount Southington",
+      "state": "CT"
+    },
+    {
+      "slug": "powder-ridge-park",
+      "name": "Powder Ridge",
+      "state": "CT"
+    },
+    {
+      "slug": "ski-sundown",
+      "name": "Ski Sundown",
+      "state": "CT"
+    },
+    {
+      "slug": "berkshire-east",
+      "name": "Berkshire East",
+      "state": "MA"
+    },
+    {
+      "slug": "blue-hills-ski-area",
+      "name": "Blue Hills",
+      "state": "MA"
+    },
+    {
+      "slug": "bousquet-ski-area",
+      "name": "Bousquet",
+      "state": "MA"
+    },
+    {
+      "slug": "bradford-ski-area",
+      "name": "Bradford",
+      "state": "MA"
+    },
+    {
+      "slug": "jiminy-peak",
+      "name": "Jiminy Peak",
+      "state": "MA"
+    },
+    {
+      "slug": "nashoba-valley",
+      "name": "Nashoba Valley",
+      "state": "MA"
+    },
+    {
+      "slug": "otis-ridge-ski-area",
+      "name": "Otis Ridge",
+      "state": "MA"
+    },
+    {
+      "slug": "ski-butternut",
+      "name": "Ski Butternut",
+      "state": "MA"
+    },
+    {
+      "slug": "ski-ward",
+      "name": "Ski Ward",
+      "state": "MA"
+    },
+    {
+      "slug": "wachusett-mountain-ski-area",
+      "name": "Wachusett",
+      "state": "MA"
+    },
+    {
+      "slug": "big-squaw-mountain-ski-resort",
+      "name": "Big Moose Mountain",
+      "state": "ME"
+    },
+    {
+      "slug": "black-mountain-of-maine",
+      "name": "Black Mountain of Maine",
+      "state": "ME"
+    },
+    {
+      "slug": "camden-snow-bowl",
+      "name": "Camden Snow Bowl",
+      "state": "ME"
+    },
+    {
+      "slug": "lost-valley",
+      "name": "Lost Valley",
+      "state": "ME"
+    },
+    {
+      "slug": "mt-abram-ski-resort",
+      "name": "Mt. Abram",
+      "state": "ME"
+    },
+    {
+      "slug": "new-hermon-mountain",
+      "name": "New Hermon",
+      "state": "ME"
+    },
+    {
+      "slug": "saddleback-inc",
+      "name": "Saddleback",
+      "state": "ME"
+    },
+    {
+      "slug": "shawnee-peak",
+      "name": "Shawnee Peak",
+      "state": "ME"
+    },
+    {
+      "slug": "sugarloaf",
+      "name": "Sugarloaf",
+      "state": "ME"
+    },
+    {
+      "slug": "sunday-river",
+      "name": "Sunday River",
+      "state": "ME"
+    },
+    {
+      "slug": "attitash",
+      "name": "Attitash",
+      "state": "NH"
+    },
+    {
+      "slug": "black-mountain",
+      "name": "Black Mountain",
+      "state": "NH"
+    },
+    {
+      "slug": "bretton-woods",
+      "name": "Bretton Woods",
+      "state": "NH"
+    },
+    {
+      "slug": "cannon-mountain",
+      "name": "Cannon Mountain",
+      "state": "NH"
+    },
+    {
+      "slug": "cranmore-mountain-resort",
+      "name": "Cranmore",
+      "state": "NH"
+    },
+    {
+      "slug": "crotched-mountain",
+      "name": "Crotched",
+      "state": "NH"
+    },
+    {
+      "slug": "dartmouth-skiway",
+      "name": "Dartmouth Skiway",
+      "state": "NH"
+    },
+    {
+      "slug": "granite-gorge",
+      "name": "Granite Gorge",
+      "state": "NH"
+    },
+    {
+      "slug": "gunstock",
+      "name": "Gunstock",
+      "state": "NH"
+    },
+    {
+      "slug": "king-pine",
+      "name": "King Pine",
+      "state": "NH"
+    },
+    {
+      "slug": "loon-mountain",
+      "name": "Loon Mountain",
+      "state": "NH"
+    },
+    {
+      "slug": "mcintyre-ski-area",
+      "name": "McIntyre Ski Area",
+      "state": "NH"
+    },
+    {
+      "slug": "mount-sunapee",
+      "name": "Mount Sunapee",
+      "state": "NH"
+    },
+    {
+      "slug": "pats-peak",
+      "name": "Pats Peak",
+      "state": "NH"
+    },
+    {
+      "slug": "ragged-mountain-resort",
+      "name": "Ragged Mountain",
+      "state": "NH"
+    },
+    {
+      "slug": "tenney-mountain",
+      "name": "Tenney Mountain",
+      "state": "NH"
+    },
+    {
+      "slug": "waterville-valley",
+      "name": "Waterville Valley",
+      "state": "NH"
+    },
+    {
+      "slug": "whaleback-mountain",
+      "name": "Whaleback",
+      "state": "NH"
+    },
+    {
+      "slug": "wildcat-mountain",
+      "name": "Wildcat",
+      "state": "NH"
+    },
+    {
+      "slug": "campgaw-mountain",
+      "name": "Campgaw",
+      "state": "NJ"
+    },
+    {
+      "slug": "mountain-creek-resort",
+      "name": "Mountain Creek",
+      "state": "NJ"
+    },
+    {
+      "slug": "belleayre",
+      "name": "Belleayre",
+      "state": "NY"
+    },
+    {
+      "slug": "brantling-ski-slopes",
+      "name": "Brantling",
+      "state": "NY"
+    },
+    {
+      "slug": "bristol-mountain",
+      "name": "Bristol Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "buffalo-ski-club-ski-area",
+      "name": "Buffalo Ski Club",
+      "state": "NY"
+    },
+    {
+      "slug": "catamount-ski-ride-area",
+      "name": "Catamount",
+      "state": "NY"
+    },
+    {
+      "slug": "dry-hill-ski-area",
+      "name": "Dry Hill",
+      "state": "NY"
+    },
+    {
+      "slug": "gore-mountain",
+      "name": "Gore Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "greek-peak",
+      "name": "Greek Peak",
+      "state": "NY"
+    },
+    {
+      "slug": "holimont-ski-area",
+      "name": "HoliMont",
+      "state": "NY"
+    },
+    {
+      "slug": "holiday-mountain",
+      "name": "Holiday Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "holiday-valley",
+      "name": "Holiday Valley",
+      "state": "NY"
+    },
+    {
+      "slug": "hunt-hollow-ski-club",
+      "name": "Hunt Hollow",
+      "state": "NY"
+    },
+    {
+      "slug": "hunter-mountain",
+      "name": "Hunter Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "kissing-bridge",
+      "name": "Kissing Bridge",
+      "state": "NY"
+    },
+    {
+      "slug": "labrador-mt",
+      "name": "Labrador Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "maple-ski-ridge",
+      "name": "Maple Ski Ridge",
+      "state": "NY"
+    },
+    {
+      "slug": "mccauley-mountain-ski-center",
+      "name": "McCauley Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "mount-peter-ski-area",
+      "name": "Mount Peter",
+      "state": "NY"
+    },
+    {
+      "slug": "oak-mountain",
+      "name": "Oak Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "peekn-peak",
+      "name": "Peek’n Peak",
+      "state": "NY"
+    },
+    {
+      "slug": "plattekill-mountain",
+      "name": "Plattekill",
+      "state": "NY"
+    },
+    {
+      "slug": "royal-mountain-ski-area",
+      "name": "Royal Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "snow-ridge",
+      "name": "Snow Ridge",
+      "state": "NY"
+    },
+    {
+      "slug": "song-mountain",
+      "name": "Song Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "swain",
+      "name": "Swain",
+      "state": "NY"
+    },
+    {
+      "slug": "thunder-ridge",
+      "name": "Thunder Ridge",
+      "state": "NY"
+    },
+    {
+      "slug": "titus-mountain",
+      "name": "Titus Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "toggenburg-mountain",
+      "name": "Toggenburg",
+      "state": "NY"
+    },
+    {
+      "slug": "west-mountain",
+      "name": "West Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "whiteface-mountain-resort",
+      "name": "Whiteface",
+      "state": "NY"
+    },
+    {
+      "slug": "willard-mountain",
+      "name": "Willard Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "windham-mountain",
+      "name": "Windham Mountain",
+      "state": "NY"
+    },
+    {
+      "slug": "woods-valley-ski-area",
+      "name": "Woods Valley",
+      "state": "NY"
+    },
+    {
+      "slug": "bear-creek-mountain-resort",
+      "name": "Bear Creek",
+      "state": "PA"
+    },
+    {
+      "slug": "big-boulder",
+      "name": "Big Boulder",
+      "state": "PA"
+    },
+    {
+      "slug": "blue-knob",
+      "name": "Blue Knob",
+      "state": "PA"
+    },
+    {
+      "slug": "blue-mountain-ski-area",
+      "name": "Blue Mountain",
+      "state": "PA"
+    },
+    {
+      "slug": "camelback-mountain-resort",
+      "name": "Camelback",
+      "state": "PA"
+    },
+    {
+      "slug": "eagle-rock",
+      "name": "Eagle Rock",
+      "state": "PA"
+    },
+    {
+      "slug": "elk-mountain-ski-resort",
+      "name": "Elk Mountain",
+      "state": "PA"
+    },
+    {
+      "slug": "jack-frost",
+      "name": "Jack Frost",
+      "state": "PA"
+    },
+    {
+      "slug": "liberty",
+      "name": "Liberty Mountain",
+      "state": "PA"
+    },
+    {
+      "slug": "montage-mountain",
+      "name": "Montage Mountain",
+      "state": "PA"
+    },
+    {
+      "slug": "mount-pleasant-of-edinboro",
+      "name": "Mount Pleasant of Edinboro",
+      "state": "PA"
+    },
+    {
+      "slug": "roundtop-mountain-resort",
+      "name": "Roundtop",
+      "state": "PA"
+    },
+    {
+      "slug": "seven-springs",
+      "name": "Seven Springs",
+      "state": "PA"
+    },
+    {
+      "slug": "shawnee-mountain-ski-area",
+      "name": "Shawnee Mountain",
+      "state": "PA"
+    },
+    {
+      "slug": "ski-big-bear",
+      "name": "Ski Big Bear",
+      "state": "PA"
+    },
+    {
+      "slug": "ski-sawmill",
+      "name": "Ski Sawmill",
+      "state": "PA"
+    },
+    {
+      "slug": "spring-mountain-ski-area",
+      "name": "Spring Mountain",
+      "state": "PA"
+    },
+    {
+      "slug": "tussey-mountain",
+      "name": "Tussey Mountain",
+      "state": "PA"
+    },
+    {
+      "slug": "whitetail-resort",
+      "name": "Whitetail",
+      "state": "PA"
+    },
+    {
+      "slug": "yawgoo-valley",
+      "name": "Yawgoo Valley",
+      "state": "RI"
+    },
+    {
+      "slug": "bolton-valley",
+      "name": "Bolton Valley",
+      "state": "VT"
+    },
+    {
+      "slug": "bromley-mountain",
+      "name": "Bromley",
+      "state": "VT"
+    },
+    {
+      "slug": "burke-mountain",
+      "name": "Burke Mountain",
+      "state": "VT"
+    },
+    {
+      "slug": "jay-peak",
+      "name": "Jay Peak",
+      "state": "VT"
+    },
+    {
+      "slug": "killington-resort",
+      "name": "Killington",
+      "state": "VT"
+    },
+    {
+      "slug": "mad-river-glen",
+      "name": "Mad River Glen",
+      "state": "VT"
+    },
+    {
+      "slug": "magic-mountain",
+      "name": "Magic Mountain",
+      "state": "VT"
+    },
+    {
+      "slug": "middlebury-snow-bowl",
+      "name": "Middlebury Snow Bowl",
+      "state": "VT"
+    },
+    {
+      "slug": "mount-snow",
+      "name": "Mount Snow",
+      "state": "VT"
+    },
+    {
+      "slug": "okemo-mountain-resort",
+      "name": "Okemo",
+      "state": "VT"
+    },
+    {
+      "slug": "pico-mountain-at-killington",
+      "name": "Pico",
+      "state": "VT"
+    },
+    {
+      "slug": "suicide-six",
+      "name": "Saskadena Six",
+      "state": "VT"
+    },
+    {
+      "slug": "smugglers-notch-resort",
+      "name": "Smugglers' Notch",
+      "state": "VT"
+    },
+    {
+      "slug": "stowe-mountain-resort",
+      "name": "Stowe",
+      "state": "VT"
+    },
+    {
+      "slug": "stratton-mountain",
+      "name": "Stratton",
+      "state": "VT"
+    },
+    {
+      "slug": "sugarbush",
+      "name": "Sugarbush",
+      "state": "VT"
+    },
+    {
+      "slug": "wisp-resort",
+      "name": "Wisp Resort",
+      "state": "MD"
+    },
+    {
+      "slug": "wintergreen-resort",
+      "name": "Wintergreen",
+      "state": "VA"
+    },
+    {
+      "slug": "massanutten-resort",
+      "name": "Massanutten",
+      "state": "VA"
+    },
+    {
+      "slug": "bryce-resort",
+      "name": "Bryce Resort",
+      "state": "VA"
+    },
+    {
+      "slug": "the-homestead",
+      "name": "The Homestead",
+      "state": "VA"
+    },
+    {
+      "slug": "snowshoe-mountain",
+      "name": "Snowshoe Mountain",
+      "state": "WV"
+    },
+    {
+      "slug": "canaan-valley-resort",
+      "name": "Canaan Valley",
+      "state": "WV"
+    },
+    {
+      "slug": "timberline-wv",
+      "name": "Timberline Mountain",
+      "state": "WV"
+    },
+    {
+      "slug": "winterplace",
+      "name": "Winterplace",
+      "state": "WV"
+    },
+    {
+      "slug": "sugar-mountain",
+      "name": "Sugar Mountain",
+      "state": "NC"
+    },
+    {
+      "slug": "beech-mountain",
+      "name": "Beech Mountain",
+      "state": "NC"
+    },
+    {
+      "slug": "appalachian-ski-mountain",
+      "name": "App Ski Mountain",
+      "state": "NC"
+    },
+    {
+      "slug": "cataloochee-ski-area",
+      "name": "Cataloochee",
+      "state": "NC"
+    },
+    {
+      "slug": "wolf-ridge-ski-resort",
+      "name": "Wolf Ridge",
+      "state": "NC"
+    },
+    {
+      "slug": "ober-gatlinburg",
+      "name": "Ober Gatlinburg",
+      "state": "TN"
+    },
+    {
+      "slug": "boyne-highlands",
+      "name": "Boyne Highlands",
+      "state": "MI"
+    },
+    {
+      "slug": "boyne-mountain",
+      "name": "Boyne Mountain",
+      "state": "MI"
+    },
+    {
+      "slug": "crystal-mountain-mi",
+      "name": "Crystal Mountain",
+      "state": "MI"
+    },
+    {
+      "slug": "nubs-nob",
+      "name": "Nubs Nob",
+      "state": "MI"
+    },
+    {
+      "slug": "mt-bohemia",
+      "name": "Mount Bohemia",
+      "state": "MI"
+    },
+    {
+      "slug": "shanty-creek",
+      "name": "Shanty Creek Resorts",
+      "state": "MI"
+    },
+    {
+      "slug": "big-powderhorn",
+      "name": "Big Powderhorn Mountain",
+      "state": "MI"
+    },
+    {
+      "slug": "ski-brule",
+      "name": "Ski Brule",
+      "state": "MI"
+    },
+    {
+      "slug": "indianhead-mountain",
+      "name": "Indianhead Mountain",
+      "state": "MI"
+    },
+    {
+      "slug": "blackjack-ski-resort",
+      "name": "Blackjack Ski Resort",
+      "state": "MI"
+    },
+    {
+      "slug": "pine-knob-ski-resort",
+      "name": "Pine Knob",
+      "state": "MI"
+    },
+    {
+      "slug": "alpine-valley-mi",
+      "name": "Alpine Valley",
+      "state": "MI"
+    },
+    {
+      "slug": "mount-holiday-ski-area",
+      "name": "Mount Holiday",
+      "state": "MI"
+    },
+    {
+      "slug": "granite-peak-wi",
+      "name": "Granite Peak",
+      "state": "WI"
+    },
+    {
+      "slug": "devils-head-resort",
+      "name": "Devil's Head",
+      "state": "WI"
+    },
+    {
+      "slug": "cascade-mountain-wi",
+      "name": "Cascade Mountain",
+      "state": "WI"
+    },
+    {
+      "slug": "whitecap-mountains",
+      "name": "Whitecap Mountains",
+      "state": "WI"
+    },
+    {
+      "slug": "mount-la-crosse",
+      "name": "Mount La Crosse",
+      "state": "WI"
+    },
+    {
+      "slug": "trollhaugen",
+      "name": "Trollhaugen",
+      "state": "WI"
+    },
+    {
+      "slug": "lutsen-mountains",
+      "name": "Lutsen Mountains",
+      "state": "MN"
+    },
+    {
+      "slug": "spirit-mountain",
+      "name": "Spirit Mountain",
+      "state": "MN"
+    },
+    {
+      "slug": "afton-alps",
+      "name": "Afton Alps",
+      "state": "MN"
+    },
+    {
+      "slug": "welch-village",
+      "name": "Welch Village",
+      "state": "MN"
+    },
+    {
+      "slug": "buck-hill-mn",
+      "name": "Buck Hill",
+      "state": "MN"
+    },
+    {
+      "slug": "wild-mountain-mn",
+      "name": "Wild Mountain",
+      "state": "MN"
+    },
+    {
+      "slug": "mad-river-mountain",
+      "name": "Mad River Mountain",
+      "state": "OH"
+    },
+    {
+      "slug": "boston-mills-brandywine",
+      "name": "Boston Mills/Brandywine",
+      "state": "OH"
+    },
+    {
+      "slug": "snow-trails",
+      "name": "Snow Trails",
+      "state": "OH"
+    },
+    {
+      "slug": "alpine-valley-oh",
+      "name": "Alpine Valley",
+      "state": "OH"
+    },
+    {
+      "slug": "paoli-peaks",
+      "name": "Paoli Peaks",
+      "state": "IN"
+    },
+    {
+      "slug": "chestnut-mountain-il",
+      "name": "Chestnut Mountain",
+      "state": "IL"
+    },
+    {
+      "slug": "sundown-mountain-ia",
+      "name": "Sundown Mountain",
+      "state": "IA"
+    },
+    {
+      "slug": "hidden-valley-mo",
+      "name": "Hidden Valley",
+      "state": "MO"
+    },
+    {
+      "slug": "snow-creek-mo",
+      "name": "Snow Creek",
+      "state": "MO"
+    },
+    {
+      "slug": "vail",
+      "name": "Vail",
+      "state": "CO"
+    },
+    {
+      "slug": "breckenridge",
+      "name": "Breckenridge",
+      "state": "CO"
+    },
+    {
+      "slug": "keystone-resort",
+      "name": "Keystone",
+      "state": "CO"
+    },
+    {
+      "slug": "beaver-creek",
+      "name": "Beaver Creek",
+      "state": "CO"
+    },
+    {
+      "slug": "arapahoe-basin",
+      "name": "Arapahoe Basin",
+      "state": "CO"
+    },
+    {
+      "slug": "copper-mountain-co",
+      "name": "Copper Mountain",
+      "state": "CO"
+    },
+    {
+      "slug": "winter-park-resort",
+      "name": "Winter Park",
+      "state": "CO"
+    },
+    {
+      "slug": "steamboat-resort",
+      "name": "Steamboat",
+      "state": "CO"
+    },
+    {
+      "slug": "aspen-snowmass",
+      "name": "Snowmass",
+      "state": "CO"
+    },
+    {
+      "slug": "aspen-mountain",
+      "name": "Aspen Mountain",
+      "state": "CO"
+    },
+    {
+      "slug": "aspen-highlands",
+      "name": "Aspen Highlands",
+      "state": "CO"
+    },
+    {
+      "slug": "buttermilk-co",
+      "name": "Buttermilk",
+      "state": "CO"
+    },
+    {
+      "slug": "telluride",
+      "name": "Telluride",
+      "state": "CO"
+    },
+    {
+      "slug": "crested-butte",
+      "name": "Crested Butte",
+      "state": "CO"
+    },
+    {
+      "slug": "purgatory-resort",
+      "name": "Purgatory",
+      "state": "CO"
+    },
+    {
+      "slug": "wolf-creek-ski-area",
+      "name": "Wolf Creek",
+      "state": "CO"
+    },
+    {
+      "slug": "monarch-mountain",
+      "name": "Monarch Mountain",
+      "state": "CO"
+    },
+    {
+      "slug": "eldora-mountain",
+      "name": "Eldora",
+      "state": "CO"
+    },
+    {
+      "slug": "loveland-ski-area",
+      "name": "Loveland",
+      "state": "CO"
+    },
+    {
+      "slug": "ski-cooper",
+      "name": "Ski Cooper",
+      "state": "CO"
+    },
+    {
+      "slug": "sunlight-mountain-resort",
+      "name": "Sunlight Mountain",
+      "state": "CO"
+    },
+    {
+      "slug": "powderhorn-resort",
+      "name": "Powderhorn",
+      "state": "CO"
+    },
+    {
+      "slug": "howelsen-hill",
+      "name": "Howelsen Hill",
+      "state": "CO"
+    },
+    {
+      "slug": "park-city-mountain",
+      "name": "Park City Mountain",
+      "state": "UT"
+    },
+    {
+      "slug": "deer-valley-resort",
+      "name": "Deer Valley",
+      "state": "UT"
+    },
+    {
+      "slug": "snowbird",
+      "name": "Snowbird",
+      "state": "UT"
+    },
+    {
+      "slug": "alta-ski-area",
+      "name": "Alta",
+      "state": "UT"
+    },
+    {
+      "slug": "solitude-mountain-resort",
+      "name": "Solitude",
+      "state": "UT"
+    },
+    {
+      "slug": "brighton-resort",
+      "name": "Brighton",
+      "state": "UT"
+    },
+    {
+      "slug": "snowbasin-resort",
+      "name": "Snowbasin",
+      "state": "UT"
+    },
+    {
+      "slug": "sundance-resort",
+      "name": "Sundance Mountain",
+      "state": "UT"
+    },
+    {
+      "slug": "brian-head-resort",
+      "name": "Brian Head",
+      "state": "UT"
+    },
+    {
+      "slug": "beaver-mountain-ut",
+      "name": "Beaver Mountain",
+      "state": "UT"
+    },
+    {
+      "slug": "jackson-hole-mountain-resort",
+      "name": "Jackson Hole",
+      "state": "WY"
+    },
+    {
+      "slug": "grand-targhee-resort",
+      "name": "Grand Targhee",
+      "state": "WY"
+    },
+    {
+      "slug": "snow-king-mountain",
+      "name": "Snow King",
+      "state": "WY"
+    },
+    {
+      "slug": "big-sky-resort",
+      "name": "Big Sky",
+      "state": "MT"
+    },
+    {
+      "slug": "whitefish-mountain-resort",
+      "name": "Whitefish Mountain",
+      "state": "MT"
+    },
+    {
+      "slug": "bridger-bowl",
+      "name": "Bridger Bowl",
+      "state": "MT"
+    },
+    {
+      "slug": "red-lodge-mountain",
+      "name": "Red Lodge Mountain",
+      "state": "MT"
+    },
+    {
+      "slug": "discovery-ski-area",
+      "name": "Discovery Basin",
+      "state": "MT"
+    },
+    {
+      "slug": "sun-valley-resort",
+      "name": "Sun Valley",
+      "state": "ID"
+    },
+    {
+      "slug": "schweitzer-mountain",
+      "name": "Schweitzer",
+      "state": "ID"
+    },
+    {
+      "slug": "bogus-basin",
+      "name": "Bogus Basin",
+      "state": "ID"
+    },
+    {
+      "slug": "brundage-mountain",
+      "name": "Brundage Mountain",
+      "state": "ID"
+    },
+    {
+      "slug": "tamarack-resort",
+      "name": "Tamarack Resort",
+      "state": "ID"
+    },
+    {
+      "slug": "silver-mountain-resort",
+      "name": "Silver Mountain",
+      "state": "ID"
+    },
+    {
+      "slug": "taos-ski-valley",
+      "name": "Taos Ski Valley",
+      "state": "NM"
+    },
+    {
+      "slug": "ski-santa-fe",
+      "name": "Ski Santa Fe",
+      "state": "NM"
+    },
+    {
+      "slug": "angel-fire-resort",
+      "name": "Angel Fire",
+      "state": "NM"
+    },
+    {
+      "slug": "red-river-ski-area",
+      "name": "Red River",
+      "state": "NM"
+    },
+    {
+      "slug": "ski-apache",
+      "name": "Ski Apache",
+      "state": "NM"
+    },
+    {
+      "slug": "arizona-snowbowl",
+      "name": "Arizona Snowbowl",
+      "state": "AZ"
+    },
+    {
+      "slug": "sunrise-park-resort",
+      "name": "Sunrise Park",
+      "state": "AZ"
+    },
+    {
+      "slug": "mount-rose-ski-tahoe",
+      "name": "Mt. Rose Ski Tahoe",
+      "state": "NV"
+    },
+    {
+      "slug": "diamond-peak",
+      "name": "Diamond Peak",
+      "state": "NV"
+    },
+    {
+      "slug": "lee-canyon",
+      "name": "Lee Canyon",
+      "state": "NV"
+    },
+    {
+      "slug": "palisades-tahoe",
+      "name": "Palisades Tahoe",
+      "state": "CA"
+    },
+    {
+      "slug": "mammoth-mountain",
+      "name": "Mammoth Mountain",
+      "state": "CA"
+    },
+    {
+      "slug": "heavenly-mountain-resort",
+      "name": "Heavenly",
+      "state": "CA"
+    },
+    {
+      "slug": "northstar-california",
+      "name": "Northstar California",
+      "state": "CA"
+    },
+    {
+      "slug": "kirkwood-mountain",
+      "name": "Kirkwood",
+      "state": "CA"
+    },
+    {
+      "slug": "sierra-at-tahoe",
+      "name": "Sierra-at-Tahoe",
+      "state": "CA"
+    },
+    {
+      "slug": "june-mountain",
+      "name": "June Mountain",
+      "state": "CA"
+    },
+    {
+      "slug": "bear-mountain-ca",
+      "name": "Bear Mountain",
+      "state": "CA"
+    },
+    {
+      "slug": "snow-summit",
+      "name": "Snow Summit",
+      "state": "CA"
+    },
+    {
+      "slug": "mountain-high-resort",
+      "name": "Mountain High",
+      "state": "CA"
+    },
+    {
+      "slug": "dodge-ridge",
+      "name": "Dodge Ridge",
+      "state": "CA"
+    },
+    {
+      "slug": "china-peak",
+      "name": "China Peak",
+      "state": "CA"
+    },
+    {
+      "slug": "snow-valley-ca",
+      "name": "Snow Valley",
+      "state": "CA"
+    },
+    {
+      "slug": "mt-shasta-ski-park",
+      "name": "Mt. Shasta Ski Park",
+      "state": "CA"
+    },
+    {
+      "slug": "homewood-mountain-resort",
+      "name": "Homewood Mountain",
+      "state": "CA"
+    },
+    {
+      "slug": "mt-hood-meadows",
+      "name": "Mt. Hood Meadows",
+      "state": "OR"
+    },
+    {
+      "slug": "mt-bachelor",
+      "name": "Mt. Bachelor",
+      "state": "OR"
+    },
+    {
+      "slug": "timberline-lodge",
+      "name": "Timberline Lodge",
+      "state": "OR"
+    },
+    {
+      "slug": "mt-hood-skibowl",
+      "name": "Mt. Hood Skibowl",
+      "state": "OR"
+    },
+    {
+      "slug": "hoodoo-ski-area",
+      "name": "Hoodoo",
+      "state": "OR"
+    },
+    {
+      "slug": "willamette-pass",
+      "name": "Willamette Pass",
+      "state": "OR"
+    },
+    {
+      "slug": "anthony-lakes-ski-area",
+      "name": "Anthony Lakes",
+      "state": "OR"
+    },
+    {
+      "slug": "crystal-mountain-wa",
+      "name": "Crystal Mountain",
+      "state": "WA"
+    },
+    {
+      "slug": "stevens-pass",
+      "name": "Stevens Pass",
+      "state": "WA"
+    },
+    {
+      "slug": "summit-at-snoqualmie",
+      "name": "The Summit at Snoqualmie",
+      "state": "WA"
+    },
+    {
+      "slug": "white-pass-ski-area",
+      "name": "White Pass",
+      "state": "WA"
+    },
+    {
+      "slug": "49-degrees-north",
+      "name": "49 Degrees North",
+      "state": "WA"
+    },
+    {
+      "slug": "mission-ridge",
+      "name": "Mission Ridge",
+      "state": "WA"
+    },
+    {
+      "slug": "mt-baker-ski-area",
+      "name": "Mt. Baker Ski Area",
+      "state": "WA"
+    },
+    {
+      "slug": "alyeska-resort",
+      "name": "Alyeska",
+      "state": "AK"
+    }
+  ],
+  "snocountryTotal": 0
+}
