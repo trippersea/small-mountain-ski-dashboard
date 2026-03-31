@@ -118,6 +118,17 @@ function getSponsor(resortId) {
       text-decoration: none; transition: background .12s;
     }
     .btn-book:hover { background: #1f9e78; }
+    /* ── Live SnoCountry conditions chips ── */
+    .cond-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .cond-chip {
+      display:inline-flex; align-items:center;
+      font-size:11px; font-weight:600;
+      padding:3px 9px; border-radius:999px;
+      background:rgba(255,255,255,.13); color:rgba(255,255,255,.85);
+      border:1px solid rgba(255,255,255,.18);
+    }
+    .cond-chip--surface { background:rgba(34,179,138,.22); color:#6ee7b7; border-color:rgba(110,231,183,.3); }
+
   `;
   document.head.appendChild(style);
 })();
@@ -139,6 +150,7 @@ const state = Object.seal({
   driveCache:     {},
   weatherCache:   {},
   compareSet:     new Set(),
+  conditionsCache: {},
   mapMode:        'drive',
   weights:        loadSavedWeights(),
   passPreference: loadSavedPassPreference(),
@@ -389,6 +401,47 @@ async function fetchWeather(resort) {
     state.weatherCache[resort.id] = { ts: Date.now(), data: wx };
     return wx;
   } catch (e) { return null; }
+}
+
+
+// ─── SnoCountry live conditions ───────────────────────────────────────────────
+// Fetches reported snow, surface condition, trails/lifts open from /api/conditions.
+// Results cached in state.conditionsCache keyed by resort.id.
+// Fails silently — Open-Meteo forecast is always the scoring source of truth.
+const CONDITIONS_TTL = 30 * 60 * 1000; // 30 minutes
+
+async function fetchConditions(resortId) {
+  const cached = state.conditionsCache[resortId];
+  if (cached && Date.now() - cached.ts < CONDITIONS_TTL) return cached.data;
+  try {
+    const res = await fetchWithTimeout('/api/conditions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resortSlug: resortId }),
+    }, 8000);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json.disabled || !json.conditions?.length) return null;
+    const data = json.conditions[0];
+    state.conditionsCache[resortId] = { ts: Date.now(), data };
+    return data;
+  } catch (e) { return null; }
+}
+
+// Inject live conditions badge into a card slot after async fetch.
+async function injectConditionsBadge(resortId, slotId) {
+  const slot = document.getElementById(slotId);
+  if (!slot) return;
+  const c = await fetchConditions(resortId);
+  if (!c) return;
+  const parts = [];
+  if (c.surfaceCondition) parts.push(`<span class="cond-chip cond-chip--surface">${esc(c.surfaceCondition)}</span>`);
+  if (c.trailsOpen != null && c.trailsTotal != null) parts.push(`<span class="cond-chip">${c.trailsOpen}/${c.trailsTotal} trails open</span>`);
+  if (c.baseDepthMin != null) parts.push(`<span class="cond-chip">${c.baseDepthMin}${c.baseDepthMax ? '–' + c.baseDepthMax : ''}" base</span>`);
+  if (c.liftsOpen != null && c.liftsTotal != null) parts.push(`<span class="cond-chip">${c.liftsOpen}/${c.liftsTotal} lifts</span>`);
+  if (!parts.length) return;
+  slot.innerHTML = `<div class="cond-row">${parts.join('')}</div>`;
+  slot.removeAttribute('hidden');
 }
 
 // PERFORMANCE FIX: Fetch nearest 20 first → render → then rest in background
@@ -926,6 +979,7 @@ function renderVerdict(resorts) {
     });
   });
   injectVerdictWriteup(v);
+  injectConditionsBadge(resort.id, 'verdictConditionsSlot');
 }
 
 // ─── AI verdict write-up ───────────────────────────────────────────────────────
@@ -1445,6 +1499,7 @@ function renderDetail({ scroll = false } = {}) {
         <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Base / Summit</div>
       </div>
     </div>
+    <div id="detailConditionsSlot" hidden style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"></div>
   </div>
 
 </div>
@@ -1520,6 +1575,7 @@ function renderDetail({ scroll = false } = {}) {
 
   if (scroll) els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   if (resort) pushReportUrl(resort);
+  injectConditionsBadge(resort.id, 'detailConditionsSlot');
 }
 
 // ─── Map ───────────────────────────────────────────────────────────────────────

@@ -564,6 +564,7 @@
       <div class="hero-meta-row">
         <span class="pass-eyebrow">Independent</span>
         <span class="live-pill"><span class="live-dot"></span>Live Forecast</span>
+        <span id="liveSurfacePill" style="display:none;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#6ee7b7;background:rgba(34,179,138,.2);border:1px solid rgba(34,179,138,.35);border-radius:999px;padding:4px 10px"></span>
         <span class="freshness">Updated March 2026</span>
       </div>
 
@@ -589,8 +590,12 @@
             <span class="snow-detail-label">Avg Annual Snow</span>
           </div>
           <div class="snow-detail">
-            <span class="snow-detail-val">21</span>
-            <span class="snow-detail-label">Total Trails</span>
+            <span class="snow-detail-val" id="liveTrailsOpen">21</span>
+            <span class="snow-detail-label" id="liveTrailsLabel">Total Trails</span>
+          </div>
+          <div class="snow-detail" id="liveConditionDetail" style="display:none">
+            <span class="snow-detail-val" id="liveBaseDepth">—</span>
+            <span class="snow-detail-label">Base Depth</span>
           </div>
         </div>
       </div>
@@ -868,6 +873,52 @@
         var fsEl = document.getElementById('forecastSnow');
         if (fsEl) fsEl.innerHTML = '<span class="snow-loading">Forecast unavailable</span>';
       });
+  })();
+  </script>
+
+
+  <!-- ══ SnoCountry live conditions fetch ══
+       Fetches reported snow, trails open, surface condition, base depth.
+       Runs after page load and fails silently — static data always shows as fallback. -->
+  <script>
+  (function() {
+    var resortSlug = "trollhaugen";
+    fetch('/api/conditions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resortSlug: resortSlug })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      if (!json || json.disabled || !json.conditions || !json.conditions.length) return;
+      var c = json.conditions[0];
+
+      // Surface condition pill
+      if (c.surfaceCondition) {
+        var pill = document.getElementById('liveSurfacePill');
+        if (pill) { pill.textContent = c.surfaceCondition; pill.style.display = 'inline-flex'; }
+      }
+
+      // Trails open — update the spotlight detail
+      if (c.trailsOpen != null && c.trailsTotal != null) {
+        var trailsEl = document.getElementById('liveTrailsOpen');
+        var labelEl  = document.getElementById('liveTrailsLabel');
+        if (trailsEl) trailsEl.textContent = c.trailsOpen + '/' + c.trailsTotal;
+        if (labelEl)  labelEl.textContent  = 'Trails Open';
+      }
+
+      // Base depth
+      if (c.baseDepthMin != null) {
+        var baseEl     = document.getElementById('liveBaseDepth');
+        var condDetail = document.getElementById('liveConditionDetail');
+        var depthStr   = c.baseDepthMin + (c.baseDepthMax ? '–' + c.baseDepthMax : '') + '"';
+        if (baseEl)     baseEl.textContent = depthStr;
+        if (condDetail) condDetail.style.display = 'flex';
+      }
+    })
+    .catch(function() {
+      // Fail silently — static mountain data still shows
+    });
   })();
   </script>
 
