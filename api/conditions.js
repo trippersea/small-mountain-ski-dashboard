@@ -30,11 +30,13 @@ const BASE_URL = 'http://feeds.snocountry.net';
 // The demo key (SnoCountry.example) only returns 3 resorts per request, so most
 // slug lookups will return no data until you populate this with real IDs.
 const ID_MAP = {
-  // Paste output from get-snocountry-ids.mjs here after running it.
-  // Example format (IDs below are illustrative — run the script for real ones):
-  // 'stowe-mountain-resort':    802XXX,
-  // 'killington-resort':        802XXX,
-  // 'sunday-river':             801XXX,
+  // ── Vermont (confirmed via live demo key fetch) ──────────────────────────
+  'bolton-valley':    802002,  // Bolton Valley Resort
+  'bromley-mountain': 802003,  // Bromley Mountain Resort
+  'burke-mountain':   802004,  // Burke Mountain Resort
+
+  // ── All other resorts: run get-snocountry-ids.mjs to fill in the rest ───
+  // Paste the output from snocountry-id-map.js here after running that script.
 };
 
 module.exports = async function handler(req, res) {
