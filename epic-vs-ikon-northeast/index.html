@@ -372,7 +372,68 @@
       .verdict-grid { grid-template-columns: 1fr; }
       .mountain-grid { grid-template-columns: 1fr; }
     }
+
+    .faq-list { display:grid; gap:0; margin-bottom:16px; }
+    .faq-item { border-bottom:1px solid var(--border); padding:20px 0; }
+    .faq-item:last-child { border-bottom:none; }
+    .faq-q { font-size:1rem; font-weight:700; color:var(--text-primary); margin:0 0 8px; line-height:1.35; }
+    .faq-a { font-size:0.9rem; color:var(--text-secondary); line-height:1.65; margin:0; }
+    .cross-links { background:#f1f5f9; border-radius:var(--radius); padding:22px 24px; margin:48px 0 0; }
+    .cross-links h3 { font-size:1rem; font-weight:800; margin:0 0 14px; }
+    .cross-links-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; }
+    .cross-link-card { background:#fff; border:1px solid var(--border); border-radius:8px; padding:12px 14px; text-decoration:none; color:var(--text-primary); transition:border-color .15s; }
+    .cross-link-card:hover { border-color:#2563eb; color:#2563eb; }
+    .cross-link-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-light); margin-bottom:3px; }
+    .cross-link-title { font-size:0.875rem; font-weight:700; line-height:1.3; }
   </style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is the Epic Pass or Ikon Pass better for Northeast skiing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It depends on which state you ski most. The Epic Pass is the stronger pick for New Hampshire skiers, with Wildcat, Attitash, Crotched Mountain, and Mount Sunapee all on the pass. The Ikon Pass wins in Vermont with Killington, Stratton, Sugarbush, and Pico, plus Sunday River and Sugarloaf in Maine. If Vermont is your home mountain, choose Ikon. If you primarily ski New Hampshire, Epic has the edge."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Stowe Mountain Resort included on the Epic Pass?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Stowe Mountain Resort in Vermont is included on the Epic Pass. It is one of the top reasons to choose Epic in the Northeast, offering 2,360 feet of vertical drop, 79 trails, and an average of 300 inches of snowfall per season."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What Vermont ski resorts are on the Ikon Pass?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Four Vermont mountains are on the Ikon Pass: Killington Resort, Stratton Mountain, Sugarbush Resort, and Pico Mountain. Killington is the largest resort in Vermont with 3,050 feet of vertical drop and 99 trails, making it one of the most compelling reasons to choose Ikon in New England."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does the Epic Pass include Okemo Mountain Resort?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Okemo Mountain Resort is included on the Epic Pass. Located in Ludlow, Vermont, Okemo offers 2,200 feet of vertical drop, 75 trails, and one of the most reliable snowmaking operations in the Northeast."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need an Epic or Ikon Pass to ski in Maine?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "If you want a season pass that covers Maine resorts, the Ikon Pass is the only option. Sunday River and Sugarloaf are both included on the Ikon Pass. The Epic Pass has no Maine ski resorts. Independent pass holders should also consider whether Saddleback or other Indy Pass mountains fit their schedule."
+      }
+    }
+  ]
+}
+  </script>
 </head>
 <body>
 
@@ -872,6 +933,50 @@
   </p>
 
   <!-- CTA -->
+
+  <div class="section-header" style="margin-top:56px">
+    <h2>Frequently Asked Questions</h2>
+  </div>
+  <div class="faq-list">
+  <div class="faq-item">
+    <h3 class="faq-q">Is the Epic Pass or Ikon Pass better for Northeast skiing?</h3>
+    <p class="faq-a">It depends on which state you ski most. The Epic Pass is the stronger pick for New Hampshire skiers, with Wildcat, Attitash, Crotched Mountain, and Mount Sunapee all on the pass. The Ikon Pass wins in Vermont with Killington, Stratton, Sugarbush, and Pico, plus Sunday River and Sugarloaf in Maine. If Vermont is your home mountain, choose Ikon. If you primarily ski New Hampshire, Epic has the edge.</p>
+  </div>
+  <div class="faq-item">
+    <h3 class="faq-q">Is Stowe Mountain Resort included on the Epic Pass?</h3>
+    <p class="faq-a">Yes. Stowe Mountain Resort in Vermont is included on the Epic Pass. It is one of the top reasons to choose Epic in the Northeast, offering 2,360 feet of vertical drop, 79 trails, and an average of 300 inches of snowfall per season.</p>
+  </div>
+  <div class="faq-item">
+    <h3 class="faq-q">What Vermont ski resorts are on the Ikon Pass?</h3>
+    <p class="faq-a">Four Vermont mountains are on the Ikon Pass: Killington Resort, Stratton Mountain, Sugarbush Resort, and Pico Mountain. Killington is the largest resort in Vermont with 3,050 feet of vertical drop and 99 trails, making it one of the most compelling reasons to choose Ikon in New England.</p>
+  </div>
+  <div class="faq-item">
+    <h3 class="faq-q">Does the Epic Pass include Okemo Mountain Resort?</h3>
+    <p class="faq-a">Yes. Okemo Mountain Resort is included on the Epic Pass. Located in Ludlow, Vermont, Okemo offers 2,200 feet of vertical drop, 75 trails, and one of the most reliable snowmaking operations in the Northeast.</p>
+  </div>
+  <div class="faq-item">
+    <h3 class="faq-q">Do I need an Epic or Ikon Pass to ski in Maine?</h3>
+    <p class="faq-a">If you want a season pass that covers Maine resorts, the Ikon Pass is the only option. Sunday River and Sugarloaf are both included on the Ikon Pass. The Epic Pass has no Maine ski resorts. Independent pass holders should also consider whether Saddleback or other Indy Pass mountains fit their schedule.</p>
+  </div>
+  </div>
+  <div class="cross-links">
+    <h3>Compare passes in other regions</h3>
+    <div class="cross-links-grid">
+    <a href="/epic-vs-ikon-rockies/" class="cross-link-card">
+      <div class="cross-link-label">Pass Guide</div>
+      <div class="cross-link-title">Epic vs Ikon: Rockies</div>
+    </a>    <a href="/epic-vs-ikon-california/" class="cross-link-card">
+      <div class="cross-link-label">Pass Guide</div>
+      <div class="cross-link-title">Epic vs Ikon: California</div>
+    </a>    <a href="/epic-vs-ikon-pacific-northwest/" class="cross-link-card">
+      <div class="cross-link-label">Pass Guide</div>
+      <div class="cross-link-title">Epic vs Ikon: Pacific Northwest</div>
+    </a>    <a href="/epic-vs-ikon-midwest/" class="cross-link-card">
+      <div class="cross-link-label">Pass Guide</div>
+      <div class="cross-link-title">Epic vs Ikon: Midwest</div>
+    </a>
+    </div>
+  </div>
   <div class="cta-block">
     <h3>Which pass mountains are best <em>this weekend?</em></h3>
     <p>See live snow forecasts for every Epic and Ikon mountain near you — ranked by conditions, drive time, and crowds.</p>

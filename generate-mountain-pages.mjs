@@ -113,6 +113,46 @@ function distanceMiles(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// ── Pass comparison page by state ─────────────────────────────────────────────
+function passComparisonPage(state) {
+  const map = {
+    CT:'epic-vs-ikon-northeast', MA:'epic-vs-ikon-northeast',
+    ME:'epic-vs-ikon-northeast', NH:'epic-vs-ikon-northeast',
+    NJ:'epic-vs-ikon-northeast', NY:'epic-vs-ikon-northeast',
+    PA:'epic-vs-ikon-northeast', RI:'epic-vs-ikon-northeast',
+    VT:'epic-vs-ikon-northeast',
+    CO:'epic-vs-ikon-rockies',   MT:'epic-vs-ikon-rockies',
+    WY:'epic-vs-ikon-rockies',   NM:'epic-vs-ikon-rockies',
+    UT:'epic-vs-ikon-rockies',
+    CA:'epic-vs-ikon-california',NV:'epic-vs-ikon-california',
+    AZ:'epic-vs-ikon-california',
+    OR:'epic-vs-ikon-pacific-northwest',
+    WA:'epic-vs-ikon-pacific-northwest',
+    AK:'epic-vs-ikon-pacific-northwest',
+    ID:'epic-vs-ikon-pacific-northwest',
+    MI:'epic-vs-ikon-midwest',   WI:'epic-vs-ikon-midwest',
+    MN:'epic-vs-ikon-midwest',   OH:'epic-vs-ikon-midwest',
+    IN:'epic-vs-ikon-midwest',   IL:'epic-vs-ikon-midwest',
+    IA:'epic-vs-ikon-midwest',   MO:'epic-vs-ikon-midwest',
+  };
+  return map[state] || null;
+}
+
+function passComparisonLabel(state) {
+  const map = {
+    CT:'Northeast', MA:'Northeast', ME:'Northeast', NH:'Northeast',
+    NJ:'Northeast', NY:'Northeast', PA:'Northeast', RI:'Northeast', VT:'Northeast',
+    CO:'Rockies', MT:'Rockies', WY:'Rockies', NM:'Rockies', UT:'Rockies',
+    CA:'California', NV:'California', AZ:'California',
+    OR:'Pacific Northwest', WA:'Pacific Northwest', AK:'Pacific Northwest', ID:'Pacific Northwest',
+    MI:'Midwest', WI:'Midwest', MN:'Midwest', OH:'Midwest',
+    IN:'Midwest', IL:'Midwest', IA:'Midwest', MO:'Midwest',
+  };
+  return map[state] || '';
+}
+
+
+
 function nearbyResorts(resort, allResorts, limit = 4) {
   return allResorts
     .filter(r => r.id !== resort.id)
@@ -995,6 +1035,18 @@ function generateMountainPage(resort, allResorts) {
       </p>
     </div>
 
+
+    <!-- Pass comparison callout — only shown for Epic and Ikon mountains -->
+    ${(resort.passGroup === 'Epic' || resort.passGroup === 'Ikon') && passComparisonPage(resort.state) ? `
+    <div style="margin-top:16px;padding:14px 18px;background:#f0f6ff;border:1px solid #bfdbfe;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#185fa5;margin-bottom:3px">Pass Guide</div>
+        <div style="font-size:14px;font-weight:700;color:#1a2030">Comparing ${esc(resort.passGroup)} Pass mountains in the ${passComparisonLabel(resort.state)}?</div>
+        <div style="font-size:13px;color:#3b5a8f;margin-top:2px">See every ${esc(resort.passGroup)} and Ikon mountain ranked side by side.</div>
+      </div>
+      <a href="/${passComparisonPage(resort.state)}/" style="background:#2b6de9;color:#fff;font-size:13px;font-weight:700;padding:9px 18px;border-radius:999px;text-decoration:none;white-space:nowrap;flex-shrink:0">View Pass Comparison &rarr;</a>
+    </div>` : ''}
+
     <!-- ══ MID-PAGE CTA — appears AFTER editorial, not before ══ -->
     <div class="mid-cta">
       <div>
@@ -1129,11 +1181,12 @@ function generateSitemap(resorts) {
   const today  = new Date().toISOString().split('T')[0];
   // ── Static content pages — add new pages here as you build them ──────────
   const STATIC_PAGES = [
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast/',      changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-rockies/',        changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-california/',     changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/ski-pass-comparison/',            changefreq: 'monthly', priority: '0.9' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast/',         changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-rockies/',           changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-california/',        changefreq: 'monthly', priority: '0.8' },
     { loc: 'https://wheretoskinext.com/epic-vs-ikon-pacific-northwest/', changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-midwest/',        changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-midwest/',           changefreq: 'monthly', priority: '0.8' },
   ];
 
   const urls = [

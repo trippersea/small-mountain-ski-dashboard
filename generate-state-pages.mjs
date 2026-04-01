@@ -104,6 +104,45 @@ function stateFullName(abbr) {
   return m[abbr] || abbr;
 }
 
+// ── Pass comparison page by state ─────────────────────────────────────────────
+function passCompPage(state) {
+  const map = {
+    CT:'epic-vs-ikon-northeast', MA:'epic-vs-ikon-northeast',
+    ME:'epic-vs-ikon-northeast', NH:'epic-vs-ikon-northeast',
+    NJ:'epic-vs-ikon-northeast', NY:'epic-vs-ikon-northeast',
+    PA:'epic-vs-ikon-northeast', RI:'epic-vs-ikon-northeast',
+    VT:'epic-vs-ikon-northeast',
+    CO:'epic-vs-ikon-rockies',   MT:'epic-vs-ikon-rockies',
+    WY:'epic-vs-ikon-rockies',   NM:'epic-vs-ikon-rockies',
+    UT:'epic-vs-ikon-rockies',
+    CA:'epic-vs-ikon-california',NV:'epic-vs-ikon-california',
+    AZ:'epic-vs-ikon-california',
+    OR:'epic-vs-ikon-pacific-northwest',
+    WA:'epic-vs-ikon-pacific-northwest',
+    AK:'epic-vs-ikon-pacific-northwest',
+    ID:'epic-vs-ikon-pacific-northwest',
+    MI:'epic-vs-ikon-midwest',   WI:'epic-vs-ikon-midwest',
+    MN:'epic-vs-ikon-midwest',   OH:'epic-vs-ikon-midwest',
+    IN:'epic-vs-ikon-midwest',   IL:'epic-vs-ikon-midwest',
+    IA:'epic-vs-ikon-midwest',   MO:'epic-vs-ikon-midwest',
+  };
+  return map[state] || null;
+}
+function passCompLabel(state) {
+  const map = {
+    CT:'Northeast', MA:'Northeast', ME:'Northeast', NH:'Northeast',
+    NJ:'Northeast', NY:'Northeast', PA:'Northeast', RI:'Northeast', VT:'Northeast',
+    CO:'Rockies', MT:'Rockies', WY:'Rockies', NM:'Rockies', UT:'Rockies',
+    CA:'California', NV:'California', AZ:'California',
+    OR:'Pacific Northwest', WA:'Pacific Northwest', AK:'Pacific Northwest', ID:'Pacific Northwest',
+    MI:'Midwest', WI:'Midwest', MN:'Midwest', OH:'Midwest',
+    IN:'Midwest', IL:'Midwest', IA:'Midwest', MO:'Midwest',
+  };
+  return map[state] || '';
+}
+
+
+
 // ─── Sponsor ad CSS + HTML ────────────────────────────────────────────────────
 const AD_CSS = `
     /* ── State page sponsor ad ── */
@@ -204,6 +243,22 @@ function generateStatePage(stateAbbr, resorts) {
     .filter(s => s !== stateAbbr)
     .map(s => `<a href="/ski/${slugifyState(s)}/" class="state-link">${stateFullName(s)}</a>`)
     .join('');
+
+
+    // ── Pass comparison callout (only if state has a comparison page) ────────
+    const compPage = passCompPage(stateAbbr);
+    const compLabel = passCompLabel(stateAbbr);
+    const epicCount = resorts.filter(r => r.passGroup === 'Epic').length;
+    const ikonCount = resorts.filter(r => r.passGroup === 'Ikon').length;
+    const passCallout = compPage && (epicCount + ikonCount > 0) ? `
+    <div style="margin:32px 0;padding:20px 24px;background:#f0f6ff;border:1px solid #bfdbfe;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#185fa5;margin-bottom:4px">Pass Guide</div>
+        <div style="font-size:16px;font-weight:800;color:#1a2030;margin-bottom:4px">Epic Pass vs Ikon Pass: ${compLabel}</div>
+        <div style="font-size:13px;color:#3b5a8f">This state has ${epicCount} Epic Pass and ${ikonCount} Ikon Pass mountain${ikonCount !== 1 ? 's' : ''}. See how every covered resort compares side by side.</div>
+      </div>
+      <a href="/${compPage}/" style="background:#2b6de9;color:#fff;font-size:14px;font-weight:700;padding:11px 22px;border-radius:999px;text-decoration:none;white-space:nowrap;flex-shrink:0">Compare Passes &rarr;</a>
+    </div>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -327,6 +382,7 @@ function generateStatePage(stateAbbr, resorts) {
       <div class="stat-chip"><strong>${Math.round(resorts.reduce((s, r) => s + r.avgSnowfall, 0) / count)}"</strong> Avg Annual Snow</div>
     </div>
 
+    ${passCallout}
     <div class="table-wrap">
       <table>
         <thead>
@@ -351,6 +407,9 @@ function generateStatePage(stateAbbr, resorts) {
     <div class="nearby-links">
       <h2>Explore other states</h2>
       <div class="state-grid">${otherStates}</div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0;">
+        <a href="/ski-pass-comparison/" style="font-size:14px;font-weight:700;color:#2b6de9;text-decoration:none;">Compare Epic Pass vs Ikon Pass by region &rarr;</a>
+      </div>
     </div>
 
   </div>
