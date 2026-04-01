@@ -934,6 +934,7 @@ function renderVerdict(resorts) {
             <span class="vcard-chip vcard-chip--pass" style="background:${passBg}22;color:${passBg};border-color:${passBg}44">${esc(resort.passGroup)}</span>
             ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
           </div>
+          <div id="verdictConditionsSlot" class="verdict-conditions-slot" aria-hidden="true"></div>
         </div>
 
         <div class="rec-stats" role="list" aria-label="Key decision factors">
@@ -942,6 +943,7 @@ function renderVerdict(resorts) {
           <div class="stat" role="listitem"><div class="stat-val">${esc(resort.passGroup)}</div><div class="stat-label">Pass</div></div>
         </div>
 
+        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--loading" aria-live="polite"></div>
         <div class="rec-copy">${esc(headline)} — ${esc(detail)}</div>
       </div>
 
@@ -956,6 +958,9 @@ function renderVerdict(resorts) {
           }).join('')}
           <li><button class="sec-item" id="show-more">More</button></li>
         </ul>
+        <div style="margin-top:8px; text-align:right;">
+          <button class="vcard-compare-link" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare</button>
+        </div>
       </div>` : ''}
 
     </div>`;
