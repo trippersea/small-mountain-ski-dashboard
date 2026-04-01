@@ -917,52 +917,37 @@ function renderVerdict(resorts) {
         </button>
       </div>` : '';
 
-  // Mobile-first, compact verdict card: emphasize single top pick, show 3 key stats
-  const snowNear = (forecast3[0]?.snow || 0).toFixed(1);
   els.verdictCard.innerHTML = `
-    <div class="rec-viewport vcard vcard--${tier}">
-      <div class="rec-top-pick">
-        <div class="rec-badge">Top Pick</div>
-        <div class="rec-head">
-          <button class="vcard-name rec-name" id="verdictPickBtn">${esc(resort.name)}</button>
-          <button class="rec-action" id="verdictShareBtn" aria-label="Share ${esc(resort.name)}">Share</button>
+    <div class="vcard vcard--${tier}">
+      <div class="vcard-hero vcard-hero--${tier}">
+        <div class="vcard-eyebrow">Your Recommended Mountain</div>
+        <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
+        <div class="vcard-chips">
+          <span class="vcard-chip">${esc(resort.state)}</span>
+          <span class="vcard-chip vcard-chip--pass" style="background:${passBg}22;color:${passBg};border-color:${passBg}44">${esc(resort.passGroup)}</span>
+          ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
+          <span class="vcard-chip">$${resort.price}</span>
+          ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
         </div>
-
-        <div class="rec-meta">
-          <div class="rec-chips">
-            <span class="vcard-chip">${esc(resort.state)}</span>
-            <span class="vcard-chip vcard-chip--pass" style="background:${passBg}22;color:${passBg};border-color:${passBg}44">${esc(resort.passGroup)}</span>
-            ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
-          </div>
-          <div id="verdictConditionsSlot" class="verdict-conditions-slot" aria-hidden="true"></div>
+        <div class="vcard-condition-badge vcard-condition-badge--${tier}">
+          <span class="vcard-condition-dot" style="background:${tc.dot}"></span>
+          ${tc.label}
         </div>
-
-        <div class="rec-stats" role="list" aria-label="Key decision factors">
-          <div class="stat" role="listitem"><div class="stat-val">${snowNear}"</div><div class="stat-label">24–48h</div></div>
-          <div class="stat" role="listitem"><div class="stat-val">${driveText ? esc(driveText) : '—'}</div><div class="stat-label">Drive</div></div>
-          <div class="stat" role="listitem"><div class="stat-val">${esc(resort.passGroup)}</div><div class="stat-label">Pass</div></div>
-        </div>
-
-        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--loading" aria-live="polite"></div>
-        <div class="rec-copy">${esc(headline)} — ${esc(detail)}</div>
       </div>
-
-      ${runningItems.length ? `<div class="rec-secondary" aria-label="Also in the running">
-        <div class="sec-title">Also in the running</div>
-        <ul class="sec-list">
-          ${runningItems.map(item => {
-            const altDrive = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : null;
-            const altWx    = state.weatherCache[item.resort.id]?.data;
-            const altSnow  = altWx ? (altWx.forecast || []).reduce((s,f) => s + (f.snow||0), 0) : null;
-            return `<li><button class="vcard-resort-link sec-item" data-resort-id="${item.resort.id}" aria-label="Consider ${esc(item.resort.name)}">${esc(item.resort.name)}${altDrive ? ' — '+esc(altDrive) : ''}${altSnow !== null ? ' • '+altSnow.toFixed(1)+'"' : ''}</button></li>`;
-          }).join('')}
-          <li><button class="sec-item" id="show-more">More</button></li>
-        </ul>
-        <div style="margin-top:8px; text-align:right;">
-          <button class="vcard-compare-link" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">Compare</button>
+      <div class="vcard-body">
+        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--loading"></div>
+        <div class="vcard-verdict">
+          <div class="vcard-headline vcard-headline--${tier}">${headline}</div>
+          <div class="vcard-detail">${detail}</div>
+          ${subList}
         </div>
-      </div>` : ''}
-
+        ${forecastHtml}
+        ${noOriginHtml}
+        ${altsHtml}
+        <div class="vcard-actions">
+          <button class="btn vcard-share-btn" id="verdictShareBtn">Share this pick</button>
+        </div>
+      </div>
     </div>`;
 
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
