@@ -347,7 +347,7 @@ function generateMountainPage(resort, allResorts) {
   const stateName  = stateFullName(resort.state);
   const stateSlug  = slugifyState(resort.state);
   const canonUrl   = `https://wheretoskinext.com/ski-report/${resort.id}/`;
-  const appUrl     = `https://wheretoskinext.com/?resort=${resort.id}#verdictSection`;
+  const appUrl     = `https://wheretoskinext.com/?resort=${resort.id}#searchSection`;
   const schemas    = buildSchemas(resort, stateName);
   const nearby     = nearbyResorts(resort, allResorts);
   const tb         = resort.terrainBreakdown;
