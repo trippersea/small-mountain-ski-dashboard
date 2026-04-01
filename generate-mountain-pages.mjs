@@ -1129,7 +1129,11 @@ function generateSitemap(resorts) {
   const today  = new Date().toISOString().split('T')[0];
   // ── Static content pages — add new pages here as you build them ──────────
   const STATIC_PAGES = [
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast/', changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast/',      changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-rockies/',        changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-california/',     changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-pacific-northwest/', changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-midwest/',        changefreq: 'monthly', priority: '0.8' },
   ];
 
   const urls = [
