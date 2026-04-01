@@ -37,41 +37,19 @@
     }
 
     /* ── NAV ── */
-    nav {
-      background: var(--nav-bg);
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 56px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .nav-logo {
-      color: #fff;
-      font-weight: 700;
-      font-size: 1rem;
-      text-decoration: none;
-      letter-spacing: -0.01em;
-    }
-    .nav-links { display: flex; gap: 24px; align-items: center; }
-    .nav-links a {
-      color: rgba(255,255,255,0.8);
-      text-decoration: none;
-      font-size: 0.875rem;
-      transition: color 0.15s;
-    }
-    .nav-links a:hover { color: #fff; }
-    .nav-cta {
-      background: #2563eb;
-      color: #fff !important;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.8rem !important;
-    }
-    .nav-cta:hover { background: #1d4ed8 !important; }
+    .top-nav { position:sticky; top:0; z-index:100; background:#1a2030; border-bottom:1px solid rgba(255,255,255,.08); }
+    .top-nav-inner { max-width:1100px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:8px; }
+    .nav-brand-link { display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
+    .nav-logo { width:28px; height:28px; object-fit:contain; flex-shrink:0; }
+    .nav-brand { display:flex; flex-direction:column; gap:1px; margin-right:4px; }
+    .nav-brand-name { font-weight:700; font-size:15px; color:#fff; line-height:1.2; }
+    .nav-brand-tag  { font-size:10px; color:#4a5568; font-weight:400; line-height:1.2; }
+    .nav-divider { width:1px; height:16px; background:rgba(255,255,255,.12); margin:0 4px; flex-shrink:0; }
+    .nav-link { padding:6px 11px; border-radius:8px; text-decoration:none; color:#94a3b8; font-weight:600; font-size:13px; transition:background .12s,color .12s; white-space:nowrap; }
+    .nav-link:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .nav-link-cta { margin-left:auto; background:#2b6de9; color:#fff !important; border-radius:999px; padding:7px 16px; font-weight:700; }
+    .nav-link-cta:hover { background:#1d4ed8; }
+    @media (max-width:600px) { .nav-link:not(.nav-link-cta) { display:none; } .nav-divider { display:none; } }
 
     /* ── BREADCRUMB ── */
     .breadcrumb {
@@ -438,12 +416,20 @@
 <body>
 
 <!-- NAV -->
-<nav>
-  <a href="https://www.wheretoskinext.com/" class="nav-logo">WhereToSkiNext.com</a>
-  <div class="nav-links">
-    <a href="https://www.wheretoskinext.com/">Find My Mountain</a>
-    <a href="https://www.wheretoskinext.com/about/">About</a>
-    <a href="https://www.wheretoskinext.com/" class="nav-cta">Live Conditions →</a>
+<nav class="top-nav" role="navigation" aria-label="Main navigation">
+  <div class="top-nav-inner">
+    <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
+      <span class="nav-brand">
+        <span class="nav-brand-name">WhereToSkiNext.com</span>
+        <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
+      </span>
+    </a>
+    <div class="nav-divider"></div>
+    <a href="/about/" class="nav-link">About</a>
+    <a href="/partners/" class="nav-link">Partners</a>
+    <a href="/ski-pass-comparison/" class="nav-link">Pass Guides</a>
+    <a href="https://www.wheretoskinext.com/" class="nav-link nav-link-cta">Find My Mountain &rarr;</a>
   </div>
 </nav>
 
