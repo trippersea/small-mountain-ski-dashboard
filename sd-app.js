@@ -846,7 +846,6 @@ function renderVerdict(resorts) {
   const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
   const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
 
-  // ── Tier config ──────────────────────────────────────────────────────────────
   const tierConfig = {
     great:    { label: 'Excellent conditions', dot: '#16a34a' },
     good:     { label: 'Good conditions',       dot: '#2b6de9' },
@@ -858,52 +857,8 @@ function renderVerdict(resorts) {
   const passColors = { Epic:'#1a4fa8', Ikon:'#1a1a1a', Indy:'#2d7a3a', Independent:'#6b5e7a' };
   const passBg     = passColors[resort.passGroup] || '#6b5e7a';
 
-  // ── Timeframe label for eyebrow ──────────────────────────────────────────────
-  const _now = new Date();
-  const _day = _now.getDay(), _hour = _now.getHours();
-  let timeLabel;
-  if      (_day === 5 && _hour >= 15) timeLabel = 'This Weekend';
-  else if (_day === 6)                timeLabel = 'This Weekend';
-  else if (_day === 0)                timeLabel = 'Today';
-  else if (_hour >= 15)               timeLabel = 'Tomorrow';
-  else                                timeLabel = 'Today';
-
-  // ── Snow stat from forecast ──────────────────────────────────────────────────
   const wx        = state.weatherCache[resort.id]?.data;
-  const fc        = wx?.forecast || [];
-  const snowTotal = fc.reduce((s, f) => s + (f.snow || 0), 0);
-  const snowDisplay = !fc.length ? '—' : snowTotal >= 0.5 ? `${snowTotal.toFixed(1)}"` : 'Groomed';
-
-  // ── Stats bar — 4 fixed cells, never wraps ───────────────────────────────────
-  const driveStatHtml = driveText
-    ? `<div class="vcard-stat">
-        <span class="vs-val">${esc(driveText)}</span>
-        <span class="vs-lbl">drive</span>
-      </div>`
-    : `<button class="vcard-stat vcard-stat--action" id="verdictAddLocationBtn" title="Add your starting location">
-        <span class="vs-val vs-val--muted">📍</span>
-        <span class="vs-lbl">add location</span>
-      </button>`;
-
-  const statsHtml = `
-    <div class="vcard-stats">
-      <div class="vcard-stat${snowTotal >= 0.5 ? ' vcard-stat--snow' : ''}">
-        <span class="vs-val">${snowDisplay}</span>
-        <span class="vs-lbl">3-day snow</span>
-      </div>
-      ${driveStatHtml}
-      <div class="vcard-stat">
-        <span class="vs-val vs-val--pass" style="color:${passBg}">${esc(resort.passGroup)}</span>
-        <span class="vs-lbl">pass</span>
-      </div>
-      <div class="vcard-stat">
-        <span class="vs-val">$${resort.price}</span>
-        <span class="vs-lbl">est. ticket</span>
-      </div>
-    </div>`;
-
-  // ── 3-day forecast strip ─────────────────────────────────────────────────────
-  const forecast3    = wx?.forecast?.slice(0, 3) || [];
+  const forecast3 = wx?.forecast?.slice(0, 3) || [];
   const forecastHtml = forecast3.length
     ? `<div class="vcard-forecast">
         ${forecast3.map(f => {
@@ -917,100 +872,86 @@ function renderVerdict(resorts) {
       </div>`
     : '';
 
-  // ── "Why this pick" fallback — shown instantly, AI replaces silently ─────────
-  const whyFallback = [detail, ...subPoints].filter(Boolean).join(' ');
+  const subList = subPoints.length
+    ? `<ul class="vcard-points">${subPoints.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : '';
 
-  // ── Range buttons ────────────────────────────────────────────────────────────
   const rangeLabels = ['≤3h', '≤6h', 'All'];
+  const rangeFull   = ['Day Trip', 'Weekend', 'All'];
   const rangeHtml = state.origin
     ? `<div class="vcard-range">
+        <span class="vcard-range-label">Range</span>
         ${[0,1,2].map(i =>
-          `<button class="vcard-range-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}">${rangeLabels[i]}</button>`
+          `<button class="vcard-range-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}" title="${rangeFull[i]}">${rangeLabels[i]}</button>`
         ).join('')}
       </div>` : '';
 
-  // ── "Also in the running" — horizontal scroll ────────────────────────────────
+  const noOriginHtml = !state.origin
+    ? `<div class="vcard-no-origin"><span class="vcard-no-origin-icon">📍</span><span>Add your starting location for drive-time rankings</span></div>` : '';
+
   const altsHtml = runningItems.length
     ? `<div class="vcard-alts">
         <div class="vcard-alts-header">
-          <span class="vcard-alts-label">Also in the running</span>
+          <div class="vcard-alts-label">Also in the running</div>
           ${rangeHtml}
         </div>
-        <div class="vcard-alts-scroll">
+        <div class="vcard-alts-list">
           ${runningItems.map(item => {
-            const altDrive = getDriveMins(item.resort.id) !== null ? formatDrive(item.resort.id) : null;
+            const altDrive = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : null;
             const altWx    = state.weatherCache[item.resort.id]?.data;
             const altSnow  = altWx ? (altWx.forecast || []).reduce((s,f) => s + (f.snow||0), 0) : null;
+            const altPC    = passColors[item.resort.passGroup] || '#6b5e7a';
             return `<button class="vcard-alt vcard-resort-link" data-resort-id="${item.resort.id}">
-              <span class="vcard-alt-name">${esc(item.resort.name)}</span>
-              <span class="vcard-alt-meta">
-                ${altSnow !== null
-                  ? `<span class="vcard-alt-snow${altSnow >= 3 ? ' vcard-alt-snow--good' : ''}">${altSnow >= 0.5 ? altSnow.toFixed(1) + '"' : 'Groomed'}</span>`
-                  : ''}
+              <div class="vcard-alt-top">
+                <span class="vcard-alt-name">${esc(item.resort.name)}</span>
+                ${altSnow !== null ? `<span class="vcard-alt-snow${altSnow >= 3 ? ' vcard-alt-snow--good' : ''}">${altSnow.toFixed(1)}"</span>` : ''}
+              </div>
+              <div class="vcard-alt-meta">
+                <span class="vcard-alt-pass" style="background:${altPC}18;color:${altPC};border:1px solid ${altPC}33">${esc(item.resort.passGroup)}</span>
                 ${altDrive ? `<span class="vcard-alt-drive">${esc(altDrive)}</span>` : ''}
-              </span>
+              </div>
             </button>`;
           }).join('')}
         </div>
         <button class="vcard-compare-link" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">
-          Compare side-by-side →
+          Compare side-by-side
         </button>
       </div>` : '';
 
-  // ── No-origin nudge (only when alts section isn't already present) ───────────
-  const noOriginHtml = !state.origin && !runningItems.length
-    ? `<div class="vcard-no-origin">
-        <span class="vcard-no-origin-icon">📍</span>
-        <span>Add your starting location for personalized drive-time rankings</span>
-      </div>` : '';
-
-  // ── Full card ─────────────────────────────────────────────────────────────────
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--${tier}">
-
       <div class="vcard-hero vcard-hero--${tier}">
-        <div class="vcard-eyebrow">Top Pick · ${timeLabel}</div>
+        <div class="vcard-eyebrow">Your Recommended Mountain</div>
         <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
-        <div class="vcard-vbadge vcard-vbadge--${tier}">
-          <span class="vcard-vbadge-dot" style="background:${tc.dot}"></span>
+        <div class="vcard-chips">
+          <span class="vcard-chip">${esc(resort.state)}</span>
+          <span class="vcard-chip vcard-chip--pass" style="background:${passBg}22;color:${passBg};border-color:${passBg}44">${esc(resort.passGroup)}</span>
+          ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
+          <span class="vcard-chip">$${resort.price}</span>
+          ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
+        </div>
+        <div class="vcard-condition-badge vcard-condition-badge--${tier}">
+          <span class="vcard-condition-dot" style="background:${tc.dot}"></span>
           ${tc.label}
         </div>
-        ${statsHtml}
       </div>
-
-      <div class="vcard-cta-row">
-        <button class="vcard-cta-primary" id="verdictPickBtn2">View mountain details</button>
-        ${resort.website ? `<a class="vcard-cta-site" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Website ↗</a>` : ''}
+      <div class="vcard-body">
+        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--loading"></div>
+        <div class="vcard-verdict">
+          <div class="vcard-headline vcard-headline--${tier}">${headline}</div>
+          <div class="vcard-detail">${detail}</div>
+          ${subList}
+        </div>
+        ${forecastHtml}
+        ${noOriginHtml}
+        ${altsHtml}
+        <div class="vcard-actions">
+          <button class="btn vcard-share-btn" id="verdictShareBtn">Share this pick</button>
+        </div>
       </div>
-
-      <div class="vcard-why">
-        <div class="vcard-why-label">Why this pick</div>
-        <div id="verdictWriteupSlot" class="vcard-why-text">${whyFallback}</div>
-        <div id="verdictConditionsSlot" hidden></div>
-      </div>
-
-      ${forecastHtml}
-
-      ${altsHtml}
-
-      ${noOriginHtml}
-      <div class="vcard-footer">
-        <button class="vcard-share-btn" id="verdictShareBtn">Share this pick</button>
-        ${!runningItems.length && rangeHtml ? rangeHtml : ''}
-      </div>
-
     </div>`;
 
-  // ── Event listeners ───────────────────────────────────────────────────────────
-  $('verdictPickBtn')?.addEventListener('click',  () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
-  $('verdictPickBtn2')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+  $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   $('verdictShareBtn')?.addEventListener('click', () => shareVerdict(resort, v));
-
-  $('verdictAddLocationBtn')?.addEventListener('click', () => {
-    const inp = document.getElementById('originInput');
-    if (inp) { inp.focus(); inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  });
-
   els.verdictCard.querySelectorAll('.vcard-resort-link[data-resort-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = RESORTS.find(x => x.id === btn.dataset.resortId);
@@ -1081,24 +1022,27 @@ async function fetchVerdictWriteup(v, origin) {
 }
 
 async function injectVerdictWriteup(v) {
-  const slot = document.getElementById('verdictWriteupSlot');
+  const slot   = document.getElementById('verdictWriteupSlot');
   if (!slot) return;
-  // Slot already shows whyFallback text (rule-based, instant).
-  // If cached AI writeup exists, apply it immediately — no flicker.
-  const cacheKey = `${v.resort.id}:${v.tier}`;
-  const cached = verdictWriteupCache.get(cacheKey);
+  const cached = verdictWriteupCache.get(`${v.resort.id}:${v.tier}`);
   if (cached && cached !== '__failed__') {
     slot.textContent = cached;
-    slot.classList.add('vcard-why-text--ai');
+    slot.classList.remove('vcard-writeup--loading');
     return;
   }
-  // Fetch in background. Slot continues showing rule-based text.
-  // No shimmer, no placeholder — page feels complete immediately.
+  slot.textContent = '';
+  slot.classList.add('vcard-writeup--loading');
   const text = await fetchVerdictWriteup(v, state.origin);
   const liveSlot = document.getElementById('verdictWriteupSlot');
-  if (!liveSlot || !text) return; // silent failure — keep rule-based text
-  liveSlot.textContent = text;
-  liveSlot.classList.add('vcard-why-text--ai');
+  if (!liveSlot) return;
+  liveSlot.classList.remove('vcard-writeup--loading');
+  if (text) {
+    liveSlot.textContent = text;
+    liveSlot.classList.remove('vcard-writeup--fallback');
+  } else {
+    liveSlot.textContent = 'Tip: Everything above still uses live snow and drive data. This extra blurb could not be loaded right now.';
+    liveSlot.classList.add('vcard-writeup--fallback');
+  }
 }
 
 // ─── Summary cards ────────────────────────────────────────────────────────────
@@ -1469,170 +1413,179 @@ function renderDetail({ scroll = false } = {}) {
     return `data-bd="${btoa(bd)}"`;
   })() : '';
 
+  // ── Tier determination ────────────────────────────────────────────────────────
+  const tier = vd?.tier || (bd ? (bd.score >= 70 ? 'great' : bd.score >= 45 ? 'good' : bd.score >= 25 ? 'marginal' : 'bad') : 'good');
+  const dpTierConfig = {
+    great:    { label: 'Excellent conditions', dot: '#16a34a' },
+    good:     { label: 'Good conditions',       dot: '#2b6de9' },
+    marginal: { label: 'Marginal conditions',   dot: '#d97706' },
+    bad:      { label: 'Poor conditions',       dot: '#dc2626' },
+  };
+  const tc = dpTierConfig[tier] || dpTierConfig.good;
+  const passColors = { Epic:'#1a4fa8', Ikon:'#1a1a1a', Indy:'#2d7a3a', Independent:'#6b5e7a' };
+  const passBg = passColors[resort.passGroup] || '#6b5e7a';
+
+  // ── Stats bar values ──────────────────────────────────────────────────────────
+  const snowDisplay  = !wx ? '—' : stormTotal >= 0.5 ? `${stormTotal.toFixed(1)}"` : 'Groomed';
+  const driveDisplay = formatDrive(resort.id);
+  const crowdColorMap = { 'Light':'#15803d','Light-Moderate':'#2b6de9','Moderate':'#d97706','Moderate-Heavy':'#ea580c','Heavy':'#dc2626' };
+  const crowdColor = crowdColorMap[crowd.label] || 'var(--muted)';
+
+  // ── Score factor bars ─────────────────────────────────────────────────────────
+  const factorRowsHtml = skis ? factorEntries.map(([label, val, note]) => {
+    const pct = Math.min(100, Math.round((val / 25) * 100));
+    return `<div class="dp-factor-row">
+      <span class="dp-factor-lbl">${label}</span>
+      <div class="dp-factor-track"><div class="dp-factor-fill" style="width:${pct}%"></div></div>
+      <span class="dp-factor-note">${note}</span>
+    </div>`;
+  }).join('') : '';
+
+  // ── Terrain bars ──────────────────────────────────────────────────────────────
+  const tbRows = tb ? [
+    ['Beginner',     tb.beginner],
+    ['Intermediate', tb.intermediate],
+    ['Advanced',     (tb.advanced || 0) + (tb.expert || 0)],
+  ] : [];
+  const terrainBarsHtml = tbRows.map(([name, pct]) => `
+    <div class="dp-terrain-row">
+      <span class="dp-terrain-lbl">${name}</span>
+      <div class="dp-factor-track"><div class="dp-factor-fill" style="width:${Math.round(pct * 100)}%"></div></div>
+      <span class="dp-terrain-pct">${Math.round(pct * 100)}%</span>
+    </div>`).join('');
+
+  // ── Watchout (only shown when genuinely worth flagging) ──────────────────────
+  const watchoutText = vd?.rainLikely
+    ? 'Rain is likely at this elevation — conditions will be wet and slushy.'
+    : (vd?.tier === 'bad' && !vd?.rainLikely)
+      ? 'Very little new snow in the forecast — base conditions only.'
+      : resort.price >= 175
+        ? 'Higher ticket price than average — factor that into your day.'
+        : null;
+
+  // ── Preference reasons ────────────────────────────────────────────────────────
+  const prefReasons = (wx && bd) ? preferenceReasons(resort, wx, bd) : [];
+
+  // ── 3-day forecast chips ──────────────────────────────────────────────────────
+  const dpForecastHtml = forecast.length ? `
+    <div class="dp-section">
+      <div class="dp-section-label">3-Day Forecast</div>
+      ${hist ? `<div class="dp-hist-line">Recent 7-day snowfall: <strong>${hist.total}"</strong>${bestDay && bestDay.snow > 0 ? ` · Best day: <strong>${bestDay.day}</strong>` : ''}</div>` : ''}
+      <div class="dp-forecast-grid">
+        ${forecast.slice(0, 3).map(f => {
+          const cls = f.snow >= 4 ? 'vcard-fc-pow' : f.snow >= 1 ? 'vcard-fc-snow' : 'vcard-fc-dry';
+          return `<div class="vcard-fc-chip ${cls}">
+            <span class="vcard-fc-day">${f.day}</span>
+            <span class="vcard-fc-amt">${f.snow > 0 ? f.snow.toFixed(1) + '"' : '—'}</span>
+            <span class="vcard-fc-temps">${f.lo}°–${f.hi}°</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
   els.detailCard.innerHTML = `
-<div class="detail-card-inner">
+<div class="dp-inner">
 
-<div class="detail-header-rebuilt" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch">
-
-  <div class="detail-top-card" style="background:linear-gradient(135deg, rgba(43,109,233,.10), rgba(43,109,233,.18));border:1px solid rgba(43,109,233,.22);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:210px">
-    <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Selected Mountain</div>
-        ${sponsor ? `<div class="featured-pill">Featured Partner</div>` : ``}
-      </div>
-      <div style="font-size:28px;font-weight:800;line-height:1.06;letter-spacing:-.03em;color:var(--text);margin-top:10px">${esc(resort.name)}</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:8px">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
-      ${sponsor?.tagline ? `<div style="font-size:14px;line-height:1.55;color:var(--accent);font-weight:600;margin-top:12px">${esc(sponsor.tagline)}</div>` : ``}
-      <div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:12px">
-        ${wx ? `Forecast-driven pick with terrain, price, and crowds taken into account for this mountain.` : `Mountain details are loading — weather and score will fill in as live data arrives.`}
-      </div>
+  <!-- HERO: tier-tinted, mountain name + verdict + 4-stat bar -->
+  <div class="dp-hero vcard-hero--${tier}">
+    <div class="dp-hero-top">
+      <div class="vcard-eyebrow">Mountain Details</div>
+      <button class="dp-back-btn" id="dpBackBtn">← Results</button>
     </div>
-    <div class="dhr-actions" style="margin-top:14px;flex-wrap:wrap;gap:8px">
-      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See Full Report →</a>
-      ${sponsor ? `<a class="btn-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Now →</a>` : ``}
-      ${resort.website ? `<a class="dhr-link-secondary" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ``}
+    <div class="dp-name">${esc(resort.name)}</div>
+    <div class="dp-meta">${esc(resort.state)} · <span style="color:${passBg};font-weight:700">${esc(resort.passGroup)}</span></div>
+    ${sponsor?.tagline ? `<div class="dp-sponsor-tagline">${esc(sponsor.tagline)}</div>` : ''}
+    <div class="vcard-vbadge vcard-vbadge--${tier}">
+      <span class="vcard-vbadge-dot" style="background:${tc.dot}"></span>
+      ${tc.label}
     </div>
-  </div>
-
-  <div class="detail-top-card" style="background:var(--panel-2);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:210px">
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-        <div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Recommendation</div>
-          <div style="font-size:24px;font-weight:800;color:var(--text);margin-top:10px;line-height:1.08">${vd ? vd.label : skis ? 'Loading…' : 'Loading Score'}</div>
-        </div>
-        ${skis ? `
-          <div class="detail-score-ring-new ${vd ? (vd.tier === 'marginal' ? 'ring-mid' : vd.tier === 'bad' ? 'ring-low' : '') : (skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low')} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown">
-            <div class="dsrn-num">${skis.skiScore}</div>
-            <div class="dsrn-lbl">Ski Score</div>
-          </div>` : ''}
+    <div class="vcard-stats">
+      <div class="vcard-stat${stormTotal >= 0.5 ? ' vcard-stat--snow' : ''}">
+        <span class="vs-val">${snowDisplay}</span>
+        <span class="vs-lbl">3-day snow</span>
       </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
-        <div style="padding:11px 12px;border-radius:14px;background:#fff;border:1px solid var(--border)">
-          <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Crowds</div>
-          <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:6px">${esc(crowd.label)}</div>
-        </div>
-        <div style="padding:11px 12px;border-radius:14px;background:#fff;border:1px solid var(--border)">
-          <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">3-Day Snow</div>
-          <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:6px">${wx ? `${stormTotal.toFixed(1)}"` : '—'}</div>
-        </div>
+      <div class="vcard-stat">
+        <span class="vs-val">${esc(driveDisplay)}</span>
+        <span class="vs-lbl">drive</span>
       </div>
-    </div>
-
-    <div style="font-size:12px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid rgba(27,42,58,.08)">
-      <div style="font-weight:700;margin-bottom:8px;color:var(--text)">Why this scores for you</div>
-      ${(wx && bd) ? preferenceReasons(resort, wx, bd).map(r => `<div style="margin-top:6px">• ${esc(r)}</div>`).join('') : '<div>• Conditions are still loading.</div>'}
-      ${vd?.detail ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(27,42,58,.06);font-size:11px;color:var(--muted);line-height:1.6">${esc(vd.detail)}</div>` : ''}
+      <div class="vcard-stat">
+        <span class="vs-val">$${resort.price}</span>
+        <span class="vs-lbl">est. ticket</span>
+      </div>
+      <div class="vcard-stat">
+        <span class="vs-val" style="color:${crowdColor}">${esc(crowd.label)}</span>
+        <span class="vs-lbl">crowds</span>
+      </div>
     </div>
   </div>
 
-  <div class="detail-top-card" style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;min-height:210px">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Mountain Stats</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:14px;flex:1">
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${resort.vertical.toLocaleString()} ft</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Vertical</div>
-      </div>
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${resort.trails}</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Trails</div>
-      </div>
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${resort.avgSnowfall}"</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Avg Snowfall</div>
-      </div>
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">$${resort.price}</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Day Ticket*</div>
-      </div>
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${formatDrive(resort.id)}</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Drive</div>
-      </div>
-      <div>
-        <div style="font-size:18px;font-weight:800;line-height:1.15;color:var(--text)">${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()}</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Base / Summit</div>
-      </div>
-    </div>
-    <div id="detailConditionsSlot" hidden style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"></div>
+  <!-- CTAs: primary action always visible, secondary links alongside -->
+  <div class="dp-cta-row">
+    <a class="dp-cta-primary" href="/ski-report/${esc(resort.id)}/">See Full Report →</a>
+    ${sponsor ? `<a class="dp-cta-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer sponsored">Book Now →</a>` : ''}
+    ${resort.website && !sponsor ? `<a class="dp-cta-site" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Website ↗</a>` : ''}
   </div>
 
-</div>
-
-  <div class="detail-grid-new" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch;grid-auto-rows:minmax(320px, auto)">
-
-    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Terrain Mix</h3>
-      <div style="display:grid;gap:10px;">
-        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Beginner</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.beginner * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.beginner * 100)}%</div></div>
-        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Intermediate</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.intermediate * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.intermediate * 100)}%</div></div>
-        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Advanced</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.advanced * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.advanced * 100)}%</div></div>
-      </div>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:grid;gap:10px;">
-        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Base / Summit</span><strong style="color:var(--text)">${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</strong></div>
-        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Avg Snowfall</span><strong style="color:var(--text)">${resort.avgSnowfall}\"</strong></div>
-        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Night Skiing</span><strong style="color:var(--text)">${resort.night ? 'Yes' : 'No'}</strong></div>
-        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Terrain Park</span><strong style="color:var(--text)">${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
-      </div>
-    </div>
-
-    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
-        <h3 class="sub-card-title-new" style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Next 3 Days Snow</h3>
-        ${wx && bestDay && bestDay.snow > 0 ? `<div style="font-size:12px;color:var(--muted)">Best day: <strong style="color:var(--text)">${bestDay.day}</strong></div>` : ''}
-      </div>
-      <div style="margin-top:10px;font-size:13px;color:var(--muted)">${hist ? `Recent 7-day snowfall: <strong style="color:var(--text)">${hist.total}\"</strong>` : 'Loading recent snowfall…'}</div>
-      ${snowRowsHtml}
-    </div>
-
-    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
-        <h3 class="sub-card-title-new" style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Why It Scores Well</h3>
-        ${skis ? `<div style="font-size:12px;color:var(--muted)">6-factor view</div>` : ''}
-      </div>
-      ${factorGridHtml}
-    </div>
-
-    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Decision Summary</h3>
-      <div style="display:grid;gap:14px;align-content:start;height:100%">
-        <div>
-          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Conditions verdict</div>
-          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${vd ? esc(vd.detail) : 'Loading conditions data…'}</div>
-          ${vd?.subPoints?.length ? `<div style="margin-top:8px;display:grid;gap:4px">${vd.subPoints.map(p => `<div style="font-size:12px;color:var(--muted)">• ${esc(p)}</div>`).join('')}</div>` : ''}
-        </div>
-        <div style="padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--border)">
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Watch-out</div>
-          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${
-            vd?.rainLikely ? 'Rain is likely at this elevation — conditions will be wet and slushy.' :
-            vd?.tier === 'bad' && !vd?.rainLikely ? 'Very little new snow in the forecast — base conditions only.' :
-            resort.price >= 175 ? 'Higher ticket price than average — factor that into your day.' :
-            'Check conditions the morning of — forecasts can shift 24 hours out.'
-          }</div>
-        </div>
-        <div style="margin-top:auto;padding-top:4px">
-          <div class="detail-crowd-label ${crowdClass(crowd.label)}" style="margin-bottom:6px;font-size:18px;font-weight:800;color:var(--accent)">${crowd.label} crowds</div>
-          <div style="font-size:12px;color:var(--muted)">Confidence: <strong style="color:var(--text)">${crowd.confidence}</strong></div>
-          ${crowd.reasons.length
-            ? `<div class="detail-crowd-reasons" style="margin-top:10px;display:grid;gap:6px">
-                 ${crowd.reasons.map(r => `<div class="detail-crowd-reason" style="font-size:13px;color:var(--muted)">• ${esc(r)}</div>`).join('')}
-               </div>`
-            : ''}
-        </div>
-      </div>
-    </div>
-
+  <!-- WHY THIS SCORES FOR YOU -->
+  <div class="dp-section">
+    <div class="dp-section-label">Why this scores for you</div>
+    ${prefReasons.length
+      ? `<ul class="dp-reasons">${prefReasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`
+      : `<div class="dp-why-text">${vd ? esc(vd.detail) : 'Conditions are loading…'}</div>`
+    }
+    ${watchoutText ? `<div class="dp-watchout">⚠ ${esc(watchoutText)}</div>` : ''}
+    <div id="detailConditionsSlot" hidden class="dp-conditions"></div>
   </div>
 
-  <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
+  <!-- 3-DAY FORECAST -->
+  ${dpForecastHtml}
+
+  <!-- TERRAIN & MOUNTAIN FACTS -->
+  <div class="dp-section">
+    <div class="dp-section-label">Terrain &amp; Mountain</div>
+    ${terrainBarsHtml ? `<div class="dp-terrain">${terrainBarsHtml}</div>` : ''}
+    <div class="dp-stat-rows">
+      <div class="dp-stat-row"><span>Vertical</span><strong>${resort.vertical.toLocaleString()} ft</strong></div>
+      <div class="dp-stat-row"><span>Trails</span><strong>${resort.trails}</strong></div>
+      <div class="dp-stat-row"><span>Avg Snowfall</span><strong>${resort.avgSnowfall}"</strong></div>
+      <div class="dp-stat-row"><span>Base / Summit</span><strong>${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</strong></div>
+      <div class="dp-stat-row"><span>Night Skiing</span><strong>${resort.night ? 'Yes' : 'No'}</strong></div>
+      <div class="dp-stat-row"><span>Terrain Park</span><strong>${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
+    </div>
+  </div>
+
+  <!-- SCORE BREAKDOWN -->
+  ${skis ? `
+  <div class="dp-section">
+    <div class="dp-section-label">Score Breakdown</div>
+    <div class="dp-factors">${factorRowsHtml}</div>
+    <div class="dp-score-total">
+      <span>Total Ski Score</span>
+      <strong>${skis.skiScore}<span class="dp-score-denom"> / 100</span></strong>
+    </div>
+  </div>` : ''}
+
+  <!-- FOOTER -->
+  <div class="dp-footer">
+    ${resort.website && sponsor ? `<a class="dp-footer-site" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ''}
+    <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
+  </div>
 
 </div>`;
+
+  // ── Event listeners ───────────────────────────────────────────────────────────
+  document.getElementById('dpBackBtn')?.addEventListener('click', () => {
+    state.selectedId = null;
+    els.detailSection.classList.add('hidden');
+    popToRoot();
+  });
 
   if (scroll) els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   if (resort) pushReportUrl(resort);
   injectConditionsBadge(resort.id, 'detailConditionsSlot');
 }
+
+// ─── Summary cards ────────────────────────────────────────────────────────────
 
 // ─── Map ───────────────────────────────────────────────────────────────────────
 let map = null, markers = {};
