@@ -1,6 +1,234 @@
-<!DOCT
-  <footer>
-    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
-  </footer>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About WhereToSkiNext.com — How It Works</title>
+  <meta name="description" content="WhereToSkiNext.com ranks 250+ US ski mountains in real time using live snow forecasts, your drive time, crowd outlook, and pass access. Free, no account needed." />
+  <link rel="canonical" href="https://www.wheretoskinext.com/about/" />
+  <meta property="og:title" content="About WhereToSkiNext.com" />
+  <meta property="og:description" content="How 250+ mountains get ranked by live snow, drive time, crowds, and pass access — and why we built it." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.wheretoskinext.com/about/" />
+  <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
+  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MCCDNQGB');</script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --nav-bg: #1a2030;
+      --text-primary: #1a1a2e;
+      --text-secondary: #4a5568;
+      --text-light: #718096;
+      --border: #e2e8f0;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --accent: #2b6de9;
+      --radius: 12px;
+    }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg-page); color: var(--text-primary); font-size: 16px; line-height: 1.7; }
+
+    /* ── Nav (matches homepage exactly) ── */
+    .top-nav { position:sticky; top:0; z-index:100; background:#1a2030; border-bottom:1px solid rgba(255,255,255,.08); }
+    .top-nav-inner { max-width:1100px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:8px; }
+    .nav-brand-link { display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
+    .nav-logo { width:28px; height:28px; object-fit:contain; flex-shrink:0; }
+    .nav-brand { display:flex; flex-direction:column; gap:1px; margin-right:4px; }
+    .nav-brand-name { font-weight:700; font-size:15px; color:#fff; line-height:1.2; }
+    .nav-brand-tag  { font-size:10px; color:#4a5568; font-weight:400; line-height:1.2; }
+    .nav-divider { width:1px; height:16px; background:rgba(255,255,255,.12); margin:0 4px; flex-shrink:0; }
+    .nav-link { padding:6px 11px; border-radius:8px; text-decoration:none; color:#94a3b8; font-weight:600; font-size:13px; transition:background .12s,color .12s; white-space:nowrap; }
+    .nav-link:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .nav-link-cta { margin-left:auto; background:#2b6de9; color:#fff !important; border-radius:999px; padding:7px 16px; font-weight:700; }
+    .nav-link-cta:hover { background:#1d4ed8; }
+    @media (max-width:600px) { .nav-link:not(.nav-link-cta) { display:none; } .nav-divider { display:none; } }
+
+    /* ── Layout ── */
+    .breadcrumb { max-width: 820px; margin: 20px auto 0; padding: 0 24px; font-size: 0.8rem; color: var(--text-light); }
+    .breadcrumb a { color: var(--text-light); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .page { max-width: 820px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── Hero ── */
+    .hero { margin-bottom: 48px; }
+    .hero-label { font-size: 0.72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 10px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 16px; }
+    .hero-sub { font-size: 1.1rem; color: var(--text-secondary); max-width: 640px; line-height: 1.7; }
+
+    /* ── Prose sections ── */
+    .section { margin-bottom: 48px; }
+    .section h2 { font-size: 1.35rem; font-weight: 800; margin-bottom: 14px; letter-spacing: -.01em; }
+    .section p { font-size: 1rem; color: var(--text-secondary); line-height: 1.75; margin-bottom: 14px; }
+    .section p:last-child { margin-bottom: 0; }
+    .section a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .section a:hover { text-decoration: underline; }
+
+    /* ── Score factor grid ── */
+    .factor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin: 20px 0; }
+    .factor-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .factor-name { font-size: 0.875rem; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+    .factor-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.55; }
+
+    /* ── Stat row ── */
+    .stat-row { display: flex; flex-wrap: wrap; gap: 14px; margin: 20px 0; }
+    .stat-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; min-width: 130px; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+    .stat-label { font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+    /* ── CTA ── */
+    .cta-block { background: #1a2030; border-radius: 16px; padding: 36px 32px; text-align: center; margin-top: 48px; color: #fff; }
+    .cta-block h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; }
+    .cta-block p { font-size: 0.95rem; color: rgba(255,255,255,.7); margin-bottom: 22px; }
+    .cta-btn { display: inline-block; background: #2b6de9; color: #fff; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; transition: background .15s; }
+    .cta-btn:hover { background: #1d4ed8; }
+
+    /* ── Footer ── */
+    footer { background: #1a2030; color: rgba(255,255,255,.5); text-align: center; padding: 24px; font-size: 0.8rem; margin-top: 0; }
+    footer a { color: rgba(255,255,255,.5); text-decoration: none; }
+    footer a:hover { color: #fff; }
+
+    @media (max-width: 600px) { .factor-grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<nav class="top-nav" role="navigation" aria-label="Main navigation">
+  <div class="top-nav-inner">
+    <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
+      <span class="nav-brand">
+        <span class="nav-brand-name">WhereToSkiNext.com</span>
+        <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
+      </span>
+    </a>
+    <div class="nav-divider"></div>
+    <a href="/about/" class="nav-link">About</a>
+    <a href="/partners/" class="nav-link">Partners</a>
+    <a href="/ski-pass-comparison/" class="nav-link">Pass Guides</a>
+    <a href="https://www.wheretoskinext.com/" class="nav-link nav-link-cta">Find My Mountain &rarr;</a>
+  </div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="/">WhereToSkiNext.com</a> &rsaquo; About
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-label">About the site</div>
+    <h1>Stop guessing.<br>Start skiing.</h1>
+    <p class="hero-sub">WhereToSkiNext.com was built to answer a question that no ski site had answered well: not which mountain is "best" in general, but which mountain is the right call for you, this weekend, from where you live.</p>
+  </div>
+
+  <div class="section">
+    <h2>The problem we solve</h2>
+    <p>Every skier has faced the same Friday night decision. There are a dozen mountains within driving distance. Some got snow this week. Some are crowded. Some are on your pass. The old approach is to check five different websites, squint at snow reports, and make your best guess. Most of the time you get it right. Sometimes you drive three hours to icy groomed runs when there was powder an hour away.</p>
+    <p>WhereToSkiNext.com was built to replace that process with a single ranked list based on what actually matters: how much snow is forecast for the next three days, how far you are willing to drive, what pass you carry, how crowded it will be, and what kind of mountain experience you are looking for.</p>
+    <p>The answer updates every time you adjust a filter. No account needed. No guessing.</p>
+  </div>
+
+  <div class="section">
+    <h2>What is in the database</h2>
+    <div class="stat-row">
+      <div class="stat-item"><div class="stat-num">250+</div><div class="stat-label">US ski mountains</div></div>
+      <div class="stat-item"><div class="stat-num">34</div><div class="stat-label">states covered</div></div>
+      <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">major passes</div></div>
+      <div class="stat-item"><div class="stat-num">Live</div><div class="stat-label">snow forecasts</div></div>
+    </div>
+    <p>The database covers 250+ ski areas across the United States, from major destination resorts to small local hills. Each mountain includes vertical drop, trail count, skiable acreage, average annual snowfall, terrain breakdown, ticket pricing, night skiing, terrain park access, and pass affiliation. Pass data covers Epic, Ikon, and Indy networks as well as independent resorts.</p>
+    <p>We focused on coverage that goes beyond the usual top-20 destination resort lists. A skier in Boston should be able to see how Ski Ward compares to Wachusett on a given Saturday, not just how Stowe compares to Killington. Small mountains with great snow on a given weekend often beat the big names, and our ranking reflects that.</p>
+  </div>
+
+  <div class="section">
+    <h2>How the ski score works</h2>
+    <p>Every mountain gets a score from 0 to 100 each time you run a search. The score is not a fixed rating. It is calculated in real time based on your specific situation and preferences. The same mountain can score very differently for a skier in Boston versus one in Albany, or for someone who cares about powder versus someone looking for a budget day trip.</p>
+    <p>The score combines six factors:</p>
+
+    <div class="factor-grid">
+      <div class="factor-card">
+        <div class="factor-name">Snow quality</div>
+        <div class="factor-desc">72-hour forecast snowfall from Open-Meteo, weighted by your snow preference setting. Fresh snow matters more when you set "Powder Day" than when you select "Any Snow."</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-name">Skiability</div>
+        <div class="factor-desc">A combination of vertical drop, acreage, trail count, and forecast temperature and wind. High winds and warm temperatures lower this score even if snowfall looks good.</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-name">Mountain fit</div>
+        <div class="factor-desc">How well the mountain matches your preferences for size, terrain mix, and difficulty level. A large-mountain preference boosts big vertical resorts; a local hill preference does the opposite.</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-name">Drive time</div>
+        <div class="factor-desc">Actual road routing via OSRM, with haversine estimates as a fast fallback. Mountains closer to your starting location score higher. Adjusted for your day-trip vs. weekend distance setting.</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-name">Value</div>
+        <div class="factor-desc">Ticket price relative to what you get for it. Pass-affiliated resorts score well when you have the relevant pass. High-priced day tickets lose points when cheaper alternatives are available.</div>
+      </div>
+      <div class="factor-card">
+        <div class="factor-name">Crowd outlook</div>
+        <div class="factor-desc">A forecast model based on resort size, day of week, proximity to major population centers, and historical patterns. Smaller mountains on weekdays score higher when you prioritize quiet slopes.</div>
+      </div>
+    </div>
+
+    <p>You control how much each factor matters using the preference sliders in the planner. Set snow to high and value to low and you get a powder-hunter ranking. Set crowd to high and size to small and you get the quiet local hills. The score reflects your actual priorities, not a generic formula.</p>
+  </div>
+
+  <div class="section">
+    <h2>Weather and forecast data</h2>
+    <p>Live snow forecasts come from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a>, a free and open-source weather API that uses high-resolution forecast models. Forecasts are fetched for each mountain's coordinates at summit elevation and updated on each session. The three-day snowfall total is the primary input to the snow quality score.</p>
+    <p>Drive times use real road routing through the <a href="https://project-osrm.org" target="_blank" rel="noopener">OSRM open-source routing engine</a>. When routing is unavailable or slow, we fall back to haversine distance estimates with a conservative road-speed assumption. Estimated times are marked with a tilde so you always know what you are looking at.</p>
+  </div>
+
+  <div class="section">
+    <h2>Who built this</h2>
+    <p>WhereToSkiNext.com is an independent project built by a skier who got tired of the Friday night decision problem. The site has no affiliation with any ski resort, pass company, or travel agency. There are no paid rankings and no resort pays to appear higher in results.</p>
+    <p>Sponsored placements and featured partner listings are clearly labeled throughout the site. They do not affect ski scores or the ranked order of results. A sponsored mountain appears in its actual scored position in the comparison table, with a label indicating the sponsorship.</p>
+    <p>The goal is a tool that skiers can trust because the recommendations are based on real data, not commercial relationships. If that sounds useful, <a href="https://www.wheretoskinext.com/">try it</a>.</p>
+  </div>
+
+  <div class="section">
+    <h2>Pass comparison guides</h2>
+    <p>Choosing between the Epic Pass and Ikon Pass is one of the biggest decisions a skier makes each spring. The coverage varies significantly by region and the two passes share almost no mountains. We publish regional breakdowns so you can see exactly which mountains are covered before you commit.</p>
+    <p>See the full <a href="https://www.wheretoskinext.com/ski-pass-comparison/">Epic Pass vs Ikon Pass comparison</a>, or go straight to your region:</p>
+    <ul style="margin:14px 0 0 18px;display:grid;gap:6px;">
+      <li><a href="https://www.wheretoskinext.com/epic-vs-ikon-northeast/">Northeast: Vermont, New Hampshire, Maine, New York, and more</a></li>
+      <li><a href="https://www.wheretoskinext.com/epic-vs-ikon-rockies/">Rockies: Colorado, Utah, Wyoming, Montana, and New Mexico</a></li>
+      <li><a href="https://www.wheretoskinext.com/epic-vs-ikon-california/">California: Lake Tahoe, Mammoth, and Southern California</a></li>
+      <li><a href="https://www.wheretoskinext.com/epic-vs-ikon-pacific-northwest/">Pacific Northwest: Washington, Oregon, and Idaho</a></li>
+      <li><a href="https://www.wheretoskinext.com/epic-vs-ikon-midwest/">Midwest: Michigan, Minnesota, Wisconsin, and Ohio</a></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Contact and feedback</h2>
+    <p>Questions, corrections, or resort data that looks wrong? The site is maintained actively and data updates are made throughout the season. Reach out through the <a href="https://www.wheretoskinext.com/partners/">Partners page</a> if you represent a resort or have a business inquiry.</p>
+    <p>For general feedback, the thumbs-up and thumbs-down rating on any result helps improve the recommendation engine over time.</p>
+  </div>
+
+  <div class="cta-block">
+    <h3>Ready to find your next mountain?</h3>
+    <p>250+ mountains ranked by live snow, your drive time, crowds, and your pass. Free. No account needed.</p>
+    <a href="https://www.wheretoskinext.com/" class="cta-btn">Find Your Mountain &rarr;</a>
+  </div>
+
+</div>
+
+<footer>
+  &copy; 2026 WhereToSkiNext.com &nbsp;&middot;&nbsp;
+  <a href="https://www.wheretoskinext.com/#searchSection">Find My Mountain</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.wheretoskinext.com/about/">About</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.wheretoskinext.com/partners/">Partners</a>
+</footer>
+
 </body>
 </html>
