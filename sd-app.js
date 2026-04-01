@@ -846,6 +846,7 @@ function renderVerdict(resorts) {
   const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
   const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
 
+  // ── Tier config ──────────────────────────────────────────────────────────────
   const tierConfig = {
     great:    { label: 'Excellent conditions', dot: '#16a34a' },
     good:     { label: 'Good conditions',       dot: '#2b6de9' },
@@ -857,8 +858,52 @@ function renderVerdict(resorts) {
   const passColors = { Epic:'#1a4fa8', Ikon:'#1a1a1a', Indy:'#2d7a3a', Independent:'#6b5e7a' };
   const passBg     = passColors[resort.passGroup] || '#6b5e7a';
 
+  // ── Timeframe label for eyebrow ──────────────────────────────────────────────
+  const _now = new Date();
+  const _day = _now.getDay(), _hour = _now.getHours();
+  let timeLabel;
+  if      (_day === 5 && _hour >= 15) timeLabel = 'This Weekend';
+  else if (_day === 6)                timeLabel = 'This Weekend';
+  else if (_day === 0)                timeLabel = 'Today';
+  else if (_hour >= 15)               timeLabel = 'Tomorrow';
+  else                                timeLabel = 'Today';
+
+  // ── Snow stat from forecast ──────────────────────────────────────────────────
   const wx        = state.weatherCache[resort.id]?.data;
-  const forecast3 = wx?.forecast?.slice(0, 3) || [];
+  const fc        = wx?.forecast || [];
+  const snowTotal = fc.reduce((s, f) => s + (f.snow || 0), 0);
+  const snowDisplay = !fc.length ? '—' : snowTotal >= 0.5 ? `${snowTotal.toFixed(1)}"` : 'Groomed';
+
+  // ── Stats bar — 4 fixed cells, never wraps ───────────────────────────────────
+  const driveStatHtml = driveText
+    ? `<div class="vcard-stat">
+        <span class="vs-val">${esc(driveText)}</span>
+        <span class="vs-lbl">drive</span>
+      </div>`
+    : `<button class="vcard-stat vcard-stat--action" id="verdictAddLocationBtn" title="Add your starting location">
+        <span class="vs-val vs-val--muted">📍</span>
+        <span class="vs-lbl">add location</span>
+      </button>`;
+
+  const statsHtml = `
+    <div class="vcard-stats">
+      <div class="vcard-stat${snowTotal >= 0.5 ? ' vcard-stat--snow' : ''}">
+        <span class="vs-val">${snowDisplay}</span>
+        <span class="vs-lbl">3-day snow</span>
+      </div>
+      ${driveStatHtml}
+      <div class="vcard-stat">
+        <span class="vs-val vs-val--pass" style="color:${passBg}">${esc(resort.passGroup)}</span>
+        <span class="vs-lbl">pass</span>
+      </div>
+      <div class="vcard-stat">
+        <span class="vs-val">$${resort.price}</span>
+        <span class="vs-lbl">est. ticket</span>
+      </div>
+    </div>`;
+
+  // ── 3-day forecast strip ─────────────────────────────────────────────────────
+  const forecast3    = wx?.forecast?.slice(0, 3) || [];
   const forecastHtml = forecast3.length
     ? `<div class="vcard-forecast">
         ${forecast3.map(f => {
@@ -872,86 +917,100 @@ function renderVerdict(resorts) {
       </div>`
     : '';
 
-  const subList = subPoints.length
-    ? `<ul class="vcard-points">${subPoints.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : '';
+  // ── "Why this pick" fallback — shown instantly, AI replaces silently ─────────
+  const whyFallback = [detail, ...subPoints].filter(Boolean).join(' ');
 
+  // ── Range buttons ────────────────────────────────────────────────────────────
   const rangeLabels = ['≤3h', '≤6h', 'All'];
-  const rangeFull   = ['Day Trip', 'Weekend', 'All'];
   const rangeHtml = state.origin
     ? `<div class="vcard-range">
-        <span class="vcard-range-label">Range</span>
         ${[0,1,2].map(i =>
-          `<button class="vcard-range-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}" title="${rangeFull[i]}">${rangeLabels[i]}</button>`
+          `<button class="vcard-range-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}">${rangeLabels[i]}</button>`
         ).join('')}
       </div>` : '';
 
-  const noOriginHtml = !state.origin
-    ? `<div class="vcard-no-origin"><span class="vcard-no-origin-icon">📍</span><span>Add your starting location for drive-time rankings</span></div>` : '';
-
+  // ── "Also in the running" — horizontal scroll ────────────────────────────────
   const altsHtml = runningItems.length
     ? `<div class="vcard-alts">
         <div class="vcard-alts-header">
-          <div class="vcard-alts-label">Also in the running</div>
+          <span class="vcard-alts-label">Also in the running</span>
           ${rangeHtml}
         </div>
-        <div class="vcard-alts-list">
+        <div class="vcard-alts-scroll">
           ${runningItems.map(item => {
-            const altDrive = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : null;
+            const altDrive = getDriveMins(item.resort.id) !== null ? formatDrive(item.resort.id) : null;
             const altWx    = state.weatherCache[item.resort.id]?.data;
             const altSnow  = altWx ? (altWx.forecast || []).reduce((s,f) => s + (f.snow||0), 0) : null;
-            const altPC    = passColors[item.resort.passGroup] || '#6b5e7a';
             return `<button class="vcard-alt vcard-resort-link" data-resort-id="${item.resort.id}">
-              <div class="vcard-alt-top">
-                <span class="vcard-alt-name">${esc(item.resort.name)}</span>
-                ${altSnow !== null ? `<span class="vcard-alt-snow${altSnow >= 3 ? ' vcard-alt-snow--good' : ''}">${altSnow.toFixed(1)}"</span>` : ''}
-              </div>
-              <div class="vcard-alt-meta">
-                <span class="vcard-alt-pass" style="background:${altPC}18;color:${altPC};border:1px solid ${altPC}33">${esc(item.resort.passGroup)}</span>
+              <span class="vcard-alt-name">${esc(item.resort.name)}</span>
+              <span class="vcard-alt-meta">
+                ${altSnow !== null
+                  ? `<span class="vcard-alt-snow${altSnow >= 3 ? ' vcard-alt-snow--good' : ''}">${altSnow >= 0.5 ? altSnow.toFixed(1) + '"' : 'Groomed'}</span>`
+                  : ''}
                 ${altDrive ? `<span class="vcard-alt-drive">${esc(altDrive)}</span>` : ''}
-              </div>
+              </span>
             </button>`;
           }).join('')}
         </div>
         <button class="vcard-compare-link" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">
-          Compare side-by-side
+          Compare side-by-side →
         </button>
       </div>` : '';
 
+  // ── No-origin nudge (only when alts section isn't already present) ───────────
+  const noOriginHtml = !state.origin && !runningItems.length
+    ? `<div class="vcard-no-origin">
+        <span class="vcard-no-origin-icon">📍</span>
+        <span>Add your starting location for personalized drive-time rankings</span>
+      </div>` : '';
+
+  // ── Full card ─────────────────────────────────────────────────────────────────
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--${tier}">
+
       <div class="vcard-hero vcard-hero--${tier}">
-        <div class="vcard-eyebrow">Your Recommended Mountain</div>
+        <div class="vcard-eyebrow">Top Pick · ${timeLabel}</div>
         <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
-        <div class="vcard-chips">
-          <span class="vcard-chip">${esc(resort.state)}</span>
-          <span class="vcard-chip vcard-chip--pass" style="background:${passBg}22;color:${passBg};border-color:${passBg}44">${esc(resort.passGroup)}</span>
-          ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
-          <span class="vcard-chip">$${resort.price}</span>
-          ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
-        </div>
-        <div class="vcard-condition-badge vcard-condition-badge--${tier}">
-          <span class="vcard-condition-dot" style="background:${tc.dot}"></span>
+        <div class="vcard-vbadge vcard-vbadge--${tier}">
+          <span class="vcard-vbadge-dot" style="background:${tc.dot}"></span>
           ${tc.label}
         </div>
+        ${statsHtml}
       </div>
-      <div class="vcard-body">
-        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--loading"></div>
-        <div class="vcard-verdict">
-          <div class="vcard-headline vcard-headline--${tier}">${headline}</div>
-          <div class="vcard-detail">${detail}</div>
-          ${subList}
-        </div>
-        ${forecastHtml}
-        ${noOriginHtml}
-        ${altsHtml}
-        <div class="vcard-actions">
-          <button class="btn vcard-share-btn" id="verdictShareBtn">Share this pick</button>
-        </div>
+
+      <div class="vcard-cta-row">
+        <button class="vcard-cta-primary" id="verdictPickBtn2">View mountain details</button>
+        ${resort.website ? `<a class="vcard-cta-site" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Website ↗</a>` : ''}
       </div>
+
+      <div class="vcard-why">
+        <div class="vcard-why-label">Why this pick</div>
+        <div id="verdictWriteupSlot" class="vcard-why-text">${whyFallback}</div>
+        <div id="verdictConditionsSlot" hidden></div>
+      </div>
+
+      ${forecastHtml}
+
+      ${altsHtml}
+
+      ${noOriginHtml}
+      <div class="vcard-footer">
+        <button class="vcard-share-btn" id="verdictShareBtn">Share this pick</button>
+        ${!runningItems.length && rangeHtml ? rangeHtml : ''}
+      </div>
+
     </div>`;
 
-  $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+  // ── Event listeners ───────────────────────────────────────────────────────────
+  $('verdictPickBtn')?.addEventListener('click',  () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+  $('verdictPickBtn2')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   $('verdictShareBtn')?.addEventListener('click', () => shareVerdict(resort, v));
+
+  $('verdictAddLocationBtn')?.addEventListener('click', () => {
+    const inp = document.getElementById('originInput');
+    if (inp) { inp.focus(); inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  });
+
   els.verdictCard.querySelectorAll('.vcard-resort-link[data-resort-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = RESORTS.find(x => x.id === btn.dataset.resortId);
@@ -1022,27 +1081,24 @@ async function fetchVerdictWriteup(v, origin) {
 }
 
 async function injectVerdictWriteup(v) {
-  const slot   = document.getElementById('verdictWriteupSlot');
+  const slot = document.getElementById('verdictWriteupSlot');
   if (!slot) return;
-  const cached = verdictWriteupCache.get(`${v.resort.id}:${v.tier}`);
+  // Slot already shows whyFallback text (rule-based, instant).
+  // If cached AI writeup exists, apply it immediately — no flicker.
+  const cacheKey = `${v.resort.id}:${v.tier}`;
+  const cached = verdictWriteupCache.get(cacheKey);
   if (cached && cached !== '__failed__') {
     slot.textContent = cached;
-    slot.classList.remove('vcard-writeup--loading');
+    slot.classList.add('vcard-why-text--ai');
     return;
   }
-  slot.textContent = '';
-  slot.classList.add('vcard-writeup--loading');
+  // Fetch in background. Slot continues showing rule-based text.
+  // No shimmer, no placeholder — page feels complete immediately.
   const text = await fetchVerdictWriteup(v, state.origin);
   const liveSlot = document.getElementById('verdictWriteupSlot');
-  if (!liveSlot) return;
-  liveSlot.classList.remove('vcard-writeup--loading');
-  if (text) {
-    liveSlot.textContent = text;
-    liveSlot.classList.remove('vcard-writeup--fallback');
-  } else {
-    liveSlot.textContent = 'Tip: Everything above still uses live snow and drive data. This extra blurb could not be loaded right now.';
-    liveSlot.classList.add('vcard-writeup--fallback');
-  }
+  if (!liveSlot || !text) return; // silent failure — keep rule-based text
+  liveSlot.textContent = text;
+  liveSlot.classList.add('vcard-why-text--ai');
 }
 
 // ─── Summary cards ────────────────────────────────────────────────────────────
