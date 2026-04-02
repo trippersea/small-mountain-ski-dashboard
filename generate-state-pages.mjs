@@ -194,8 +194,8 @@ function buildFeaturedRow(resort, sponsor) {
 function generateStatePage(stateAbbr, resorts) {
   const stateName  = stateFullName(stateAbbr);
   const stateSlug  = slugifyState(stateAbbr);
-  const appUrl     = `https://wheretoskinext.com/?st=${stateAbbr}#compareSection`;
-  const canonUrl   = `https://wheretoskinext.com/ski/${stateSlug}/`;
+  const appUrl     = `https://www.wheretoskinext.com/?st=${stateAbbr}#compareSection`;
+  const canonUrl   = `https://www.wheretoskinext.com/ski/${stateSlug}/`;
   const count      = resorts.length;
   const sorted     = [...resorts].sort((a, b) => b.avgSnowfall - a.avgSnowfall);
   const topNames   = sorted.slice(0, 3).map(r => r.name).join(', ');
@@ -211,7 +211,7 @@ function generateStatePage(stateAbbr, resorts) {
       numberOfItems: count,
       itemListElement: sorted.map((r, i) => ({
         '@type': 'ListItem', position: i + 1, name: r.name,
-        url: `https://wheretoskinext.com/ski-report/${r.id}/`,
+        url: `https://www.wheretoskinext.com/ski-report/${r.id}/`,
       })),
     },
     ...resorts.map(r => ({
@@ -220,7 +220,7 @@ function generateStatePage(stateAbbr, resorts) {
       name: r.name,
       address: { '@type': 'PostalAddress', addressRegion: r.state, addressCountry: 'US' },
       geo: { '@type': 'GeoCoordinates', latitude: r.lat, longitude: r.lon },
-      url: r.website || `https://wheretoskinext.com/ski-report/${r.id}/`,
+      url: r.website || `https://www.wheretoskinext.com/ski-report/${r.id}/`,
       priceRange: `$${r.price} day ticket`,
     })),
   ];
@@ -234,7 +234,7 @@ function generateStatePage(stateAbbr, resorts) {
       <td>$${r.price}</td>
       <td>${esc(passLabel(r.passGroup))}</td>
       <td>${r.night ? 'Yes' : 'No'}</td>
-      <td><a href="https://wheretoskinext.com/?resort=${r.id}" class="view-link">Live data →</a></td>
+      <td><a href="https://www.wheretoskinext.com/?resort=${r.id}" class="view-link">Live data →</a></td>
     </tr>`).join('');
 
   // All states in the nav footer — derived dynamically, current state excluded
@@ -275,7 +275,7 @@ function generateStatePage(stateAbbr, resorts) {
   <meta property="og:description" content="${count} mountains in ${stateName}. Top picks: ${topNames}. Stop guessing. Start skiing." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
-  <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
+  <meta property="og:image" content="https://www.wheretoskinext.com/ski-decision-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
