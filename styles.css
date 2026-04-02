@@ -2595,12 +2595,20 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   .detail-stat:nth-child(4),
   .detail-stat:nth-child(5) { border-top: 1px solid var(--border); }
   .detail-stat:nth-child(4) { border-right: 1px solid var(--border); }
+
+  /* 3-column top cards → 1-column stack on tablet */
+  .detail-header-rebuilt { grid-template-columns: 1fr !important; }
+  .detail-top-card { min-height: auto !important; }
 }
 
 @media (max-width: 760px) {
   .detail-grid-new { grid-template-columns: 1fr; }
   .detail-stats-strip { grid-template-columns: repeat(3, 1fr); }
   .detail-header-right { width: 100%; justify-content: flex-start; }
+
+  /* Ensure sub-cards also stack on mobile */
+  .detail-grid-new { grid-template-columns: 1fr !important; }
+  .sub-card-new { min-height: auto !important; }
 }
 
 @media (max-width: 480px) {
@@ -2610,6 +2618,14 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   .detail-stat:nth-child(3)   { border-right: 1px solid var(--border); }
   .detail-stat:nth-child(4)   { border-right: none; }
   .detail-stat:nth-child(5)   { grid-column: 1 / -1; border-right: none; }
+
+  /* Tighten card padding on small phones */
+  .detail-top-card { padding: 14px !important; }
+  .sub-card-new    { padding: 14px !important; }
+  .detail-header-rebuilt { gap: 8px !important; }
+  .detail-grid-new       { gap: 8px !important; }
+  /* Mountain stats grid: 2 cols on small screens */
+  .detail-top-card .detail-stats-2col { grid-template-columns: 1fr 1fr !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
