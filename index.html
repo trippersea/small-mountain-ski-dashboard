@@ -495,22 +495,22 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
   <script defer src="featured-partners.js"></script>
   <script defer src="sd-app.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', () => {
       // AI panel toggle
-      var toggleBtn = document.getElementById('aiToggleBtn');
-      var panel     = document.getElementById('aiChatPanel');
+      const toggleBtn = document.getElementById('aiToggleBtn');
+      const panel     = document.getElementById('aiChatPanel');
       if (toggleBtn && panel) {
-        toggleBtn.addEventListener('click', function () {
-          var open = toggleBtn.getAttribute('aria-expanded') === 'true';
+        toggleBtn.addEventListener('click', () => {
+          const open = toggleBtn.getAttribute('aria-expanded') === 'true';
           toggleBtn.setAttribute('aria-expanded', String(!open));
           panel.hidden = open;
-          if (!open) setTimeout(function () { document.getElementById('aiChatInput')?.focus(); }, 50);
+          if (!open) setTimeout(() => { document.getElementById('aiChatInput')?.focus(); }, 50);
         });
       }
       // Example chips pre-fill input
       document.querySelectorAll('.ai-example-chip').forEach(function (chip) {
         chip.addEventListener('click', function () {
-          var input = document.getElementById('aiChatInput');
+          const input = document.getElementById('aiChatInput');
           if (input) { input.value = chip.getAttribute('data-prompt'); input.focus(); }
         });
       });
