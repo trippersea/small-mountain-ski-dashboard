@@ -1407,6 +1407,7 @@ function renderCompareTable(resorts) {
       trackEvent('booking_click', { placement: 'table_row', resort: a.dataset.trackResort });
     });
   });
+}
 
 function renderCompareTray() {
   if (!state.compareSet.size) { els.compareTray.classList.add('hidden'); return; }
