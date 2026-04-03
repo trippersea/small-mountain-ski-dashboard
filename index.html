@@ -11,15 +11,15 @@
   })(window,document,'script','dataLayer','GTM-MCCDNQGB');</script>
   <!-- End Google Tag Manager -->
   <title>WhereToSkiNext.com — Find the Best Mountain to Ski Next</title>
-  <meta name="description" content="Stop guessing. Start skiing. WhereToSkiNext.com ranks 256 mountains by live snow forecast, your drive time, crowds, and pass — one clear answer in seconds. Free, no account needed." />
+  <meta name="description" content="Stop guessing. Start skiing. WhereToSkiNext.com ranks 250+ mountains by live snow forecast, your drive time, crowds, and pass — one clear answer in seconds. Free, no account needed." />
   <meta property="og:title" content="WhereToSkiNext.com — Stop Guessing. Start Skiing." />
-  <meta property="og:description" content="256 mountains ranked by live snow, your drive time, crowds, and pass. One clear answer. Free, no account needed." />
+  <meta property="og:description" content="250+ mountains ranked by live snow, your drive time, crowds, and pass. One clear answer. Free, no account needed." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.wheretoskinext.com/" />
   <meta property="og:image" content="https://www.wheretoskinext.com/ski-decision-logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="WhereToSkiNext.com — Stop Guessing. Start Skiing." />
-  <meta name="twitter:description" content="256 mountains ranked by live snow, your drive time, crowds, and pass. One clear answer. Free." />
+  <meta name="twitter:description" content="250+ mountains ranked by live snow, your drive time, crowds, and pass. One clear answer. Free." />
   <meta name="twitter:image" content="https://www.wheretoskinext.com/ski-decision-logo.png" />
   <link rel="canonical" href="https://www.wheretoskinext.com/" />
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
@@ -30,6 +30,53 @@
       text-align: center;
       margin-top: 10px;
       letter-spacing: 0.01em;
+    }
+
+    /* ── Hero background override ── */
+    .hero-search {
+      background: #1a3252 !important;
+    }
+    .hero-search .hero-headline,
+    .hero-search h1 {
+      color: #fff !important;
+    }
+    .hero-search .hero-subhead {
+      color: #94a3b8 !important;
+    }
+    .hero-search .hero-quick-label {
+      color: #5b8ab8 !important;
+    }
+
+    /* ── Nav primary links ── */
+    .nav-primary {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-decoration: none;
+      padding: 6px 11px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: background .12s, color .12s;
+      flex-shrink: 0;
+    }
+    .nav-primary:hover {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+    }
+    .nav-link-sep {
+      width: 1px;
+      height: 16px;
+      background: rgba(255,255,255,.12);
+      margin: 0 2px;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    /* ── Mobile nav: hide text links, keep CTA ── */
+    @media (max-width: 640px) {
+      .nav-primary { display: none; }
+      .nav-link-sep { display: none; }
+      .nav-divider { display: none; }
     }
   </style>
   <link rel="icon" href="ski-decision-logo.svg" type="image/svg+xml" />
@@ -47,7 +94,7 @@
     "@type": "WebApplication",
     "name": "WhereToSkiNext.com",
     "url": "https://wheretoskinext.com",
-    "description": "256 ski mountains ranked in real time by snow forecast, drive time, pass access and crowds. Free, no account needed.",
+    "description": "250+ ski mountains ranked in real time by snow forecast, drive time, pass access and crowds. Free, no account needed.",
     "applicationCategory": "SportsApplication",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "operatingSystem": "Web browser"
@@ -74,8 +121,11 @@
         </span>
       </a>
       <div class="nav-divider"></div>
-      <a href="/about/" class="nav-secondary">About</a>
-      <a href="/partners/" class="nav-secondary">Partners</a>
+      <a href="/about/" class="nav-primary">About</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/partners/" class="nav-primary">Partners</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
       <a href="#searchSection" class="nav-find-cta">Find My Mountain →</a>
     </div>
   </nav>
@@ -166,7 +216,7 @@
               </div>
               <div class="hero-proof-item">
                 <strong>Everything else ranked</strong>
-                <span>All 256 mountains scored side by side so you can sanity-check the call.</span>
+                <span>All 250+ mountains scored side by side so you can sanity-check the call.</span>
               </div>
               <div class="hero-proof-item">
                 <strong>Storm Chaser & Hidden Gems</strong>
@@ -533,7 +583,7 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
   </script>
 
   <footer class="site-footer">
-    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
+    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
   </footer>
 </body>
 </html>
