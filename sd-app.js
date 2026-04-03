@@ -129,6 +129,48 @@ function getSponsor(resortId) {
     }
     .cond-chip--surface { background:rgba(34,179,138,.22); color:#6ee7b7; border-color:rgba(110,231,183,.3); }
 
+    /* ── Verdict lodging card (Booking.com — overnight trigger) ── */
+    .vcard-lodging { margin:14px 0 0; border-radius:10px; background:#f0f7ff; border:1px solid #bfdbfe; overflow:hidden; }
+    .vcard-lodging-link {
+      display:flex; align-items:center; gap:10px;
+      padding:12px 16px; text-decoration:none;
+      color:#1e40af; font-size:14px; font-weight:600;
+      transition:background .12s;
+    }
+    .vcard-lodging-link:hover { background:#dbeafe; }
+    .vcard-lodging-icon { font-size:16px; flex-shrink:0; }
+    .vcard-lodging-text { flex:1; }
+    .vcard-lodging-arrow { color:#3b82f6; font-weight:700; }
+    .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#94a3b8; letter-spacing:.03em; }
+
+    /* ── Trip Snapshot card ── */
+    .trip-snapshot { margin-top:12px; border-radius:12px; background:#fff; border:1px solid #e2e8f0; padding:14px 16px; }
+    .trip-snapshot-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .trip-snapshot-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; }
+    .trip-snapshot-copy-btn {
+      font-size:11px; font-weight:600; color:#64748b;
+      background:#f1f5f9; border:1px solid #e2e8f0;
+      border-radius:6px; padding:3px 9px; cursor:pointer; transition:background .12s;
+    }
+    .trip-snapshot-copy-btn:hover { background:#e2e8f0; }
+    .trip-snapshot-mountain { font-size:16px; font-weight:800; color:#1a1a2e; line-height:1.2; margin-bottom:6px; }
+    .trip-snapshot-meta { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px; }
+    .trip-snapshot-chip { font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:#f1f5f9; color:#475569; }
+    .trip-snapshot-lodging {
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; font-weight:600; color:#2563eb;
+      text-decoration:none; padding:9px 12px;
+      background:#eff6ff; border-radius:8px; border:1px solid #bfdbfe;
+      transition:background .12s;
+    }
+    .trip-snapshot-lodging:hover { background:#dbeafe; }
+    .trip-snapshot-lodging-arrow { margin-left:auto; color:#3b82f6; }
+    .trip-snapshot-lodging-sub { font-size:10px; color:#94a3b8; margin-top:5px; text-align:right; }
+
+    /* ── Table lodging link ── */
+    .table-lodging-link { font-size:11px; font-weight:600; color:#2563eb; text-decoration:none; white-space:nowrap; }
+    .table-lodging-link:hover { text-decoration:underline; }
+
   `;
   document.head.appendChild(style);
 })();
@@ -257,6 +299,12 @@ function formatDistanceFromOrigin(resortId) {
   else if (typeof resort.lat === 'number') km = haversineKm(state.origin.lat, state.origin.lon, resort.lat, resort.lon);
   if (km == null || !Number.isFinite(km)) return 'Distance: TBD';
   return `Distance: ${Math.round(km * 0.621371)} mi`;
+}
+
+// ─── Booking.com affiliate URL (Awin) ────────────────────────────────────────
+function bookingUrl(resort) {
+  const dest = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(resort.name + ', ' + resort.state)}`;
+  return `https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2816032&ued=${encodeURIComponent(dest)}`;
 }
 
 // ─── Haversine / drive estimates ──────────────────────────────────────────────
@@ -775,6 +823,8 @@ function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
   const v = computeVerdict(resorts);
   if (!v) {
+    const snapSlot = document.getElementById('tripSnapshotCard');
+    if (snapSlot) snapSlot.setAttribute('hidden', '');
     const filtersTightenEmpty = resorts.length === 0 && (
       state.passFilter !== 'All'   ||
       state.stateFilter !== 'All'  ||
@@ -842,6 +892,21 @@ function renderVerdict(resorts) {
   }
 
   const { tier, headline, detail, subPoints, resort, driveText } = v;
+  const isOvernightLikely = state.howFar >= 1 || (v.drive !== null && v.drive > 180);
+  const lodgingHtml = isOvernightLikely ? `
+    <div class="vcard-lodging">
+      <a class="vcard-lodging-link"
+         href="${bookingUrl(resort)}"
+         target="_blank"
+         rel="noopener sponsored"
+         data-track-placement="verdict_card"
+         data-track-resort="${esc(resort.name)}">
+        <span class="vcard-lodging-icon">🏠</span>
+        <span class="vcard-lodging-text">Find places to stay near ${esc(resort.name)}</span>
+        <span class="vcard-lodging-arrow">→</span>
+      </a>
+      <div class="vcard-lodging-sub">Powered by Booking.com</div>
+    </div>` : '';
   const brief        = buildDecisionBrief(resorts);
   const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
   const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
@@ -944,6 +1009,7 @@ function renderVerdict(resorts) {
         ${forecastHtml}
         ${noOriginHtml}
         ${altsHtml}
+        ${lodgingHtml}
         <div class="vcard-actions">
           <button class="btn vcard-share-btn" id="verdictShareBtn">Share this pick</button>
         </div>
@@ -980,6 +1046,72 @@ function renderVerdict(resorts) {
   });
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
+  renderTripSnapshot(v);
+
+  // Track Booking.com clicks from verdict card
+  els.verdictCard.querySelectorAll('a[data-track-placement]').forEach(a => {
+    a.addEventListener('click', () => {
+      trackEvent('booking_click', { placement: a.dataset.trackPlacement, resort: a.dataset.trackResort });
+    });
+  });
+}
+
+// ─── Trip Snapshot card ───────────────────────────────────────────────────────
+function renderTripSnapshot(v) {
+  const slot = document.getElementById('tripSnapshotCard');
+  if (!slot) return;
+  if (!v) { slot.setAttribute('hidden', ''); return; }
+
+  const { resort, driveText, stormTotal } = v;
+  const snowStr  = stormTotal > 0 ? `${stormTotal.toFixed(1)}" forecast` : 'Check conditions';
+  const chips    = [
+    snowStr,
+    driveText ? driveText + ' away' : null,
+    resort.passGroup !== 'Independent' ? resort.passGroup + ' Pass' : null,
+    `$${resort.price} ticket`,
+  ].filter(Boolean);
+
+  const bUrl = bookingUrl(resort);
+
+  slot.innerHTML = `
+    <div class="trip-snapshot-header">
+      <span class="trip-snapshot-label">Your ski trip</span>
+      <button class="trip-snapshot-copy-btn" id="snapshotCopyBtn">Copy summary</button>
+    </div>
+    <div class="trip-snapshot-mountain">📍 ${esc(resort.name)}, ${esc(resort.state)}</div>
+    <div class="trip-snapshot-meta">
+      ${chips.map(c => `<span class="trip-snapshot-chip">${esc(c)}</span>`).join('')}
+    </div>
+    <a class="trip-snapshot-lodging"
+       href="${bUrl}"
+       target="_blank"
+       rel="noopener sponsored"
+       data-track-placement="trip_snapshot"
+       data-track-resort="${esc(resort.name)}">
+      🏠 Find places to stay near ${esc(resort.name)}
+      <span class="trip-snapshot-lodging-arrow">→</span>
+    </a>
+    <div class="trip-snapshot-lodging-sub">via Booking.com</div>`;
+
+  slot.removeAttribute('hidden');
+
+  // Copy summary to clipboard
+  document.getElementById('snapshotCopyBtn')?.addEventListener('click', () => {
+    const text = `My ski trip: ${resort.name}, ${resort.state}\n${chips.join(' · ')}\nwheretoskinext.com`;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(() => showToast('Trip summary copied!', 2400));
+    } else {
+      const ta = Object.assign(document.createElement('textarea'), { value: text, style: 'position:fixed;opacity:0' });
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); showToast('Trip summary copied!', 2400); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+  });
+
+  // Track Booking.com click
+  slot.querySelector('a[data-track-placement]')?.addEventListener('click', () => {
+    trackEvent('booking_click', { placement: 'trip_snapshot', resort: resort.name });
+  });
 }
 
 // ─── AI verdict write-up ───────────────────────────────────────────────────────
@@ -1198,7 +1330,7 @@ function renderCompareTable(resorts) {
       : 'Try widening distance, easing snow or price limits, or pick another pass.';
     els.resultCount.textContent = qActive ? `0 results for “${qRaw}”` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
-      <tr><td colspan="12" class="compare-empty-state">
+      <tr><td colspan="13" class="compare-empty-state">
         <div class="ces-icon">🎿</div>
         <div class="ces-title">${title}</div>
         <div class="ces-sub">${sub}
@@ -1220,7 +1352,7 @@ function renderCompareTable(resorts) {
 
   els.comparisonBody.innerHTML = (noOriginDefault ? `
     <tr class="table-location-nudge">
-      <td colspan="12">
+      <td colspan="13">
         <div class="tln-inner">
           <span class="tln-icon">📍</span>
           <span class="tln-text">Enter your starting location above to rank by live snow forecast, drive time, and your preferences.</span>
@@ -1263,11 +1395,18 @@ function renderCompareTable(resorts) {
         <td>${resort.trails}</td>
         <td>$${resort.price}</td>
         <td class="${crowdClass(crowd)}">${crowd}</td>
+        <td><a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}">Stay →</a></td>
       </tr>`;
   }).join('');
 
   renderMobileCards(displayed);
-}
+
+  // Track Booking.com clicks from table rows
+  els.comparisonBody.querySelectorAll('a[data-track-placement="table_row"]').forEach(a => {
+    a.addEventListener('click', () => {
+      trackEvent('booking_click', { placement: 'table_row', resort: a.dataset.trackResort });
+    });
+  });
 
 function renderCompareTray() {
   if (!state.compareSet.size) { els.compareTray.classList.add('hidden'); return; }
