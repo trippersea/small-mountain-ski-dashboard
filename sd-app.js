@@ -893,20 +893,6 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText } = v;
   const isOvernightLikely = state.howFar >= 1 || (v.drive !== null && v.drive > 180);
-  const lodgingHtml = isOvernightLikely ? `
-    <div class="vcard-lodging">
-      <a class="vcard-lodging-link"
-         href="${bookingUrl(resort)}"
-         target="_blank"
-         rel="noopener sponsored"
-         data-track-placement="verdict_card"
-         data-track-resort="${esc(resort.name)}">
-        <span class="vcard-lodging-icon">🏠</span>
-        <span class="vcard-lodging-text">Find places to stay near ${esc(resort.name)}</span>
-        <span class="vcard-lodging-arrow">→</span>
-      </a>
-      <div class="vcard-lodging-sub">Powered by Booking.com</div>
-    </div>` : '';
   const brief        = buildDecisionBrief(resorts);
   const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
   const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
@@ -993,6 +979,7 @@ function renderVerdict(resorts) {
           ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
           <span class="vcard-chip">$${resort.price}</span>
           ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
+          ${isOvernightLikely ? `<a class="vcard-chip vcard-chip--link vcard-chip--lodging" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_chip" data-track-resort="${esc(resort.name)}">Find Places to Stay — Booking.com ↗</a>` : ''}
         </div>
         <div class="vcard-condition-badge vcard-condition-badge--${tier}">
           <span class="vcard-condition-dot" style="background:${tc.dot}"></span>
@@ -1009,7 +996,6 @@ function renderVerdict(resorts) {
         ${forecastHtml}
         ${noOriginHtml}
         ${altsHtml}
-        ${lodgingHtml}
         <div class="vcard-actions">
           <button class="btn vcard-share-btn" id="verdictShareBtn">Share this pick</button>
         </div>
@@ -1048,7 +1034,7 @@ function renderVerdict(resorts) {
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
   renderTripSnapshot(v);
 
-  // Track Booking.com clicks from verdict card
+  // Track Booking.com clicks from verdict chip
   els.verdictCard.querySelectorAll('a[data-track-placement]').forEach(a => {
     a.addEventListener('click', () => {
       trackEvent('booking_click', { placement: a.dataset.trackPlacement, resort: a.dataset.trackResort });
