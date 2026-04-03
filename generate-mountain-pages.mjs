@@ -354,8 +354,8 @@ function generateMountainPage(resort, allResorts) {
   const year       = new Date().getFullYear();
   const month      = new Date().toLocaleString('en-US', { month: 'long' });
 
-  const pageTitle  = `${resort.name} Ski Report ${year} — Conditions, Trails & Snow | WhereToSkiNext.com`;
-  const metaDesc   = `${resort.name} in ${stateName}: ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails, $${resort.price} day ticket. ${passLabel(resort.passGroup)} mountain. Check live snow forecast and conditions.`;
+  const pageTitle  = `${resort.name} Ski Report ${year} — Live Snow Score & Personalized Conditions | WhereToSkiNext.com`;
+  const metaDesc   = `Personalized ski score for ${resort.name} — your drive time, ${passLabel(resort.passGroup)} access, live snow forecast & crowd outlook. ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails.`;
 
   const passColor  = { Epic: '#1a56db', Ikon: '#0e9f6e', Indy: '#c27803', Independent: '#6b7280' }[resort.passGroup] || '#6b7280';
 

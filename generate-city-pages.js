@@ -154,8 +154,8 @@ function generatePage(city) {
   const passes  = passBreakdown(resorts);
   const total   = resorts.length;
 
-  const title    = `Best Ski Resorts Near ${city.name} — Ranked by Drive Time & Snow`;
-  const metaDesc = `${total} ski resorts within 6 hours of ${city.name}. Compare snow forecast, drive time, and pass access to find your best day on the slopes this weekend.`;
+  const title    = `Ski Resorts Near ${city.name} — Find Your Best Mountain This Weekend`;
+  const metaDesc = `${total} ski resorts near ${city.name} scored by live snow forecast, real drive time, and crowd outlook. Enter your location for one personalized pick — free, no account needed.`;
 
   function resortCard(r, showDrive = true) {
     if (!r) return '';
@@ -359,7 +359,7 @@ function generatePage(city) {
 
   <!-- Hero -->
   <div class="hero-eyebrow">Skiing Near ${city.name} · ${city.region}</div>
-  <h1 class="hero-title">Best Ski Resorts Near ${city.name}</h1>
+  <h1 class="hero-title">Best Ski Resorts Near ${city.name} This Weekend</h1>
   <p class="hero-intro">${city.intro}</p>
 
   <div class="hero-stats">
@@ -372,8 +372,9 @@ function generatePage(city) {
   <!-- Live CTA -->
   <div class="cta-banner">
     <div class="cta-banner-text">
-      <h2>See live snow forecast ranked for ${city.name}</h2>
-      <p>Enter your exact starting point for real drive times, pass filters, crowd outlook, and a personalized top pick.</p>
+      <h2>Get your personalized pick for this weekend</h2>
+      <p>Enter your exact starting point — we'll score every mountain by live snow, real drive time, pass access, and crowd outlook, and give you one clear answer.</p>
+      <p style="font-size:12px;margin:6px 0 0;opacity:.75;">Scores are independent — resort sponsors never influence rankings.</p>
     </div>
     <a href="${city.appUrl}" class="cta-btn">
       Find My Mountain
@@ -441,7 +442,7 @@ function generatePage(city) {
   <div class="cta-banner">
     <div class="cta-banner-text">
       <h2>Which mountain is best this weekend?</h2>
-      <p>Live snow forecast + your drive time + crowds + pass access — one ranking, updated daily.</p>
+      <p>Live snow + your drive time + pass + crowds — one answer, updated daily. Stop researching. Start skiing.</p>
     </div>
     <a href="${city.appUrl}" class="cta-btn">
       Get My Top Pick →
