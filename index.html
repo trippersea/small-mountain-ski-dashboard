@@ -222,10 +222,6 @@
         </div>
       </section>
 
-      <!-- TRIP SNAPSHOT: shown after verdict is revealed -->
-      <section id="tripSnapshotCard" class="card trip-snapshot" hidden aria-label="Your trip summary">
-      </section>
-
       <section id="plannerSection" class="card panel planner-col">
 
         <div class="planner-col-header">
@@ -320,6 +316,9 @@
       </section>
 
     </div><!-- /planner-verdict-row -->
+
+    <!-- TRIP SNAPSHOT: rendered by JS after verdict, only for overnight trips -->
+    <section id="tripSnapshotCard" class="card trip-snapshot" hidden aria-label="Your trip summary"></section>
 
     <!-- COMPARE TABLE -->
     <section id="compareSection" class="card panel">

@@ -1060,7 +1060,8 @@ function renderVerdict(resorts) {
 function renderTripSnapshot(v) {
   const slot = document.getElementById('tripSnapshotCard');
   if (!slot) return;
-  if (!v) { slot.setAttribute('hidden', ''); return; }
+  const isOvernightLikely = v && (state.howFar >= 1 || (v.drive !== null && v.drive > 180));
+  if (!v || !isOvernightLikely) { slot.setAttribute('hidden', ''); return; }
 
   const { resort, driveText, stormTotal } = v;
   const snowStr  = stormTotal > 0 ? `${stormTotal.toFixed(1)}" forecast` : 'Check conditions';
@@ -1088,7 +1089,7 @@ function renderTripSnapshot(v) {
        rel="noopener sponsored"
        data-track-placement="trip_snapshot"
        data-track-resort="${esc(resort.name)}">
-      🏠 Find places to stay near ${esc(resort.name)}
+      Find places to stay near ${esc(resort.name)}
       <span class="trip-snapshot-lodging-arrow">→</span>
     </a>
     <div class="trip-snapshot-lodging-sub">via Booking.com</div>`;
