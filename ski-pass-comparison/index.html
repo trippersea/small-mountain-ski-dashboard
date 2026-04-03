@@ -123,7 +123,7 @@
     .pass-stat-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
     .pass-stat { font-size: 0.78rem; background: rgba(255,255,255,.7); border-radius: 6px; padding: 4px 9px; font-weight: 600; }
     .pc-highlights { font-size: 0.8rem; color: var(--text-secondary); padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
-    .pc-highlights li::before { content: "&#10003; "; font-weight: 700; }
+    .pc-highlights li::before { content: ""; }
     .pass-card.epic .pc-highlights li::before { color: var(--epic-color); }
     .pass-card.ikon .pc-highlights li::before { color: var(--ikon-color); }
     .pass-card.indy .pc-highlights li::before { color: var(--indy-color); }
@@ -187,6 +187,13 @@
     footer a { color: rgba(255,255,255,.5); text-decoration: none; }
     footer a:hover { color: #fff; }
 
+    /* City + pass quick-links */
+    .city-pass-strip { max-width: 900px; margin: 0 auto 32px; padding: 0 24px; }
+    .city-pass-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-light); margin-bottom: 10px; }
+    .city-pass-links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .city-pass-link { font-size: .82rem; font-weight: 600; padding: 5px 13px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); text-decoration: none; transition: border-color .12s, color .12s; }
+    .city-pass-link:hover { border-color: #2563eb; color: #2563eb; }
+
     @media (max-width: 700px) { .pass-overview { grid-template-columns: 1fr; } }
     @media (max-width: 500px) { .indy-highlight-grid { grid-template-columns: 1fr 1fr; } }
   </style>
@@ -221,6 +228,22 @@
   <p class="hero-sub">
     Three major ski passes. Hundreds of mountains. Almost no overlap. The right pass depends entirely on where you ski, how far you travel, and whether you prefer big destination resorts or independent local hills. Here is everything you need to make the call before prices go up.
   </p>
+</div>
+
+<!-- City + pass quick-links -->
+<div class="city-pass-strip">
+  <div class="city-pass-label">Find your best mountain near you this weekend &rarr;</div>
+  <div class="city-pass-links">
+    <a href="https://www.wheretoskinext.com/ski-near/boston/" class="city-pass-link">Boston</a>
+    <a href="https://www.wheretoskinext.com/ski-near/nyc/" class="city-pass-link">New York</a>
+    <a href="https://www.wheretoskinext.com/ski-near/philadelphia/" class="city-pass-link">Philadelphia</a>
+    <a href="https://www.wheretoskinext.com/ski-near/washington-dc/" class="city-pass-link">Washington DC</a>
+    <a href="https://www.wheretoskinext.com/ski-near/denver/" class="city-pass-link">Denver</a>
+    <a href="https://www.wheretoskinext.com/ski-near/salt-lake-city/" class="city-pass-link">Salt Lake City</a>
+    <a href="https://www.wheretoskinext.com/ski-near/seattle/" class="city-pass-link">Seattle</a>
+    <a href="https://www.wheretoskinext.com/ski-near/portland/" class="city-pass-link">Portland</a>
+    <a href="https://www.wheretoskinext.com/ski-near/chicago/" class="city-pass-link">Chicago</a>
+  </div>
 </div>
 
 <!-- Pass overview cards -->
@@ -330,7 +353,7 @@
         <span class="rc-pill indy">Indy: 30+</span>
       </div>
       <p class="rc-verdict">VT, NH, ME, NY, PA, MA and more. Ikon wins Vermont; Epic wins New Hampshire. The Indy Pass covers many of the region's best independent mountains including Jay Peak and Cannon.</p>
-      <span class="rc-cta">See full Northeast breakdown &rarr;</span>
+      <span class="rc-cta">Find your best Epic or Ikon mountain in the Northeast &rarr;</span>
     </a>
 
     <a href="https://www.wheretoskinext.com/epic-vs-ikon-rockies/" class="region-card">
@@ -342,7 +365,7 @@
         <span class="rc-pill indy">Indy: 15+</span>
       </div>
       <p class="rc-verdict">CO, UT, WY, MT and NM. Ikon dominates on mountain count. Epic holds Vail and Park City. Indy covers Sun Valley, Loveland, Purgatory, and several New Mexico resorts.</p>
-      <span class="rc-cta">See full Rockies breakdown &rarr;</span>
+      <span class="rc-cta">Find your best Epic or Ikon mountain in the Rockies &rarr;</span>
     </a>
 
     <a href="https://www.wheretoskinext.com/epic-vs-ikon-california/" class="region-card">
@@ -354,7 +377,7 @@
         <span class="rc-pill indy">Indy: 5+</span>
       </div>
       <p class="rc-verdict">Tahoe, Mammoth, and Southern California. Epic covers four Tahoe resorts. Ikon has Palisades and Mammoth. Indy covers Mountain High, China Peak, Dodge Ridge, and other independents.</p>
-      <span class="rc-cta">See full California breakdown &rarr;</span>
+      <span class="rc-cta">Find your best Epic or Ikon mountain in California &rarr;</span>
     </a>
 
     <a href="https://www.wheretoskinext.com/epic-vs-ikon-pacific-northwest/" class="region-card">
@@ -366,7 +389,7 @@
         <span class="rc-pill indy">Indy: 10+</span>
       </div>
       <p class="rc-verdict">WA, OR and ID. Ikon wins with Crystal, Mt. Hood Meadows, and Schweitzer. Indy covers Mt. Bachelor, Timberline Lodge, Mt. Baker, White Pass, and Bogus Basin.</p>
-      <span class="rc-cta">See full PNW breakdown &rarr;</span>
+      <span class="rc-cta">Find your best Epic or Ikon mountain in the Pacific Northwest &rarr;</span>
     </a>
 
     <a href="https://www.wheretoskinext.com/epic-vs-ikon-midwest/" class="region-card">
@@ -378,7 +401,7 @@
         <span class="rc-pill indy">Indy: 10+</span>
       </div>
       <p class="rc-verdict">MI, MN, WI and OH. Epic wins Michigan with Boyne. Indy covers Crystal Mountain MI, Nubs Nob, Granite Peak WI, Lutsen, and several other independents.</p>
-      <span class="rc-cta">See full Midwest breakdown &rarr;</span>
+      <span class="rc-cta">Find your best Epic or Ikon mountain in the Midwest &rarr;</span>
     </a>
   </div>
 
@@ -452,8 +475,9 @@
 
   <div class="cta-block">
     <h3>Which mountain should you ski this weekend?</h3>
-    <p>Live snow forecasts, drive times, and crowd outlooks for every Epic, Ikon, and Indy Pass mountain near you.</p>
+    <p>Enter your location and pass — we score every mountain by live snow, real drive time, and crowd outlook and give you one clear answer.</p>
     <a href="https://www.wheretoskinext.com/#searchSection" class="cta-btn">Find My Mountain &rarr;</a>
+    <p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:14px;margin-bottom:0;">Scores are independent — resort sponsors never influence rankings.</p>
   </div>
 
 </div>
