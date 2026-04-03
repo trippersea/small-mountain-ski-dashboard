@@ -251,16 +251,22 @@ function generatePage(city) {
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { font-family: 'DM Sans', system-ui, sans-serif; background: linear-gradient(180deg,#f7fbff,#eef5fb); color: #1b2a3a; margin: 0; line-height: 1.6; }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #f8f9fa; color: #1b2a3a; margin: 0; line-height: 1.6; }
 
     /* Nav */
-    .top-nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(14px); background: rgba(255,255,255,.92); border-bottom: 1px solid #d6e1f0; }
-    .top-nav-inner { max-width: 1100px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .nav-brand { font-weight: 800; font-size: 16px; color: #2b6de9; text-decoration: none; margin-right: 8px; }
-    .nav-link { padding: 6px 12px; border-radius: 8px; text-decoration: none; color: #1b2a3a; font-weight: 600; font-size: 13px; transition: background .12s; }
-    .nav-link:hover { background: #edf4ff; color: #2b6de9; }
-    .nav-cta { background: #2b6de9; color: #fff !important; border-radius: 999px; padding: 7px 16px; }
-    .nav-cta:hover { background: #1d5fd4; }
+    .top-nav { position: sticky; top: 0; z-index: 100; background: #1a2030; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .top-nav-inner { max-width: 1100px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 8px; }
+    .nav-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .nav-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+    .nav-brand { display: flex; flex-direction: column; gap: 1px; margin-right: 4px; }
+    .nav-brand-name { font-weight: 700; font-size: 15px; color: #fff; line-height: 1.2; }
+    .nav-brand-tag  { font-size: 10px; color: #4a5568; font-weight: 400; line-height: 1.2; }
+    .nav-divider { width: 1px; height: 16px; background: rgba(255,255,255,.12); margin: 0 4px; flex-shrink: 0; }
+    .nav-link { padding: 6px 11px; border-radius: 8px; text-decoration: none; color: #94a3b8; font-weight: 600; font-size: 13px; transition: background .12s, color .12s; white-space: nowrap; }
+    .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .nav-link-cta { margin-left: auto; background: #2b6de9; color: #fff !important; border-radius: 999px; padding: 7px 16px; font-weight: 700; }
+    .nav-link-cta:hover { background: #1d4ed8; }
+    @media (max-width: 600px) { .nav-link:not(.nav-link-cta) { display: none; } .nav-divider { display: none; } }
 
     /* Layout */
     .page { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
@@ -329,8 +335,9 @@ function generatePage(city) {
     .pass-card-list  { font-size: 13px; color: #2e3f54; line-height: 1.8; }
 
     /* Footer */
-    footer { text-align: center; padding: 28px 16px; font-size: 12px; color: #94a3b8; border-top: 1px solid #d6e1f0; margin-top: 48px; }
-    footer a { color: #2b6de9; text-decoration: none; }
+    footer { background: #1a2030; color: rgba(255,255,255,.5); text-align: center; padding: 24px; font-size: .8rem; margin-top: 48px; }
+    footer a { color: rgba(255,255,255,.5); text-decoration: none; }
+    footer a:hover { color: #fff; }
 
     @media (max-width: 600px) {
       .hero-stats { gap: 16px; }
@@ -341,12 +348,20 @@ function generatePage(city) {
 </head>
 <body>
 
-<nav class="top-nav">
+<nav class="top-nav" role="navigation" aria-label="Main navigation">
   <div class="top-nav-inner">
-    <a href="/" class="nav-brand">WhereToSkiNext.com</a>
-    <a href="/" class="nav-link">Find My Mountain</a>
-    <a href="/about/" class="nav-link">About</a>
-    <a href="${city.appUrl}" class="nav-link nav-cta">Live Conditions Near ${city.name} →</a>
+    <a href="https://www.wheretoskinext.com/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
+      <span class="nav-brand">
+        <span class="nav-brand-name">WhereToSkiNext.com</span>
+        <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
+      </span>
+    </a>
+    <div class="nav-divider"></div>
+    <a href="https://www.wheretoskinext.com/about/" class="nav-link">About</a>
+    <a href="https://www.wheretoskinext.com/partners/" class="nav-link">Partners</a>
+    <a href="https://www.wheretoskinext.com/ski-pass-comparison/" class="nav-link">Pass Guides</a>
+    <a href="${city.appUrl}" class="nav-link nav-link-cta">Find My Mountain →</a>
   </div>
 </nav>
 
@@ -452,8 +467,11 @@ function generatePage(city) {
 </main>
 
 <footer>
-  <p>© 2026 WhereToSkiNext.com — <a href="/about/">About</a> · <a href="/privacy/">Privacy Policy</a></p>
-  <p style="margin-top:6px"><a href="/">Find the best mountain to ski next →</a></p>
+  &copy; 2026 WhereToSkiNext.com &nbsp;&middot;&nbsp;
+  <a href="https://www.wheretoskinext.com/#searchSection">Find My Mountain</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.wheretoskinext.com/about/">About</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.wheretoskinext.com/partners/">Partners</a>
 </footer>
 
 </body>
