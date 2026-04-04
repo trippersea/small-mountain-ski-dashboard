@@ -1154,15 +1154,6 @@ function renderVerdict(resorts) {
     ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — <strong>your</strong> best match (with drive time) replaces this placeholder.</p>`
     : '';
 
-  const noOriginHtml = !state.origin
-    ? `<div class="vcard-no-origin" role="status">
-         <span class="vcard-no-origin-icon" aria-hidden="true">📍</span>
-         <span class="vcard-no-origin-text">
-           <span class="vcard-no-origin-lead"><strong>Placeholder pick</strong> — enter your <strong>ZIP or city</strong> at the top for <strong>your</strong> mountain.</span>
-           <span class="vcard-no-origin-detail">Scores here use live snow, filters, and crowds only. Drive time and a true “best for you” ranking start after you set where you’re leaving from.</span>
-         </span>
-       </div>` : '';
-
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}">
       <div class="vcard-hero-dash">
@@ -1189,7 +1180,6 @@ function renderVerdict(resorts) {
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
-        ${noOriginHtml}
         <div class="vcard-actions vcard-actions-dash">
           ${resort.website
             ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &#x2192;</a>`

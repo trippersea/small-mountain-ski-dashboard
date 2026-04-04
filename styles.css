@@ -649,35 +649,6 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 .vcard-fc-snow .vcard-fc-amt { color: #2b6de9; }
 .vcard-fc-dry  .vcard-fc-amt { color: var(--muted); font-size: 14px; }
 
-/* ── No-origin nudge ────────────────────────────────────────────────────── */
-.vcard-no-origin {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 10px 14px;
-  background: #fefce8;
-  border: 1px solid #fde68a;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #92400e;
-}
-.vcard-no-origin-icon { font-size: 14px; flex-shrink: 0; line-height: 1.35; }
-.vcard-no-origin-text {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  line-height: 1.4;
-  min-width: 0;
-}
-.vcard-no-origin-lead { font-weight: 600; }
-.vcard-no-origin-detail {
-  font-weight: 500;
-  font-size: 11px;
-  color: #a16207;
-  line-height: 1.45;
-}
-
 /* ── Also in the running ────────────────────────────────────────────────── */
 .vcard-alts {
   display: flex;
