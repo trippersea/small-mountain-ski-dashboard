@@ -83,8 +83,8 @@
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap&font-display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
   <link id="leafletCss" rel="stylesheet" href="" />
   <link rel="preload" href="styles.css" as="style" />
   <link rel="stylesheet" href="styles.css" />
@@ -163,7 +163,7 @@
       <div class="hn-shell">
         <div class="hn-inner">
           <h1 id="heroHeadline" class="hn-headline">Where should you ski <em>this weekend?</em></h1>
-          <p class="hn-subhead">Tell us where you're starting from — we score 250+ mountains by live snow, real drive time, your pass, and crowd outlook.</p>
+          <p class="hn-subhead">Tell us where you're starting from — we score <span id="heroMountainCount">256</span> mountains by live snow, real drive time, your pass, and crowd outlook.</p>
           <div class="hn-box">
             <div class="hn-box-top">
               <div class="hn-loc">
@@ -174,10 +174,10 @@
             </div>
             <div class="hn-chips-row">
               <span class="hn-chips-lbl">Pass:</span>
-              <button type="button" class="hn-pchip hn-chip-on" data-val="All">Any</button>
+              <button type="button" class="hn-pchip hn-chip-on" data-val="Ikon">Ikon</button>
               <button type="button" class="hn-pchip" data-val="Epic">Epic</button>
-              <button type="button" class="hn-pchip" data-val="Ikon">Ikon</button>
               <button type="button" class="hn-pchip" data-val="Indy">Indy</button>
+              <button type="button" class="hn-pchip" data-val="All">Any</button>
             </div>
             <div class="hn-chips-row">
               <span class="hn-chips-lbl">Trip type:</span>
@@ -192,7 +192,7 @@
               <span class="hn-trust-txt">Scores are independent — sponsors never influence rankings</span>
             </div>
             <!-- Hidden selects preserved for JS compatibility -->
-            <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass preference"><option value="All">Any Pass</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option><option value="Independent">Independent</option></select>
+            <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass preference"><option value="All">Any Pass</option><option value="Epic">Epic</option><option value="Ikon" selected>Ikon</option><option value="Indy">Indy</option><option value="Independent">Independent</option></select>
             <select id="heroSnowSelect" class="hn-vis-hidden" aria-label="Snow preference"><option value="1">Any Snow</option><option value="5">3&quot;+ Matters</option><option value="10">6&quot;+ Chaser</option><option value="15">Powder Day</option></select>
             <!-- Preserved JS hooks -->
             <label class="remember-location-label visually-hidden" id="rememberLocationLabel"><input type="checkbox" id="rememberLocation" />Remember this location<span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info<span class="location-privacy-tooltip">Saved only in your browser — never sent to our servers.</span></span></label>
@@ -218,22 +218,31 @@
     <!-- TOP PICK: full width verdict card -->
     <section id="verdictSection" class="verdict-section card panel hn-verdict-full" aria-label="Top mountain pick">
       <div id="verdictCard">
-        <div class="vcard-placeholder">
-          <div class="vcard-placeholder-eyebrow">Example pick — enter your location to personalize</div>
-          <div class="vcard-hero vcard-hero--good" style="border-radius:12px 12px 0 0; border-bottom:1.5px solid #bfdbfe; padding:20px 22px 16px;">
-            <div class="vcard-eyebrow">Your top pick for this weekend</div>
-            <div class="vcard-name" style="pointer-events:none">Stowe Mountain Resort</div>
-            <div style="margin-top:8px"><span class="vcard-condition-badge vcard-condition-badge--good">&#x2713; Good conditions — worth the trip</span></div>
-          </div>
-          <div class="vcard-body" style="padding:16px 22px;">
-            <div class="vcard-chips">
-              <span class="vcard-chip">&#x2745; 8" forecast</span>
-              <span class="vcard-chip">&#x23F1; 3h 20min drive</span>
-              <span class="vcard-chip">2,360 ft vertical</span>
-              <span class="vcard-chip vcard-chip--pass">Ikon Pass</span>
+        <div class="vcard vcard--dash vcard--tier-good vcard--demo-placeholder">
+          <div class="vcard-hero-dash">
+            <div class="vcard-hero-dash-top">
+              <div class="vcard-hero-dash-left">
+                <div class="vcard-eyebrow-dash">BEST MATCH • IKON PASS • BOSTON</div>
+                <div class="vcard-name-dash vcard-name-dash--static">Killington Resort</div>
+              </div>
+              <div class="vcard-score-ring-dash" aria-hidden="true">
+                <span class="vcard-score-ring-num">87</span>
+                <span class="vcard-score-ring-lbl">Score</span>
+              </div>
             </div>
-            <div class="vcard-writeup" style="margin-top:14px; opacity:0.7; font-style:italic; font-size:13px;">
-              Enter your starting location above to get your real personalized pick — ranked by live snow forecast, your drive time, crowds, and preferences.
+            <div class="vcard-dash-pills">
+              <span class="vcard-dash-pill vcard-dash-pill--cond-great">Great conditions</span>
+              <span class="vcard-dash-pill">9" forecast</span>
+              <span class="vcard-dash-pill">3h 10m drive</span>
+              <span class="vcard-dash-pill vcard-dash-pill--crowd-low">Low crowds</span>
+              <span class="vcard-dash-pill">$129 window</span>
+            </div>
+          </div>
+          <div class="vcard-body vcard-body-dash">
+            <p class="vcard-writeup vcard-writeup--dash vcard-demo-blurb">Enter your starting location above for a live pick. We rank mountains using fresh snow, drive time, and crowd outlook — the card updates automatically.</p>
+            <div class="vcard-actions vcard-actions-dash">
+              <span class="vcard-book-btn vcard-book-btn--disabled">Book Killington →</span>
+              <span class="vcard-detail-btn vcard-detail-btn--disabled">Full conditions</span>
             </div>
           </div>
         </div>
@@ -486,24 +495,28 @@
 
     <!-- STORM + HIDDEN GEMS -->
     <section class="feature-grid">
-      <section id="stormSection" class="card panel">
-        <div class="section-header"><div>
-          <h2>Storm Chaser <span class="info-tooltip" data-tooltip="Storm Chaser ranks mountains by total forecast snowfall over the next 3 days — useful when an active storm is arriving and you want to find the best powder.
+      <section id="stormSection" class="card panel feature-panel">
+        <div class="section-header feature-panel-header"><div>
+          <p class="feature-kicker">Storm chaser</p>
+          <h2 class="feature-title">Big snow inbound</h2>
+          <p class="muted small feature-desc">Resorts with the most forecast snowfall in the next 3 days. <span class="info-tooltip" data-tooltip="Storm Chaser ranks mountains by total forecast snowfall over the next 3 days — useful when an active storm is arriving and you want to find the best powder.
 
-The 'Snow' weight in your planner blends forecast + historical snowfall."><svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='currentColor' style='color:var(--muted);vertical-align:middle;cursor:pointer;margin-left:2px'><path d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16'/><path d='m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0'/></svg></span></h2>
-          <p class="muted small">Resorts with the most forecast snowfall in the next 3 days.</p>
+The 'Snow' weight in your planner blends forecast + historical snowfall."><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="color:var(--muted);vertical-align:middle;cursor:pointer;margin-left:2px"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg></span></p>
         </div></div>
         <div id="stormGrid" class="card-grid"></div>
       </section>
 
-      <section id="hiddenGemSection" class="card panel">
-        <div class="section-header"><div>
-          <h2>Hidden Gems</h2>
-          <p class="muted small">Lower crowds, good value, real terrain &mdash; the anti-resort picks.</p>
+      <section id="hiddenGemSection" class="card panel feature-panel">
+        <div class="section-header feature-panel-header"><div>
+          <p class="feature-kicker">Hidden gems</p>
+          <h2 class="feature-title">Beat the holiday crowds</h2>
+          <p class="muted small feature-desc">Lower crowds, good value, real terrain — the anti-resort picks.</p>
         </div></div>
         <div id="hiddenGemGrid" class="card-grid"></div>
       </section>
     </section>
+
+    <button type="button" class="scroll-more-fab" id="scrollMoreFab" aria-label="Scroll to more results">↓</button>
 
     <section id="detailSection" class="card panel hidden">
       <div id="detailCard"></div>

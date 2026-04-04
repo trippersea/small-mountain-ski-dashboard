@@ -185,7 +185,7 @@ function getSponsor(resortId) {
 // ─── Application state ────────────────────────────────────────────────────────
 const state = Object.seal({
   search:         '',
-  passFilter:     'All',
+  passFilter:     'Ikon',
   stateFilter:    'All',
   sortBy:         'planner',
   nightOnly:      false,
@@ -906,155 +906,88 @@ function renderVerdict(resorts) {
     return;
   }
 
-  const { tier, headline, detail, subPoints, resort, driveText } = v;
+  const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn } = v;
   const isOvernightLikely = state.howFar >= 1 || (v.drive !== null && v.drive > 180);
   const brief        = buildDecisionBrief(resorts);
   const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
-  const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
 
-  // ── Eyebrow: "BEST MATCH · IKON PASS · BOSTON" ──────────────────────────────
+  // ── Eyebrow: "BEST MATCH • IKON PASS • BOSTON" ──────────────────────────────
   const _passEw   = state.passFilter !== 'All' ? (state.passFilter + ' Pass') : null;
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
-  const _eyebrow  = ['Best match', _passEw, _cityEw].filter(Boolean).join(' · ').toUpperCase();
+  const _eyebrow  = ['Best match', _passEw, _cityEw].filter(Boolean).join(' • ').toUpperCase();
   // ── Short name for Book button ───────────────────────────────────────────────
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
 
   const tierConfig = {
-    great:    { label: 'Excellent conditions', dot: '#16a34a' },
-    good:     { label: 'Good conditions',       dot: '#2b6de9' },
-    marginal: { label: 'Marginal conditions',   dot: '#d97706' },
-    bad:      { label: 'Poor conditions',       dot: '#dc2626' },
+    great:    { label: 'Great conditions', pillClass: 'vcard-dash-pill--cond-great', dot: '#22c55e' },
+    good:     { label: 'Good conditions',  pillClass: 'vcard-dash-pill--cond-good', dot: '#38bdf8' },
+    marginal: { label: 'Fair conditions',    pillClass: 'vcard-dash-pill--cond-warn', dot: '#f59e0b' },
+    bad:      { label: 'Rough conditions',   pillClass: 'vcard-dash-pill--cond-bad', dot: '#f87171' },
   };
   const tc = tierConfig[tier] || tierConfig.good;
 
-  const passColors = { Epic:'#1a4fa8', Ikon:'#1a1a1a', Indy:'#2d7a3a', Independent:'#6b5e7a' };
-  const passBg     = passColors[resort.passGroup] || '#6b5e7a';
+  const scoreNum = breakdown ? Math.round(breakdown.score) : 0;
+  const snowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
+    ? `${stormTotal.toFixed(0)}" forecast`
+    : (typeof tomorrowIn === 'number' && tomorrowIn >= 0.5)
+    ? `${tomorrowIn.toFixed(0)}" forecast`
+    : 'Dry forecast';
 
-  const wx        = state.weatherCache[resort.id]?.data;
-  const forecast3 = wx?.forecast?.slice(0, 3) || [];
-  const forecastHtml = forecast3.length
-    ? `<div class="vcard-forecast">
-        ${forecast3.map(f => {
-          const cls = f.snow >= 4 ? 'vcard-fc-pow' : f.snow >= 1 ? 'vcard-fc-snow' : 'vcard-fc-dry';
-          return `<div class="vcard-fc-chip ${cls}">
-            <span class="vcard-fc-day">${f.day}</span>
-            <span class="vcard-fc-amt">${f.snow > 0 ? f.snow.toFixed(1) + '"' : '—'}</span>
-            <span class="vcard-fc-temps">${f.lo}°–${f.hi}°</span>
-          </div>`;
-        }).join('')}
-      </div>`
-    : '';
-
-  const subList = subPoints.length
-    ? `<ul class="vcard-points">${subPoints.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : '';
-
-  const rangeLabels = ['≤3h', '≤6h', 'All'];
-  const rangeFull   = ['Day Trip', 'Weekend', 'All'];
-  const rangeHtml = state.origin
-    ? `<div class="vcard-range">
-        <span class="vcard-range-label">Range</span>
-        ${[0,1,2].map(i =>
-          `<button class="vcard-range-btn${state.howFar === i ? ' active' : ''}" data-tier="${i}" title="${rangeFull[i]}">${rangeLabels[i]}</button>`
-        ).join('')}
-      </div>` : '';
+  const crowdLbl = crowdForecast(resort).label;
+  const crowdPill = crowdLbl === 'Light'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Low crowds</span>'
+    : crowdLbl === 'Heavy'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Heavy crowds</span>'
+    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Mod. crowds</span>';
 
   const noOriginHtml = !state.origin
     ? `<div class="vcard-no-origin"><span class="vcard-no-origin-icon">📍</span><span>Add your starting location for drive-time rankings</span></div>` : '';
 
-  const altsHtml = runningItems.length
-    ? `<div class="vcard-alts">
-        <div class="vcard-alts-header">
-          <div class="vcard-alts-label">Also in the running</div>
-          ${rangeHtml}
-        </div>
-        <div class="vcard-alts-list">
-          ${runningItems.map(item => {
-            const altDrive = formatDrive(item.resort.id) !== '—' ? formatDrive(item.resort.id) : null;
-            const altWx    = state.weatherCache[item.resort.id]?.data;
-            const altSnow  = altWx ? (altWx.forecast || []).reduce((s,f) => s + (f.snow||0), 0) : null;
-            const altPC    = passColors[item.resort.passGroup] || '#6b5e7a';
-            return `<button class="vcard-alt vcard-resort-link" data-resort-id="${item.resort.id}">
-              <div class="vcard-alt-top">
-                <span class="vcard-alt-name">${esc(item.resort.name)}</span>
-                ${altSnow !== null ? `<span class="vcard-alt-snow${altSnow >= 3 ? ' vcard-alt-snow--good' : ''}">${altSnow.toFixed(1)}"</span>` : ''}
-              </div>
-              <div class="vcard-alt-meta">
-                <span class="vcard-alt-pass" style="background:${altPC}18;color:${altPC};border:1px solid ${altPC}33">${esc(item.resort.passGroup)}</span>
-                ${altDrive ? `<span class="vcard-alt-drive">${esc(altDrive)}</span>` : ''}
-              </div>
-            </button>`;
-          }).join('')}
-        </div>
-        <button class="vcard-compare-link" id="verdictCompareBtn" data-compare-ids="${esc(compareIds.join(','))}">
-          Compare side-by-side
-        </button>
-      </div>` : '';
-
   els.verdictCard.innerHTML = `
-    <div class="vcard vcard--${tier}">
-      <div class="vcard-hero vcard-hero--${tier}">
-        <div class="vcard-eyebrow">${_eyebrow}</div>
-        <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
-        <div class="vcard-chips">
-          <span class="vcard-chip">${esc(resort.state)}</span>
-          <span class="vcard-chip vcard-chip--pass" style="background:${passBg}22;color:${passBg};border-color:${passBg}44">${esc(resort.passGroup)}</span>
-          ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
-          <span class="vcard-chip">$${resort.price}</span>
-          ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
-          ${isOvernightLikely ? `<a class="vcard-chip vcard-chip--link vcard-chip--lodging" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_chip" data-track-resort="${esc(resort.name)}">Find Places to Stay — Booking.com ↗</a>` : ''}
+    <div class="vcard vcard--dash vcard--tier-${tier}">
+      <div class="vcard-hero-dash">
+        <div class="vcard-hero-dash-top">
+          <div class="vcard-hero-dash-left">
+            <div class="vcard-eyebrow-dash">${_eyebrow}</div>
+            <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
+          </div>
+          <div class="vcard-score-ring-dash" aria-label="Ski score ${scoreNum} out of 100">
+            <span class="vcard-score-ring-num">${scoreNum}</span>
+            <span class="vcard-score-ring-lbl">Score</span>
+          </div>
         </div>
-        <div class="vcard-condition-badge vcard-condition-badge--${tier}">
-          <span class="vcard-condition-dot" style="background:${tc.dot}"></span>
-          ${tc.label}
+        <div class="vcard-dash-pills">
+          <span class="vcard-dash-pill ${tc.pillClass}">${esc(tc.label)}</span>
+          <span class="vcard-dash-pill">${esc(snowPillText)}</span>
+          ${driveText ? `<span class="vcard-dash-pill">${esc(driveText)} drive</span>` : ''}
+          ${crowdPill}
+          <span class="vcard-dash-pill">$${resort.price} window</span>
         </div>
       </div>
-      <div class="vcard-body">
-        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--loading"></div>
-        <div class="vcard-verdict">
-          <div class="vcard-headline vcard-headline--${tier}">${headline}</div>
-          <div class="vcard-detail">${detail}</div>
-          ${subList}
-        </div>
-        ${forecastHtml}
+      <div class="vcard-body vcard-body-dash">
+        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
+        <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
+        <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
         ${noOriginHtml}
-        <div class="vcard-actions">
+        ${isOvernightLikely ? `<a class="vcard-lodging-inline" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_chip" data-track-resort="${esc(resort.name)}">Find places to stay near ${esc(resort.name)} →</a>` : ''}
+        <div class="vcard-actions vcard-actions-dash">
           ${resort.website
             ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &#x2192;</a>`
             : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging &#x2192;</a>`
           }
-          <button class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>
+          <button type="button" class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>
         </div>
       </div>
     </div>`;
 
+  const _fb = document.getElementById('verdictFallbackCopy');
+  if (_fb) {
+    _fb.textContent = [headline, detail, ...subPoints].filter(Boolean).join(' ');
+    _fb.setAttribute('hidden', '');
+  }
+
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
-  els.verdictCard.querySelectorAll('.vcard-resort-link[data-resort-id]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const r = RESORTS.find(x => x.id === btn.dataset.resortId);
-      if (!r) return;
-      state.selectedId = r.id;
-      renderDetail({ scroll: true });
-    });
-  });
-  $('verdictCompareBtn')?.addEventListener('click', e => {
-    const ids = (e.currentTarget.dataset.compareIds || '').split(',').map(s => s.trim()).filter(Boolean);
-    state.compareSet = new Set(ids);
-    render();
-    document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-  els.verdictCard.querySelectorAll('.vcard-range-btn[data-tier]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.howFar = Number(btn.dataset.tier);
-      const tb = document.getElementById('howFarFilter');
-      if (tb) tb.value = String(state.howFar);
-      savePlannerState();
-      syncPlannerControls();
-      pushUrlDebounced();
-      render();
-      updateFilterBadge();
-    });
-  });
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
   renderTripSnapshot(v);
@@ -1095,6 +1028,7 @@ function renderVerdict(resorts) {
             const _snowCell  = cells[5]?.textContent.trim() || '';
             const _driveCell = cells[7]?.textContent.trim() || '';
             const _pass      = _rRes.passGroup || '';
+            const _passChipCls = _pass === 'Indy' ? 'hn-rchip hn-rchip-pass hn-rchip-pass-indy' : 'hn-rchip hn-rchip-pass';
             const _rSponsor  = getSponsor(_rid);
             const _rCls = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
             const _badge = _rSponsor ? '<span class="hn-runner-sponsor">Featured</span>' : '';
@@ -1104,7 +1038,7 @@ function renderVerdict(resorts) {
               <div class="hn-runner-name">${esc(_name)}</div>
               <div class="hn-runner-chips">
                 ${_snowCell ? `<span class="hn-rchip hn-rchip-snow">${esc(_snowCell)} snow</span>` : ''}
-                ${_pass ? `<span class="hn-rchip hn-rchip-pass">${esc(_pass)}</span>` : ''}
+                ${_pass ? `<span class="${_passChipCls}">${esc(_pass)}</span>` : ''}
               </div>
               <div class="hn-runner-bottom">
                 <div><div class="hn-runner-score">${esc(_scoreCell)}</div>${_driveCell ? `<div class="hn-runner-drive">${esc(_driveCell)}</div>` : ''}</div>
@@ -1132,11 +1066,14 @@ function renderVerdict(resorts) {
         const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
         const _rSnowHtml   = _rSnow !== null ? `<span class="hn-rchip hn-rchip-snow">${_rSnow.toFixed(1)}" snow</span>` : '';
         const _rCrowdLabel = crowdForecast(item.resort).label;
-        const _rCrowdHtml  = _rCrowdLabel === 'Low' || _rCrowdLabel === 'Light'
+        const _rCrowdHtml  = _rCrowdLabel === 'Light'
           ? '<span class="hn-rchip hn-rchip-crowd">Low crowds</span>'
-          : _rCrowdLabel === 'Heavy' || _rCrowdLabel === 'High'
-          ? '<span class="hn-rchip hn-rchip-warn">Busy</span>' : '';
-        const _rPassHtml   = `<span class="hn-rchip hn-rchip-pass">${esc(item.resort.passGroup)}</span>`;
+          : _rCrowdLabel === 'Heavy'
+          ? '<span class="hn-rchip hn-rchip-warn">Heavy crowds</span>'
+          : (_rCrowdLabel === 'Moderate' || _rCrowdLabel === 'Light-Moderate')
+          ? '<span class="hn-rchip hn-rchip-crowd-mod">Mod. crowds</span>' : '';
+        const _rPassCls    = item.resort.passGroup === 'Indy' ? 'hn-rchip hn-rchip-pass hn-rchip-pass-indy' : 'hn-rchip hn-rchip-pass';
+        const _rPassHtml   = `<span class="${_rPassCls}">${esc(item.resort.passGroup)}</span>`;
         const _rBookHtml   = _rSponsor ? `<a class="hn-runner-book" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Book Now</a>` : '';
         const _rSponsorBadge = _rSponsor ? '<span class="hn-runner-sponsor">Featured</span>' : '';
         return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
@@ -1257,15 +1194,18 @@ async function fetchVerdictWriteup(v, origin) {
 
 async function injectVerdictWriteup(v) {
   const slot   = document.getElementById('verdictWriteupSlot');
+  const fb     = document.getElementById('verdictFallbackCopy');
   if (!slot) return;
   const cached = verdictWriteupCache.get(`${v.resort.id}:${v.tier}`);
   if (cached && cached !== '__failed__') {
     slot.textContent = cached;
     slot.classList.remove('vcard-writeup--loading');
+    if (fb) fb.setAttribute('hidden', '');
     return;
   }
   slot.textContent = '';
   slot.classList.add('vcard-writeup--loading');
+  if (fb) fb.setAttribute('hidden', '');
   const text = await fetchVerdictWriteup(v, state.origin);
   const liveSlot = document.getElementById('verdictWriteupSlot');
   if (!liveSlot) return;
@@ -1273,9 +1213,11 @@ async function injectVerdictWriteup(v) {
   if (text) {
     liveSlot.textContent = text;
     liveSlot.classList.remove('vcard-writeup--fallback');
+    if (fb) fb.setAttribute('hidden', '');
   } else {
     liveSlot.textContent = 'Tip: Everything above still uses live snow and drive data. This extra blurb could not be loaded right now.';
     liveSlot.classList.add('vcard-writeup--fallback');
+    if (fb) fb.removeAttribute('hidden');
   }
 }
 
@@ -2670,6 +2612,18 @@ function initialize() {
   updateFilterBadge();
 
   if (state.origin) { applyHaversineEstimates(); loadDriveTimes(); }
+
+  const _mc = document.getElementById('heroMountainCount');
+  if (_mc && typeof RESORTS !== 'undefined' && RESORTS.length) _mc.textContent = String(RESORTS.length);
+
+  document.getElementById('scrollMoreFab')?.addEventListener('click', () => {
+    const run = document.getElementById('hnRunnerUpSection');
+    if (run && !run.hidden) {
+      run.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   // Support ?resort=resort-id from static page CTA banners, as well as path-based slugs
   const resortParam = new URLSearchParams(window.location.search).get('resort');
