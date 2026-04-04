@@ -1123,7 +1123,8 @@ function renderVerdict(resorts) {
   // ── Eyebrow: "BEST MATCH · IKON PASS · BOSTON" (middle dot, screenshot parity)
   const _passEw   = state.passFilter !== 'All' ? (state.passFilter + ' Pass') : null;
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
-  const _eyebrow  = ['Best match', _passEw, _cityEw].filter(Boolean).join(' · ').toUpperCase();
+  const _eyebrowBase = ['Best match', _passEw, _cityEw].filter(Boolean).join(' · ').toUpperCase();
+  const _eyebrow     = !state.origin ? `${_eyebrowBase} · ENTER ZIP OR CITY` : _eyebrowBase;
   // ── Short name for Book button ───────────────────────────────────────────────
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
 
@@ -1149,12 +1150,16 @@ function renderVerdict(resorts) {
     ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Heavy crowds</span>'
     : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Mod. crowds</span>';
 
+  const zipNudgeHtml = !state.origin
+    ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — <strong>your</strong> best match (with drive time) replaces this placeholder.</p>`
+    : '';
+
   const noOriginHtml = !state.origin
     ? `<div class="vcard-no-origin" role="status">
          <span class="vcard-no-origin-icon" aria-hidden="true">📍</span>
          <span class="vcard-no-origin-text">
-           <span class="vcard-no-origin-lead"><strong>Add your starting location</strong> so the best match includes realistic drive time.</span>
-           <span class="vcard-no-origin-detail">Until then, this pick is ranked from live snow, your filters, and crowd outlook — not from where you’re leaving.</span>
+           <span class="vcard-no-origin-lead"><strong>Placeholder pick</strong> — enter your <strong>ZIP or city</strong> at the top for <strong>your</strong> mountain.</span>
+           <span class="vcard-no-origin-detail">Scores here use live snow, filters, and crowds only. Drive time and a true “best for you” ranking start after you set where you’re leaving from.</span>
          </span>
        </div>` : '';
 
@@ -1164,6 +1169,7 @@ function renderVerdict(resorts) {
         <div class="vcard-hero-dash-top">
           <div class="vcard-hero-dash-left">
             <div class="vcard-eyebrow-dash">${_eyebrow}</div>
+            ${zipNudgeHtml}
             <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
           </div>
           <div class="vcard-score-ring-dash" aria-label="Ski score ${scoreNum} out of 100">

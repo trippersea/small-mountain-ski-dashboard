@@ -3291,6 +3291,23 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   margin-bottom: 8px;
   line-height: 1.3;
 }
+/* Until origin is set — makes preloaded pick read as “not yours yet” */
+.vcard-zip-nudge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #dbeafe;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  border-radius: 8px;
+  padding: 8px 11px;
+  margin: 0 0 10px;
+  line-height: 1.4;
+  max-width: 26rem;
+}
+.vcard-zip-nudge strong {
+  color: #fff;
+  font-weight: 700;
+}
 .vcard-name-dash {
   display: block;
   width: 100%;
