@@ -579,9 +579,12 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
           document.querySelectorAll('.hn-tchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
           this.classList.add('hn-chip-on');
           var val = this.dataset.val;
-          /* Sync planner priority buttons — this updates state.howFar and triggers render() */
+          /* Sync planner priority buttons */
           var plannerBtn = document.querySelector('.priority-btns[data-key="howfar"] .priority-btn[data-val="' + val + '"]');
           if (plannerBtn) plannerBtn.click();
+          /* Sync filter select */
+          var filterSel = document.getElementById('howFarFilter');
+          if (filterSel) { filterSel.value = val; filterSel.dispatchEvent(new Event('change', { bubbles: true })); }
           /* Show/hide booking strip */
           var strip = document.getElementById('hnBookingStrip');
           if (strip) strip.hidden = (val !== '1');
@@ -599,55 +602,7 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
         if (opening) { setTimeout(function() { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); }
       });
 
-      /* ── Runner-up cards from comparison table ── */
-      function buildRunnerUps() {
-        var tbody = document.getElementById('comparisonBody');
-        var grid = document.getElementById('hnRunnersGrid');
-        var section = document.getElementById('hnRunnerUpSection');
-        if (!tbody || !grid || !section) return;
-        var rows = Array.from(tbody.querySelectorAll('tr'));
-        if (rows.length < 2) return;
-        var toShow = rows.slice(0, 3);
-        var cards = '';
-        toShow.forEach(function(row, i) {
-          var cells = row.querySelectorAll('td');
-          if (cells.length < 8) return;
-          var nameCell = cells[1];
-          var nameAnchor = nameCell ? nameCell.querySelector('a') : null;
-          var name = nameAnchor ? nameAnchor.textContent.trim() : (nameCell ? nameCell.textContent.trim() : '');
-          var href = nameAnchor ? nameAnchor.href : '#compareSection';
-          var pass  = cells[3] ? cells[3].textContent.trim() : '';
-          var score = cells[4] ? cells[4].textContent.trim() : '';
-          var snow  = cells[5] ? cells[5].textContent.trim() : '';
-          var drive = cells[7] ? cells[7].textContent.trim() : '';
-          var isSponsored = row.classList.contains('sponsored-row') || row.dataset.sponsored === 'true';
-          var sponsorTag = isSponsored ? '<span class="hn-runner-sponsor">Featured</span>' : '';
-          cards += '<a href="' + href + '" class="hn-runner-card' + (isSponsored ? ' hn-runner-sponsored' : '') + '">'
-            + '<div class="hn-runner-rank">#' + (i + 1) + ' ' + sponsorTag + '</div>'
-            + '<div class="hn-runner-name">' + name + '</div>'
-            + '<div class="hn-runner-chips">'
-            + (snow ? '<span class="hn-rchip hn-rchip-snow">' + snow + '</span>' : '')
-            + (pass ? '<span class="hn-rchip hn-rchip-pass">' + pass + '</span>' : '')
-            + '</div>'
-            + '<div class="hn-runner-bottom"><span class="hn-runner-score">' + score + '</span><span class="hn-runner-drive">' + drive + '</span></div>'
-            + '</a>';
-        });
-        if (cards) {
-          grid.innerHTML = cards;
-          var loc = document.getElementById('plannerFromLabel');
-          var locTxt = loc ? loc.textContent.trim() : '';
-          var title = document.getElementById('hnRunnersTitle');
-          if (title && locTxt) title.textContent = 'Runner-up options' + locTxt;
-          section.hidden = false;
-        }
-      }
-
-      /* Watch comparison table for population */
-      var tbody = document.getElementById('comparisonBody');
-      if (tbody) {
-        var obs = new MutationObserver(function() { buildRunnerUps(); });
-        obs.observe(tbody, { childList: true, subtree: false });
-      }
+      /* Runner-up section is now populated directly by renderVerdict() in sd-app.js */
     })();
   </script>
 

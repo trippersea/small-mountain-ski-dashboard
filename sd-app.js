@@ -171,6 +171,13 @@ function getSponsor(resortId) {
     .table-lodging-link { font-size:11px; font-weight:600; color:#2563eb; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
 
+    /* ── Verdict action buttons ── */
+    .vcard-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid #e2e8f0; }
+    .vcard-book-btn { display:inline-flex; align-items:center; background:#2b6de9; color:#fff !important; font-size:14px; font-weight:700; padding:10px 22px; border-radius:999px; text-decoration:none; border:none; cursor:pointer; font-family:inherit; transition:background .12s; white-space:nowrap; }
+    .vcard-book-btn:hover { background:#1d5fd4; }
+    .vcard-detail-btn { display:inline-flex; align-items:center; background:transparent; color:#475569; font-size:14px; font-weight:600; padding:10px 18px; border-radius:999px; border:1px solid #d1d5db; cursor:pointer; font-family:inherit; transition:all .12s; white-space:nowrap; }
+    .vcard-detail-btn:hover { background:#f1f5f9; border-color:#94a3b8; }
+
   `;
   document.head.appendChild(style);
 })();
@@ -897,6 +904,13 @@ function renderVerdict(resorts) {
   const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
   const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
 
+  // ── Eyebrow: "BEST MATCH · IKON PASS · BOSTON" ──────────────────────────────
+  const _passEw   = state.passFilter !== 'All' ? (state.passFilter + ' Pass') : null;
+  const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
+  const _eyebrow  = ['Best match', _passEw, _cityEw].filter(Boolean).join(' · ').toUpperCase();
+  // ── Short name for Book button ───────────────────────────────────────────────
+  const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
+
   const tierConfig = {
     great:    { label: 'Excellent conditions', dot: '#16a34a' },
     good:     { label: 'Good conditions',       dot: '#2b6de9' },
@@ -971,7 +985,7 @@ function renderVerdict(resorts) {
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--${tier}">
       <div class="vcard-hero vcard-hero--${tier}">
-        <div class="vcard-eyebrow">Your Recommended Mountain</div>
+        <div class="vcard-eyebrow">${_eyebrow}</div>
         <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
         <div class="vcard-chips">
           <span class="vcard-chip">${esc(resort.state)}</span>
@@ -995,15 +1009,18 @@ function renderVerdict(resorts) {
         </div>
         ${forecastHtml}
         ${noOriginHtml}
-        ${altsHtml}
         <div class="vcard-actions">
-          <button class="btn vcard-share-btn" id="verdictShareBtn">Share this pick</button>
+          ${resort.website
+            ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &#x2192;</a>`
+            : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging &#x2192;</a>`
+          }
+          <button class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>
         </div>
       </div>
     </div>`;
 
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
-  $('verdictShareBtn')?.addEventListener('click', () => shareVerdict(resort, v));
+  $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   els.verdictCard.querySelectorAll('.vcard-resort-link[data-resort-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = RESORTS.find(x => x.id === btn.dataset.resortId);
@@ -1040,6 +1057,45 @@ function renderVerdict(resorts) {
       trackEvent('booking_click', { placement: a.dataset.trackPlacement, resort: a.dataset.trackResort });
     });
   });
+
+  // ── Populate external runner-up section ─────────────────────────────────────
+  const _hnSection = document.getElementById('hnRunnerUpSection');
+  const _hnGrid    = document.getElementById('hnRunnersGrid');
+  const _hnTitle   = document.getElementById('hnRunnersTitle');
+  if (_hnSection && _hnGrid) {
+    if (_hnTitle) _hnTitle.textContent = _cityEw ? ('Runner-up options near ' + _cityEw) : 'Runner-up options';
+    const _runners = runningItems.slice(0, 3);
+    if (_runners.length) {
+      _hnGrid.innerHTML = _runners.map((item, idx) => {
+        const _rDrive   = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
+        const _rWx      = state.weatherCache[item.resort.id]?.data;
+        const _rSnow    = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+        const _rScore   = Math.round(item.breakdown.score);
+        const _rSponsor = getSponsor(item.resort.id);
+        const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
+        const _rSnowHtml   = _rSnow !== null ? `<span class="hn-rchip hn-rchip-snow">${_rSnow.toFixed(1)}" snow</span>` : '';
+        const _rCrowdHtml  = item.resort.crowdScore < 40 ? '<span class="hn-rchip hn-rchip-crowd">Low crowds</span>' : (item.resort.crowdScore > 70 ? '<span class="hn-rchip hn-rchip-warn">Mod. crowds</span>' : '');
+        const _rPassHtml   = `<span class="hn-rchip hn-rchip-pass">${esc(item.resort.passGroup)}</span>`;
+        const _rBookHtml   = _rSponsor ? `<a class="hn-runner-book" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(_rSponsor.tagline ? 'Book Now' : 'Book Now')}</a>` : '';
+        const _rSponsorBadge = _rSponsor ? '<span class="hn-runner-sponsor">Featured</span>' : '';
+        return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
+          <div class="hn-runner-rank">#${idx + 2} ${_rSponsorBadge}</div>
+          <div class="hn-runner-name">${esc(item.resort.name)}</div>
+          <div class="hn-runner-chips">${_rSnowHtml}${_rCrowdHtml}${_rPassHtml}</div>
+          <div class="hn-runner-bottom">
+            <div><div class="hn-runner-score">${_rScore}</div>${_rDrive ? `<div class="hn-runner-drive">${esc(_rDrive)}</div>` : ''}</div>
+            ${_rBookHtml}
+          </div>
+        </div>`;
+      }).join('');
+      _hnGrid.querySelectorAll('[data-runner-id]').forEach(card => {
+        card.addEventListener('click', () => { state.selectedId = card.dataset.runnerId; renderDetail({ scroll: true }); });
+      });
+      _hnSection.hidden = false;
+    } else {
+      _hnSection.hidden = true;
+    }
+  }
 }
 
 // ─── Trip Snapshot card ───────────────────────────────────────────────────────
