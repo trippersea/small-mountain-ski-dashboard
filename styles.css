@@ -193,11 +193,31 @@ p, .muted, .helper-text { color: var(--muted); margin: 0; }
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
-  padding: 26px 28px;
-  background:
-    radial-gradient(ellipse at 90% 0%, rgba(43,109,233,.1), transparent 50%),
-    radial-gradient(ellipse at 10% 95%, rgba(34,179,138,.07), transparent 42%),
-    linear-gradient(180deg, rgba(255,255,255,.99), rgba(244,249,255,.98));
+  padding: 52px 28px 56px;
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(15, 23, 42, 0.58) 0%,
+      rgba(15, 23, 42, 0.38) 55%,
+      rgba(15, 23, 42, 0.52) 100%
+    ),
+    url('/hero-bg.jpg');
+  background-size: cover;
+  background-position: center 40%;
+}
+
+/* Hero text — white on photo background */
+.hero h1 {
+  color: #ffffff;
+}
+.hero p,
+.hero .muted,
+.hero .helper-text,
+.hero .hero-quick-label {
+  color: rgba(255, 255, 255, 0.82);
+}
+.hero .small {
+  color: rgba(255, 255, 255, 0.70);
 }
 /* location-row used in hero search meta */
 .location-row {
