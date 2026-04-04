@@ -40,18 +40,18 @@ function getSponsor(resortId) {
   const style = document.createElement('style');
   style.textContent = `
     /* ── Table sponsored row ── */
-    .sponsored-row { outline: 2px solid #2b6de9; outline-offset: -1px; background: #edf4ff !important; }
+    .sponsored-row { outline: 2px solid #2563eb; outline-offset: -1px; background: #eff6ff !important; }
     .sponsored-row .row-name::after {
       content: 'Featured'; margin-left: 8px;
-      background: #2b6de9; color: #fff;
+      background: #2563eb; color: #fff;
       font-size: 9px; font-weight: 700; letter-spacing: .05em;
       padding: 2px 7px; border-radius: 999px; vertical-align: middle;
     }
     /* ── Mobile card sponsored ── */
-    .mob-card-sponsored { border: 2px solid #2b6de9 !important; background: #f0f6ff !important; }
+    .mob-card-sponsored { border: 2px solid #2563eb !important; background: #eff6ff !important; }
     .mob-card-sponsored .mob-card-name::after {
       content: 'Featured'; margin-left: 8px;
-      background: #2b6de9; color: #fff;
+      background: #2563eb; color: #fff;
       font-size: 9px; font-weight: 700; letter-spacing: .05em;
       padding: 2px 7px; border-radius: 999px; vertical-align: middle;
     }
@@ -86,23 +86,23 @@ function getSponsor(resortId) {
       display: flex; align-items: center; gap: 10px;
     }
     .dhr-btn-primary {
-      background: #2b6de9; color: #fff !important;
-      font-size: 13px; font-weight: 700;
+      background: #2563eb; color: #fff !important;
+      font-size: 13px; font-weight: 600;
       padding: 8px 18px; border-radius: 999px;
       text-decoration: none; transition: background .12s;
     }
-    .dhr-btn-primary:hover { background: #1d5fd4; }
+    .dhr-btn-primary:hover { background: #1d4ed8; }
     .dhr-link-secondary {
-      font-size: 12px; font-weight: 600; color: #667a96;
+      font-size: 12px; font-weight: 500; color: #6b7280;
       text-decoration: none; transition: color .12s;
     }
-    .dhr-link-secondary:hover { color: #2b6de9; }
+    .dhr-link-secondary:hover { color: #2563eb; }
     .featured-pill {
       display: inline-flex;
       align-items: center;
-      background: #2b6de9;
+      background: #2563eb;
       color: #fff;
-      border: 1px solid #2b6de9;
+      border: 1px solid #2563eb;
       font-size: 11px;
       font-weight: 700;
       padding: 6px 12px;
@@ -149,10 +149,10 @@ function getSponsor(resortId) {
 
     /* ── Verdict action buttons ── */
     .vcard-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid #e2e8f0; }
-    .vcard-book-btn { display:inline-flex; align-items:center; background:#2b6de9; color:#fff !important; font-size:14px; font-weight:700; padding:10px 22px; border-radius:999px; text-decoration:none; border:none; cursor:pointer; font-family:inherit; transition:background .12s; white-space:nowrap; }
-    .vcard-book-btn:hover { background:#1d5fd4; }
-    .vcard-detail-btn { display:inline-flex; align-items:center; background:transparent; color:#475569; font-size:14px; font-weight:600; padding:10px 18px; border-radius:999px; border:1px solid #d1d5db; cursor:pointer; font-family:inherit; transition:all .12s; white-space:nowrap; }
-    .vcard-detail-btn:hover { background:#f1f5f9; border-color:#94a3b8; }
+    .vcard-book-btn { display:inline-flex; align-items:center; background:#2563eb; color:#fff !important; font-size:14px; font-weight:600; padding:10px 22px; border-radius:999px; text-decoration:none; border:none; cursor:pointer; font-family:inherit; transition:background .12s; white-space:nowrap; }
+    .vcard-book-btn:hover { background:#1d4ed8; }
+    .vcard-detail-btn { display:inline-flex; align-items:center; background:#fff; color:#111827; font-size:14px; font-weight:500; padding:10px 18px; border-radius:999px; border:1px solid #e5e7eb; cursor:pointer; font-family:inherit; transition:all .12s; white-space:nowrap; }
+    .vcard-detail-btn:hover { background:#f9fafb; border-color:#d1d5db; }
 
   `;
   document.head.appendChild(style);
