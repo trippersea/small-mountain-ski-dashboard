@@ -579,12 +579,9 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
           document.querySelectorAll('.hn-tchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
           this.classList.add('hn-chip-on');
           var val = this.dataset.val;
-          /* Sync planner priority buttons */
+          /* Sync planner priority buttons — this updates state.howFar and triggers render() */
           var plannerBtn = document.querySelector('.priority-btns[data-key="howfar"] .priority-btn[data-val="' + val + '"]');
           if (plannerBtn) plannerBtn.click();
-          /* Sync filter select */
-          var filterSel = document.getElementById('howFarFilter');
-          if (filterSel) { filterSel.value = val; filterSel.dispatchEvent(new Event('change', { bubbles: true })); }
           /* Show/hide booking strip */
           var strip = document.getElementById('hnBookingStrip');
           if (strip) strip.hidden = (val !== '1');
@@ -623,7 +620,7 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
           var score = cells[4] ? cells[4].textContent.trim() : '';
           var snow  = cells[5] ? cells[5].textContent.trim() : '';
           var drive = cells[7] ? cells[7].textContent.trim() : '';
-          var isSponsored = row.classList.contains('featured-row') || row.dataset.sponsored === 'true';
+          var isSponsored = row.classList.contains('sponsored-row') || row.dataset.sponsored === 'true';
           var sponsorTag = isSponsored ? '<span class="hn-runner-sponsor">Featured</span>' : '';
           cards += '<a href="' + href + '" class="hn-runner-card' + (isSponsored ? ' hn-runner-sponsored' : '') + '">'
             + '<div class="hn-runner-rank">#' + (i + 1) + ' ' + sponsorTag + '</div>'

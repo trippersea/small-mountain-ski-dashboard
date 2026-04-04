@@ -2606,7 +2606,7 @@ function updateHeroHeadline() {
   else if (day === 0)               timeframe = 'today';
   else if (hour >= 15)              timeframe = 'tomorrow';
   else                              timeframe = 'today';
-  el.textContent = `Where should you ski ${timeframe}?`;
+  el.innerHTML = `Where should you ski <em>${timeframe}?</em>`;
 }
 
 initialize();
