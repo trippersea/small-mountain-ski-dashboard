@@ -3367,43 +3367,6 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 /* ── Refine (planner) panel ── */
 .hn-refine-panel { border-top: 2px solid var(--border); background: var(--panel); }
 
-.planner-refine-actions {
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 16px;
-}
-.planner-apply-btn {
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 12px 28px;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  background: var(--accent);
-  color: #fff;
-  transition: background .12s, opacity .12s;
-}
-.planner-apply-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-}
-.planner-apply-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.planner-apply-hint {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.45;
-  flex: 1;
-  min-width: 200px;
-}
-
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .hn-inner { padding: 26px 14px 32px; }
