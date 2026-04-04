@@ -1156,10 +1156,31 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   box-shadow: none !important;
 }
 #searchSection {
-  background: var(--panel) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
   box-shadow: var(--shadow-sm) !important;
+}
+/* Homepage hero only — ski photo under soft overlays (readable headline + solid hn-box) */
+#searchSection.hn-hero {
+  background-color: #e2e8f0 !important;
+  background-image:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.93) 0%,
+      rgba(248, 250, 252, 0.76) 42%,
+      rgba(241, 245, 249, 0.9) 100%
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.28) 48%, transparent 76%),
+    url("/hero-ski-slope-bg.png");
+  background-size: auto, auto, cover;
+  background-position: 0 0, 0 0, 55% 34%;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  #searchSection.hn-hero {
+    background-position: 0 0, 0 0, 50% 28%;
+  }
 }
 .hero-search-inner .hero-headline,
 #searchSection .hn-headline { color: var(--text) !important; }
