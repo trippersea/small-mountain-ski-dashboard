@@ -227,6 +227,8 @@ const els = {
   aiChatResult:        $('aiChatResult'),
   heroPassSelect:      $('heroPassSelect'),
   heroSnowSelect:      $('heroSnowSelect'),
+  plannerApplyBtn:     $('plannerApplyBtn'),
+  hnRefineToggle:      $('hnRefineToggle'),
 };
 
 let _mapModeBtns = null;
@@ -792,23 +794,35 @@ function updatePlannerOriginLabel() {
   if (els.plannerEditLocation) els.plannerEditLocation.hidden = !state.origin;
 }
 
+/** Staged prefs in Refine panel until user taps Apply (main #plannerDetails only; mobile drawer stays live). */
+let plannerRefineDraft = null;
+
+/** When refine panel is open, main #plannerDetails reflects draft — do not overwrite from state here. */
+function isPlannerRefineDraftActive() {
+  return Boolean(plannerRefineDraft && els.plannerSection && !els.plannerSection.hidden);
+}
+
 function syncPlannerControls() {
   // Must scope to #plannerDetails only: #filterDrawer sits earlier in the DOM and keeps a clone
   // of the planner after the mobile drawer is opened—document.querySelector would sync the wrong node.
   const plannerRoot = document.getElementById('plannerDetails');
 
-  ['snow', 'value', 'crowd'].forEach(key => {
-    const group = plannerRoot?.querySelector(`.priority-btns[data-key="${key}"]`);
-    if (!group) return;
-    const val = state.weights[key] ?? 1;
-    group.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === val));
-  });
-  const vertGroup = plannerRoot?.querySelector('.priority-btns[data-key="size"]');
-  if (vertGroup) vertGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.verticalFilter));
-  const tempGroup = plannerRoot?.querySelector('.priority-btns[data-key="temp"]');
-  if (tempGroup) tempGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.tempBucket));
-  const windGroup = plannerRoot?.querySelector('.priority-btns[data-key="wind"]');
-  if (windGroup) windGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.windBucket));
+  if (!isPlannerRefineDraftActive()) {
+    ['snow', 'value', 'crowd'].forEach(key => {
+      const group = plannerRoot?.querySelector(`.priority-btns[data-key="${key}"]`);
+      if (!group) return;
+      const val = state.weights[key] ?? 1;
+      group.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === val));
+    });
+    const vertGroup = plannerRoot?.querySelector('.priority-btns[data-key="size"]');
+    if (vertGroup) vertGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.verticalFilter));
+    const tempGroup = plannerRoot?.querySelector('.priority-btns[data-key="temp"]');
+    if (tempGroup) tempGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.tempBucket));
+    const windGroup = plannerRoot?.querySelector('.priority-btns[data-key="wind"]');
+    if (windGroup) windGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.windBucket));
+    const howfarGroup = plannerRoot?.querySelector('.priority-btns[data-key="howfar"]');
+    if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
+  }
 
   const plannerPass = state.passFilter === 'All' ? 'any' : state.passFilter;
   document.querySelectorAll('.pass-pref-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.pass === plannerPass));
@@ -823,8 +837,6 @@ function syncPlannerControls() {
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
-  const howfarGroup = plannerRoot?.querySelector('.priority-btns[data-key="howfar"]');
-  if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
 
   // Sync hero pass chips
   document.querySelectorAll('.hn-pchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === state.passFilter));
@@ -832,6 +844,106 @@ function syncPlannerControls() {
   document.querySelectorAll('.hn-tchip').forEach(c => c.classList.toggle('hn-chip-on', Number(c.dataset.val) === state.howFar));
   // Sync booking strip — use both hidden attr and display style to beat CSS specificity
   syncWeekendLodgingStrip(computeVerdict(filteredResorts()));
+}
+
+function snapshotPlannerRefineFromState() {
+  return {
+    howFar: state.howFar,
+    verticalFilter: state.verticalFilter,
+    tempBucket: state.tempBucket,
+    windBucket: state.windBucket,
+    weights: {
+      snow: state.weights.snow,
+      value: state.weights.value,
+      crowd: state.weights.crowd,
+    },
+  };
+}
+
+function plannerRefineDraftDiffersFromState() {
+  if (!plannerRefineDraft) return false;
+  const d = plannerRefineDraft;
+  if (d.howFar !== state.howFar) return true;
+  if (d.verticalFilter !== state.verticalFilter) return true;
+  if (d.tempBucket !== state.tempBucket) return true;
+  if (d.windBucket !== state.windBucket) return true;
+  if (d.weights.snow !== state.weights.snow) return true;
+  if (d.weights.value !== state.weights.value) return true;
+  if (d.weights.crowd !== state.weights.crowd) return true;
+  return false;
+}
+
+function syncPlannerRefinePanelUI() {
+  const d = plannerRefineDraft;
+  const plannerRoot = document.getElementById('plannerDetails');
+  if (!plannerRoot || !d) return;
+  ['snow', 'value', 'crowd'].forEach(key => {
+    const group = plannerRoot.querySelector(`.priority-btns[data-key="${key}"]`);
+    if (!group) return;
+    const val = d.weights[key] ?? 1;
+    group.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === val));
+  });
+  const vertGroup = plannerRoot.querySelector('.priority-btns[data-key="size"]');
+  if (vertGroup) vertGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === d.verticalFilter));
+  const tempGroup = plannerRoot.querySelector('.priority-btns[data-key="temp"]');
+  if (tempGroup) tempGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === d.tempBucket));
+  const windGroup = plannerRoot.querySelector('.priority-btns[data-key="wind"]');
+  if (windGroup) windGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === d.windBucket));
+  const howfarGroup = plannerRoot.querySelector('.priority-btns[data-key="howfar"]');
+  if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === d.howFar));
+}
+
+function updatePlannerApplyButtonState() {
+  const btn = els.plannerApplyBtn || document.getElementById('plannerApplyBtn');
+  if (!btn) return;
+  btn.disabled = !plannerRefineDraftDiffersFromState();
+}
+
+function openPlannerRefinePanel() {
+  plannerRefineDraft = snapshotPlannerRefineFromState();
+  syncPlannerRefinePanelUI();
+  updatePlannerApplyButtonState();
+}
+
+function closePlannerRefinePanel() {
+  plannerRefineDraft = null;
+  syncPlannerControls();
+}
+
+function applyPlannerRefine() {
+  if (!plannerRefineDraft) openPlannerRefinePanel();
+  if (!plannerRefineDraftDiffersFromState()) {
+    els.verdictSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  const d = plannerRefineDraft;
+  state.howFar = d.howFar;
+  state.verticalFilter = d.verticalFilter;
+  state.tempBucket = d.tempBucket;
+  state.windBucket = d.windBucket;
+  state.weights.snow = d.weights.snow;
+  state.weights.value = d.weights.value;
+  state.weights.crowd = d.weights.crowd;
+  normalizeWeightsToPriority();
+  const _hfEl = document.getElementById('howFarFilter');
+  if (_hfEl) _hfEl.value = String(state.howFar);
+  trackEvent('refine_apply', {});
+  savePlannerState();
+  syncPlannerControls();
+  pushUrlDebounced();
+  updateFilterBadge();
+  render();
+  plannerRefineDraft = snapshotPlannerRefineFromState();
+  syncPlannerRefinePanelUI();
+  updatePlannerApplyButtonState();
+  setTimeout(() => { els.verdictSection?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+}
+
+function syncPlannerRefineDraftHowFarFromLiveState() {
+  if (!isPlannerRefineDraftActive()) return;
+  plannerRefineDraft.howFar = state.howFar;
+  syncPlannerRefinePanelUI();
+  updatePlannerApplyButtonState();
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
@@ -2229,7 +2341,8 @@ function wireEvents() {
     state.howFar = Number(e.target.value);
     trackEvent('filter_applied', { filter_type: 'distance', filter_value: String(e.target.value), filter_label: _howFarEl.options[_howFarEl.selectedIndex]?.text || '' });
     if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
-    pushUrlDebounced(); render(); updateFilterBadge();
+    syncPlannerRefineDraftHowFarFromLiveState();
+    pushUrlDebounced(); syncPlannerControls(); render(); updateFilterBadge();
   });
 
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
@@ -2285,8 +2398,10 @@ function wireEvents() {
     els.sortBy.value = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false'); els.toggleNight.textContent = 'Off';
     if (els.tableSearch) els.tableSearch.value = '';
+    plannerRefineDraft = null;
     syncPlannerControls();
     updateFilterBadge();
+    if (els.plannerSection && !els.plannerSection.hidden) openPlannerRefinePanel();
     pushUrlDebounced(); render();
   });
 
@@ -2301,32 +2416,50 @@ function wireEvents() {
   els.clearCompare.addEventListener('click', () => { state.compareSet.clear(); els.comparePanel.classList.add('hidden'); renderCompareTray(); render(); });
   els.closeCompare.addEventListener('click', () => els.comparePanel.classList.add('hidden'));
 
-  // Priority buttons
-  document.querySelectorAll('.priority-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const key = btn.closest('.priority-btns')?.dataset.key;
-      if (!key) return;
-      if (key === 'size')      state.verticalFilter = btn.dataset.val;
-      else if (key === 'temp') state.tempBucket = btn.dataset.val;
-      else if (key === 'wind') state.windBucket = btn.dataset.val;
-      else if (key === 'howfar') {
-        state.howFar = Number(btn.dataset.val);
-        const _hfEl = document.getElementById('howFarFilter');
-        if (_hfEl) _hfEl.value = String(state.howFar);
-        if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
-      }
-      else                     state.weights[key] = Number(btn.dataset.val);
-      trackEvent('ski_preference_set', {
-        preference_type:  key,
-        preference_value: btn.dataset.val,
-        preference_label: btn.textContent.trim(),
-      });
-      savePlannerState(); syncPlannerControls(); pushUrlDebounced();
-      if (key === 'howfar') render();
-      else debouncedRender();
-      updateFilterBadge();
+  // Refine panel (#plannerDetails): stage prefs until Apply (mobile drawer clone still uses its own handler).
+  els.plannerDetails?.addEventListener('click', e => {
+    const btn = e.target.closest('.priority-btn');
+    if (!btn || !els.plannerDetails.contains(btn)) return;
+    const key = btn.closest('.priority-btns')?.dataset.key;
+    if (!key) return;
+    if (!plannerRefineDraft) plannerRefineDraft = snapshotPlannerRefineFromState();
+    if (key === 'size') plannerRefineDraft.verticalFilter = btn.dataset.val;
+    else if (key === 'temp') plannerRefineDraft.tempBucket = btn.dataset.val;
+    else if (key === 'wind') plannerRefineDraft.windBucket = btn.dataset.val;
+    else if (key === 'howfar') {
+      plannerRefineDraft.howFar = Number(btn.dataset.val);
+      if (plannerRefineDraft.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
+    } else {
+      plannerRefineDraft.weights[key] = Number(btn.dataset.val);
+    }
+    trackEvent('ski_preference_set', {
+      preference_type:  key,
+      preference_value: btn.dataset.val,
+      preference_label: btn.textContent.trim(),
     });
+    syncPlannerRefinePanelUI();
+    updatePlannerApplyButtonState();
   });
+
+  els.hnRefineToggle?.addEventListener('click', () => {
+    const panel = els.plannerSection;
+    if (!panel) return;
+    const opening = panel.hidden;
+    panel.hidden = !opening;
+    const t = els.hnRefineToggle;
+    if (t) {
+      t.textContent = opening ? '✕ Close filters' : '⚙ Refine results';
+      t.setAttribute('aria-expanded', String(opening));
+    }
+    if (opening) {
+      openPlannerRefinePanel();
+      setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+    } else {
+      closePlannerRefinePanel();
+    }
+  });
+
+  els.plannerApplyBtn?.addEventListener('click', () => { applyPlannerRefine(); });
 
   document.querySelectorAll('.pass-pref-btn').forEach(btn => {
     btn.addEventListener('click', () => {

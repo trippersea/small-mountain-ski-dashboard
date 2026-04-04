@@ -282,7 +282,7 @@
           <div class="planner-main-title">Refine your results<span id="plannerFromLabel"></span></div>
           <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit location</button>
         </div>
-        <p class="planner-subtitle">Tune snow, weather, mountain style, and more.</p>
+        <p class="planner-subtitle">Choose drive time, snow, weather, size, price, and crowds below. Nothing changes until you tap <strong>Apply</strong> — then we refresh your <strong>Best Match</strong> and the full ranking.</p>
       </div>
       <div id="plannerDetails" class="planner-details">
         <div class="score-grid">
@@ -362,6 +362,10 @@
             <div class="slider-hint">Ranks quieter mountains higher. High = crowds filtered out.</div>
           </div>
 
+        </div>
+        <div class="planner-refine-actions">
+          <button type="button" class="planner-apply-btn" id="plannerApplyBtn" disabled aria-describedby="plannerApplyHint">Apply</button>
+          <p id="plannerApplyHint" class="planner-apply-hint">Apply sends you back to Best Match with updated picks.</p>
         </div>
       </div>
     </section>
@@ -583,32 +587,18 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
         });
       });
 
-      /* ── Trip type chips → sync planner drive-time + booking strip ── */
+      /* ── Trip type chips → same path as compare drive filter (live update + sync UI in sd-app.js) ── */
       document.querySelectorAll('.hn-tchip').forEach(function(chip) {
         chip.addEventListener('click', function() {
           document.querySelectorAll('.hn-tchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
           this.classList.add('hn-chip-on');
           var val = this.dataset.val;
-          /* Sync planner priority buttons */
-          var plannerBtn = document.querySelector('.priority-btns[data-key="howfar"] .priority-btn[data-val="' + val + '"]');
-          if (plannerBtn) plannerBtn.click();
-          /* Sync filter select */
           var filterSel = document.getElementById('howFarFilter');
           if (filterSel) { filterSel.value = val; filterSel.dispatchEvent(new Event('change', { bubbles: true })); }
-          /* Weekend strip visibility + Awin link: syncWeekendLodgingStrip in renderVerdict after planner updates state */
         });
       });
 
-      /* ── Refine toggle ── */
-      document.getElementById('hnRefineToggle') && document.getElementById('hnRefineToggle').addEventListener('click', function() {
-        var panel = document.getElementById('plannerSection');
-        if (!panel) return;
-        var opening = panel.hidden;
-        panel.hidden = !opening;
-        this.textContent = opening ? '✕ Close filters' : '⚙ Refine results';
-        this.setAttribute('aria-expanded', String(opening));
-        if (opening) { setTimeout(function() { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); }
-      });
+      /* Refine panel toggle + Apply: wired in sd-app.js */
 
       /* Runner-up section is now populated directly by renderVerdict() in sd-app.js */
     })();
