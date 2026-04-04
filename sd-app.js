@@ -1154,6 +1154,24 @@ function renderVerdict(resorts) {
     ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — <strong>your</strong> best match (with drive time) replaces this placeholder.</p>`
     : '';
 
+  const verdictBdAttr = breakdown?.components ? (() => {
+    const c = breakdown.components;
+    const bd = JSON.stringify({
+      snow:       +c.snow.toFixed(1),
+      skiability: +c.skiability.toFixed(1),
+      fit:        +c.fit.toFixed(1),
+      drive:      +c.drive.toFixed(1),
+      value:      +c.value.toFixed(1),
+      crowd:      +c.crowd.toFixed(1),
+    });
+    return `data-bd="${btoa(bd)}"`;
+  })() : '';
+  const verdictScoreRingClass = verdictBdAttr ? 'vcard-score-ring-dash score-badge--tip' : 'vcard-score-ring-dash';
+  const verdictScoreRingExtra = verdictBdAttr ? ` ${verdictBdAttr} tabindex="0"` : '';
+  const verdictScoreAria = verdictBdAttr
+    ? `aria-label="Score ${scoreNum} — hover or tap for breakdown"`
+    : `aria-label="Ski score ${scoreNum} out of 100"`;
+
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}">
       <div class="vcard-hero-dash">
@@ -1163,7 +1181,7 @@ function renderVerdict(resorts) {
             ${zipNudgeHtml}
             <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
           </div>
-          <div class="vcard-score-ring-dash" aria-label="Ski score ${scoreNum} out of 100">
+          <div class="${verdictScoreRingClass}"${verdictScoreRingExtra} ${verdictScoreAria}>
             <span class="vcard-score-ring-num">${scoreNum}</span>
             <span class="vcard-score-ring-lbl">SCORE</span>
           </div>
