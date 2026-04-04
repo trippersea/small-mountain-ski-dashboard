@@ -1150,7 +1150,13 @@ function renderVerdict(resorts) {
     : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Mod. crowds</span>';
 
   const noOriginHtml = !state.origin
-    ? `<div class="vcard-no-origin"><span class="vcard-no-origin-icon">📍</span><span>Add your starting location for drive-time rankings</span></div>` : '';
+    ? `<div class="vcard-no-origin" role="status">
+         <span class="vcard-no-origin-icon" aria-hidden="true">📍</span>
+         <span class="vcard-no-origin-text">
+           <span class="vcard-no-origin-lead"><strong>Add your starting location</strong> so the best match includes realistic drive time.</span>
+           <span class="vcard-no-origin-detail">Until then, this pick is ranked from live snow, your filters, and crowd outlook — not from where you’re leaving.</span>
+         </span>
+       </div>` : '';
 
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}">
