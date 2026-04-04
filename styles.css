@@ -90,7 +90,7 @@ body {
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 .container {
-  width: calc(100vw - 24px);
+  width: min(1120px, calc(100vw - 32px));
   margin: 0 auto;
   padding: 20px 0 64px;
   display: grid; gap: 16px;
@@ -1128,10 +1128,10 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 /* ── Centered search hero (Google-style) ───────────────────────────────── */
 .hero-search {
   padding: 0 !important;
-  background: #1a3252 !important;
+  background: #0b1220 !important;
 }
 #searchSection {
-  background: #1a3252 !important;
+  background: #0b1220 !important;
   border-radius: 0 !important;
 }
 .hero-search-inner .hero-headline,
@@ -1960,7 +1960,7 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 
 /* ===== 2026 hero + decision-flow overrides ===== */
 .top-nav-inner { max-width: 1100px; padding: 10px 24px; }
-.container { width: 100%; padding: 18px 0 64px; gap: 18px; }
+.container { width: min(1120px, calc(100vw - 32px)); margin: 0 auto; padding: 18px 0 64px; gap: 18px; }
 .card { border-radius: 22px; }
 .hero-search-centered { padding: 40px 20px 34px !important; }
 .hero-search-shell { width: 100%; display:flex; justify-content:center; }
@@ -3089,14 +3089,14 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 /* ── Hero ── */
 .hn-hero { padding: 0 !important; }
 .hn-shell { width: 100%; display: flex; justify-content: center; }
-.hn-inner { width: 100%; max-width: 860px; padding: 36px 24px 40px; margin: 0 auto; }
+.hn-inner { width: 100%; max-width: 960px; padding: 36px 24px 40px; margin: 0 auto; }
 .hn-headline { font-size: clamp(28px, 5vw, 42px); font-weight: 800; color: #fff !important; line-height: 1.08; letter-spacing: -.025em; margin: 0 0 10px; }
 .hn-headline em { color: #60a5fa; font-style: normal; }
 .hn-subhead { font-size: 15px; color: #94a3b8 !important; line-height: 1.65; margin: 0 0 22px; max-width: 640px; }
 
-.hn-box { background: #243e5c; border: 1.5px solid #2f527a; border-radius: 14px; padding: 12px; }
+.hn-box { background: rgba(15, 23, 42, 0.55); border: 1.5px solid rgba(148, 163, 184, 0.25); border-radius: 16px; padding: 14px 14px 12px; }
 .hn-box-top { display: flex; gap: 10px; margin-bottom: 10px; }
-.hn-loc { flex: 1; background: #1a3252; border: 1px solid #2f527a; border-radius: 9px; padding: 10px 14px; min-width: 0; }
+.hn-loc { flex: 1; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 10px 14px; min-width: 0; }
 .hn-loc-label { display: block; font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5b8ab8; margin-bottom: 3px; }
 .hn-loc-input { width: 100%; background: transparent; border: none; outline: none; font-size: 15px; font-weight: 600; color: #fff; font-family: inherit; padding: 0; }
 .hn-loc-input::placeholder { color: #5b8ab8; font-weight: 400; }
@@ -3131,24 +3131,24 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .hn-booking-btn:hover { opacity: .88; }
 
 /* ── Runner-up section ── */
-.hn-runners-section { padding: 18px 20px 20px; }
-.hn-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.hn-runners-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.hn-runners-section { padding: 22px 22px 24px; background: #fff !important; border-radius: 16px !important; }
+.hn-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
+.hn-runners-title { font-size: 17px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
 .hn-refine-toggle { background: none; border: none; color: #2b6de9; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; font-family: inherit; }
 .hn-refine-toggle:hover { opacity: .8; }
-.hn-runners-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.hn-runner-card { display: block; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px 15px; text-decoration: none; color: var(--text); transition: border-color .12s, box-shadow .12s; cursor: pointer; }
+.hn-runners-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: stretch; }
+.hn-runner-card { display: flex; flex-direction: column; min-height: 148px; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 15px 16px; text-decoration: none; color: var(--text); transition: border-color .12s, box-shadow .12s; cursor: pointer; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); }
 .hn-runner-card:hover { border-color: #2b6de9; box-shadow: 0 2px 12px rgba(43,109,233,.1); }
 .hn-runner-sponsored { border-color: #f59e0b !important; border-width: 1.5px; }
 .hn-runner-rank { font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
 .hn-runner-sponsor { font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #854d0e; background: #fef3c7; border: 1px solid #fde68a; padding: 1px 6px; border-radius: 999px; }
-.hn-runner-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 7px; line-height: 1.3; }
+.hn-runner-name { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 8px; line-height: 1.25; letter-spacing: -0.01em; }
 .hn-runner-chips { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
 .hn-rchip { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; }
 .hn-rchip-snow { background: #eff6ff; color: #1d4ed8; }
 .hn-rchip-pass { background: #faf5ff; color: #7c3aed; }
-.hn-runner-bottom { display: flex; align-items: baseline; gap: 8px; }
-.hn-runner-score { font-size: 20px; font-weight: 800; color: #2b6de9; }
+.hn-runner-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 8px; }
+.hn-runner-score { font-size: 22px; font-weight: 800; color: #2563eb; line-height: 1; }
 .hn-runner-drive { font-size: 12px; color: var(--muted); }
 
 /* ── Refine (planner) panel ── */
