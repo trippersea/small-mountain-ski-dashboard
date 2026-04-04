@@ -143,30 +143,6 @@ function getSponsor(resortId) {
     .vcard-lodging-arrow { color:#3b82f6; font-weight:700; }
     .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#94a3b8; letter-spacing:.03em; }
 
-    /* ── Trip Snapshot card ── */
-    .trip-snapshot { margin-top:12px; border-radius:12px; background:#fff; border:1px solid #e2e8f0; padding:14px 16px; }
-    .trip-snapshot-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-    .trip-snapshot-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; }
-    .trip-snapshot-copy-btn {
-      font-size:11px; font-weight:600; color:#64748b;
-      background:#f1f5f9; border:1px solid #e2e8f0;
-      border-radius:6px; padding:3px 9px; cursor:pointer; transition:background .12s;
-    }
-    .trip-snapshot-copy-btn:hover { background:#e2e8f0; }
-    .trip-snapshot-mountain { font-size:16px; font-weight:800; color:#1a1a2e; line-height:1.2; margin-bottom:6px; }
-    .trip-snapshot-meta { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px; }
-    .trip-snapshot-chip { font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:#f1f5f9; color:#475569; }
-    .trip-snapshot-lodging {
-      display:flex; align-items:center; gap:8px;
-      font-size:13px; font-weight:600; color:#2563eb;
-      text-decoration:none; padding:9px 12px;
-      background:#eff6ff; border-radius:8px; border:1px solid #bfdbfe;
-      transition:background .12s;
-    }
-    .trip-snapshot-lodging:hover { background:#dbeafe; }
-    .trip-snapshot-lodging-arrow { margin-left:auto; color:#3b82f6; }
-    .trip-snapshot-lodging-sub { font-size:10px; color:#94a3b8; margin-top:5px; text-align:right; }
-
     /* ── Table lodging link ── */
     .table-lodging-link { font-size:11px; font-weight:600; color:#2563eb; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
@@ -309,9 +285,33 @@ function formatDistanceFromOrigin(resortId) {
 }
 
 // ─── Booking.com affiliate URL (Awin) ────────────────────────────────────────
+const AWIN_BOOKING_REDIRECT = 'https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2816032';
+
+function awinBookingRedirect(bookingSearchResultsUrl) {
+  return `${AWIN_BOOKING_REDIRECT}&ued=${encodeURIComponent(bookingSearchResultsUrl)}`;
+}
+
 function bookingUrl(resort) {
   const dest = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(resort.name + ', ' + resort.state)}`;
-  return `https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2816032&ued=${encodeURIComponent(dest)}`;
+  return awinBookingRedirect(dest);
+}
+
+function bookingSearchUrl(searchQuery) {
+  const dest = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(searchQuery)}`;
+  return awinBookingRedirect(dest);
+}
+
+/** Weekend lodging strip: top-pick area search via Awin, or generic ski search if no verdict yet. */
+function syncWeekendLodgingStrip(verdict) {
+  const strip = document.getElementById('hnBookingStrip');
+  const a = strip?.querySelector('a.hn-booking-btn');
+  if (!strip) return;
+  const weekend = state.howFar >= 1;
+  strip.hidden = !weekend;
+  strip.style.display = weekend ? '' : 'none';
+  if (!a || !weekend) return;
+  a.href = verdict?.resort ? bookingUrl(verdict.resort) : bookingSearchUrl('ski resort');
+  a.setAttribute('rel', 'noopener sponsored');
 }
 
 // ─── Haversine / drive estimates ──────────────────────────────────────────────
@@ -831,8 +831,7 @@ function syncPlannerControls() {
   // Sync hero trip type chips
   document.querySelectorAll('.hn-tchip').forEach(c => c.classList.toggle('hn-chip-on', Number(c.dataset.val) === state.howFar));
   // Sync booking strip — use both hidden attr and display style to beat CSS specificity
-  const _bsSync = document.getElementById('hnBookingStrip');
-  if (_bsSync) { _bsSync.hidden = (state.howFar < 1); _bsSync.style.display = (state.howFar >= 1) ? '' : 'none'; }
+  syncWeekendLodgingStrip(computeVerdict(filteredResorts()));
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
@@ -936,11 +935,10 @@ function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
 function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
   const v = computeVerdict(resorts);
+  syncWeekendLodgingStrip(v);
   const _hnSectionEarly = document.getElementById('hnRunnerUpSection');
   if (!v) {
     if (_hnSectionEarly) _hnSectionEarly.hidden = true;
-    const snapSlot = document.getElementById('tripSnapshotCard');
-    if (snapSlot) snapSlot.setAttribute('hidden', '');
     const filtersTightenEmpty = resorts.length === 0 && (
       state.passFilter !== 'All'   ||
       state.stateFilter !== 'All'  ||
@@ -1090,7 +1088,6 @@ function renderVerdict(resorts) {
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
-  renderTripSnapshot(v);
 
   // Track Booking.com clicks from verdict chip
   els.verdictCard.querySelectorAll('a[data-track-placement]').forEach(a => {
@@ -1098,10 +1095,6 @@ function renderVerdict(resorts) {
       trackEvent('booking_click', { placement: a.dataset.trackPlacement, resort: a.dataset.trackResort });
     });
   });
-
-  // ── Sync booking strip ─────────────────────────────────────────────────────
-  const _bookingStrip = document.getElementById('hnBookingStrip');
-  if (_bookingStrip) { _bookingStrip.hidden = (state.howFar < 1); _bookingStrip.style.display = (state.howFar >= 1) ? '' : 'none'; }
 
   // ── Runner-up grid (ranked pool — not only brief.top5, which can be a single row) ──
   const _hnSection = document.getElementById('hnRunnerUpSection');
@@ -1150,65 +1143,6 @@ function renderVerdict(resorts) {
       _hnSection.hidden = false;
     }
   }
-}
-
-// ─── Trip Snapshot card ───────────────────────────────────────────────────────
-function renderTripSnapshot(v) {
-  const slot = document.getElementById('tripSnapshotCard');
-  if (!slot) return;
-  const isOvernightLikely = v && (state.howFar >= 1 || (v.drive !== null && v.drive > 180));
-  if (!v || !isOvernightLikely) { slot.setAttribute('hidden', ''); return; }
-
-  const { resort, driveText, stormTotal } = v;
-  const snowStr  = stormTotal > 0 ? `${stormTotal.toFixed(1)}" forecast` : 'Check conditions';
-  const chips    = [
-    snowStr,
-    driveText ? driveText + ' away' : null,
-    resort.passGroup !== 'Independent' ? resort.passGroup + ' Pass' : null,
-    `$${resort.price} ticket`,
-  ].filter(Boolean);
-
-  const bUrl = bookingUrl(resort);
-
-  slot.innerHTML = `
-    <div class="trip-snapshot-header">
-      <span class="trip-snapshot-label">Your ski trip</span>
-      <button class="trip-snapshot-copy-btn" id="snapshotCopyBtn">Copy summary</button>
-    </div>
-    <div class="trip-snapshot-mountain">📍 ${esc(resort.name)}, ${esc(resort.state)}</div>
-    <div class="trip-snapshot-meta">
-      ${chips.map(c => `<span class="trip-snapshot-chip">${esc(c)}</span>`).join('')}
-    </div>
-    <a class="trip-snapshot-lodging"
-       href="${bUrl}"
-       target="_blank"
-       rel="noopener sponsored"
-       data-track-placement="trip_snapshot"
-       data-track-resort="${esc(resort.name)}">
-      Find places to stay near ${esc(resort.name)}
-      <span class="trip-snapshot-lodging-arrow">→</span>
-    </a>
-    <div class="trip-snapshot-lodging-sub">via Booking.com</div>`;
-
-  slot.removeAttribute('hidden');
-
-  // Copy summary to clipboard
-  document.getElementById('snapshotCopyBtn')?.addEventListener('click', () => {
-    const text = `My ski trip: ${resort.name}, ${resort.state}\n${chips.join(' · ')}\nwheretoskinext.com`;
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).then(() => showToast('Trip summary copied!', 2400));
-    } else {
-      const ta = Object.assign(document.createElement('textarea'), { value: text, style: 'position:fixed;opacity:0' });
-      document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); showToast('Trip summary copied!', 2400); } catch(e) {}
-      document.body.removeChild(ta);
-    }
-  });
-
-  // Track Booking.com click
-  slot.querySelector('a[data-track-placement]')?.addEventListener('click', () => {
-    trackEvent('booking_click', { placement: 'trip_snapshot', resort: resort.name });
-  });
 }
 
 // ─── AI verdict write-up ───────────────────────────────────────────────────────
@@ -2629,7 +2563,7 @@ function wireEvents() {
 
 // ─── Initialize ───────────────────────────────────────────────────────────────
 function initialize() {
-  if (els.passFilter) els.passFilter.innerHTML = UNIQUE_PASSES.map(v => `<option value="${v}">${v === 'All' ? 'Any Pass' : v}</option>`).join('');
+  if (els.passFilter) els.passFilter.innerHTML = UNIQUE_PASSES.map(v => `<option value="${v}">${v === 'All' ? 'All' : v}</option>`).join('');
   els.stateFilter.innerHTML = UNIQUE_STATES.map(v => `<option value="${v}">${v}</option>`).join('');
 
   loadWeatherCache();

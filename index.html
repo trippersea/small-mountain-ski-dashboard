@@ -174,10 +174,10 @@
             </div>
             <div class="hn-chips-row">
               <span class="hn-chips-lbl">Pass:</span>
-              <button type="button" class="hn-pchip" data-val="Ikon">Ikon</button>
+              <button type="button" class="hn-pchip hn-chip-on" data-val="All">All</button>
               <button type="button" class="hn-pchip" data-val="Epic">Epic</button>
+              <button type="button" class="hn-pchip" data-val="Ikon">Ikon</button>
               <button type="button" class="hn-pchip" data-val="Indy">Indy</button>
-              <button type="button" class="hn-pchip hn-chip-on" data-val="All">Any</button>
             </div>
             <div class="hn-chips-row">
               <span class="hn-chips-lbl">Trip type:</span>
@@ -192,7 +192,7 @@
               <span class="hn-trust-txt">Scores are independent — sponsors never influence rankings</span>
             </div>
             <!-- Hidden selects preserved for JS compatibility -->
-            <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass preference"><option value="All" selected>Any Pass</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option><option value="Independent">Independent</option></select>
+            <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass preference"><option value="All" selected>All</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option><option value="Independent">Independent</option></select>
             <select id="heroSnowSelect" class="hn-vis-hidden" aria-label="Snow preference"><option value="1">Any Snow</option><option value="5">3&quot;+ Matters</option><option value="10">6&quot;+ Chaser</option><option value="15">Powder Day</option></select>
             <!-- Preserved JS hooks -->
             <label class="remember-location-label visually-hidden" id="rememberLocationLabel"><input type="checkbox" id="rememberLocation" />Remember this location<span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info<span class="location-privacy-tooltip">Saved only in your browser — never sent to our servers.</span></span></label>
@@ -262,7 +262,7 @@
       </div>
       <div class="hn-booking-right">
         <span class="hn-booking-badge">Weekend trip</span>
-        <a href="https://www.booking.com/searchresults.html?aid=304142&ss=ski+resort+Vermont" class="hn-booking-btn" target="_blank" rel="noopener noreferrer">Browse lodging →</a>
+        <a href="#" class="hn-booking-btn" target="_blank" rel="noopener sponsored">Browse lodging →</a>
       </div>
     </div>
 
@@ -365,9 +365,6 @@
         </div>
       </div>
     </section>
-
-    <!-- TRIP SNAPSHOT: rendered by JS after verdict, only for overnight trips -->
-    <section id="tripSnapshotCard" class="card trip-snapshot" hidden aria-label="Your trip summary"></section>
 
     <!-- COMPARE TABLE -->
     <section id="compareSection" class="card panel">
@@ -598,9 +595,7 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
           /* Sync filter select */
           var filterSel = document.getElementById('howFarFilter');
           if (filterSel) { filterSel.value = val; filterSel.dispatchEvent(new Event('change', { bubbles: true })); }
-          /* Show/hide booking strip */
-          var strip = document.getElementById('hnBookingStrip');
-          if (strip) { strip.hidden = (val !== '1'); strip.style.display = (val === '1') ? '' : 'none'; }
+          /* Weekend strip visibility + Awin link: syncWeekendLodgingStrip in renderVerdict after planner updates state */
         });
       });
 
