@@ -13,7 +13,10 @@
   <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/styles.css" as="style" />
+  <link rel="stylesheet" href="/styles.css" />
   <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MCCDNQGB');</script>
   <script type="application/ld+json">
@@ -81,22 +84,9 @@
       --text-primary: #1a1a2e; --text-secondary: #555; --text-light: #888;
       --border: #e5e7eb; --bg-page: #f8f9fa; --bg-card: #ffffff; --radius: 10px;
     }
-    body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg-page); color: var(--text-primary); font-size: 16px; line-height: 1.6; }
+    body { font-family: 'Inter', 'DM Sans', system-ui, sans-serif; background: var(--bg-page); color: var(--text-primary); font-size: 16px; line-height: 1.6; }
 
-    /* ── Nav matches homepage exactly ── */
-    .top-nav { position:sticky; top:0; z-index:100; background:#1a2030; border-bottom:1px solid rgba(255,255,255,.08); }
-    .top-nav-inner { max-width:1100px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:8px; }
-    .nav-brand-link { display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
-    .nav-logo { width:28px; height:28px; object-fit:contain; flex-shrink:0; }
-    .nav-brand { display:flex; flex-direction:column; gap:1px; margin-right:4px; }
-    .nav-brand-name { font-weight:700; font-size:15px; color:#fff; line-height:1.2; }
-    .nav-brand-tag  { font-size:10px; color:#4a5568; font-weight:400; line-height:1.2; }
-    .nav-divider { width:1px; height:16px; background:rgba(255,255,255,.12); margin:0 4px; flex-shrink:0; }
-    .nav-link { padding:6px 11px; border-radius:8px; text-decoration:none; color:#94a3b8; font-weight:600; font-size:13px; transition:background .12s,color .12s; white-space:nowrap; }
-    .nav-link:hover { background:rgba(255,255,255,.08); color:#fff; }
-    .nav-link-cta { margin-left:auto; background:#2b6de9; color:#fff !important; border-radius:999px; padding:7px 16px; font-weight:700; }
-    .nav-link-cta:hover { background:#1d4ed8; }
-    @media (max-width:600px) { .nav-link:not(.nav-link-cta) { display:none; } .nav-divider { display:none; } }
+    /* Nav: .top-nav, .nav-primary, .nav-find-cta from /styles.css */
 
     .breadcrumb { max-width: 900px; margin: 18px auto 0; padding: 0 24px; font-size: 0.8rem; color: var(--text-light); }
     .breadcrumb a { color: var(--text-light); text-decoration: none; }
@@ -177,15 +167,13 @@
     .faq-q { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px; line-height: 1.35; }
     .faq-a { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; margin: 0; }
 
-    .cta-block { background: #1a2030; border-radius: 14px; padding: 36px 32px; text-align: center; margin: 48px 0 0; color: #fff; }
+    .cta-block { background: #111827; border-radius: 14px; padding: 36px 32px; text-align: center; margin: 48px 0 0; color: #fff; }
     .cta-block h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; }
     .cta-block p { font-size: .95rem; color: rgba(255,255,255,.7); margin-bottom: 22px; }
-    .cta-btn { display: inline-block; background: #2b6de9; color: #fff; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-weight: 700; font-size: .95rem; transition: background .15s; }
+    .cta-btn { display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-weight: 700; font-size: .95rem; transition: background .15s; }
     .cta-btn:hover { background: #1d4ed8; }
 
-    footer { background: #1a2030; color: rgba(255,255,255,.5); text-align: center; padding: 24px; font-size: .8rem; }
-    footer a { color: rgba(255,255,255,.5); text-decoration: none; }
-    footer a:hover { color: #fff; }
+    /* Footer: .site-footer from /styles.css */
 
     /* City + pass quick-links */
     .city-pass-strip { max-width: 900px; margin: 0 auto 32px; padding: 0 24px; }
@@ -203,18 +191,20 @@
 
 <nav class="top-nav" role="navigation" aria-label="Main navigation">
   <div class="top-nav-inner">
-    <a href="https://www.wheretoskinext.com/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
+    <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
       <span class="nav-brand">
         <span class="nav-brand-name">WhereToSkiNext.com</span>
         <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
       </span>
     </a>
     <div class="nav-divider"></div>
-    <a href="https://www.wheretoskinext.com/about/" class="nav-link">About</a>
-    <a href="https://www.wheretoskinext.com/partners/" class="nav-link">Partners</a>
-    <a href="https://www.wheretoskinext.com/ski-pass-comparison/" class="nav-link">Pass Guides</a>
-    <a href="https://www.wheretoskinext.com/#searchSection" class="nav-link nav-link-cta">Find My Mountain &rarr;</a>
+    <a href="/about/" class="nav-primary">About</a>
+    <span class="nav-link-sep" aria-hidden="true"></span>
+    <a href="/partners/" class="nav-primary">Partners</a>
+    <span class="nav-link-sep" aria-hidden="true"></span>
+    <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+    <a href="/#searchSection" class="nav-find-cta">Find My Mountain &rarr;</a>
   </div>
 </nav>
 
@@ -482,12 +472,8 @@
 
 </div>
 
-<footer>
-  &copy; 2026 WhereToSkiNext.com &nbsp;&middot;&nbsp;
-  <a href="https://www.wheretoskinext.com/#searchSection">Find My Mountain</a> &nbsp;&middot;&nbsp;
-  <a href="https://www.wheretoskinext.com/about/">About</a> &nbsp;&middot;&nbsp;
-  <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a> &nbsp;&middot;&nbsp;
-  <a href="https://www.wheretoskinext.com/partners/">Partners</a>
+<footer class="site-footer">
+  <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="/#searchSection">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
 </footer>
 
 </body>

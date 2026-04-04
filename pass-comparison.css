@@ -2,6 +2,7 @@
  * pass-comparison.css
  * Shared stylesheet for all Epic vs Ikon regional pass comparison pages.
  * Referenced by: epic-vs-ikon-northeast, rockies, california, pacific-northwest, midwest
+ * Load after /styles.css for shared nav (.top-nav) and footer (.site-footer).
  *
  * ── Breakpoints ──────────────────────────────────────────────────────────
  *   600px   Mobile
@@ -33,12 +34,9 @@
    All colours live here. Update once; every pass page inherits the change.
    ──────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Chrome / navigation */
-  --nav-bg: #1a2030;
-  --nav-link-color: rgba(255, 255, 255, 0.8);
-  --nav-link-hover: #ffffff;
-  --nav-cta-bg: #2563eb;
-  --nav-cta-hover: #1d4ed8;
+  /* Bottom CTA band (nav/footer use /styles.css) */
+  --cta-band-bg: #111827;
+  --cta-btn-hover: #1d4ed8;
 
   /* Pass brand colours */
   --epic-color: #0057b8;
@@ -76,72 +74,14 @@
 
 /* ── Base ────────────────────────────────────────────────────────────────── */
 body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg-page);
   color: var(--text-primary);
   font-size: 16px;
   line-height: 1.6;
 }
 
-/* ── Navigation ──────────────────────────────────────────────────────────── */
-.top-nav {
-  background: var(--nav-bg);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.top-nav-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  height: 56px;
-  gap: 20px;
-}
-.nav-brand-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-.nav-logo { width: 28px; height: 28px; flex-shrink: 0; }
-.nav-brand { display: flex; flex-direction: column; }
-.nav-brand-name {
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.95rem;
-  line-height: 1.2;
-}
-.nav-brand-tag {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 0.7rem;
-  line-height: 1.2;
-}
-.nav-divider {
-  width: 1px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.2);
-  flex-shrink: 0;
-}
-.nav-link {
-  color: var(--nav-link-color);
-  text-decoration: none;
-  font-size: 0.875rem;
-  transition: color 0.15s;
-  white-space: nowrap;
-}
-.nav-link:hover { color: var(--nav-link-hover); }
-.nav-link-cta {
-  margin-left: auto;
-  background: var(--nav-cta-bg);
-  color: #fff !important;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.8rem !important;
-}
-.nav-link-cta:hover { background: var(--nav-cta-hover); }
+/* Nav: .top-nav from /styles.css */
 
 /* ── Breadcrumb ──────────────────────────────────────────────────────────── */
 .breadcrumb {
@@ -393,7 +333,7 @@ body {
 
 /* ── CTA block ───────────────────────────────────────────────────────────── */
 .cta-block {
-  background: var(--nav-bg);
+  background: var(--cta-band-bg);
   border-radius: 14px;
   padding: 36px 32px;
   text-align: center;
@@ -420,7 +360,7 @@ body {
   font-weight: 700;
   font-size: 0.95rem;
 }
-.cta-btn:hover { background: var(--nav-cta-hover); }
+.cta-btn:hover { background: var(--cta-btn-hover); }
 
 /* ── FAQ ─────────────────────────────────────────────────────────────────── */
 .faq-list {
@@ -491,23 +431,13 @@ body {
   line-height: 1.3;
 }
 
-/* ── Footer ──────────────────────────────────────────────────────────────── */
-footer {
-  background: var(--nav-bg);
-  color: rgba(255, 255, 255, 0.5);
-  text-align: center;
-  padding: 24px;
-  font-size: 0.8rem;
-}
-footer a { color: rgba(255, 255, 255, 0.5); text-decoration: none; }
-footer a:hover { color: #fff; }
+/* Footer: .site-footer from /styles.css */
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 /* 600px — mobile */
 @media (max-width: 600px) {
   .verdict-grid  { grid-template-columns: 1fr; }
   .mountain-grid { grid-template-columns: 1fr; }
-  .top-nav-inner { gap: 12px; }
   .hero h1 { font-size: 1.75rem; }
 }
 

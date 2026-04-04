@@ -55,29 +55,32 @@
   ]
 }
   </script>
-  <!-- Fonts + shared pass-comparison stylesheet -->
+  <!-- Site chrome + pass-comparison page styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/styles.css" as="style" />
+  <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/pass-comparison.css" />
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="top-nav" role="navigation" aria-label="Main navigation">
   <div class="top-nav-inner">
     <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
+      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
       <span class="nav-brand">
         <span class="nav-brand-name">WhereToSkiNext.com</span>
         <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
       </span>
     </a>
     <div class="nav-divider"></div>
-    <a href="/about/" class="nav-link">About</a>
-    <a href="/partners/" class="nav-link">Partners</a>
-    <a href="/ski-pass-comparison/" class="nav-link">Pass Guides</a>
-    <a href="https://www.wheretoskinext.com/" class="nav-link nav-link-cta">Find My Mountain &rarr;</a>
+    <a href="/about/" class="nav-primary">About</a>
+    <span class="nav-link-sep" aria-hidden="true"></span>
+    <a href="/partners/" class="nav-primary">Partners</a>
+    <span class="nav-link-sep" aria-hidden="true"></span>
+    <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+    <a href="https://www.wheretoskinext.com/" class="nav-find-cta">Find My Mountain &rarr;</a>
   </div>
 </nav>
 
@@ -619,13 +622,8 @@
 
 </div>
 
-<!-- FOOTER -->
-<footer>
-  © 2026 WhereToSkiNext.com — 
-  <a href="https://www.wheretoskinext.com/about/">About</a> · 
-  <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a>
-  <br><br>
-  <a href="https://www.wheretoskinext.com/">Find the best mountain to ski next →</a>
+<footer class="site-footer">
+  <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="/">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
 </footer>
 
 </body>
