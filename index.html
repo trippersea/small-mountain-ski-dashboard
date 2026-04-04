@@ -587,7 +587,7 @@ The 'Snow' weight in your planner blends forecast + historical snowfall."><svg x
           if (filterSel) { filterSel.value = val; filterSel.dispatchEvent(new Event('change', { bubbles: true })); }
           /* Show/hide booking strip */
           var strip = document.getElementById('hnBookingStrip');
-          if (strip) strip.hidden = (val !== '1');
+          if (strip) { strip.hidden = (val !== '1'); strip.style.display = (val === '1') ? '' : 'none'; }
         });
       });
 
