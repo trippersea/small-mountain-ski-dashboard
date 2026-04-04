@@ -764,14 +764,6 @@ function syncPlannerControls() {
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
   const howfarGroup = plannerRoot?.querySelector('.priority-btns[data-key="howfar"]');
   if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
-
-  // Sync hero pass chips
-  document.querySelectorAll('.hn-pchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === state.passFilter));
-  // Sync hero trip type chips
-  document.querySelectorAll('.hn-tchip').forEach(c => c.classList.toggle('hn-chip-on', Number(c.dataset.val) === state.howFar));
-  // Sync booking strip with howFar
-  const _bs = document.getElementById('hnBookingStrip');
-  if (_bs) _bs.hidden = (state.howFar < 1);
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
@@ -906,8 +898,9 @@ function renderVerdict(resorts) {
     return;
   }
 
-  const { tier, headline, detail, subPoints, resort, driveText } = v;
-  const isOvernightLikely = state.howFar >= 1;
+  const { tier, headline, detail, subPoints, resort, driveText, stormTotal } = v;
+  const _score = Math.round(v.breakdown.score);
+  const isOvernightLikely = state.howFar >= 1 || (v.drive !== null && v.drive > 180);
   const brief        = buildDecisionBrief(resorts);
   const runningItems = brief.top5.length > 1 ? brief.top5.slice(1, 5) : [];
   const compareIds   = [resort.id, ...runningItems.map(item => item.resort.id)];
@@ -992,20 +985,24 @@ function renderVerdict(resorts) {
 
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--${tier}">
-      <div class="vcard-hero vcard-hero--${tier}">
-        <div class="vcard-eyebrow">${_eyebrow}</div>
-        <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
-        <div class="vcard-chips">
-          <span class="vcard-chip">${esc(resort.state)}</span>
-          <span class="vcard-chip vcard-chip--pass" style="background:${passBg}22;color:${passBg};border-color:${passBg}44">${esc(resort.passGroup)}</span>
-          ${driveText ? `<span class="vcard-chip">${esc(driveText)}</span>` : ''}
-          <span class="vcard-chip">$${resort.price}</span>
-          ${resort.website ? `<a class="vcard-chip vcard-chip--link" href="${resort.website}" target="_blank" rel="noopener">Website ↗</a>` : ''}
-          ${isOvernightLikely ? `<a class="vcard-chip vcard-chip--link vcard-chip--lodging" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_chip" data-track-resort="${esc(resort.name)}">Find Places to Stay — Booking.com ↗</a>` : ''}
+      <div class="vcard-hero vcard-hero--dark">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div class="vcard-eyebrow">${_eyebrow}</div>
+          <div class="vcard-score-ring vcard-score-ring--${tier}">
+            <div class="vcard-score-num">${_score}</div>
+            <div class="vcard-score-lbl">Score</div>
+          </div>
         </div>
-        <div class="vcard-condition-badge vcard-condition-badge--${tier}">
+        <button class="vcard-name" id="verdictPickBtn">${esc(resort.name)}</button>
+        <div class="vcard-condition-badge vcard-condition-badge--${tier}" style="align-self:flex-start;margin-bottom:6px">
           <span class="vcard-condition-dot" style="background:${tc.dot}"></span>
           ${tc.label}
+        </div>
+        <div class="vcard-chips">
+          ${stormTotal > 0 ? `<span class="vcard-chip">${stormTotal.toFixed(0)}&quot; forecast</span>` : ''}
+          ${driveText ? `<span class="vcard-chip">${esc(driveText)} drive</span>` : ''}
+          <span class="vcard-chip">${crowdForecast(resort).label} crowds</span>
+          <span class="vcard-chip">$${resort.price} window</span>
         </div>
       </div>
       <div class="vcard-body">
@@ -1066,10 +1063,6 @@ function renderVerdict(resorts) {
     });
   });
 
-  // ── Sync booking strip to trip type state ──────────────────────────────────
-  const _bookingStrip = document.getElementById('hnBookingStrip');
-  if (_bookingStrip) _bookingStrip.hidden = (state.howFar < 1);
-
   // ── Populate external runner-up section ─────────────────────────────────────
   const _hnSection = document.getElementById('hnRunnerUpSection');
   const _hnGrid    = document.getElementById('hnRunnersGrid');
@@ -1086,12 +1079,7 @@ function renderVerdict(resorts) {
         const _rSponsor = getSponsor(item.resort.id);
         const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
         const _rSnowHtml   = _rSnow !== null ? `<span class="hn-rchip hn-rchip-snow">${_rSnow.toFixed(1)}" snow</span>` : '';
-        const _rCrowdLabel = crowdForecast(item.resort).label;
-        const _rCrowdHtml  = _rCrowdLabel === 'Low'
-          ? '<span class="hn-rchip hn-rchip-crowd">Low crowds</span>'
-          : _rCrowdLabel === 'High'
-          ? '<span class="hn-rchip hn-rchip-warn">Busy</span>'
-          : '';
+        const _rCrowdHtml  = item.resort.crowdScore < 40 ? '<span class="hn-rchip hn-rchip-crowd">Low crowds</span>' : (item.resort.crowdScore > 70 ? '<span class="hn-rchip hn-rchip-warn">Mod. crowds</span>' : '');
         const _rPassHtml   = `<span class="hn-rchip hn-rchip-pass">${esc(item.resort.passGroup)}</span>`;
         const _rBookHtml   = _rSponsor ? `<a class="hn-runner-book" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(_rSponsor.tagline ? 'Book Now' : 'Book Now')}</a>` : '';
         const _rSponsorBadge = _rSponsor ? '<span class="hn-runner-sponsor">Featured</span>' : '';
@@ -1119,7 +1107,7 @@ function renderVerdict(resorts) {
 function renderTripSnapshot(v) {
   const slot = document.getElementById('tripSnapshotCard');
   if (!slot) return;
-  const isOvernightLikely = v && state.howFar >= 1;
+  const isOvernightLikely = v && (state.howFar >= 1 || (v.drive !== null && v.drive > 180));
   if (!v || !isOvernightLikely) { slot.setAttribute('hidden', ''); return; }
 
   const { resort, driveText, stormTotal } = v;

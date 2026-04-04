@@ -1127,12 +1127,10 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 /* ─── Compact hero ────────────────────────────────────────────────────────── */
 /* ── Centered search hero (Google-style) ───────────────────────────────── */
 .hero-search {
-  padding: 0 !important;
-  background: #1a3252 !important;
-}
-#searchSection {
-  background: #1a3252 !important;
-  border-radius: 0 !important;
+  padding: 32px 24px 28px !important;
+  background:
+    radial-gradient(ellipse at 60% 0%, rgba(43,109,233,.07), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(244,249,255,.98)) !important;
 }
 .hero-search-inner {
   display: flex;
@@ -1145,17 +1143,12 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .hero-search-inner .hero-headline {
   font-size: clamp(22px, 3vw, 32px);
   margin-bottom: 10px;
-  color: #fff !important;
 }
 .hero-search-inner .hero-subhead {
   font-size: 14px;
   margin-bottom: 20px;
   max-width: 420px;
-  color: #94a3b8 !important;
 }
-/* New hn-* class equivalents */
-#searchSection .hn-headline { color: #fff !important; }
-#searchSection .hn-subhead  { color: #94a3b8 !important; }
 
 /* The big pill search bar */
 .hero-search-bar {
@@ -3174,3 +3167,37 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
 .hn-runner-book:hover { background: #fde68a; }
 .hn-rchip-crowd { background: #f0fdf4; color: #16a34a; }
 .hn-rchip-warn  { background: #fff3f0; color: #c0392b; }
+
+/* ── Dark verdict card hero ─────────────────────────────────────────────── */
+.vcard-hero--dark {
+  background: linear-gradient(160deg, #152a45 0%, #1e3d5f 100%) !important;
+  border-bottom-color: rgba(255,255,255,.08) !important;
+}
+.vcard-hero--dark .vcard-eyebrow  { color: #5b8ab8 !important; }
+.vcard-hero--dark .vcard-name     { color: #fff !important; }
+.vcard-hero--dark .vcard-chip {
+  background: rgba(255,255,255,.12) !important;
+  border-color: rgba(255,255,255,.18) !important;
+  color: rgba(255,255,255,.93) !important;
+}
+
+/* ── Score ring in verdict hero ─────────────────────────────────────────── */
+.vcard-score-ring {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+.vcard-score-ring--great    { background: #059669; }
+.vcard-score-ring--good     { background: #2b6de9; }
+.vcard-score-ring--marginal { background: #d97706; }
+.vcard-score-ring--bad      { background: #dc2626; }
+.vcard-score-num { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+.vcard-score-lbl {
+  font-size: 7px; font-weight: 700;
+  color: rgba(255,255,255,.75);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin-top: 2px;
+}
