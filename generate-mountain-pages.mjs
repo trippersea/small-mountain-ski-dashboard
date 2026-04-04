@@ -10,7 +10,7 @@
 //  5. Trust signals: freshness date, "No account needed · Free forever"
 //
 // Usage:  node generate-mountain-pages.mjs
-// Output: ./public/ski-report/{resort-id}/index.html  (~256 files)
+// Output: ./ski-report/{resort-id}/index.html  (~256 files) — uses site-wide /styles.css
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import fs   from 'fs';
@@ -414,7 +414,9 @@ function generateMountainPage(resort, allResorts) {
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/styles.css" as="style" />
+  <link rel="stylesheet" href="/styles.css" />
 
   <script type="application/ld+json">
   ${JSON.stringify(schemas, null, 2)}
@@ -424,42 +426,15 @@ function generateMountainPage(resort, allResorts) {
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      background: #f0f4fa;
-      color: #1b2a3a;
+      font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+      background: #f8f9fa;
+      color: #111827;
       margin: 0;
       line-height: 1.6;
       min-height: 100vh;
     }
 
-    /* ── Nav ── */
-    .top-nav {
-      position: sticky; top: 0; z-index: 100;
-      background: #1a2030;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-    .top-nav-inner {
-      max-width: 1100px; margin: 0 auto;
-      padding: 10px 24px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .nav-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .nav-brand { display: flex; flex-direction: column; gap: 1px; }
-    .nav-brand-name { font-weight: 700; font-size: 15px; color: #fff; line-height: 1.2; }
-    .nav-brand-tag  { font-size: 10px; color: #4a5568; font-weight: 400; line-height: 1.2; }
-    .nav-divider { width: 1px; height: 16px; background: rgba(255,255,255,.12); margin: 0 4px; flex-shrink: 0; }
-    .nav-link {
-      padding: 6px 11px; border-radius: 8px; text-decoration: none;
-      color: #94a3b8; font-weight: 600; font-size: 13px;
-      transition: background .12s, color .12s;
-    }
-    .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .nav-link-cta {
-      margin-left: auto;
-      background: #2b6de9; color: #fff !important;
-      border-radius: 999px; padding: 7px 16px;
-    }
-    .nav-link-cta:hover { background: #1d5fd4; }
+    /* Nav: .top-nav, .nav-primary, .nav-find-cta from /styles.css */
 
     /* ── Page layout ── */
     .page { max-width: 960px; margin: 0 auto; padding: 24px 20px 80px; }
@@ -469,7 +444,7 @@ function generateMountainPage(resort, allResorts) {
       font-size: 13px; color: #667a96; margin-bottom: 16px;
       display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
     }
-    .breadcrumb a { color: #2b6de9; text-decoration: none; font-weight: 500; }
+    .breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb-sep { color: #b0bec5; }
 
@@ -555,14 +530,14 @@ function generateMountainPage(resort, allResorts) {
     }
     .btn-hero {
       display: inline-flex; align-items: center; gap: 7px;
-      background: #2b6de9; color: #fff;
-      font-size: 14px; font-weight: 700;
+      background: #2563eb; color: #fff;
+      font-size: 14px; font-weight: 600;
       padding: 11px 20px; border-radius: 10px;
       text-decoration: none; white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(43,109,233,.45);
+      box-shadow: 0 4px 16px rgba(37,99,235,.35);
       transition: background .12s, transform .1s;
     }
-    .btn-hero:hover { background: #1d5fd4; transform: translateY(-1px); }
+    .btn-hero:hover { background: #1d4ed8; transform: translateY(-1px); }
     .btn-hero-ghost {
       display: inline-flex; align-items: center; gap: 7px;
       background: rgba(255,255,255,.1); color: rgba(255,255,255,.82);
@@ -649,14 +624,14 @@ function generateMountainPage(resort, allResorts) {
     .mid-cta-trust { font-size: 11px; color: rgba(255,255,255,.32); }
     .btn-cta {
       display: inline-flex; align-items: center; gap: 7px;
-      background: #2b6de9; color: #fff;
-      font-size: 14px; font-weight: 700;
+      background: #2563eb; color: #fff;
+      font-size: 14px; font-weight: 600;
       padding: 12px 22px; border-radius: 10px;
       text-decoration: none; white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(43,109,233,.4);
+      box-shadow: 0 4px 16px rgba(37,99,235,.35);
       transition: background .12s;
     }
-    .btn-cta:hover { background: #1d5fd4; }
+    .btn-cta:hover { background: #1d4ed8; }
 
     /* ══════════════════════════════════════════════
        SKIER MATCHER WIDGET
@@ -679,8 +654,8 @@ function generateMountainPage(resort, allResorts) {
       cursor: pointer; transition: all .13s;
     }
     .mo:hover, .mo.selected {
-      border-color: #2b6de9;
-      background: #2b6de9; color: #fff;
+      border-color: #2563eb;
+      background: #2563eb; color: #fff;
     }
     .matcher-result {
       margin-top: 18px; padding: 18px 20px;
@@ -698,13 +673,13 @@ function generateMountainPage(resort, allResorts) {
     #mReason { font-size: 13px; color: #334155; line-height: 1.55; margin-bottom: 14px; }
     .btn-matcher {
       display: inline-flex; align-items: center; gap: 6px;
-      background: #2b6de9; color: #fff;
-      font-size: 13px; font-weight: 700;
+      background: #2563eb; color: #fff;
+      font-size: 13px; font-weight: 600;
       padding: 9px 16px; border-radius: 8px;
       text-decoration: none;
       transition: background .12s;
     }
-    .btn-matcher:hover { background: #1d5fd4; }
+    .btn-matcher:hover { background: #1d4ed8; }
 
     /* ══════════════════════════════════════════════
        NEARBY SECTION — elevated with snow deltas
@@ -715,7 +690,7 @@ function generateMountainPage(resort, allResorts) {
       margin-bottom: 12px;
     }
     .nearby-header h2 { font-size: 18px; font-weight: 800; margin: 0; }
-    .nearby-header a  { font-size: 13px; font-weight: 600; color: #2b6de9; text-decoration: none; }
+    .nearby-header a  { font-size: 13px; font-weight: 600; color: #2563eb; text-decoration: none; }
     .nearby-header a:hover { text-decoration: underline; }
 
     .nearby-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -728,8 +703,8 @@ function generateMountainPage(resort, allResorts) {
       transition: border-color .12s, box-shadow .12s, transform .12s;
     }
     .nearby-card:hover {
-      border-color: #2b6de9;
-      box-shadow: 0 4px 16px rgba(43,109,233,.12);
+      border-color: #2563eb;
+      box-shadow: 0 4px 16px rgba(37,99,235,.1);
       transform: translateY(-2px);
     }
     .nearby-name { font-size: 14px; font-weight: 700; }
@@ -744,22 +719,14 @@ function generateMountainPage(resort, allResorts) {
     .nearby-delta--less { background: #f1f5f9; color: #64748b; }
     .nearby-delta--same { background: #edf4ff; color: #1d4ed8; }
     .nearby-crowd { font-size: 11px; color: #667a96; }
-    .nearby-arrow { font-size: 12px; font-weight: 700; color: #2b6de9; margin-top: auto; padding-top: 6px; }
+    .nearby-arrow { font-size: 12px; font-weight: 700; color: #2563eb; margin-top: auto; padding-top: 6px; }
 
     /* ── State link ── */
     .state-link-row { margin-bottom: 14px; font-size: 14px; color: #667a96; }
-    .state-link-row a { color: #2b6de9; font-weight: 600; text-decoration: none; }
+    .state-link-row a { color: #2563eb; font-weight: 600; text-decoration: none; }
     .state-link-row a:hover { text-decoration: underline; }
 
-    /* ── Footer ── */
-    footer {
-      text-align: center; padding: 28px 16px;
-      font-size: 12px; color: #94a3b8;
-      border-top: 1px solid #d6e1f0; background: #fff;
-      margin-top: 40px;
-    }
-    footer a { color: #2b6de9; text-decoration: none; }
-
+    /* Footer: .site-footer from /styles.css */
 
     /* ── Featured Partner hero card ── */
     .hero-sponsor-card {
@@ -814,20 +781,20 @@ function generateMountainPage(resort, allResorts) {
       line-height: 1.45;
     }
     .hero-sponsor-btn {
-      background: #2b6de9;
+      background: #2563eb;
       color: #fff !important;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       padding: 10px 18px;
       border-radius: 999px;
       text-decoration: none;
       white-space: nowrap;
       transition: background .12s, transform .1s;
       flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(43,109,233,.32);
+      box-shadow: 0 4px 16px rgba(37,99,235,.28);
     }
     .hero-sponsor-btn:hover {
-      background: #1d5fd4;
+      background: #1d4ed8;
       transform: translateY(-1px);
     }
 
@@ -858,21 +825,24 @@ function generateMountainPage(resort, allResorts) {
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
-  <!-- Nav -->
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
       <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" style="flex-shrink:0" />
+        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
         <span class="nav-brand">
           <span class="nav-brand-name">WhereToSkiNext.com</span>
           <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
         </span>
       </a>
       <div class="nav-divider"></div>
-      <a href="/ski/${stateSlug}/" class="nav-link">${stateName} Mountains</a>
-      <a href="/about/" class="nav-link">About</a>
-      <a href="/partners/" class="nav-link">Partners</a>
-      <a href="${esc(appUrl)}" class="nav-link nav-link-cta">Find My Mountain →</a>
+      <a href="/ski/${stateSlug}/" class="nav-primary">${stateName} Mountains</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/about/" class="nav-primary">About</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/partners/" class="nav-primary">Partners</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+      <a href="${esc(appUrl)}" class="nav-find-cta">Find My Mountain →</a>
     </div>
   </nav>
 
@@ -1041,10 +1011,10 @@ function generateMountainPage(resort, allResorts) {
     <div style="margin-top:16px;padding:14px 18px;background:#f0f6ff;border:1px solid #bfdbfe;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#185fa5;margin-bottom:3px">Pass Guide</div>
-        <div style="font-size:14px;font-weight:700;color:#1a2030">Comparing ${esc(resort.passGroup)} Pass mountains in the ${passComparisonLabel(resort.state)}?</div>
-        <div style="font-size:13px;color:#3b5a8f;margin-top:2px">See every ${esc(resort.passGroup)} and Ikon mountain ranked side by side.</div>
+        <div style="font-size:14px;font-weight:600;color:#111827">Comparing ${esc(resort.passGroup)} Pass mountains in the ${passComparisonLabel(resort.state)}?</div>
+        <div style="font-size:13px;color:#6b7280;margin-top:2px">See every ${esc(resort.passGroup)} and Ikon mountain ranked side by side.</div>
       </div>
-      <a href="/${passComparisonPage(resort.state)}/" style="background:#2b6de9;color:#fff;font-size:13px;font-weight:700;padding:9px 18px;border-radius:999px;text-decoration:none;white-space:nowrap;flex-shrink:0">View Pass Comparison &rarr;</a>
+      <a href="/${passComparisonPage(resort.state)}/" style="background:#2563eb;color:#fff;font-size:13px;font-weight:600;padding:9px 18px;border-radius:999px;text-decoration:none;white-space:nowrap;flex-shrink:0">View Pass Comparison &rarr;</a>
     </div>` : ''}
 
     <!-- ══ MID-PAGE CTA — appears AFTER editorial, not before ══ -->
@@ -1111,7 +1081,7 @@ function generateMountainPage(resort, allResorts) {
 
   </main>
 
-  <footer>
+  <footer class="site-footer">
     <p>© ${year} WhereToSkiNext.com · <a href="https://www.wheretoskinext.com">wheretoskinext.com</a> · Data updated seasonally</p>
     <p style="margin-top:6px"><a href="/">Find the best mountain to ski next →</a></p>
   </footer>
@@ -1222,17 +1192,17 @@ async function main() {
     generated++;
     if (generated % 25 === 0) console.log(`  Generated ${generated}/${resorts.length}...`);
   }
-  console.log(`✓ Generated ${generated} mountain pages → public/ski-report/`);
+  console.log(`✓ Generated ${generated} mountain pages → ski-report/`);
 
   const sitemapPath = path.join(__dirname, 'sitemap.xml');
   fs.mkdirSync(path.join(__dirname), { recursive: true });
   fs.writeFileSync(sitemapPath, generateSitemap(resorts), 'utf8');
-  console.log(`✓ Generated sitemap.xml → public/sitemap.xml  (${resorts.length + 5} URLs)`);
+  console.log(`✓ Generated sitemap.xml (${resorts.length + 5} URLs)`);
 
   console.log('\nDone. Next steps:');
-  console.log('  1. node generate-mountain-pages.mjs   ← run this');
-  console.log('  2. git add public/ski-report/ && git commit -m "Redesign: hero snow data, matcher, nearby deltas"');
-  console.log('  3. git push → Vercel auto-deploys');
+  console.log('  1. node generate-mountain-pages.mjs');
+  console.log('  2. git add ski-report/ sitemap.xml && git commit -m "Regenerate ski-report pages"');
+  console.log('  3. git push');
 }
 
 main().catch(err => { console.error(err); process.exit(1); });

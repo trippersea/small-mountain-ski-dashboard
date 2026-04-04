@@ -95,51 +95,40 @@
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/styles.css" as="style" />
+  <link rel="stylesheet" href="/styles.css" />
   <link rel="icon" href="/ski-decision-logo.png" type="image/png" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { font-family: 'DM Sans', system-ui, sans-serif; background: #f8f9fa; color: #1b2a3a; margin: 0; line-height: 1.6; }
+    body { font-family: 'Inter', 'DM Sans', system-ui, sans-serif; background: #f8f9fa; color: #111827; margin: 0; line-height: 1.6; }
 
-    /* Nav */
-    .top-nav { position: sticky; top: 0; z-index: 100; background: #1a2030; border-bottom: 1px solid rgba(255,255,255,.08); }
-    .top-nav-inner { max-width: 1100px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 8px; }
-    .nav-brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-    .nav-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
-    .nav-brand { display: flex; flex-direction: column; gap: 1px; margin-right: 4px; }
-    .nav-brand-name { font-weight: 700; font-size: 15px; color: #fff; line-height: 1.2; }
-    .nav-brand-tag  { font-size: 10px; color: #4a5568; font-weight: 400; line-height: 1.2; }
-    .nav-divider { width: 1px; height: 16px; background: rgba(255,255,255,.12); margin: 0 4px; flex-shrink: 0; }
-    .nav-link { padding: 6px 11px; border-radius: 8px; text-decoration: none; color: #94a3b8; font-weight: 600; font-size: 13px; transition: background .12s, color .12s; white-space: nowrap; }
-    .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .nav-link-cta { margin-left: auto; background: #2b6de9; color: #fff !important; border-radius: 999px; padding: 7px 16px; font-weight: 700; }
-    .nav-link-cta:hover { background: #1d4ed8; }
-    @media (max-width: 600px) { .nav-link:not(.nav-link-cta) { display: none; } .nav-divider { display: none; } }
+    /* Nav: .top-nav, .nav-primary, .nav-find-cta from /styles.css */
 
     /* Layout */
     .page { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
 
     /* Breadcrumb */
     .breadcrumb { font-size: 13px; color: #667a96; margin-bottom: 28px; }
-    .breadcrumb a { color: #2b6de9; text-decoration: none; font-weight: 500; }
+    .breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
 
     /* Hero */
-    .hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #2b6de9; margin-bottom: 12px; }
+    .hero-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #2563eb; margin-bottom: 12px; }
     .hero-title { font-size: clamp(26px,5vw,44px); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; margin: 0 0 16px; }
     .hero-intro { font-size: 17px; color: #2e3f54; line-height: 1.75; margin: 0 0 24px; max-width: 720px; }
     .hero-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
     .hero-stat { }
-    .hero-stat-num { font-size: 28px; font-weight: 800; color: #2b6de9; }
+    .hero-stat-num { font-size: 28px; font-weight: 600; color: #2563eb; }
     .hero-stat-label { font-size: 13px; color: #667a96; font-weight: 600; }
 
     /* CTA banner */
     .cta-banner { background: linear-gradient(135deg,#edf4ff,#f7fbff); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 24px; margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
     .cta-banner-text h2 { font-size: 16px; font-weight: 800; color: #1e40af; margin: 0 0 4px; }
     .cta-banner-text p  { font-size: 13px; color: #1d4ed8; margin: 0; }
-    .cta-btn { display: inline-flex; align-items: center; gap: 6px; background: #2b6de9; color: #fff; border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; box-shadow: 0 4px 14px rgba(43,109,233,.3); }
-    .cta-btn:hover { background: #1d5fd4; }
+    .cta-btn { display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #fff; border-radius: 999px; padding: 10px 20px; font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; box-shadow: 0 4px 14px rgba(37,99,235,.25); }
+    .cta-btn:hover { background: #1d4ed8; }
 
     /* Top picks */
     .picks-section { margin-bottom: 48px; }
@@ -150,7 +139,7 @@
     .pick-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #667a96; margin-bottom: 6px; }
     .pick-name { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
     .pick-name a { color: #1b2a3a; text-decoration: none; }
-    .pick-name a:hover { color: #2b6de9; }
+    .pick-name a:hover { color: #2563eb; }
     .pick-reason { font-size: 13px; color: #2e3f54; margin-bottom: 8px; line-height: 1.5; }
     .pick-meta { font-size: 12px; color: #667a96; }
 
@@ -167,11 +156,11 @@
 
     /* Resort cards */
     .resort-card { display: block; background: #fff; border: 1px solid #d6e1f0; border-radius: 12px; padding: 14px 16px; text-decoration: none; color: #1b2a3a; transition: border-color .12s, box-shadow .12s; }
-    .resort-card:hover { border-color: #2b6de9; box-shadow: 0 4px 16px rgba(43,109,233,.1); }
+    .resort-card:hover { border-color: #2563eb; box-shadow: 0 4px 16px rgba(37,99,235,.08); }
     .rc-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
     .rc-meta { font-size: 12px; color: #667a96; margin-bottom: 8px; }
     .rc-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-    .rc-chip { font-size: 11px; font-weight: 600; background: #edf4ff; color: #2b6de9; border-radius: 999px; padding: 2px 9px; }
+    .rc-chip { font-size: 11px; font-weight: 600; background: #eff6ff; color: #2563eb; border-radius: 999px; padding: 2px 9px; }
     .rc-chip--snow  { background: #eff6ff; color: #1d4ed8; }
     .rc-chip--green { background: #f0fdf4; color: #16a34a; }
     .rc-chip--blue  { background: #f0f9ff; color: #0369a1; }
@@ -184,10 +173,7 @@
     .pass-card-count { font-size: 13px; color: #667a96; margin-bottom: 8px; }
     .pass-card-list  { font-size: 13px; color: #2e3f54; line-height: 1.8; }
 
-    /* Footer */
-    footer { background: #1a2030; color: rgba(255,255,255,.5); text-align: center; padding: 24px; font-size: .8rem; margin-top: 48px; }
-    footer a { color: rgba(255,255,255,.5); text-decoration: none; }
-    footer a:hover { color: #fff; }
+    /* Footer: .site-footer from /styles.css */
 
     @media (max-width: 600px) {
       .hero-stats { gap: 16px; }
@@ -201,17 +187,19 @@
 <nav class="top-nav" role="navigation" aria-label="Main navigation">
   <div class="top-nav-inner">
     <a href="https://www.wheretoskinext.com/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="28" height="28" />
+      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
       <span class="nav-brand">
         <span class="nav-brand-name">WhereToSkiNext.com</span>
         <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
       </span>
     </a>
     <div class="nav-divider"></div>
-    <a href="https://www.wheretoskinext.com/about/" class="nav-link">About</a>
-    <a href="https://www.wheretoskinext.com/partners/" class="nav-link">Partners</a>
-    <a href="https://www.wheretoskinext.com/ski-pass-comparison/" class="nav-link">Pass Guides</a>
-    <a href="https://www.wheretoskinext.com/?loc=Portland%2C+OR&lat=45.5051&lon=-122.6750" class="nav-link nav-link-cta">Find My Mountain →</a>
+    <a href="https://www.wheretoskinext.com/about/" class="nav-primary">About</a>
+    <span class="nav-link-sep" aria-hidden="true"></span>
+    <a href="https://www.wheretoskinext.com/partners/" class="nav-primary">Partners</a>
+    <span class="nav-link-sep" aria-hidden="true"></span>
+    <a href="https://www.wheretoskinext.com/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+    <a href="https://www.wheretoskinext.com/?loc=Portland%2C+OR&lat=45.5051&lon=-122.6750" class="nav-find-cta">Find My Mountain →</a>
   </div>
 </nav>
 
@@ -509,12 +497,8 @@
 
 </main>
 
-<footer>
-  &copy; 2026 WhereToSkiNext.com &nbsp;&middot;&nbsp;
-  <a href="https://www.wheretoskinext.com/#searchSection">Find My Mountain</a> &nbsp;&middot;&nbsp;
-  <a href="https://www.wheretoskinext.com/about/">About</a> &nbsp;&middot;&nbsp;
-  <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a> &nbsp;&middot;&nbsp;
-  <a href="https://www.wheretoskinext.com/partners/">Partners</a>
+<footer class="site-footer">
+  <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="https://www.wheretoskinext.com/#searchSection">Find My Mountain</a> &middot; <a href="https://www.wheretoskinext.com/about/">About</a> &middot; <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a> &middot; <a href="https://www.wheretoskinext.com/partners/">Partners</a></p>
 </footer>
 
 </body>

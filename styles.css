@@ -78,6 +78,36 @@ body {
   transition: background .12s;
 }
 .nav-find-cta:hover { background: var(--accent-hover) !important; }
+
+/* Text nav links (shared with generated ski-near / ski-report / state pages) */
+.top-nav a.nav-primary {
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 14px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+.top-nav a.nav-primary:hover {
+  background: var(--bg-section-alt);
+  color: var(--text);
+}
+.top-nav .nav-link-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 2px;
+  align-self: center;
+}
+@media (max-width: 640px) {
+  .top-nav a.nav-primary { display: none; }
+  .top-nav .nav-link-sep { display: none; }
+}
+
 .nav-share {
   flex-shrink: 0;
   background: transparent; color: var(--muted);
