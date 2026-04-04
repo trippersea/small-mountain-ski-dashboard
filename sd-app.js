@@ -574,32 +574,93 @@ async function loadDriveTimes() {
 }
 
 // ─── Geocoding ────────────────────────────────────────────────────────────────
+// Nominatim requires a valid User-Agent (https://operations.osmfoundation.org/policies/nominatim/).
+const NOMINATIM_HEADERS = {
+  'Accept-Language': 'en-US,en;q=0.9',
+  'User-Agent': 'WhereToSkiNext-SkiDashboard/1.0 (+https://www.wheretoskinext.com)',
+};
+
+/** US ZIP: 12345 or 12345-6789; also extracts 5 digits from strings like "near 02138". */
+function extractUsZip(query) {
+  const t = String(query || '').trim();
+  const strict = t.match(/^(\d{5})(?:-\d{4})?$/);
+  if (strict) return strict[1];
+  const loose = t.match(/\b(\d{5})(?:-\d{4})?\b/);
+  return loose ? loose[1] : null;
+}
+
+function labelFromNominatimResult(row) {
+  const parts = (row.display_name || '').split(', ').map(s => s.trim()).filter(Boolean);
+  const us = parts.indexOf('United States');
+  if (us >= 2 && /^\d{5}(-\d{4})?$/.test(parts[0].replace(/\s/g, ''))) {
+    const town = parts[1];
+    const region = parts[us - 1];
+    return `${town}, ${region}`;
+  }
+  if (parts.length >= 2) return `${parts[0]}, ${parts[1]}`;
+  return parts[0] || row.name || 'Unknown';
+}
+
 async function geocodeOrigin(query) {
   const q = query.trim();
   if (!q) return null;
-  if (/^\d{5}$/.test(q)) {
+
+  const zip = extractUsZip(q);
+
+  // 1) US ZIP → Nominatim structured search (works in-browser; Zippopotam often blocks CORS).
+  if (zip) {
     try {
-      const res = await fetchWithTimeout(`https://api.zippopotam.us/us/${q}`);
+      const res = await fetchWithTimeout(
+        `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zip)}&country=us&format=json&limit=1`,
+        { headers: { ...NOMINATIM_HEADERS } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.length) {
+          const row = data[0];
+          return {
+            lat: parseFloat(row.lat),
+            lon: parseFloat(row.lon),
+            label: labelFromNominatimResult(row),
+          };
+        }
+      }
+    } catch (e) {}
+
+    try {
+      const res = await fetchWithTimeout(`https://api.zippopotam.us/us/${zip}`);
       if (res.ok) {
         const d = await res.json();
         const place = d.places?.[0];
-        if (place) return {
-          lat:   parseFloat(place.latitude),
-          lon:   parseFloat(place.longitude),
-          label: `${place['place name']}, ${place.state || place['state abbreviation'] || ''}`.replace(/,\s*$/, ''),
-        };
+        if (place) {
+          return {
+            lat: parseFloat(place.latitude),
+            lon: parseFloat(place.longitude),
+            label: `${place['place name']}, ${place.state || place['state abbreviation'] || ''}`.replace(/,\s*$/, ''),
+          };
+        }
       }
     } catch (e) {}
   }
+
+  // 2) Free-text (city, address, …) → Nominatim
   try {
-    const res  = await fetchWithTimeout(
+    const res = await fetchWithTimeout(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=us`,
-      { headers: { 'Accept-Language': 'en' } }
+      { headers: { ...NOMINATIM_HEADERS } }
     );
+    if (!res.ok) return null;
     const data = await res.json();
     if (!data.length) return null;
-    return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), label: data[0].display_name.split(',')[0] };
-  } catch (e) { return null; }
+    const row = data[0];
+    return {
+      lat: parseFloat(row.lat),
+      lon: parseFloat(row.lon),
+      label: labelFromNominatimResult(row),
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
 // ─── Shareable URL system ─────────────────────────────────────────────────────
@@ -2417,7 +2478,7 @@ function wireEvents() {
       await loadDriveTimes();
     } else {
       const raw = els.originInput.value.trim();
-      const zipOnly = /^\d{5}$/.test(raw);
+      const zipOnly = extractUsZip(raw) !== null;
       els.locationStatus.textContent = zipOnly
         ? 'No match for that ZIP — try city & state (e.g. Denver, CO) or a street address.'
         : 'Location not found — try a U.S. ZIP, city, or landmark.';
