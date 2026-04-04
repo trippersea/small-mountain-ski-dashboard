@@ -1006,7 +1006,6 @@ function renderVerdict(resorts) {
   }
 
   const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn } = v;
-  const isOvernightLikely = state.howFar >= 1 || (v.drive !== null && v.drive > 180);
   const runningItems = collectRunnerUpItems(resorts, resort.id, 3);
 
   // ── Eyebrow: "BEST MATCH · IKON PASS · BOSTON" (middle dot, screenshot parity)
@@ -1067,7 +1066,6 @@ function renderVerdict(resorts) {
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
         ${noOriginHtml}
-        ${isOvernightLikely ? `<a class="vcard-lodging-inline" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_chip" data-track-resort="${esc(resort.name)}">Find places to stay near ${esc(resort.name)} →</a>` : ''}
         <div class="vcard-actions vcard-actions-dash">
           ${resort.website
             ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &#x2192;</a>`

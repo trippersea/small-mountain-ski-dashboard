@@ -3381,17 +3381,6 @@ button.metric-chip:hover { background: rgba(43,109,233,.18); }
   color: #475569 !important;
   border-color: #e2e8f0 !important;
 }
-.vcard-lodging-inline {
-  display: inline-block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #2563eb;
-  margin-bottom: 14px;
-  text-decoration: none;
-}
-.vcard-lodging-inline:hover {
-  text-decoration: underline;
-}
 .vcard-actions-dash {
   margin-top: 4px;
   padding-top: 18px;
