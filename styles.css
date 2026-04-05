@@ -845,6 +845,12 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 
 /* ── Feature grid ───────────────────────────────────────────────────────── */
 .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* Keep storm/hidden card grids above fixed UI (e.g. scroll-more-fab z-index 60) so clicks reach resort cards */
+#stormGrid.card-grid,
+#hiddenGemGrid.card-grid {
+  position: relative;
+  z-index: 61;
+}
 .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .planner-card, .calc-card {
   background: #fff; border: 1px solid var(--border);
