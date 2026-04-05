@@ -10,7 +10,7 @@
 //  5. Trust signals: freshness date, "No account needed · Free forever"
 //
 // Usage:  node generate-mountain-pages.mjs
-// Output: ./ski-report/{resort-id}/index.html  (~256 files) — uses site-wide /styles.css
+// Output: ./ski-report/{resort-id}/index.html  — uses site-wide /styles.css
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import fs   from 'fs';
@@ -251,7 +251,7 @@ function matcherScript(resort) {
   // JSON.stringify handles all escaping (apostrophes, quotes, unicode) safely
   const nameJS   = JSON.stringify(resort.name);
   const passJS   = JSON.stringify(resortPass);
-  const idJS     = JSON.stringify(resort.id);
+  const stateJS  = JSON.stringify(resort.state);
 
   return `
 <script>
@@ -276,9 +276,26 @@ function matcherScript(resort) {
     var begPct = ${begPct};
     var price = ${resort.price};
     var name = ${nameJS};
-    var appUrl = "https://www.wheretoskinext.com/?resort=" + ${idJS};
+    var stateCode = ${stateJS};
+
+    function compareSearchUrl(userPass) {
+      var q = [];
+      if (userPass === "epic") q.push("pass=Epic");
+      else if (userPass === "ikon") q.push("pass=Ikon");
+      else if (userPass === "indy") q.push("pass=Indy");
+      else if (userPass === "independent") q.push("pass=Independent");
+      q.push("st=" + encodeURIComponent(stateCode));
+      return "https://www.wheretoskinext.com/?" + q.join("&") + "#compareSection";
+    }
+    function valueInStateUrl() {
+      return "https://www.wheretoskinext.com/?st=" + encodeURIComponent(stateCode) + "&sort=price#compareSection";
+    }
+    function stateOnlyCompareUrl() {
+      return "https://www.wheretoskinext.com/?st=" + encodeURIComponent(stateCode) + "#compareSection";
+    }
 
     var passMatches = (pass === resortPass);
+    var ctaUrl;
 
     if (skill === "advanced") {
       if (passMatches) {
@@ -286,16 +303,19 @@ function matcherScript(resort) {
         verdict = "Great match — " + name + " is built for advanced skiers on your pass.";
         reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when conditions are right.";
         ctaText = "Compare " + name + " with nearby mountains";
+        ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
         type = "maybe";
         verdict = "Great terrain, but window tickets run $" + price + "+.";
         reason = "The mountain suits your skill level well. Just budget accordingly — window rates add up fast for a multi-day trip.";
         ctaText = "Find the best value mountain for your level";
+        ctaUrl = valueInStateUrl();
       } else {
         type = "maybe";
         verdict = "Great terrain, but your pass does not cover " + name + ".";
         reason = "You would be paying window rate ($" + price + "+). Check if a nearby mountain on your pass offers comparable terrain.";
         ctaText = "Find mountains on your pass nearby";
+        ctaUrl = compareSearchUrl(pass);
       }
     } else if (skill === "intermediate") {
       if (passMatches) {
@@ -303,16 +323,19 @@ function matcherScript(resort) {
         verdict = "A solid choice for intermediates with your pass.";
         reason = "Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for lift lines.";
         ctaText = "See live conditions and compare";
+        ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
         type = "maybe";
         verdict = "Good terrain, but check if the price fits your budget.";
         reason = "At $" + price + "+ per day ticket, a few days here adds up. Compare nearby options that might offer similar intermediate terrain at lower cost.";
         ctaText = "Compare by value near here";
+        ctaUrl = valueInStateUrl();
       } else {
         type = "maybe";
         verdict = "Worth considering, but there may be better fits on your pass.";
         reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer a comparable experience included.";
         ctaText = "Find mountains on your pass";
+        ctaUrl = compareSearchUrl(pass);
       }
     } else {
       if (begPct >= 35) {
@@ -322,11 +345,13 @@ function matcherScript(resort) {
           : "Decent beginner terrain, but you will pay window rate.";
         reason = begPct + "% of the mountain is beginner terrain. " + (passMatches ? "Your pass makes this a low-risk day out." : "At $" + price + "+, compare nearby options on your pass first.");
         ctaText = passMatches ? "See live conditions" : "Find beginner-friendly mountains on your pass";
+        ctaUrl = compareSearchUrl(pass);
       } else {
         type = "no";
         verdict = name + " is probably not the right fit for beginners.";
         reason = "Only " + begPct + "% of the mountain is beginner terrain and it skews toward advanced skiers. A more beginner-focused mountain nearby would be a better day out.";
         ctaText = "Find beginner-friendly mountains near here";
+        ctaUrl = stateOnlyCompareUrl();
       }
     }
 
@@ -336,7 +361,7 @@ function matcherScript(resort) {
     document.getElementById("mVerdict").textContent = verdict;
     document.getElementById("mReason").textContent = reason;
     document.getElementById("mCTA").textContent = ctaText;
-    document.getElementById("mCTA").href = appUrl;
+    document.getElementById("mCTA").href = ctaUrl;
   }
 })();
 </script>`;
@@ -347,7 +372,8 @@ function generateMountainPage(resort, allResorts) {
   const stateName  = stateFullName(resort.state);
   const stateSlug  = slugifyState(resort.state);
   const canonUrl   = `https://www.wheretoskinext.com/ski-report/${resort.id}/`;
-  const appUrl     = `https://www.wheretoskinext.com/?resort=${resort.id}#searchSection`;
+  const liveScoreUrl    = `https://www.wheretoskinext.com/?resort=${resort.id}#searchSection`;
+  const compareExploreUrl = `https://www.wheretoskinext.com/?st=${encodeURIComponent(resort.state)}#compareSection`;
   const schemas    = buildSchemas(resort, stateName);
   const nearby     = nearbyResorts(resort, allResorts);
   const tb         = resort.terrainBreakdown;
@@ -842,7 +868,7 @@ function generateMountainPage(resort, allResorts) {
       <a href="/partners/" class="nav-primary">Partners</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-      <a href="${esc(appUrl)}" class="nav-find-cta">Find My Mountain →</a>
+      <a href="${esc(compareExploreUrl)}" class="nav-find-cta">Find My Mountain →</a>
     </div>
   </nav>
 
@@ -894,7 +920,7 @@ function generateMountainPage(resort, allResorts) {
       </div>
 
       <div class="hero-cta-row">
-        <a href="${esc(appUrl)}" class="btn-hero">
+        <a href="${esc(liveScoreUrl)}" class="btn-hero">
           ⛷ See Live Ski Score
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -907,7 +933,7 @@ function generateMountainPage(resort, allResorts) {
         <span class="hero-trust-sep">·</span>
         <span>Free forever</span>
         <span class="hero-trust-sep">·</span>
-        <span>256 mountains ranked in real time</span>
+        <span>250+ mountains ranked in real time</span>
       </div>
       ${SPONSOR_HERO_PLACEHOLDER}
     </header>
@@ -1021,10 +1047,10 @@ function generateMountainPage(resort, allResorts) {
     <div class="mid-cta">
       <div>
         <div class="mid-cta-title">Not sure ${esc(resort.name)} is your best bet?</div>
-        <div class="mid-cta-sub">256 mountains ranked in real time — snow, drive time, pass, and crowds.</div>
+        <div class="mid-cta-sub">250+ mountains ranked in real time — snow, drive time, pass, and crowds.</div>
         <div class="mid-cta-trust">No account needed · Free forever · Updated daily</div>
       </div>
-      <a href="${esc(appUrl)}" class="btn-cta">Find My Best Mountain →</a>
+      <a href="${esc(compareExploreUrl)}" class="btn-cta">Find My Best Mountain →</a>
     </div>
 
     <!-- ══ SKIER MATCHER WIDGET ══ -->
@@ -1054,7 +1080,7 @@ function generateMountainPage(resort, allResorts) {
       <div id="matcherResult" class="matcher-result">
         <div id="mVerdict"></div>
         <div id="mReason"></div>
-        <a id="mCTA" href="${esc(appUrl)}" class="btn-matcher"></a>
+        <a id="mCTA" href="${esc(compareExploreUrl)}" class="btn-matcher"></a>
       </div>
     </div>
 
@@ -1193,6 +1219,14 @@ async function main() {
     if (generated % 25 === 0) console.log(`  Generated ${generated}/${resorts.length}...`);
   }
   console.log(`✓ Generated ${generated} mountain pages → ski-report/`);
+
+  const validIds = new Set(resorts.map(r => r.id));
+  for (const name of fs.readdirSync(outBase)) {
+    const dirPath = path.join(outBase, name);
+    if (!fs.statSync(dirPath).isDirectory() || validIds.has(name)) continue;
+    fs.rmSync(dirPath, { recursive: true, force: true });
+    console.log(`  Removed stale ski-report/${name}/ (not in current resort list)`);
+  }
 
   const sitemapPath = path.join(__dirname, 'sitemap.xml');
   fs.mkdirSync(path.join(__dirname), { recursive: true });
