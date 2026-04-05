@@ -2246,6 +2246,66 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   -webkit-overflow-scrolling: touch;
 }
 
+/* Cloned planner filters — match hn-refine-panel pill density */
+.filter-drawer-body .planner-details .score-grid {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.filter-drawer-body .planner-details .score-control {
+  padding: 14px 15px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+}
+.filter-drawer-body .planner-details .score-control-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+.filter-drawer-body .planner-details .priority-btns {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.filter-drawer-body .planner-details .priority-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-light);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.2;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+.filter-drawer-body .planner-details .priority-btns--compact .priority-btn {
+  font-size: 11px;
+  padding: 5px 9px;
+  white-space: normal;
+  line-height: 1.25;
+}
+.filter-drawer-body .planner-details .priority-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.filter-drawer-body .planner-details .priority-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.filter-drawer-body .planner-details .slider-hint {
+  font-size: 11px;
+  margin-top: 8px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 /* Hide duplicate planner-col-header inside drawer (it's already in the planner section) */
 .filter-drawer-body .planner-col-header { display: none; }
 
@@ -3364,8 +3424,123 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 .hn-runner-score { font-size: 22px; font-weight: 600; color: var(--accent); line-height: 1; }
 .hn-runner-drive { font-size: 12px; color: var(--muted); }
 
-/* ── Refine (planner) panel ── */
-.hn-refine-panel { border-top: 2px solid var(--border); background: var(--panel); }
+/* ── Refine (planner) panel — same dense pill layout as .planner-col (section is not inside planner-verdict row) ── */
+.hn-refine-panel {
+  border-top: 2px solid var(--border);
+  background: var(--panel);
+}
+.hn-refine-panel .planner-col-header {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.hn-refine-panel .planner-details {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.hn-refine-panel .score-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  align-content: start;
+}
+.hn-refine-panel .score-control {
+  padding: 14px 15px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+}
+.hn-refine-panel .score-control-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 9px;
+  letter-spacing: -0.01em;
+}
+.hn-refine-panel .priority-btns {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.hn-refine-panel .priority-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-light);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  line-height: 1.2;
+  text-align: center;
+}
+.hn-refine-panel .priority-btns--compact .priority-btn {
+  font-size: 11px;
+  padding: 5px 9px;
+  white-space: normal;
+  line-height: 1.25;
+  max-width: 100%;
+}
+.hn-refine-panel .priority-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.hn-refine-panel .priority-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.hn-refine-panel .slider-hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 8px;
+  font-style: normal;
+}
+
+.planner-refine-footer {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+.planner-see-verdict-btn {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  transition: background 0.12s;
+}
+.planner-see-verdict-btn:hover {
+  background: var(--accent-hover);
+}
+.planner-see-verdict-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+  flex: 1;
+  min-width: 200px;
+}
+
+@media (max-width: 640px) {
+  .hn-refine-panel .score-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ── Mobile ── */
 @media (max-width: 640px) {

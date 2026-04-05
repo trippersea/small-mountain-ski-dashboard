@@ -228,6 +228,7 @@ const els = {
   heroPassSelect:      $('heroPassSelect'),
   heroSnowSelect:      $('heroSnowSelect'),
   hnRefineToggle:      $('hnRefineToggle'),
+  plannerSeeVerdictBtn: $('plannerSeeVerdictBtn'),
 };
 
 let _mapModeBtns = null;
@@ -863,6 +864,12 @@ function commitPlannerPriorityChange(key, btn) {
   pushUrlDebounced();
   if (key === 'howfar') { render(); updateFilterBadge(); }
   else { debouncedRender(); updateFilterBadge(); }
+}
+
+/** Scroll to Best Match — verdict is above the refine panel, so users need an explicit jump after changing filters. */
+function scrollToBestMatchFromFilters(source) {
+  trackEvent('refine_see_verdict', { source: String(source || 'unknown') });
+  els.verdictSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
@@ -2174,7 +2181,12 @@ function wireMobileFilterDrawer() {
   triggerBtn.addEventListener('click', openDrawer);
   if (closeBtn)  closeBtn.addEventListener('click', closeDrawer);
   if (overlay)   overlay.addEventListener('click', closeDrawer);
-  if (doneBtn)   doneBtn.addEventListener('click', closeDrawer);
+  if (doneBtn) {
+    doneBtn.addEventListener('click', () => {
+      closeDrawer();
+      setTimeout(() => scrollToBestMatchFromFilters('drawer_done'), 280);
+    });
+  }
   if (resetBtn)  resetBtn.addEventListener('click', () => { document.getElementById('resetFilters')?.click(); closeDrawer(); updateFilterBadge(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drawer.hidden) closeDrawer(); });
 }
@@ -2358,6 +2370,8 @@ function wireEvents() {
       setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
     }
   });
+
+  els.plannerSeeVerdictBtn?.addEventListener('click', () => scrollToBestMatchFromFilters('refine_footer'));
 
   document.querySelectorAll('.pass-pref-btn').forEach(btn => {
     btn.addEventListener('click', () => {
