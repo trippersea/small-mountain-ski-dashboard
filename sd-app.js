@@ -1314,8 +1314,10 @@ function _renderStorm(resorts) {
   }
   els.stormGrid.innerHTML = enriched.map((item, i) => {
     const days = (item.wx.forecast || []).map(f => `<span class="metric-chip">${f.day}: ${f.snow.toFixed(1)}"</span>`).join('');
-    return `<div class="planner-card ${i === 0 ? 'top' : ''}">
-      <div class="planner-title">${esc(item.resort.name)}</div>
+    const id = esc(item.resort.id);
+    const nm = esc(item.resort.name);
+    return `<div class="planner-card planner-card--clickable ${i === 0 ? 'top' : ''}" data-resort-id="${id}" role="button" tabindex="0" aria-label="Full conditions for ${nm}">
+      <div class="planner-title">${nm}</div>
       <div class="planner-meta">${esc(item.resort.state)} · ${esc(item.resort.passGroup)} · <strong>${item.storm.toFixed(1)}"</strong> over 3 days</div>
       ${days}<div class="metric-chip">${formatDrive(item.resort.id)}</div>
     </div>`;
@@ -1342,8 +1344,10 @@ function renderHiddenGems(resorts) {
       r.avgSnowfall > 150 ? `${r.avgSnowfall}" avg snowfall` : null,
       drive !== '—' ? drive : null,
     ].filter(Boolean).slice(0, 4);
-    return `<div class="planner-card">
-      <div class="planner-title">${esc(r.name)}</div>
+    const rid = esc(r.id);
+    const rnm = esc(r.name);
+    return `<div class="planner-card planner-card--clickable" data-resort-id="${rid}" role="button" tabindex="0" aria-label="Full conditions for ${rnm}">
+      <div class="planner-title">${rnm}</div>
       <div class="planner-meta">${esc(r.state)} · ${esc(r.passGroup)}</div>
       <div class="gem-reasons">${reasons.map(re => `<span class="metric-chip">${esc(re)}</span>`).join('')}</div>
     </div>`;
@@ -2403,6 +2407,30 @@ function wireEvents() {
     updateMap(filteredResorts());
     mapModeBtns().forEach(b => b.classList.toggle('active', b.dataset.mapMode === state.mapMode));
   }));
+
+  function onStormOrGemCardClick(e) {
+    const card = e.target.closest('.planner-card--clickable[data-resort-id]');
+    if (!card || !e.currentTarget.contains(card)) return;
+    if (e.target.closest('a, button')) return;
+    state.selectedId = card.dataset.resortId;
+    const _r = RESORTS.find(r => r.id === state.selectedId);
+    if (_r) trackEvent('mountain_viewed', { mountain_name: _r.name, mountain_state: _r.state, source: e.currentTarget.id === 'stormGrid' ? 'storm_chaser' : 'hidden_gems' });
+    renderDetail({ scroll: true });
+  }
+  function onStormOrGemCardKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest('.planner-card--clickable[data-resort-id]');
+    if (!card || !e.currentTarget.contains(card)) return;
+    e.preventDefault();
+    state.selectedId = card.dataset.resortId;
+    const _r = RESORTS.find(r => r.id === state.selectedId);
+    if (_r) trackEvent('mountain_viewed', { mountain_name: _r.name, mountain_state: _r.state, source: e.currentTarget.id === 'stormGrid' ? 'storm_chaser' : 'hidden_gems' });
+    renderDetail({ scroll: true });
+  }
+  els.stormGrid?.addEventListener('click', onStormOrGemCardClick);
+  els.stormGrid?.addEventListener('keydown', onStormOrGemCardKeydown);
+  els.hiddenGemGrid?.addEventListener('click', onStormOrGemCardClick);
+  els.hiddenGemGrid?.addEventListener('keydown', onStormOrGemCardKeydown);
 
   // Table event delegation
   els.comparisonBody.addEventListener('click', e => {

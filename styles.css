@@ -3803,7 +3803,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   opacity: 0.85;
 }
 
-/* Storm / Hidden gems — two-line headers */
+/* Storm / Hidden gems — section headers */
 .feature-panel .feature-panel-header {
   margin-bottom: 14px;
 }
@@ -3811,20 +3811,27 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   background: var(--bg-section-alt);
   box-shadow: none;
 }
-.feature-kicker {
-  margin: 0 0 4px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
 .feature-title {
   margin: 0 0 6px;
   font-size: 20px;
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.02em;
+}
+#stormGrid .planner-card--clickable,
+#hiddenGemGrid .planner-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+#stormGrid .planner-card--clickable:hover,
+#hiddenGemGrid .planner-card--clickable:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 18px rgba(43, 109, 233, 0.12);
+}
+#stormGrid .planner-card--clickable:focus-visible,
+#hiddenGemGrid .planner-card--clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .feature-desc {
   margin: 0;
