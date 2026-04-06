@@ -2070,9 +2070,9 @@ function renderMobileCards(decorated, emptyOpts) {
       </div>
       <div class="mob-card-footer">
         <label class="mob-compare-label"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /> Compare</label>
-        <div style="display:flex;gap:6px">
-          ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener">Website</a>` : ''}
-          <button class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details →</button>
+        <div class="mob-card-actions">
+          ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener noreferrer">Website</a>` : ''}
+          <button type="button" class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details →</button>
         </div>
       </div>
     </div>`;
@@ -2274,7 +2274,7 @@ function wireEvents() {
       const detailBtn = e.target.closest('[data-mob-detail]');
       if (detailBtn) { state.selectedId = detailBtn.dataset.mobDetail; renderDetail({ scroll: true }); return; }
       const card = e.target.closest('.mob-card[data-mob-id]');
-      if (!card || e.target.closest('input') || e.target.closest('button')) return;
+      if (!card || e.target.closest('input') || e.target.closest('button') || e.target.closest('a[href]')) return;
       state.selectedId = card.dataset.mobId;
       renderDetail({ scroll: true });
     });

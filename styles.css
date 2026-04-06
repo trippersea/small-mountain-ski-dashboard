@@ -1823,8 +1823,22 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 .mob-stat-val   { font-size: 14px; font-weight: 700; }
 .mob-card-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.mob-card-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.mob-card-actions > .mob-website-btn,
+.mob-card-actions > .mob-card-detail-btn {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 .mob-compare-label {
   display: flex;
@@ -1840,14 +1854,17 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 .mob-compare-label input { width: 15px; height: 15px; cursor: pointer; }
 .mob-card-detail-btn {
+  display: inline-flex;
+  align-items: center;
   background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 999px;
-  padding: 7px 14px;
-  font: 600 12px/1 inherit;
+  padding: 10px 12px;
+  font: 600 13px/1.2 'DM Sans', sans-serif;
   cursor: pointer;
   transition: opacity .12s;
+  -webkit-tap-highlight-color: transparent;
 }
 .mob-card-detail-btn:hover { opacity: .88; }
 
@@ -1884,17 +1901,21 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
   border-radius: 999px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  font-size: 16px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1.5px solid var(--border);
+  font: 600 13px/1.2 'DM Sans', sans-serif;
+  color: var(--text);
   text-decoration: none;
-  transition: background .12s;
-  flex-shrink: 0;
+  transition: border-color .12s, background .12s, color .12s;
+  -webkit-tap-highlight-color: transparent;
 }
-.mob-website-btn:hover { background: #deeaff; }
+.mob-website-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #f0f6ff;
+}
 
 /* ─── Verdict: context headline + reason chips + top-5 strip ─────────────────── */
 /* ═══════════════════════════════════════════════════════════════════════════════
