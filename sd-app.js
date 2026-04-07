@@ -1646,22 +1646,7 @@ function renderDetail({ scroll = false } = {}) {
 
   const forecast = wx?.forecast || [];
   const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
-  const bestDay = forecast.length ? forecast.reduce((best, day) => (day.snow > best.snow ? day : best), forecast[0]) : null;
   const hist  = historyCache.get(resort.id);
-
-  const factorEntries = skis ? [
-    ['Snow', skis.factors.snow, skis.factors.snow >= 18 ? 'Strong' : skis.factors.snow >= 12 ? 'Solid' : 'Mixed'],
-    ['How it’ll ski', skis.factors.skiability, skis.factors.skiability >= 22 ? 'High' : skis.factors.skiability >= 16 ? 'Good' : 'Limited'],
-    ['Size match', skis.factors.fit, skis.factors.fit >= 18 ? 'Good fit' : skis.factors.fit >= 12 ? 'Balanced' : 'Niche'],
-    ['Drive', skis.factors.drive, skis.factors.drive >= 14 ? 'Easy' : skis.factors.drive >= 8 ? 'Manageable' : 'Longer'],
-    ['Ticket value', skis.factors.value, skis.factors.value >= 14 ? 'Strong' : skis.factors.value >= 8 ? 'Fair' : 'Premium'],
-    ['Crowds', skis.factors.crowd, skis.factors.crowd >= 14 ? 'Favorable' : skis.factors.crowd >= 8 ? 'Moderate' : 'Busy'],
-  ] : [];
-
-
-
-
-
   const reportSlug = resort.id;
   const sponsor = getSponsor(resort.id);
   const detailBdAttr = skis ? (() => {
@@ -1712,6 +1697,34 @@ function renderDetail({ scroll = false } = {}) {
     ? `<span class="dhr-fit-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Fit score ${skis.skiScore} — tap for breakdown"><span class="dhr-fit-pill-dot" aria-hidden="true"></span><span class="dhr-fit-pill-num">${skis.skiScore}</span></span>`
     : '';
 
+  const detailWatchSentence = !vd
+    ? 'Forecasts can shift inside 24 hours — peek out the window before you commit.'
+    : vd.rainLikely
+    ? 'Rain is likely at this elevation — expect wet, sloppy snow.'
+    : vd.tier === 'bad' && !vd.rainLikely
+    ? 'Very little new snow in the forecast — you are mostly skiing whatever is already on the hill.'
+    : resort.price >= 175
+    ? 'Ticket is on the steep side — worth it if the day delivers.'
+    : 'Forecasts can shift inside 24 hours — peek out the window before you commit.';
+
+  const whyProseHtml = (wx && bd)
+    ? preferenceReasons(resort, wx, bd)
+      .map(p => {
+        const t = String(p).trim();
+        return /[.!?…]$/.test(t) ? esc(t) : esc(t) + '.';
+      })
+      .join(' ')
+    : esc('Still pulling forecast data — check back in a moment.');
+
+  const decisionProseHtml = (wx && vd)
+    ? esc(vd.detail) + ' Watch: ' + esc(detailWatchSentence)
+    : wx
+    ? esc('Once the forecast loads, we will spell out the conditions call here.')
+    : esc('Loading…');
+
+  const crowdFootText = `${crowd.label} outlook — ${crowd.reasons.length ? crowd.reasons[0] : crowd.confidence}`;
+  const crowdFootHtml = esc(crowdFootText);
+
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
@@ -1735,22 +1748,18 @@ function renderDetail({ scroll = false } = {}) {
     <div id="detailConditionsSlot" class="dhr-cond-slot" hidden></div>
   </div>
 
-  <div style="background:var(--panel);border:1px solid var(--border);border-top:none;border-radius:0 0 18px 18px;overflow:hidden">
+  <div class="detail-body-panel">
 
-    <div style="padding:20px 24px;border-bottom:1px solid var(--border)">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">The call</div>
-      <p style="font-size:14px;line-height:1.72;color:var(--text);margin:0 0 12px">${(wx && bd) ? preferenceReasons(resort, wx, bd).join(' ') : 'Still loading forecast data — check back in a moment.'}</p>
-      <div style="padding:11px 14px;background:var(--bg);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.55">
-        <strong style="color:var(--text)">Watch: </strong>${
-          vd?.rainLikely ? 'Rain is likely at this elevation — conditions will be wet and slushy.' :
-          vd?.tier === 'bad' && !vd?.rainLikely ? 'Very little new snow in the forecast — base conditions only.' :
-          resort.price >= 175 ? 'Higher ticket price than average — factor that into your day.' :
-          'Forecasts can shift 24 hours out. Check conditions the morning of.'
-        }
-      </div>
+    <div class="detail-body-block">
+      <p class="detail-why-prose">${whyProseHtml}</p>
     </div>
 
-    <div style="padding:20px 24px;border-bottom:1px solid var(--border)">
+    <div class="detail-body-block">
+      <p class="detail-decision-prose">${decisionProseHtml}</p>
+      <p class="detail-crowd-foot">${crowdFootHtml}</p>
+    </div>
+
+    <div class="detail-body-block">
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
         <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Next 3 days</div>
         ${hist ? `<div style="font-size:12px;color:var(--muted)">7-day base: <strong style="color:var(--text)">${hist.total}"</strong></div>` : ''}
@@ -1767,7 +1776,7 @@ function renderDetail({ scroll = false } = {}) {
       }).join('') : '<div style="font-size:13px;color:var(--muted)">Loading forecast…</div>'}
     </div>
 
-    <div style="padding:20px 24px;border-bottom:1px solid var(--border)">
+    <div class="detail-body-block">
       <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Mountain</div>
       ${[
         ['Vertical', resort.vertical.toLocaleString() + ' ft'],
@@ -1785,7 +1794,7 @@ function renderDetail({ scroll = false } = {}) {
       <div style="padding:9px 0;font-size:12px;color:var(--muted)">*Prices vary by date and promotions.</div>
     </div>
 
-    <div style="padding:20px 24px">
+    <div class="detail-body-block detail-body-block--last">
       <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Terrain breakdown</div>
       ${[['Beginner', tb.beginner], ['Intermediate', tb.intermediate], ['Advanced', tb.advanced]].map(([lbl, pct]) => `
         <div style="display:grid;grid-template-columns:96px 1fr 36px;align-items:center;gap:10px;margin-bottom:10px">
@@ -1793,9 +1802,6 @@ function renderDetail({ scroll = false } = {}) {
           <div style="height:5px;background:var(--border);border-radius:999px;overflow:hidden"><div style="width:${Math.round(pct*100)}%;height:100%;background:var(--accent);border-radius:999px"></div></div>
           <div style="font-size:12px;color:var(--muted);text-align:right">${Math.round(pct*100)}%</div>
         </div>`).join('')}
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);line-height:1.6">
-        <strong style="color:var(--text)">Crowd outlook: </strong>${esc(crowd.label)} · ${crowd.reasons.length ? crowd.reasons[0] : crowd.confidence}
-      </div>
     </div>
 
   </div>
