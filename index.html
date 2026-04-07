@@ -76,13 +76,29 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "WhereToSkiNext.com",
-    "url": "https://www.wheretoskinext.com",
-    "description": "250+ ski mountains ranked in real time by snow forecast, drive time, pass access and crowds. Free, no account needed.",
-    "applicationCategory": "SportsApplication",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "operatingSystem": "Web browser"
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Where should I ski this weekend near me?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Enter your ZIP code or city at WhereToSkiNext.com. We score every mountain within your drive window by live snow forecast, crowd outlook, and pass coverage — then surface one recommendation, not a ranked list you have to sort through yourself." }
+      },
+      {
+        "@type": "Question",
+        "name": "Which ski resort has the most snow right now?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The Storm Chaser section shows the four mountains with the highest 3-day snowfall forecast. Sort the full table by Storm Snow to rank all 256 mountains by incoming snowfall." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it worth skiing without fresh snow?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Often yes. The scoring weighs recent 7-day snowfall and base depth alongside the 3-day forecast. A mountain with 300 inches on the base and no incoming storm often skis better than one chasing a thin 2-inch system." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I find a quieter ski resort on a holiday weekend?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Set Crowd Level to Quiet Slopes in the preferences panel. The scoring deprioritizes major Epic and Ikon resorts over peak weekends and surfaces independent mountains with comparable snow that most people drive past." }
+      }
+    ]
   }
   </script>
 </head>
@@ -578,81 +594,157 @@
     })();
   </script>
 
-  <section class="seo-content-section" aria-label="About WhereToSkiNext">
-    <div class="seo-inner">
+  <!-- SEO CONTENT — static, crawlable. Visible before JS loads. -->
+  <div class="seo-page-sections">
 
-      <div class="seo-lead">
-        <h2>Find the best ski resort for this weekend</h2>
-        <p>WhereToSkiNext.com scores 256 US ski mountains in real time — combining live snow forecast, your drive time, pass affiliation, crowd outlook, and ticket price into one clear recommendation. Enter your ZIP code or city and we'll tell you exactly where to ski, whether you're leaving from Boston, New York, Denver, Chicago, or Seattle.</p>
+    <!-- How it works -->
+    <section class="seo-how" aria-labelledby="seo-how-title">
+      <div class="seo-container">
+        <h2 id="seo-how-title" class="seo-section-title">One answer, not a list</h2>
+        <p class="seo-section-sub">Most ski planning tools give you data. We give you a decision. Enter your location and we score 256 mountains by what actually matters for <em>this</em> weekend.</p>
+        <div class="seo-steps">
+          <div class="seo-step">
+            <div class="seo-step-num">1</div>
+            <div class="seo-step-body">
+              <strong>Tell us where you're starting from</strong>
+              <p>Enter a ZIP code or city. We calculate real drive times — not straight-line distance — to every mountain in the database from your door.</p>
+            </div>
+          </div>
+          <div class="seo-step">
+            <div class="seo-step-num">2</div>
+            <div class="seo-step-body">
+              <strong>Set your pass, distance, and snow preference</strong>
+              <p>Hold an Epic, Ikon, or Indy pass? Tell us. Willing to drive 4 hours for powder but not for a groomer day? Tell us that too. The scoring adjusts in real time.</p>
+            </div>
+          </div>
+          <div class="seo-step">
+            <div class="seo-step-num">3</div>
+            <div class="seo-step-body">
+              <strong>Get one confident pick with the reasoning behind it</strong>
+              <p>Not a ranked list you have to interpret yourself. One mountain, one verdict — with the snow forecast, crowd outlook, and drive time that drove the call.</p>
+            </div>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div class="seo-grid">
-
-        <div class="seo-col">
-          <h3>Ski resorts by pass</h3>
-          <ul>
-            <li><a href="/ski-pass-comparison/">Epic vs Ikon pass comparison</a> — side-by-side breakdown of both major passes across every region</li>
-            <li><strong>Epic Pass resorts</strong> — Stowe, Vail, Breckenridge, Park City, Stevens Pass, and 50+ more ranked by live conditions</li>
-            <li><strong>Ikon Pass resorts</strong> — Jackson Hole, Mammoth, Steamboat, Killington, Sugarbush, Snowbird, and 60+ more</li>
-            <li><strong>Indy Pass resorts</strong> — 100+ independent mountains including Berkshire East, Jay Peak, Bridger Bowl, and Mt. Bachelor</li>
-            <li><strong>Independent resorts</strong> — no pass required; ranked on conditions, value, and crowds just like the majors</li>
-          </ul>
+    <!-- Regions -->
+    <section class="seo-regions" aria-labelledby="seo-regions-title">
+      <div class="seo-container">
+        <h2 id="seo-regions-title" class="seo-section-title">Ski resorts across the US</h2>
+        <p class="seo-section-sub">256 mountains across 34 states, from local hills to destination resorts. Every one scored the same way.</p>
+        <div class="seo-region-grid">
+          <a href="/ski/vermont/" class="seo-region-card">
+            <div class="seo-region-name">Vermont</div>
+            <div class="seo-region-mountains">Killington · Stowe · Sugarbush · Jay Peak · Mad River Glen</div>
+          </a>
+          <a href="/ski/new-hampshire/" class="seo-region-card">
+            <div class="seo-region-name">New Hampshire</div>
+            <div class="seo-region-mountains">Loon Mountain · Cannon · Waterville Valley · Bretton Woods</div>
+          </a>
+          <a href="/ski/maine/" class="seo-region-card">
+            <div class="seo-region-name">Maine</div>
+            <div class="seo-region-mountains">Sunday River · Sugarloaf · Saddleback · Black Mountain</div>
+          </a>
+          <a href="/ski/new-york/" class="seo-region-card">
+            <div class="seo-region-name">New York</div>
+            <div class="seo-region-mountains">Whiteface · Hunter · Gore Mountain · Windham · Holiday Valley</div>
+          </a>
+          <a href="/ski/colorado/" class="seo-region-card">
+            <div class="seo-region-name">Colorado</div>
+            <div class="seo-region-mountains">Vail · Breckenridge · Telluride · Steamboat · Wolf Creek</div>
+          </a>
+          <a href="/ski/utah/" class="seo-region-card">
+            <div class="seo-region-name">Utah</div>
+            <div class="seo-region-mountains">Park City · Deer Valley · Alta · Snowbird · Solitude</div>
+          </a>
+          <a href="/ski/montana/" class="seo-region-card">
+            <div class="seo-region-name">Montana</div>
+            <div class="seo-region-mountains">Big Sky · Whitefish Mountain · Bridger Bowl · Red Lodge</div>
+          </a>
+          <a href="/ski/washington/" class="seo-region-card">
+            <div class="seo-region-name">Washington</div>
+            <div class="seo-region-mountains">Crystal Mountain · Stevens Pass · Mt. Baker · White Pass</div>
+          </a>
+          <a href="/ski/california/" class="seo-region-card">
+            <div class="seo-region-name">California</div>
+            <div class="seo-region-mountains">Mammoth · Palisades Tahoe · Heavenly · Kirkwood · June Mountain</div>
+          </a>
+          <a href="/ski/wyoming/" class="seo-region-card">
+            <div class="seo-region-name">Wyoming</div>
+            <div class="seo-region-mountains">Jackson Hole · Grand Targhee · Snow King</div>
+          </a>
+          <a href="/ski/idaho/" class="seo-region-card">
+            <div class="seo-region-name">Idaho</div>
+            <div class="seo-region-mountains">Sun Valley · Schweitzer · Bogus Basin · Brundage</div>
+          </a>
+          <a href="/ski/oregon/" class="seo-region-card">
+            <div class="seo-region-name">Oregon</div>
+            <div class="seo-region-mountains">Mt. Bachelor · Mt. Hood Meadows · Timberline · Willamette Pass</div>
+          </a>
         </div>
-
-        <div class="seo-col">
-          <h3>Ski resorts by region</h3>
-          <ul>
-            <li><a href="/ski/vermont/">Vermont ski resorts</a> — Killington, Stowe, Sugarbush, Mad River Glen, Jay Peak</li>
-            <li><a href="/ski/new-hampshire/">New Hampshire ski resorts</a> — Loon Mountain, Cannon, Waterville Valley, Bretton Woods</li>
-            <li><a href="/ski/maine/">Maine ski resorts</a> — Sunday River, Sugarloaf, Saddleback</li>
-            <li><a href="/ski/colorado/">Colorado ski resorts</a> — Vail, Breckenridge, Telluride, Steamboat, Arapahoe Basin, Wolf Creek</li>
-            <li><a href="/ski/utah/">Utah ski resorts</a> — Park City, Deer Valley, Alta, Snowbird, Solitude, Brighton</li>
-            <li><a href="/ski/new-york/">New York ski resorts</a> — Whiteface, Hunter, Gore Mountain, Windham, Holiday Valley</li>
-            <li><a href="/ski/montana/">Montana ski resorts</a> — Big Sky, Whitefish Mountain, Bridger Bowl</li>
-            <li><a href="/ski/washington/">Washington ski resorts</a> — Crystal Mountain, Stevens Pass, Mt. Baker, The Summit at Snoqualmie</li>
-          </ul>
-        </div>
-
-        <div class="seo-col">
-          <h3>How the ski score works</h3>
-          <p>Every mountain gets a live score built from six factors:</p>
-          <ul>
-            <li><strong>Snow quality</strong> — 3-day snowfall forecast from Open-Meteo, adjusted for summit elevation and temperature</li>
-            <li><strong>Skiability</strong> — vertical drop, acreage, and trail count scaled to what makes a good ski day</li>
-            <li><strong>Drive time</strong> — real road routing from your starting location, not straight-line distance</li>
-            <li><strong>Crowd outlook</strong> — predictive estimate based on day of week, holiday proximity, and pass network density</li>
-            <li><strong>Ticket value</strong> — day-of window rate compared to pass coverage and mountain size</li>
-            <li><strong>Mountain fit</strong> — terrain breakdown matched to your stated ability and preferences</li>
-          </ul>
-          <p>Scores update as forecasts change. The same mountain can rank differently on a Tuesday than a Saturday.</p>
-        </div>
-
       </div>
+    </section>
 
-      <div class="seo-faq">
-        <h3>Common questions</h3>
+    <!-- Pass guides -->
+    <section class="seo-passes" aria-labelledby="seo-passes-title">
+      <div class="seo-container">
+        <h2 id="seo-passes-title" class="seo-section-title">Ski pass coverage</h2>
+        <p class="seo-section-sub">Already have a pass? Set it once and every score reflects what you'd actually pay at the window. <a href="/ski-pass-comparison/">Compare Epic vs Ikon →</a></p>
+        <div class="seo-pass-grid">
+          <div class="seo-pass-card seo-pass-epic">
+            <div class="seo-pass-label">Epic Pass</div>
+            <p>Vail, Breckenridge, Park City, Stowe, Whistler, Heavenly, Northstar, Kirkwood, Attitash, Wildcat, Crotched, Mount Sunapee, Stevens Pass, and more. The largest network by resort count.</p>
+            <a href="/ski-pass-comparison/" class="seo-pass-link">Epic pass resorts →</a>
+          </div>
+          <div class="seo-pass-card seo-pass-ikon">
+            <div class="seo-pass-label">Ikon Pass</div>
+            <p>Jackson Hole, Mammoth, Steamboat, Killington, Sugarbush, Palisades Tahoe, Alta, Snowbird, Deer Valley, Crystal Mountain, Schweitzer, Taos, and more. Strong in the west.</p>
+            <a href="/ski-pass-comparison/" class="seo-pass-link">Ikon pass resorts →</a>
+          </div>
+          <div class="seo-pass-card seo-pass-indy">
+            <div class="seo-pass-label">Indy Pass</div>
+            <p>100+ independent mountains across the US including Berkshire East, Jay Peak, Cannon, Bridger Bowl, Mt. Bachelor, Whitefish, Saddleback, and regional gems most skiers overlook.</p>
+            <a href="/ski-pass-comparison/" class="seo-pass-link">Indy pass resorts →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="seo-faq-section" aria-labelledby="seo-faq-title">
+      <div class="seo-container">
+        <h2 id="seo-faq-title" class="seo-section-title">Common questions</h2>
         <div class="seo-faq-grid">
-          <div>
-            <h4>Where should I ski this weekend near me?</h4>
-            <p>Enter your ZIP code or city at the top of this page. We score every mountain within your drive window by live snow forecast and crowd outlook, then give you one recommendation — not a list you have to sort through yourself.</p>
+          <div class="seo-faq-item">
+            <h3>Where should I ski this weekend near me?</h3>
+            <p>Enter your ZIP code or city at the top of this page. We score every mountain within your drive window by live snow forecast, crowd outlook, and pass coverage — then surface one recommendation, not a ranked list you have to sort through yourself.</p>
           </div>
-          <div>
-            <h4>Which ski resort has the most snow right now?</h4>
-            <p>The Storm Chaser section on the homepage shows the four mountains with the most forecast snowfall in the next 3 days. Sort the full table by Storm Snow to see all 256 mountains ranked by incoming snowfall.</p>
+          <div class="seo-faq-item">
+            <h3>Which ski resort has the most snow right now?</h3>
+            <p>The Storm Chaser section on the homepage shows the four mountains with the highest 3-day snowfall forecast, updated as the forecast changes. Sort the full table by Storm Snow to rank all 256 mountains by incoming snowfall.</p>
           </div>
-          <div>
-            <h4>Is it worth skiing without fresh snow?</h4>
-            <p>Yes — the scoring factors in base depth and recent 7-day snowfall alongside the 3-day forecast. A mountain with a deep consolidated base often outscores one chasing a small storm. The verdict card explains the conditions reasoning for your top pick.</p>
+          <div class="seo-faq-item">
+            <h3>Is it worth skiing without fresh snow?</h3>
+            <p>Often yes. The scoring weighs recent 7-day snowfall and base depth alongside the 3-day forecast. A mountain with 300" on the base and no incoming storm often skis better than one chasing a thin 2" system. The verdict explains the specific conditions reasoning for your pick.</p>
           </div>
-          <div>
-            <h4>How do I find a quiet ski resort on a busy weekend?</h4>
-            <p>Set Crowd Level to "Quiet Slopes" in the preferences panel. The scoring will deprioritize major Epic and Ikon resorts on peak weekends and surface smaller independents with the same or better snow that most people drive past.</p>
+          <div class="seo-faq-item">
+            <h3>How do I find a quieter ski resort on a holiday weekend?</h3>
+            <p>Set Crowd Level to "Quiet Slopes" in the preferences panel. The scoring will deprioritize major Epic and Ikon resorts over peak weekends and surface independent mountains with comparable or better snow conditions that most people drive straight past.</p>
+          </div>
+          <div class="seo-faq-item">
+            <h3>Does WhereToSkiNext cover small local ski areas?</h3>
+            <p>Yes — independents are scored the same way as destination resorts. A local hill with great grooming, low crowds, and a $55 ticket can outscore a $250 resort on the wrong weekend. The scoring doesn't favor mountains based on marketing budget or pass affiliation.</p>
+          </div>
+          <div class="seo-faq-item">
+            <h3>How accurate is the snow forecast?</h3>
+            <p>Snow forecasts come from Open-Meteo, a high-resolution weather model updated every few hours. We use summit-elevation-adjusted temperatures to distinguish rain-line events from actual snow. Forecasts beyond 3 days carry more uncertainty — we weight the next 24 hours most heavily.</p>
           </div>
         </div>
       </div>
+    </section>
 
-    </div>
-  </section>
+  </div>
 
   <footer class="site-footer">
     <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
