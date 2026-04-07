@@ -3962,3 +3962,106 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
     margin-left: auto;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SEO CONTENT SECTION — static, crawlable, below the fold
+   ═══════════════════════════════════════════════════════════════════════════ */
+.seo-content-section {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px 24px 16px;
+}
+.seo-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.seo-lead h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 12px;
+  letter-spacing: -.01em;
+}
+.seo-lead p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 72ch;
+  margin: 0;
+}
+.seo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px 40px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.seo-col h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 12px;
+  letter-spacing: -.01em;
+}
+.seo-col p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.seo-col ul {
+  margin: 0;
+  padding: 0 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.seo-col ul li {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.seo-col ul li a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.seo-col ul li a:hover { text-decoration: underline; }
+.seo-col ul li strong { color: var(--text); font-weight: 600; }
+.seo-faq {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.seo-faq h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 18px;
+}
+.seo-faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px 40px;
+}
+.seo-faq-grid h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+.seo-faq-grid p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0;
+}
+@media (max-width: 900px) {
+  .seo-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .seo-content-section { padding: 32px 16px 12px; }
+  .seo-grid { grid-template-columns: 1fr; gap: 24px; }
+  .seo-faq-grid { grid-template-columns: 1fr; }
+}
