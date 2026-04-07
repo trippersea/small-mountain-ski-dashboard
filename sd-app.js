@@ -1638,32 +1638,9 @@ function renderDetail({ scroll = false } = {}) {
     ['Crowds', skis.factors.crowd, skis.factors.crowd >= 14 ? 'Favorable' : skis.factors.crowd >= 8 ? 'Moderate' : 'Busy'],
   ] : [];
 
-  const factorGridHtml = skis ? `
-    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;align-content:start;">
-      ${factorEntries.map(([label, val, note]) => `
-        <div style="padding:12px 13px;border:1px solid var(--border);border-radius:14px;background:#fff;min-height:78px;display:flex;flex-direction:column;justify-content:space-between;">
-          <div style="font-size:12px;font-weight:700;color:var(--text);line-height:1.25">${label}</div>
-          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:10px">
-            <span style="font-size:13px;color:var(--muted)">${note}</span>
-            <strong style="font-size:18px;line-height:1;color:var(--text)">${val}</strong>
-          </div>
-        </div>`).join('')}
-    </div>
-    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:14px;font-weight:700;color:var(--text)">Overall fit</span>
-      <span style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${skis.skiScore}</span>
-    </div>` : '<div class="muted small" style="margin-top:12px">Weather loading…</div>';
 
-  const snowRowsHtml = wx ? `
-    <div style="display:grid;gap:8px;margin-top:12px;">
-      ${forecast.map(f => `
-        <div style="display:grid;grid-template-columns:48px 72px 1fr auto;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:${bestDay && f.day === bestDay.day ? 'rgba(43,109,233,.06)' : '#fff'};">
-          <div style="font-size:14px;font-weight:700;color:var(--text)">${f.day}</div>
-          <div style="font-size:18px;font-weight:800;line-height:1;color:${f.snow >= 1 ? 'var(--accent)' : 'var(--text)'}">${f.snow.toFixed(1)}<span style="font-size:14px">\"</span></div>
-          <div style="font-size:13px;color:var(--muted)">${f.lo}° – ${f.hi}°F · ${f.wind || 0} mph</div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:${bestDay && f.day === bestDay.day ? 'var(--accent)' : 'var(--muted)'}">${bestDay && f.day === bestDay.day && f.snow > 0 ? 'Best Day' : ''}</div>
-        </div>`).join('')}
-    </div>` : '<div class="muted small" style="margin-top:12px">Weather loading…</div>';
+
+
 
   const reportSlug = resort.id;
   const sponsor = getSponsor(resort.id);
@@ -1683,158 +1660,106 @@ function renderDetail({ scroll = false } = {}) {
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
-<div class="detail-header-rebuilt" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch">
-
-  <div class="detail-top-card" style="background:linear-gradient(135deg, rgba(43,109,233,.10), rgba(43,109,233,.18));border:1px solid rgba(43,109,233,.22);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:210px">
-    <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Selected Mountain</div>
-        ${sponsor ? `<div class="featured-pill">Featured Partner</div>` : ``}
+  <div class="detail-brief-header" style="
+    position:relative;
+    padding:28px 26px 24px;
+    background: linear-gradient(180deg, rgba(10,20,35,.5) 0%, rgba(10,20,35,.76) 100%), url('/hero-bg.jpg');
+    background-size:cover;
+    background-position:center 35%;
+    border-radius:18px 18px 0 0;
+    color:#fff;
+    overflow:hidden;
+  ">
+    <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:6px">${esc(resort.state)} · ${esc(resort.passGroup)}${resort.region ? ' · ' + esc(resort.region) : ''}</div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
+        <h2 style="font-size:clamp(1.6rem,3.5vw,2.1rem);font-weight:600;color:#fff;margin:0 0 6px;letter-spacing:-.025em;line-height:1.1">${esc(resort.name)}</h2>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px">${resort.vertical.toLocaleString()} ft vertical · ${resort.trails} trails · avg ${resort.avgSnowfall}" snow</div>
+        ${sponsor?.tagline ? `<div style="font-size:14px;color:rgba(255,255,255,.8);font-weight:500;margin-bottom:14px">${esc(sponsor.tagline)}</div>` : ''}
+        <p style="font-size:15px;color:rgba(255,255,255,.88);line-height:1.65;margin:0 0 16px;max-width:54ch">${vd ? esc(vd.detail) : wx ? 'Forecast-driven pick for this mountain.' : 'Loading forecast…'}</p>
+        ${vd?.subPoints?.length ? `<div style="margin-bottom:14px;display:flex;flex-direction:column;gap:4px">${vd.subPoints.map(p => `<div style="font-size:13px;color:rgba(255,255,255,.7)">· ${esc(p)}</div>`).join('')}</div>` : ''}
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
+          ${vd ? `<span style="font-size:12px;padding:5px 11px;border-radius:999px;background:${vd.tier === 'great' ? 'rgba(74,222,128,.2)' : vd.tier === 'good' ? 'rgba(56,189,248,.2)' : vd.tier === 'marginal' ? 'rgba(251,191,36,.2)' : 'rgba(248,113,113,.2)'};border:1px solid ${vd.tier === 'great' ? 'rgba(74,222,128,.4)' : vd.tier === 'good' ? 'rgba(56,189,248,.4)' : vd.tier === 'marginal' ? 'rgba(251,191,36,.4)' : 'rgba(248,113,113,.4)'};color:${vd.tier === 'great' ? '#86efac' : vd.tier === 'good' ? '#7dd3fc' : vd.tier === 'marginal' ? '#fde68a' : '#fca5a5'}">${esc(vd.label)}</span>` : ''}
+          ${wx ? `<span style="font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85)">${stormTotal.toFixed(1)}" forecast</span>` : ''}
+          ${getDriveMins(resort.id) ? `<span style="font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85)">${formatDrive(resort.id)} drive</span>` : ''}
+          <span style="font-size:12px;padding:5px 11px;border-radius:999px;background:${crowd.label === 'Light' ? 'rgba(74,222,128,.2)' : crowd.label === 'Heavy' ? 'rgba(248,113,113,.2)' : 'rgba(251,191,36,.2)'};border:1px solid ${crowd.label === 'Light' ? 'rgba(74,222,128,.4)' : crowd.label === 'Heavy' ? 'rgba(248,113,113,.4)' : 'rgba(251,191,36,.4)'};color:${crowd.label === 'Light' ? '#86efac' : crowd.label === 'Heavy' ? '#fca5a5' : '#fde68a'}">${esc(crowd.label)} crowds</span>
+          <span style="font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85)">$${resort.price} ticket</span>
+          ${skis ? `<span class="vcard-score-mini-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — tap for breakdown" style="font-size:12px;padding:5px 11px 5px 8px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);color:rgba(255,255,255,.9);display:inline-flex;align-items:center;gap:5px;cursor:pointer"><span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;flex-shrink:0"></span>${skis.skiScore}</span>` : ''}
+        </div>
       </div>
-      <div style="font-size:28px;font-weight:800;line-height:1.06;letter-spacing:-.03em;color:var(--text);margin-top:10px">${esc(resort.name)}</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:8px">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
-      ${sponsor?.tagline ? `<div style="font-size:14px;line-height:1.55;color:var(--accent);font-weight:600;margin-top:12px">${esc(sponsor.tagline)}</div>` : ``}
-      <div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:12px">${wx ? `Snow, drive, pass, and how busy it might get — baked into one pick for this hill.` : `Still loading weather — the numbers show up when the forecast lands.`}</div>
     </div>
-    <div class="dhr-actions" style="margin-top:14px;flex-wrap:wrap;gap:8px">
-      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See Full Report →</a>
-      ${sponsor ? `<a class="btn-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book Now →</a>` : ``}
-      ${resort.website ? `<a class="dhr-link-secondary" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ``}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/" style="background:#fff;color:#111!important;font-size:13px;font-weight:600;padding:9px 20px;border-radius:999px;text-decoration:none">See full report →</a>
+      ${sponsor ? `<a class="btn-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer" style="background:rgba(255,255,255,.15);color:#fff!important;font-size:13px;font-weight:500;padding:9px 18px;border-radius:999px;text-decoration:none;border:1px solid rgba(255,255,255,.3)">Book now →</a>` : ''}
+      ${resort.website ? `<a style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)!important;font-size:13px;font-weight:500;padding:9px 18px;border-radius:999px;text-decoration:none;border:1px solid rgba(255,255,255,.22)" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit website ↗</a>` : ''}
     </div>
+    <div id="detailConditionsSlot" hidden style="margin-top:12px"></div>
   </div>
 
-  <div class="detail-top-card" style="background:var(--panel-2);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:210px">
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-        <div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Recommendation</div>
-          <div style="font-size:24px;font-weight:800;color:var(--text);margin-top:10px;line-height:1.08">${vd ? vd.label : skis ? 'Loading…' : 'Loading…'}</div>
-        </div>
-        ${skis ? `
-          <div class="detail-score-ring-new ${vd ? (vd.tier === 'marginal' ? 'ring-mid' : vd.tier === 'bad' ? 'ring-low' : '') : (skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low')} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Overall fit ${skis.skiScore} — hover for breakdown">
-            <div class="dsrn-num">${skis.skiScore}</div>
-            <div class="dsrn-lbl">Fit</div>
-          </div>` : ''}
-      </div>
+  <div style="background:var(--panel);border:1px solid var(--border);border-top:none;border-radius:0 0 18px 18px;overflow:hidden">
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
-        <div style="padding:11px 12px;border-radius:14px;background:#fff;border:1px solid var(--border)">
-          <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Crowds</div>
-          <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:6px">${esc(crowd.label)}</div>
-        </div>
-        <div style="padding:11px 12px;border-radius:14px;background:#fff;border:1px solid var(--border)">
-          <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">3-Day Snow</div>
-          <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:6px">${wx ? `${stormTotal.toFixed(1)}"` : '—'}</div>
-        </div>
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">The call</div>
+      <p style="font-size:14px;line-height:1.72;color:var(--text);margin:0 0 12px">${(wx && bd) ? preferenceReasons(resort, wx, bd).join(' ') : 'Still loading forecast data — check back in a moment.'}</p>
+      <div style="padding:11px 14px;background:var(--bg);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.55">
+        <strong style="color:var(--text)">Watch: </strong>${
+          vd?.rainLikely ? 'Rain is likely at this elevation — conditions will be wet and slushy.' :
+          vd?.tier === 'bad' && !vd?.rainLikely ? 'Very little new snow in the forecast — base conditions only.' :
+          resort.price >= 175 ? 'Higher ticket price than average — factor that into your day.' :
+          'Forecasts can shift 24 hours out. Check conditions the morning of.'
+        }
       </div>
     </div>
 
-    <div style="font-size:12px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid rgba(27,42,58,.08)">
-      <div style="font-weight:700;margin-bottom:8px;color:var(--text)">Why it works for you</div>
-      ${(wx && bd) ? preferenceReasons(resort, wx, bd).map(r => `<div style="margin-top:6px">• ${esc(r)}</div>`).join('') : '<div>• Conditions are still loading.</div>'}
-      ${vd?.detail ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(27,42,58,.06);font-size:11px;color:var(--muted);line-height:1.6">${esc(vd.detail)}</div>` : ''}
-    </div>
-  </div>
-
-  <div class="detail-top-card" style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;min-height:210px">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Mountain Stats</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:14px;flex:1">
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${resort.vertical.toLocaleString()} ft</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Vertical</div>
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Next 3 days</div>
+        ${hist ? `<div style="font-size:12px;color:var(--muted)">7-day base: <strong style="color:var(--text)">${hist.total}"</strong></div>` : ''}
       </div>
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${resort.trails}</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Trails</div>
-      </div>
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${resort.avgSnowfall}"</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Avg Snowfall</div>
-      </div>
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">$${resort.price}</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Day Ticket*</div>
-      </div>
-      <div>
-        <div style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${formatDrive(resort.id)}</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Drive</div>
-      </div>
-      <div>
-        <div style="font-size:18px;font-weight:800;line-height:1.15;color:var(--text)">${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()}</div>
-        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px">Base / Summit</div>
-      </div>
-    </div>
-    <div id="detailConditionsSlot" hidden style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"></div>
-  </div>
-
-</div>
-
-  <div class="detail-grid-new" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch;grid-auto-rows:minmax(320px, auto)">
-
-    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Trail mix</h3>
-      <div style="display:grid;gap:10px;">
-        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Beginner</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.beginner * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.beginner * 100)}%</div></div>
-        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Intermediate</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.intermediate * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.intermediate * 100)}%</div></div>
-        <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Advanced</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.advanced * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.advanced * 100)}%</div></div>
-      </div>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:grid;gap:10px;">
-        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Base / Summit</span><strong style="color:var(--text)">${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</strong></div>
-        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Avg Snowfall</span><strong style="color:var(--text)">${resort.avgSnowfall}\"</strong></div>
-        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Night Skiing</span><strong style="color:var(--text)">${resort.night ? 'Yes' : 'No'}</strong></div>
-        <div class="detail-extra-row" style="display:flex;justify-content:space-between;gap:12px;font-size:14px"><span style="color:var(--muted)">Terrain Park</span><strong style="color:var(--text)">${resort.terrainPark ? 'Yes' : 'No'}</strong></div>
-      </div>
+      ${wx ? forecast.map(f => {
+        const maxSnow = Math.max(...forecast.map(x => x.snow), 1);
+        const pct = Math.round((f.snow / maxSnow) * 100);
+        return `<div style="display:grid;grid-template-columns:40px 52px 1fr auto;align-items:center;gap:12px;margin-bottom:10px">
+          <div style="font-size:14px;font-weight:500;color:var(--text)">${f.day}</div>
+          <div style="font-size:15px;font-weight:600;color:${f.snow >= 1 ? 'var(--accent)' : 'var(--muted)'}">${f.snow.toFixed(1)}"</div>
+          <div style="height:4px;background:var(--border);border-radius:999px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--accent);border-radius:999px"></div></div>
+          <div style="font-size:12px;color:var(--muted);white-space:nowrap">${f.lo}°–${f.hi}°F · ${f.wind || 0} mph</div>
+        </div>`;
+      }).join('') : '<div style="font-size:13px;color:var(--muted)">Loading forecast…</div>'}
     </div>
 
-    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
-        <h3 class="sub-card-title-new" style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Next 3 Days Snow</h3>
-        ${wx && bestDay && bestDay.snow > 0 ? `<div style="font-size:12px;color:var(--muted)">Best day: <strong style="color:var(--text)">${bestDay.day}</strong></div>` : ''}
-      </div>
-      <div style="margin-top:10px;font-size:13px;color:var(--muted)">${hist ? `Recent 7-day snowfall: <strong style="color:var(--text)">${hist.total}\"</strong>` : 'Loading recent snowfall…'}</div>
-      ${snowRowsHtml}
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Mountain</div>
+      ${[
+        ['Vertical', resort.vertical.toLocaleString() + ' ft'],
+        ['Trails', resort.trails + ' trails'],
+        ['Terrain', Math.round(tb.beginner*100)+'% beginner · '+Math.round(tb.intermediate*100)+'% intermediate · '+Math.round(tb.advanced*100)+'% advanced'],
+        ['Base / Summit', resort.baseElevation.toLocaleString()+' / '+resort.summitElevation.toLocaleString()+' ft'],
+        ['Avg snowfall', resort.avgSnowfall+'"'],
+        ['Day ticket*', '$'+resort.price + (resort.passGroup !== 'Independent' ? ' · ' + esc(resort.passGroup) + ' pass access' : '')],
+        ['Night skiing', resort.night ? 'Yes' : 'No'],
+        ['Terrain park', resort.terrainPark ? 'Yes' : 'No'],
+      ].map(([k,v]) => `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px">
+        <span style="color:var(--muted)">${k}</span>
+        <span style="font-weight:500;color:var(--text);text-align:right;max-width:60%">${v}</span>
+      </div>`).join('')}
+      <div style="padding:9px 0;font-size:12px;color:var(--muted)">*Prices vary by date and promotions.</div>
     </div>
 
-    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
-        <h3 class="sub-card-title-new" style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">How we ranked it</h3>
-        ${skis ? `<div style="font-size:12px;color:var(--muted)">Tap the ring for the breakdown</div>` : ''}
-      </div>
-      ${factorGridHtml}
-    </div>
-
-    <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Decision Summary</h3>
-      <div style="display:grid;gap:14px;align-content:start;height:100%">
-        <div>
-          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">The read</div>
-          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${vd ? esc(vd.detail) : 'Loading conditions data…'}</div>
-          ${vd?.subPoints?.length ? `<div style="margin-top:8px;display:grid;gap:4px">${vd.subPoints.map(p => `<div style="font-size:12px;color:var(--muted)">• ${esc(p)}</div>`).join('')}</div>` : ''}
-        </div>
-        <div style="padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--border)">
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Watch-out</div>
-          <div style="font-size:13px;line-height:1.7;color:var(--muted)">${
-            vd?.rainLikely ? 'Rain is likely at this elevation — conditions will be wet and slushy.' :
-            vd?.tier === 'bad' && !vd?.rainLikely ? 'Very little new snow in the forecast — base conditions only.' :
-            resort.price >= 175 ? 'Higher ticket price than average — factor that into your day.' :
-            'Check conditions the morning of — forecasts can shift 24 hours out.'
-          }</div>
-        </div>
-        <div style="margin-top:auto;padding-top:4px">
-          <div class="detail-crowd-label ${crowdClass(crowd.label)}" style="margin-bottom:6px;font-size:18px;font-weight:800;color:var(--accent)">${crowd.label} crowds</div>
-          <div style="font-size:12px;color:var(--muted)">Our rough read: <strong style="color:var(--text)">${crowd.confidence}</strong></div>
-          ${crowd.reasons.length
-            ? `<div class="detail-crowd-reasons" style="margin-top:10px;display:grid;gap:6px">
-                 ${crowd.reasons.map(r => `<div class="detail-crowd-reason" style="font-size:13px;color:var(--muted)">• ${esc(r)}</div>`).join('')}
-               </div>`
-            : ''}
-        </div>
+    <div style="padding:20px 24px">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Terrain breakdown</div>
+      ${[['Beginner', tb.beginner], ['Intermediate', tb.intermediate], ['Advanced', tb.advanced]].map(([lbl, pct]) => `
+        <div style="display:grid;grid-template-columns:96px 1fr 36px;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="font-size:13px;color:var(--muted)">${lbl}</div>
+          <div style="height:5px;background:var(--border);border-radius:999px;overflow:hidden"><div style="width:${Math.round(pct*100)}%;height:100%;background:var(--accent);border-radius:999px"></div></div>
+          <div style="font-size:12px;color:var(--muted);text-align:right">${Math.round(pct*100)}%</div>
+        </div>`).join('')}
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);line-height:1.6">
+        <strong style="color:var(--text)">Crowd outlook: </strong>${esc(crowd.label)} · ${crowd.reasons.length ? crowd.reasons[0] : crowd.confidence}
       </div>
     </div>
 
   </div>
-
-  <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
 
 </div>`;
 
