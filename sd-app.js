@@ -1381,6 +1381,11 @@ function renderHiddenGems(resorts) {
 
 // ─── Compare table — with empty state ─────────────────────────────────────────
 function renderCompareTable(resorts) {
+  // Clear any pre-rendered static rows injected at build time before JS hydrates
+  if (els.comparisonBody?.dataset?.prerendered === 'true') {
+    els.comparisonBody.innerHTML = '';
+    delete els.comparisonBody.dataset.prerendered;
+  }
   const qRaw = (state.tableSearch || '').trim();
   const q = qRaw.toLowerCase();
   const w = normalizedWeights();
