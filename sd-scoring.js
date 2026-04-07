@@ -376,39 +376,39 @@ function preferenceReasons(resort, wx, breakdown) {
 
   // ── Snow ──────────────────────────────────────────────────────────────────
   if (snowPref >= 15) {
-    if (stormTotal >= 12) reasons.push(`${stormTotal.toFixed(1)}" forecast — meets your powder target`);
-    else if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" forecast — approaching powder territory`);
-    else reasons.push(`Only ${stormTotal.toFixed(1)}" in forecast — below your powder preference`);
+    if (stormTotal >= 12) reasons.push(`${stormTotal.toFixed(1)}" in the forecast — enough fresh snow for how picky you said you are`);
+    else if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" coming — interesting, but not a full-on powder day`);
+    else reasons.push(`Only ${stormTotal.toFixed(1)}" on tap — light for someone hunting powder`);
   } else if (snowPref >= 10) {
-    if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" meets your storm snow target`);
-    else reasons.push(`${stormTotal.toFixed(1)}" in forecast — below your 6"+ preference`);
+    if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" — lines up with wanting a storm day`);
+    else reasons.push(`${stormTotal.toFixed(1)}" — a bit light vs “6+ inches matters”`);
   } else if (snowPref >= 5) {
-    if (stormTotal >= 3) reasons.push(`${stormTotal.toFixed(1)}" forecast meets your snow preference`);
-    else reasons.push(`${stormTotal.toFixed(1)}" — lighter than your 3"+ preference`);
+    if (stormTotal >= 3) reasons.push(`${stormTotal.toFixed(1)}" — matches your “a few inches helps” bar`);
+    else reasons.push(`${stormTotal.toFixed(1)}" — under your 3"+ threshold`);
   } else {
-    if (stormTotal > 0) reasons.push(`${stormTotal.toFixed(1)}" in the 3-day forecast`);
-    else reasons.push('No new snow forecast — groomed base expected');
+    if (stormTotal > 0) reasons.push(`${stormTotal.toFixed(1)}" in the next few days`);
+    else reasons.push('No new snow in the forecast — expect firm or groomed');
   }
 
   // ── Mountain size fit ──────────────────────────────────────────────────────
   const vert = resort.vertical;
   if (state.verticalFilter === 'small') {
-    if (vert <= 900) reasons.push(`${vert.toLocaleString()} ft vertical — matches your small mountain preference`);
-    else reasons.push(`${vert.toLocaleString()} ft vertical — larger than your small hill preference`);
+    if (vert <= 900) reasons.push(`${vert.toLocaleString()} ft — right-sized if you wanted a local hill`);
+    else reasons.push(`${vert.toLocaleString()} ft — bigger than a “small hill” day for you`);
   } else if (state.verticalFilter === 'mid') {
-    if (vert >= 800 && vert <= 1800) reasons.push(`${vert.toLocaleString()} ft vertical — mid-size, matches your preference`);
+    if (vert >= 800 && vert <= 1800) reasons.push(`${vert.toLocaleString()} ft — squarely mid-size, what you asked for`);
     else reasons.push(`${vert.toLocaleString()} ft vertical`);
   } else if (state.verticalFilter === 'big') {
-    if (vert >= 1400) reasons.push(`${vert.toLocaleString()} ft vertical — matches your big mountain preference`);
-    else reasons.push(`${vert.toLocaleString()} ft vertical — smaller than your big mountain preference`);
+    if (vert >= 1400) reasons.push(`${vert.toLocaleString()} ft — plenty of vert if you wanted a big hill`);
+    else reasons.push(`${vert.toLocaleString()} ft — on the smaller side for a “big mountain” day`);
   }
 
   // ── Pass match ────────────────────────────────────────────────────────────
   if (state.passFilter !== 'All') {
     if (resort.passGroup === state.passFilter) {
-      reasons.push(`${resort.passGroup} pass access — no window ticket needed`);
+      reasons.push(`Covered on your ${resort.passGroup} pass — no window ticket`);
     } else {
-      reasons.push(`No ${state.passFilter} pass here — window ticket at $${resort.price}`);
+      reasons.push(`No ${state.passFilter} pass here — walk-up around $${resort.price}`);
     }
   }
 
@@ -416,29 +416,29 @@ function preferenceReasons(resort, wx, breakdown) {
   const crowd = crowdForecast(resort);
   if (crowdPref >= 10) {
     if (crowd.label === 'Light' || crowd.label === 'Light-Moderate') {
-      reasons.push(`${crowd.label} crowds — matches your quiet slopes preference`);
+      reasons.push(`${crowd.label} crowds — what you wanted if you asked for quiet`);
     } else {
-      reasons.push(`${crowd.label} crowds — busier than your preference`);
+      reasons.push(`${crowd.label} crowds — busier than you said you like`);
     }
   } else if (crowd.label === 'Light') {
-    reasons.push('Light crowd outlook');
+    reasons.push('Should be pretty quiet');
   } else {
-    reasons.push(`${crowd.label} crowd outlook`);
+    reasons.push(`${crowd.label} crowds expected`);
   }
 
   // ── Value ─────────────────────────────────────────────────────────────────
   if (valuePref >= 5) {
-    if (resort.price <= 85)       reasons.push(`$${resort.price} ticket — strong value`);
-    else if (resort.price <= 125) reasons.push(`$${resort.price} ticket — fair value`);
-    else                          reasons.push(`$${resort.price} ticket — above your value preference`);
+    if (resort.price <= 85)       reasons.push(`$${resort.price} walk-up — easy on the wallet`);
+    else if (resort.price <= 125) reasons.push(`$${resort.price} walk-up — reasonable`);
+    else                          reasons.push(`$${resort.price} walk-up — pricey for how you filtered`);
   }
 
   // ── Drive ─────────────────────────────────────────────────────────────────
   const drive = getDriveMins(resort.id);
   if (drive !== null) {
-    if (drive <= 90)       reasons.push(`${formatDrive(resort.id)} drive — easy day trip`);
-    else if (drive <= 150) reasons.push(`${formatDrive(resort.id)} drive`);
-    else if (drive > 240)  reasons.push(`${formatDrive(resort.id)} drive — plan accordingly`);
+    if (drive <= 90)       reasons.push(`${formatDrive(resort.id)} — easy day-trip range`);
+    else if (drive <= 150) reasons.push(`${formatDrive(resort.id)} in the car`);
+    else if (drive > 240)  reasons.push(`${formatDrive(resort.id)} — long haul, pack snacks`);
   }
 
   return reasons.slice(0, 4);

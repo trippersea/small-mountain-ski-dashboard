@@ -138,7 +138,7 @@
         </div>
         <div class="filter-drawer-footer">
           <button id="filterDrawerReset" class="btn btn-secondary">Reset All</button>
-          <button id="filterDrawerDone" class="btn btn-primary">See Best Match</button>
+          <button id="filterDrawerDone" class="btn btn-primary">See top pick</button>
         </div>
       </div>
     </div>
@@ -149,7 +149,7 @@
       <div class="hn-shell">
         <div class="hn-inner">
           <h1 id="heroHeadline" class="hn-headline">Where should you ski <em>this weekend?</em></h1>
-          <p class="hn-subhead">Enter your <strong>ZIP code</strong> or city, then <strong>Find My Mountain</strong> — we score <span id="heroMountainCount">256</span> mountains by live snow, real drive time, your pass, and crowd outlook.</p>
+          <p class="hn-subhead">Enter your <strong>ZIP code</strong> or city, then <strong>Find My Mountain</strong> — we rank <span id="heroMountainCount">256</span> mountains by live snow, real drive time, your pass, and how crowded it’ll probably be.</p>
           <div class="hn-box">
             <div class="hn-box-top">
               <div class="hn-loc">
@@ -206,10 +206,10 @@
       <div id="verdictCard">
                 <div class="vcard vcard--dash vcard--tier-good vcard--demo-placeholder">
           <div class="vcard-hero-dash">
-            <div class="vcard-eyebrow-dash">BEST MATCH · NOT PERSONALIZED YET</div>
-            <p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — your real best match (with drive time) appears here.</p>
-            <div class="vcard-name-dash vcard-name-dash--static">Your mountain loads after ZIP</div>
-            <p class="vcard-writeup vcard-writeup--dash vcard-demo-blurb">Enter your ZIP or city and we’ll score 256 mountains by live snow, your drive time, and crowd outlook — then tell you exactly where to go this weekend.</p>
+            <div class="vcard-eyebrow-dash">ADD YOUR TOWN · DRIVE TIME COMES NEXT</div>
+            <p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — once we know where you’re leaving from, this fills in with a real pick and drive time.</p>
+            <div class="vcard-name-dash vcard-name-dash--static">Your mountain shows up after you add a starting point</div>
+            <p class="vcard-writeup vcard-writeup--dash vcard-demo-blurb">Tell us where you’re leaving from and we’ll weigh snow, drive, pass, and crowds — then point you at a hill that makes sense for this weekend.</p>
             <div class="vcard-dash-pills">
               <span class="vcard-dash-pill vcard-dash-pill--cond-good">Live data loads next</span>
               <span class="vcard-dash-pill">Snow &amp; weather</span>
@@ -260,7 +260,7 @@
           <div class="planner-main-title">Refine your results<span id="plannerFromLabel"></span></div>
           <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit location</button>
         </div>
-        <p class="planner-subtitle">Tap any filter to update your <strong>Best Match</strong> and ranking. Your pick is <strong>above</strong> this panel — use <strong>See Best Match</strong> when you’re ready to view it.</p>
+        <p class="planner-subtitle">Change a filter and we’ll reshuffle the list. Your top pick stays <strong>above</strong> — tap <strong>See top pick</strong> when you want to jump back up.</p>
       </div>
       <div id="plannerDetails" class="planner-details">
         <div class="score-grid">
@@ -343,8 +343,8 @@
         </div>
       </div>
       <div class="planner-refine-footer">
-        <button type="button" class="planner-see-verdict-btn" id="plannerSeeVerdictBtn" aria-describedby="plannerSeeVerdictHint">See Best Match ↑</button>
-        <p id="plannerSeeVerdictHint" class="planner-see-verdict-hint">Scrolls to your updated top pick (above).</p>
+        <button type="button" class="planner-see-verdict-btn" id="plannerSeeVerdictBtn" aria-describedby="plannerSeeVerdictHint">See top pick ↑</button>
+        <p id="plannerSeeVerdictHint" class="planner-see-verdict-hint">Scrolls to your updated pick at the top.</p>
       </div>
     </section>
 
@@ -375,7 +375,7 @@
               <option value="1">Weekend (3h–6h)</option>
               <option value="2">All distances</option>
             </select>
-            <span class="fp-micro-hint">Synced with Your Ski Preferences—change either place.</span>
+            <span class="fp-micro-hint">Same as <strong>Trip type</strong> under Find My Mountain — change either place.</span>
           </div>
 
           <div class="fp-field">
@@ -397,7 +397,7 @@
           <div class="fp-field">
             <label class="fp-label" for="sortBy">Sort by</label>
             <select id="sortBy" class="fp-select">
-              <option value="planner">Ski Score</option>
+              <option value="planner">Fit for you</option>
               <option value="storm">Storm Snow</option>
               <option value="drive">Drive Time</option>
               <option value="price">Price</option>
@@ -430,14 +430,14 @@
       <!-- Desktop table (hidden on mobile via CSS) -->
       <div class="table-wrap">
         <table id="compareTable" class="comparison-table" aria-label="Mountain comparison table">
-          <caption class="visually-hidden">Mountains ranked by Ski Score. Click any column header to sort.</caption>
+          <caption class="visually-hidden">Mountains in our best order for your trip right now. Click any column header to sort.</caption>
           <thead>
             <tr>
               <th scope="col"><span class="visually-hidden">Select for comparison</span></th>
               <th scope="col" class="sortable-th" data-sort="name">Name <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="state">State <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="pass">Pass <span class="sort-indicator"></span></th>
-              <th scope="col" class="sortable-th" data-sort="planner" title="Ski Score: composite of snow quality, mountain fit, drive time, value, and crowd outlook (0–100)">Score <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="planner" title="Rough blend of snow, drive, ticket value, crowds, and what you asked for — tap for the math in full conditions">Fit <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="storm">Storm 3d <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="hist7day" title="Snowfall in the past 7 days">7-Day Snow <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="drive">Drive <span class="sort-indicator"></span></th>
@@ -514,7 +514,7 @@
 
     <!-- DATABASE SUMMARY FOOTER -->
     <section class="db-summary-section">
-      <div class="db-summary-label" style="text-align:center">What's in the database</div>
+      <div class="db-summary-label" style="text-align:center">What we track</div>
       <div id="summaryCards" class="db-summary-grid"></div>
     </section>
 

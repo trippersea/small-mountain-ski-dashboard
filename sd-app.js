@@ -67,7 +67,7 @@ function getSponsor(resortId) {
       font-size: 12px; color: #667a96;
     }
     .detail-score-ring-new {
-      width: 56px; height: 56px; border-radius: 50%;
+      width: 48px; height: 48px; border-radius: 50%;
       background: #22b38a;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -76,11 +76,11 @@ function getSponsor(resortId) {
     .detail-score-ring-new.ring-low { background: #d95b5b; }
     .detail-score-ring-new.ring-mid { background: #f59e0b; }
     .detail-score-ring-new .dsrn-num {
-      font-size: 20px; font-weight: 800; color: #fff; line-height: 1;
+      font-size: 17px; font-weight: 800; color: #fff; line-height: 1;
     }
     .detail-score-ring-new .dsrn-lbl {
-      font-size: 7px; font-weight: 600; color: rgba(255,255,255,.8);
-      text-transform: uppercase; letter-spacing: .06em;
+      font-size: 6px; font-weight: 600; color: rgba(255,255,255,.85);
+      text-transform: uppercase; letter-spacing: .05em;
     }
     .detail-header-rebuilt .dhr-actions {
       display: flex; align-items: center; gap: 10px;
@@ -866,7 +866,7 @@ function commitPlannerPriorityChange(key, btn) {
   else { debouncedRender(); updateFilterBadge(); }
 }
 
-/** Scroll to Best Match — verdict is above the refine panel, so users need an explicit jump after changing filters. */
+/** Scroll to top pick — verdict is above the refine panel, so users need an explicit jump after changing filters. */
 function scrollToBestMatchFromFilters(source) {
   trackEvent('refine_see_verdict', { source: String(source || 'unknown') });
   els.verdictSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1006,13 +1006,13 @@ function renderVerdict(resorts) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
           <div class="vcard-placeholder-icon">🚗</div>
           <div class="vcard-placeholder-title">No mountains in this drive window</div>
-          <div class="vcard-placeholder-sub">Your list is empty for the selected range. Widen <strong>Drive time</strong> in Your Ski Preferences or pick a different starting point.</div>
+          <div class="vcard-placeholder-sub">Your list is empty for the selected range. Widen <strong>Drive time</strong> under Refine results or pick a different starting point.</div>
         </div>`;
       } else if (!anyWx && !weatherFetchPhase1Done) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
           <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
           <div class="vcard-placeholder-title">Loading live forecasts…</div>
-          <div class="vcard-placeholder-sub">Hang on — we are pulling snow and weather for mountains near you. Scores and the top pick appear as soon as data arrives.</div>
+          <div class="vcard-placeholder-sub">We’re still pulling forecasts and snow totals — your pick will show up as soon as the numbers land.</div>
         </div>`;
       } else if (!anyWx && weatherFetchPhase1Done && weatherFetchPhase2Done) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
@@ -1024,13 +1024,13 @@ function renderVerdict(resorts) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
           <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
           <div class="vcard-placeholder-title">Still loading forecasts…</div>
-          <div class="vcard-placeholder-sub">Filling in snow totals for more mountains. The compare table may update first for resorts closest to you.</div>
+          <div class="vcard-placeholder-sub">Still filling in snow for more mountains — the list below may refresh first for places near you.</div>
         </div>`;
       } else {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
           <div class="vcard-placeholder-icon">⛷</div>
           <div class="vcard-placeholder-title">Almost ready</div>
-          <div class="vcard-placeholder-sub">Pick completes as soon as scores finish computing.</div>
+          <div class="vcard-placeholder-sub">Almost there — we’re recalculating after the latest forecast.</div>
         </div>`;
       }
     } else {
@@ -1046,11 +1046,11 @@ function renderVerdict(resorts) {
   const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn } = v;
   const runningItems = collectRunnerUpItems(resorts, resort.id, 3);
 
-  // ── Eyebrow: "BEST MATCH · IKON PASS · BOSTON" (middle dot, screenshot parity)
+  // ── Eyebrow: "TOP PICK · IKON PASS · BOSTON"
   const _passEw   = state.passFilter !== 'All' ? (state.passFilter + ' Pass') : null;
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
-  const _eyebrowBase = ['Best match', _passEw, _cityEw].filter(Boolean).join(' · ').toUpperCase();
-  const _eyebrow     = !state.origin ? `${_eyebrowBase} · ENTER ZIP OR CITY` : _eyebrowBase;
+  const _eyebrowBase = ['Top pick', _passEw, _cityEw].filter(Boolean).join(' · ').toUpperCase();
+  const _eyebrow     = !state.origin ? `${_eyebrowBase} · ADD YOUR TOWN` : _eyebrowBase;
   // ── Short name for Book button ───────────────────────────────────────────────
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
 
@@ -1077,7 +1077,7 @@ function renderVerdict(resorts) {
     : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Mod. crowds</span>';
 
   const zipNudgeHtml = !state.origin
-    ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — <strong>your</strong> best match (with drive time) replaces this placeholder.</p>`
+    ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — once we know where you’re leaving from, this swaps to a real mountain with drive time.</p>`
     : '';
 
   const verdictBdAttr = breakdown?.components ? (() => {
@@ -1092,11 +1092,6 @@ function renderVerdict(resorts) {
     });
     return `data-bd="${btoa(bd)}"`;
   })() : '';
-  const verdictScoreRingClass = verdictBdAttr ? 'vcard-score-ring-dash score-badge--tip' : 'vcard-score-ring-dash';
-  const verdictScoreRingExtra = verdictBdAttr ? ` ${verdictBdAttr} tabindex="0"` : '';
-  const verdictScoreAria = verdictBdAttr
-    ? `aria-label="Score ${scoreNum} — hover or tap for breakdown"`
-    : `aria-label="Ski score ${scoreNum} out of 100"`;
 
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}">
@@ -1111,7 +1106,7 @@ function renderVerdict(resorts) {
           <span class="vcard-dash-pill">${esc(snowPillText)}</span>
           ${driveText ? `<span class="vcard-dash-pill">${esc(driveText)} drive</span>` : ''}
           ${crowdPill}
-          <span class="vcard-score-mini-pill score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="Score ${scoreNum} — tap for breakdown"><span class="vcard-score-mini-dot"></span>${scoreNum}</span>
+          <span class="vcard-score-mini-pill score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="How we ranked this pick: ${scoreNum} — tap for breakdown"><span class="vcard-score-mini-dot"></span><span class="vcard-score-mini-lbl">Fit</span><span class="vcard-score-mini-num">${scoreNum}</span></span>
         </div>
       </div>
       <div class="vcard-body vcard-body-dash">
@@ -1180,7 +1175,10 @@ function renderVerdict(resorts) {
           <div class="hn-runner-name">${esc(item.resort.name)}</div>
           <div class="hn-runner-chips">${_rSnowHtml}${_rCrowdHtml}${_rPassHtml}</div>
           <div class="hn-runner-bottom">
-            <div><div class="hn-runner-score">${_rScore}</div>${_rDrive ? `<div class="hn-runner-drive">${esc(_rDrive)}</div>` : ''}</div>
+            <div class="hn-runner-meta">
+              ${_rDrive ? `<div class="hn-runner-drive">${esc(_rDrive)}</div>` : ''}
+              <div class="hn-runner-fit-row" title="How well this spot matches your settings"><span class="hn-runner-fit-label">Fit</span><span class="hn-runner-score">${_rScore}</span></div>
+            </div>
             ${_rBookHtml}
           </div>
         </div>`;
@@ -1208,7 +1206,7 @@ function buildWriteupPrompt(v, origin) {
     resort.vertical ? `${resort.vertical.toLocaleString()}ft vertical` : null,
     resort.passGroup !== 'Independent' ? `${resort.passGroup} pass access` : null,
   ].filter(Boolean).join('; ');
-  return `You are a ski trip advisor. In 1–2 natural, confident sentences explain why ${resort.name} in ${resort.state} is the top pick for this ski day${originStr ? ' for someone ' + originStr : ''}. Base it only on these facts: ${facts}. Ski score is ${breakdown.baseScore}/100. Verdict tier: ${tier}. Write like a knowledgeable friend — no filler phrases like "Looking at the data". Do not mention the score number.`;
+  return `You’re texting a friend who skis. In 1–2 short, confident sentences say why ${resort.name} in ${resort.state} is the right call for this ski day${originStr ? ' for someone ' + originStr : ''}. Use only these facts: ${facts}. Internally the model tiers this as "${tier}" — do not say "tier", "score", or any number out of 100. No corporate filler ("leverage", "insights"). Sound like a human on a lift pass.`;
 }
 
 async function fetchVerdictWriteup(v, origin) {
@@ -1255,7 +1253,7 @@ async function injectVerdictWriteup(v) {
     liveSlot.classList.remove('vcard-writeup--fallback');
     if (fb) fb.setAttribute('hidden', '');
   } else {
-    liveSlot.textContent = 'Tip: Everything above still uses live snow and drive data. This extra blurb could not be loaded right now.';
+    liveSlot.textContent = 'Short take unavailable right now — the forecast and pick above are still live.';
     liveSlot.classList.add('vcard-writeup--fallback');
     if (fb) fb.removeAttribute('hidden');
   }
@@ -1264,7 +1262,7 @@ async function injectVerdictWriteup(v) {
 // ─── Summary cards ────────────────────────────────────────────────────────────
 function renderSummaryCards(resorts) {
   els.summaryCards.innerHTML = [
-    dbStatHtml('Mountains',   resorts.length,                                           'in the database'),
+    dbStatHtml('Mountains',   resorts.length,                                           'on the map'),
     dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
     dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,        'resorts'),
     dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,        'resorts'),
@@ -1277,12 +1275,12 @@ function dbStatHtml(label, value, sub) {
 function cardBreakdown(b) {
   const c = b.components;
   return `<div class="breakdown">
-    <div>Snow quality: <strong>${c.snow.toFixed(1)}</strong></div>
-    <div>Skiability: <strong>${c.skiability.toFixed(1)}</strong></div>
-    <div>Mountain fit: <strong>${c.fit.toFixed(1)}</strong></div>
+    <div>Snow: <strong>${c.snow.toFixed(1)}</strong></div>
+    <div>How it’ll ski (temp, wind, size): <strong>${c.skiability.toFixed(1)}</strong></div>
+    <div>Size / type match: <strong>${c.fit.toFixed(1)}</strong></div>
     <div>Drive: <strong>${c.drive.toFixed(1)}</strong></div>
-    <div>Value: <strong>${c.value.toFixed(1)}</strong></div>
-    <div>Crowd outlook: <strong>${c.crowd.toFixed(1)}</strong></div>
+    <div>Ticket value: <strong>${c.value.toFixed(1)}</strong></div>
+    <div>Crowds: <strong>${c.crowd.toFixed(1)}</strong></div>
   </div>`;
 }
 
@@ -1510,7 +1508,7 @@ function renderCompareTable(resorts) {
         <td><div class="row-name">${esc(resort.name)}</div></td>
         <td>${esc(resort.state)}</td>
         <td>${esc(resort.passGroup)}</td>
-        <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" aria-label="Score ${planner} — hover for breakdown">${planner}</span></td>
+        <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" aria-label="Fit ${planner} — hover for breakdown">${planner}</span></td>
         <td>${storm}</td>
         <td class="hist-cell">${histCell}</td>
         <td>${formatDrive(resort.id)}</td>
@@ -1553,7 +1551,7 @@ function renderComparePanel() {
     ['Avg snowfall', r => `${r.avgSnowfall}"`],
     ['Day ticket*',  r => `$${r.price}`],
     ['Drive',        r => formatDrive(r.id)],
-    ['Ski Score',    r => { const wx = state.weatherCache[r.id]?.data; if (!wx) return '—'; return Math.round(plannerScoreBreakdown(r, wx, 0, w).baseScore); }],
+    ['Fit',          r => { const wx = state.weatherCache[r.id]?.data; if (!wx) return '—'; return Math.round(plannerScoreBreakdown(r, wx, 0, w).baseScore); }],
     ['Crowd',        r => crowdForecast(r).label],
     ['Base/summit',  r => `${r.baseElevation} / ${r.summitElevation} ft`],
   ];
@@ -1632,11 +1630,11 @@ function renderDetail({ scroll = false } = {}) {
   const hist  = historyCache.get(resort.id);
 
   const factorEntries = skis ? [
-    ['Snow Quality', skis.factors.snow, skis.factors.snow >= 18 ? 'Strong' : skis.factors.snow >= 12 ? 'Solid' : 'Mixed'],
-    ['Skiability', skis.factors.skiability, skis.factors.skiability >= 22 ? 'High' : skis.factors.skiability >= 16 ? 'Good' : 'Limited'],
-    ['Mountain Fit', skis.factors.fit, skis.factors.fit >= 18 ? 'Good fit' : skis.factors.fit >= 12 ? 'Balanced' : 'Niche'],
+    ['Snow', skis.factors.snow, skis.factors.snow >= 18 ? 'Strong' : skis.factors.snow >= 12 ? 'Solid' : 'Mixed'],
+    ['How it’ll ski', skis.factors.skiability, skis.factors.skiability >= 22 ? 'High' : skis.factors.skiability >= 16 ? 'Good' : 'Limited'],
+    ['Size match', skis.factors.fit, skis.factors.fit >= 18 ? 'Good fit' : skis.factors.fit >= 12 ? 'Balanced' : 'Niche'],
     ['Drive', skis.factors.drive, skis.factors.drive >= 14 ? 'Easy' : skis.factors.drive >= 8 ? 'Manageable' : 'Longer'],
-    ['Value', skis.factors.value, skis.factors.value >= 14 ? 'Strong' : skis.factors.value >= 8 ? 'Fair' : 'Premium'],
+    ['Ticket value', skis.factors.value, skis.factors.value >= 14 ? 'Strong' : skis.factors.value >= 8 ? 'Fair' : 'Premium'],
     ['Crowds', skis.factors.crowd, skis.factors.crowd >= 14 ? 'Favorable' : skis.factors.crowd >= 8 ? 'Moderate' : 'Busy'],
   ] : [];
 
@@ -1647,13 +1645,13 @@ function renderDetail({ scroll = false } = {}) {
           <div style="font-size:12px;font-weight:700;color:var(--text);line-height:1.25">${label}</div>
           <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:10px">
             <span style="font-size:13px;color:var(--muted)">${note}</span>
-            <strong style="font-size:22px;line-height:1;color:var(--text)">${val}</strong>
+            <strong style="font-size:18px;line-height:1;color:var(--text)">${val}</strong>
           </div>
         </div>`).join('')}
     </div>
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:14px;font-weight:700;color:var(--text)">Total Score</span>
-      <span style="font-size:30px;font-weight:800;line-height:1;color:var(--text)">${skis.skiScore}</span>
+      <span style="font-size:14px;font-weight:700;color:var(--text)">Overall fit</span>
+      <span style="font-size:24px;font-weight:800;line-height:1;color:var(--text)">${skis.skiScore}</span>
     </div>` : '<div class="muted small" style="margin-top:12px">Weather loading…</div>';
 
   const snowRowsHtml = wx ? `
@@ -1661,7 +1659,7 @@ function renderDetail({ scroll = false } = {}) {
       ${forecast.map(f => `
         <div style="display:grid;grid-template-columns:48px 72px 1fr auto;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:${bestDay && f.day === bestDay.day ? 'rgba(43,109,233,.06)' : '#fff'};">
           <div style="font-size:14px;font-weight:700;color:var(--text)">${f.day}</div>
-          <div style="font-size:24px;font-weight:800;line-height:1;color:${f.snow >= 1 ? 'var(--accent)' : 'var(--text)'}">${f.snow.toFixed(1)}<span style="font-size:16px">\"</span></div>
+          <div style="font-size:18px;font-weight:800;line-height:1;color:${f.snow >= 1 ? 'var(--accent)' : 'var(--text)'}">${f.snow.toFixed(1)}<span style="font-size:14px">\"</span></div>
           <div style="font-size:13px;color:var(--muted)">${f.lo}° – ${f.hi}°F · ${f.wind || 0} mph</div>
           <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:${bestDay && f.day === bestDay.day ? 'var(--accent)' : 'var(--muted)'}">${bestDay && f.day === bestDay.day && f.snow > 0 ? 'Best Day' : ''}</div>
         </div>`).join('')}
@@ -1696,9 +1694,7 @@ function renderDetail({ scroll = false } = {}) {
       <div style="font-size:28px;font-weight:800;line-height:1.06;letter-spacing:-.03em;color:var(--text);margin-top:10px">${esc(resort.name)}</div>
       <div style="font-size:13px;color:var(--muted);margin-top:8px">${esc(resort.state)} · ${esc(resort.passGroup)}</div>
       ${sponsor?.tagline ? `<div style="font-size:14px;line-height:1.55;color:var(--accent);font-weight:600;margin-top:12px">${esc(sponsor.tagline)}</div>` : ``}
-      <div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:12px">
-        ${wx ? `Forecast-driven pick with terrain, price, and crowds taken into account for this mountain.` : `Mountain details are loading — weather and score will fill in as live data arrives.`}
-      </div>
+      <div style="font-size:13px;line-height:1.65;color:var(--muted);margin-top:12px">${wx ? `Snow, drive, pass, and how busy it might get — baked into one pick for this hill.` : `Still loading weather — the numbers show up when the forecast lands.`}</div>
     </div>
     <div class="dhr-actions" style="margin-top:14px;flex-wrap:wrap;gap:8px">
       <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See Full Report →</a>
@@ -1712,12 +1708,12 @@ function renderDetail({ scroll = false } = {}) {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
         <div>
           <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Recommendation</div>
-          <div style="font-size:24px;font-weight:800;color:var(--text);margin-top:10px;line-height:1.08">${vd ? vd.label : skis ? 'Loading…' : 'Loading Score'}</div>
+          <div style="font-size:24px;font-weight:800;color:var(--text);margin-top:10px;line-height:1.08">${vd ? vd.label : skis ? 'Loading…' : 'Loading…'}</div>
         </div>
         ${skis ? `
-          <div class="detail-score-ring-new ${vd ? (vd.tier === 'marginal' ? 'ring-mid' : vd.tier === 'bad' ? 'ring-low' : '') : (skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low')} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — hover for breakdown">
+          <div class="detail-score-ring-new ${vd ? (vd.tier === 'marginal' ? 'ring-mid' : vd.tier === 'bad' ? 'ring-low' : '') : (skis.skiScore >= 70 ? '' : skis.skiScore >= 45 ? 'ring-mid' : 'ring-low')} score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Overall fit ${skis.skiScore} — hover for breakdown">
             <div class="dsrn-num">${skis.skiScore}</div>
-            <div class="dsrn-lbl">Ski Score</div>
+            <div class="dsrn-lbl">Fit</div>
           </div>` : ''}
       </div>
 
@@ -1734,7 +1730,7 @@ function renderDetail({ scroll = false } = {}) {
     </div>
 
     <div style="font-size:12px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid rgba(27,42,58,.08)">
-      <div style="font-weight:700;margin-bottom:8px;color:var(--text)">Why this scores for you</div>
+      <div style="font-weight:700;margin-bottom:8px;color:var(--text)">Why it works for you</div>
       ${(wx && bd) ? preferenceReasons(resort, wx, bd).map(r => `<div style="margin-top:6px">• ${esc(r)}</div>`).join('') : '<div>• Conditions are still loading.</div>'}
       ${vd?.detail ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(27,42,58,.06);font-size:11px;color:var(--muted);line-height:1.6">${esc(vd.detail)}</div>` : ''}
     </div>
@@ -1776,7 +1772,7 @@ function renderDetail({ scroll = false } = {}) {
   <div class="detail-grid-new" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch;grid-auto-rows:minmax(320px, auto)">
 
     <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
-      <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Terrain Mix</h3>
+      <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Trail mix</h3>
       <div style="display:grid;gap:10px;">
         <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Beginner</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.beginner * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.beginner * 100)}%</div></div>
         <div class="bar-row" style="display:grid;grid-template-columns:88px 1fr 40px;align-items:center;gap:10px"><div style="font-size:14px;color:var(--text)">Intermediate</div><div class="bar" style="height:8px;background:#e7eef7;border-radius:999px;overflow:hidden"><div class="bar-fill" style="width:${tb.intermediate * 100}%;height:100%;background:linear-gradient(90deg,#2b6de9,#22b38a)"></div></div><div style="font-size:14px;color:var(--text);text-align:right">${Math.round(tb.intermediate * 100)}%</div></div>
@@ -1801,8 +1797,8 @@ function renderDetail({ scroll = false } = {}) {
 
     <div class="sub-card-new" style="display:flex;flex-direction:column;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow-sm);min-height:320px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
-        <h3 class="sub-card-title-new" style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Why It Scores Well</h3>
-        ${skis ? `<div style="font-size:12px;color:var(--muted)">6-factor view</div>` : ''}
+        <h3 class="sub-card-title-new" style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">How we ranked it</h3>
+        ${skis ? `<div style="font-size:12px;color:var(--muted)">Tap the ring for the breakdown</div>` : ''}
       </div>
       ${factorGridHtml}
     </div>
@@ -1811,7 +1807,7 @@ function renderDetail({ scroll = false } = {}) {
       <h3 class="sub-card-title-new" style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase">Decision Summary</h3>
       <div style="display:grid;gap:14px;align-content:start;height:100%">
         <div>
-          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">Conditions verdict</div>
+          <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">The read</div>
           <div style="font-size:13px;line-height:1.7;color:var(--muted)">${vd ? esc(vd.detail) : 'Loading conditions data…'}</div>
           ${vd?.subPoints?.length ? `<div style="margin-top:8px;display:grid;gap:4px">${vd.subPoints.map(p => `<div style="font-size:12px;color:var(--muted)">• ${esc(p)}</div>`).join('')}</div>` : ''}
         </div>
@@ -1826,7 +1822,7 @@ function renderDetail({ scroll = false } = {}) {
         </div>
         <div style="margin-top:auto;padding-top:4px">
           <div class="detail-crowd-label ${crowdClass(crowd.label)}" style="margin-bottom:6px;font-size:18px;font-weight:800;color:var(--accent)">${crowd.label} crowds</div>
-          <div style="font-size:12px;color:var(--muted)">Confidence: <strong style="color:var(--text)">${crowd.confidence}</strong></div>
+          <div style="font-size:12px;color:var(--muted)">Our rough read: <strong style="color:var(--text)">${crowd.confidence}</strong></div>
           ${crowd.reasons.length
             ? `<div class="detail-crowd-reasons" style="margin-top:10px;display:grid;gap:6px">
                  ${crowd.reasons.map(r => `<div class="detail-crowd-reason" style="font-size:13px;color:var(--muted)">• ${esc(r)}</div>`).join('')}
@@ -2046,7 +2042,7 @@ function renderMobileCards(decorated, emptyOpts) {
     return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
       <div class="mob-card-top">
         <div class="mob-card-name">${esc(resort.name)}</div>
-        ${score !== null ? `<div class="mob-card-score" title="Ski Score">${score}</div>` : ''}
+        ${score !== null ? `<div class="mob-card-score" title="How well it fits your settings">${score}</div>` : ''}
       </div>
       <div class="mob-card-chips">
         <span class="mob-chip" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
@@ -2551,17 +2547,17 @@ function wireEvents() {
     if (!tip) return;
 
     const ROWS = [
-      { key: 'snow',       label: 'Snow',         color: '#2b6de9' },
-      { key: 'skiability', label: 'Skiability',   color: '#16a34a' },
-      { key: 'fit',        label: 'Mountain Fit', color: '#7c3aed' },
-      { key: 'drive',      label: 'Drive',        color: '#0891b2' },
-      { key: 'value',      label: 'Value',        color: '#d97706' },
-      { key: 'crowd',      label: 'Crowds',       color: '#db2777' },
+      { key: 'snow',       label: 'Snow',              color: '#2b6de9' },
+      { key: 'skiability', label: 'How it’ll ski',     color: '#16a34a' },
+      { key: 'fit',        label: 'Size match',        color: '#7c3aed' },
+      { key: 'drive',      label: 'Drive',             color: '#0891b2' },
+      { key: 'value',      label: 'Ticket value',      color: '#d97706' },
+      { key: 'crowd',      label: 'Crowds',            color: '#db2777' },
     ];
 
     function buildHtml(bd) {
       const max = 25;
-      return `<div class="stip-title">Score Breakdown</div>` +
+      return `<div class="stip-title">How the fit breaks down</div>` +
         ROWS.map(({ key, label, color }) => {
           const val = bd[key] ?? 0;
           const pct = Math.min(100, Math.round((val / max) * 100));
