@@ -1670,11 +1670,11 @@ function renderDetail({ scroll = false } = {}) {
     color:#fff;
     overflow:hidden;
   ">
-    <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:6px">${esc(resort.state)} · ${esc(resort.passGroup)}${resort.region ? ' · ' + esc(resort.region) : ''}</div>
+    <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.78);margin-bottom:6px">${esc(resort.state)} · ${esc(resort.passGroup)}${resort.region ? ' · ' + esc(resort.region) : ''}</div>
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
       <div style="flex:1;min-width:0">
         <h2 style="font-size:clamp(1.6rem,3.5vw,2.1rem);font-weight:600;color:#fff;margin:0 0 6px;letter-spacing:-.025em;line-height:1.1">${esc(resort.name)}</h2>
-        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px">${resort.vertical.toLocaleString()} ft vertical · ${resort.trails} trails · avg ${resort.avgSnowfall}" snow</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.82);margin-bottom:14px">${resort.vertical.toLocaleString()} ft vertical · ${resort.trails} trails · avg ${resort.avgSnowfall}" snow</div>
         ${sponsor?.tagline ? `<div style="font-size:14px;color:rgba(255,255,255,.8);font-weight:500;margin-bottom:14px">${esc(sponsor.tagline)}</div>` : ''}
         <p style="font-size:15px;color:rgba(255,255,255,.88);line-height:1.65;margin:0 0 16px;max-width:54ch">${vd ? esc(vd.detail) : wx ? 'Forecast-driven pick for this mountain.' : 'Loading forecast…'}</p>
         ${vd?.subPoints?.length ? `<div style="margin-bottom:14px;display:flex;flex-direction:column;gap:4px">${vd.subPoints.map(p => `<div style="font-size:13px;color:rgba(255,255,255,.7)">· ${esc(p)}</div>`).join('')}</div>` : ''}
@@ -1689,7 +1689,7 @@ function renderDetail({ scroll = false } = {}) {
       </div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/" style="background:#fff;color:#111!important;font-size:13px;font-weight:600;padding:9px 20px;border-radius:999px;text-decoration:none">See full report →</a>
+      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/" style="background:#2563eb;color:#fff!important;font-size:14px;font-weight:600;padding:10px 22px;border-radius:999px;text-decoration:none;box-shadow:0 2px 12px rgba(37,99,235,.35)">See full report →</a>
       ${sponsor ? `<a class="btn-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer" style="background:rgba(255,255,255,.15);color:#fff!important;font-size:13px;font-weight:500;padding:9px 18px;border-radius:999px;text-decoration:none;border:1px solid rgba(255,255,255,.3)">Book now →</a>` : ''}
       ${resort.website ? `<a style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)!important;font-size:13px;font-weight:500;padding:9px 18px;border-radius:999px;text-decoration:none;border:1px solid rgba(255,255,255,.22)" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit website ↗</a>` : ''}
     </div>
