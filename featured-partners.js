@@ -6,10 +6,7 @@
   // To add: insert an entry below, then run: node generate-mountain-pages.mjs
   // To remove: delete the entry, run the same script
   const FEATURED_PARTNERS = {
-'bousquet-ski-area': { bookingUrl: 'https://bousquetmountain.com/season-passes/', 
-tagline: 'Next Year Season Passes On Sale', 
-
-},
+'
   };
 
   function getFeaturedPartner(resortId) {
