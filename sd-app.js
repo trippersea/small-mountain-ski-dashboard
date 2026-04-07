@@ -275,6 +275,36 @@ function formatDriveMins(mins, estimated = false) {
 function formatDrive(resortId) {
   return formatDriveMins(getDriveMins(resortId), isDriveEstimated(resortId));
 }
+
+/** Prose line for runner-up cards (presentation only; uses same inputs as old chips). */
+function runnerUpBlurb(snowInches, cf, passGroup) {
+  const bits = [];
+  if (snowInches !== null) {
+    bits.push(snowInches > 0
+      ? `about ${snowInches.toFixed(1)} inches showing in the forecast`
+      : `not much snow in the forecast`);
+  }
+  if (cf) {
+    if (cf.label === 'Light') {
+      bits.push(cf.score <= 36 ? `usually stays pretty quiet` : `crowds tend to stay manageable`);
+    } else if (cf.label === 'Heavy') {
+      bits.push(`expect a busy day on the hill`);
+    } else if (cf.label === 'Moderate' || cf.label === 'Light-Moderate') {
+      bits.push(`moderate crowds`);
+    }
+  }
+  const passBit = passGroup === 'Epic' ? `Epic pass works here`
+    : passGroup === 'Ikon' ? `Ikon pass works here`
+    : passGroup === 'Indy' ? `Indy pass works here`
+    : '';
+  const body = bits.join(' and ');
+  let out = '';
+  if (body && passBit) out = `${body} — ${passBit}`;
+  else if (body) out = body;
+  else if (passBit) out = passBit;
+  else out = `Solid alternative with your settings`;
+  return out.charAt(0).toUpperCase() + out.slice(1) + (out.endsWith('.') ? '' : '.');
+}
 function formatDistanceFromOrigin(resortId) {
   const resort = RESORTS.find(r => r.id === resortId);
   if (!resort || !state.origin) return 'Distance: TBD';
@@ -1149,35 +1179,27 @@ function renderVerdict(resorts) {
       _hnGrid.innerHTML = '';
       _hnSection.hidden = true;
     } else {
-      _hnGrid.innerHTML = runningItems.map((item, idx) => {
+      _hnGrid.innerHTML = runningItems.map((item) => {
         const _rDrive = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
         const _rWx    = state.weatherCache[item.resort.id]?.data;
         const _rSnow  = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
         const _rScore = item.breakdown != null ? Math.round(item.breakdown.score) : '—';
         const _rSponsor = getSponsor(item.resort.id);
         const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
-        const _rSnowHtml = _rSnow !== null ? `<span class="hn-rchip hn-rchip-snow">${_rSnow.toFixed(1)}" snow</span>` : '';
         const cf = crowdForecast(item.resort);
-        const _rCrowdHtml = cf.label === 'Light'
-          ? (cf.score <= 36
-            ? '<span class="hn-rchip hn-rchip-crowd">Very quiet</span>'
-            : '<span class="hn-rchip hn-rchip-crowd">Low crowds</span>')
-          : cf.label === 'Heavy'
-          ? '<span class="hn-rchip hn-rchip-warn">Heavy crowds</span>'
-          : (cf.label === 'Moderate' || cf.label === 'Light-Moderate')
-          ? '<span class="hn-rchip hn-rchip-crowd-mod">Mod. crowds</span>' : '';
-        const _rPassCls = item.resort.passGroup === 'Indy' ? 'hn-rchip hn-rchip-pass hn-rchip-pass-indy' : 'hn-rchip hn-rchip-pass';
-        const _rPassHtml = `<span class="${_rPassCls}">${esc(item.resort.passGroup)}</span>`;
+        const _rBlurb = esc(runnerUpBlurb(_rSnow, cf, item.resort.passGroup));
         const _rBookHtml = _rSponsor ? `<a class="hn-runner-book" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Book Now</a>` : '';
         const _rSponsorBadge = _rSponsor ? '<span class="hn-runner-sponsor">Featured</span>' : '';
         return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
-          <div class="hn-runner-rank">#${idx + 2} ${_rSponsorBadge}</div>
-          <div class="hn-runner-name">${esc(item.resort.name)}</div>
-          <div class="hn-runner-chips">${_rSnowHtml}${_rCrowdHtml}${_rPassHtml}</div>
+          <div class="hn-runner-top">
+            <div class="hn-runner-name">${esc(item.resort.name)}</div>
+            ${_rSponsorBadge}
+          </div>
+          <p class="hn-runner-blurb">${_rBlurb}</p>
           <div class="hn-runner-bottom">
             <div class="hn-runner-meta">
-              ${_rDrive ? `<div class="hn-runner-drive">${esc(_rDrive)}</div>` : ''}
-              <div class="hn-runner-fit-row" title="How well this spot matches your settings"><span class="hn-runner-fit-label">Fit</span><span class="hn-runner-score">${_rScore}</span></div>
+              ${_rDrive ? `<span class="hn-runner-drive">${esc(_rDrive)} away</span>` : ''}
+              <span class="hn-runner-score-pill" title="How well this spot matches your settings"><span class="hn-runner-score-dot" aria-hidden="true"></span><span class="hn-runner-score-num">${_rScore}</span></span>
             </div>
             ${_rBookHtml}
           </div>
