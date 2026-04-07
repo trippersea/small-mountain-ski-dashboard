@@ -3265,7 +3265,29 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 
 .vcard-writeup--fallback {
   font-style: italic;
-  color: var(--muted);
+  color: rgba(255,255,255,.6);
+}
+.vcard-score-mini-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px 5px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.16);
+  border: 1px solid rgba(255,255,255,.28);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,.9);
+  cursor: pointer;
+  transition: opacity .1s;
+}
+.vcard-score-mini-pill:hover { opacity: .82; }
+.vcard-score-mini-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
 }
 
 .hidden-gems-empty {
@@ -3633,10 +3655,16 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   background: var(--panel);
 }
 .vcard-hero-dash {
-  background: linear-gradient(180deg, #fafbfc 0%, #f3f4f6 100%);
+  position: relative;
   padding: 28px 28px 22px;
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
+  color: #fff;
+  border-bottom: none;
+  background:
+    linear-gradient(180deg, rgba(10,20,35,.48) 0%, rgba(10,20,35,.74) 100%),
+    url('/hero-bg.jpg');
+  background-size: cover;
+  background-position: center 40%;
+  overflow: hidden;
 }
 .vcard-hero-dash-top {
   display: flex;
@@ -3653,7 +3681,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: rgba(255,255,255,.6);
   margin-bottom: 8px;
   line-height: 1.3;
 }
@@ -3661,9 +3689,9 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 .vcard-zip-nudge {
   font-size: 13px;
   font-weight: 500;
-  color: #1e40af;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  color: rgba(255,255,255,.88);
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.22);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   margin: 0 0 12px;
@@ -3671,7 +3699,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   max-width: 28rem;
 }
 .vcard-zip-nudge strong {
-  color: #1e3a8a;
+  color: #fff;
   font-weight: 600;
 }
 .vcard-name-dash {
@@ -3684,7 +3712,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   margin: 0;
   font-size: clamp(1.75rem, 4.5vw, 2.25rem);
   font-weight: 600;
-  color: var(--text);
+  color: #fff;
   letter-spacing: -0.03em;
   line-height: 1.15;
   cursor: pointer;
@@ -3692,7 +3720,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   transition: color 0.12s;
 }
 .vcard-name-dash:hover {
-  color: var(--accent);
+  color: rgba(255,255,255,.82);
 }
 .vcard-name-dash--static {
   cursor: default;
@@ -3741,58 +3769,64 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
-  background: #fff;
-  border: 1px solid var(--border);
-  color: var(--muted);
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: rgba(255,255,255,.88);
 }
 .vcard-dash-pill--cond-great,
 .vcard-dash-pill--cond-good {
-  color: #166534;
-  border-color: #bbf7d0;
-  background: #f0fdf4;
+  color: #4ade80;
+  border-color: rgba(74,222,128,.4);
+  background: rgba(74,222,128,.18);
 }
 .vcard-dash-pill--cond-warn {
-  color: #b45309;
-  border-color: #fde68a;
-  background: #fffbeb;
+  color: #fbbf24;
+  border-color: rgba(251,191,36,.4);
+  background: rgba(251,191,36,.18);
 }
 .vcard-dash-pill--cond-bad {
-  color: #b91c1c;
-  border-color: #fecaca;
-  background: #fef2f2;
+  color: #f87171;
+  border-color: rgba(248,113,113,.4);
+  background: rgba(248,113,113,.18);
 }
 .vcard-dash-pill--crowd-low {
-  color: #166534;
-  border-color: #bbf7d0;
-  background: #f0fdf4;
+  color: #4ade80;
+  border-color: rgba(74,222,128,.4);
+  background: rgba(74,222,128,.18);
 }
 .vcard-dash-pill--crowd-mod {
-  color: #c2410c;
-  border-color: #fed7aa;
-  background: #fff7ed;
+  color: #fbbf24;
+  border-color: rgba(251,191,36,.4);
+  background: rgba(251,191,36,.18);
 }
 .vcard-dash-pill--crowd-high {
-  color: #b91c1c;
-  border-color: #fecaca;
-  background: #fef2f2;
+  color: #f87171;
+  border-color: rgba(248,113,113,.4);
+  background: rgba(248,113,113,.18);
 }
 .vcard-body-dash {
-  padding: 26px 28px 24px;
+  padding: 18px 24px 20px;
   background: var(--panel);
 }
+.vcard-actions-dash {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
 .vcard-writeup--dash {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.65;
-  color: var(--muted);
-  margin: 0 0 14px;
+  color: rgba(255,255,255,.85);
+  margin: 10px 0 16px;
   padding: 0;
   background: none !important;
   border: none !important;
   border-radius: 0 !important;
+  max-width: 52ch;
 }
 .vcard-writeup--dash.vcard-writeup--loading {
   min-height: 3.2em;
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%) !important;
+  background: linear-gradient(90deg, rgba(255,255,255,.08) 25%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.08) 75%) !important;
   background-size: 200% 100% !important;
   border-radius: 8px !important;
   animation: shimmer 1.4s infinite;

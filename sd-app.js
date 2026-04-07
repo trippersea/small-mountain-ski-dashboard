@@ -1101,28 +1101,20 @@ function renderVerdict(resorts) {
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}">
       <div class="vcard-hero-dash">
-        <div class="vcard-hero-dash-top">
-          <div class="vcard-hero-dash-left">
-            <div class="vcard-eyebrow-dash">${_eyebrow}</div>
-            ${zipNudgeHtml}
-            <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
-          </div>
-          <div class="${verdictScoreRingClass}"${verdictScoreRingExtra} ${verdictScoreAria}>
-            <span class="vcard-score-ring-num">${scoreNum}</span>
-            <span class="vcard-score-ring-lbl">SCORE</span>
-          </div>
-        </div>
+        <div class="vcard-eyebrow-dash">${_eyebrow}</div>
+        ${zipNudgeHtml}
+        <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
+        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
+        <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         <div class="vcard-dash-pills">
           <span class="vcard-dash-pill ${tc.pillClass}">${esc(tc.label)}</span>
           <span class="vcard-dash-pill">${esc(snowPillText)}</span>
           ${driveText ? `<span class="vcard-dash-pill">${esc(driveText)} drive</span>` : ''}
           ${crowdPill}
-          <span class="vcard-dash-pill">$${resort.price} window</span>
+          <span class="vcard-score-mini-pill score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="Score ${scoreNum} — tap for breakdown"><span class="vcard-score-mini-dot"></span>${scoreNum}</span>
         </div>
       </div>
       <div class="vcard-body vcard-body-dash">
-        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
-        <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
         <div class="vcard-actions vcard-actions-dash">
           ${resort.website
