@@ -2615,7 +2615,134 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 .detail-card-inner {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0;
+}
+
+/* ── Detail hero (photo header — same vocabulary as verdict card, not homepage hero) ── */
+.dhr {
+  position: relative;
+  padding: 28px 26px 24px;
+  background: linear-gradient(180deg, rgba(10, 20, 35, 0.52) 0%, rgba(10, 20, 35, 0.78) 100%), url("/hero-bg.jpg");
+  background-size: cover;
+  background-position: center 35%;
+  border-radius: 18px 18px 0 0;
+  color: #fff;
+  overflow: hidden;
+}
+.dhr-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 8px;
+}
+.dhr-name {
+  font-size: clamp(1.65rem, 3.5vw, 2.15rem);
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 6px;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+.dhr-stats {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0 0 14px;
+  line-height: 1.45;
+}
+.dhr-tagline {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  margin: 0 0 14px;
+  line-height: 1.45;
+}
+.dhr-verdict {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.65;
+  margin: 0 0 16px;
+  max-width: 54ch;
+}
+.dhr .vcard-dash-pills {
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+.dhr-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.dhr-btn-primary {
+  background: #2563eb;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
+  transition: background 0.12s;
+}
+.dhr-btn-primary:hover {
+  background: #1d4ed8;
+}
+.dhr-book {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: background 0.12s;
+}
+.dhr-book:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.dhr-btn-ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transition: background 0.12s, border-color 0.12s;
+}
+.dhr-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.dhr-fit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dhr-fit-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+}
+.dhr-fit-pill-num {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.dhr-cond-slot {
+  margin-top: 12px;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */

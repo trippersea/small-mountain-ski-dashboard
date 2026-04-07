@@ -85,13 +85,6 @@ function getSponsor(resortId) {
     .detail-header-rebuilt .dhr-actions {
       display: flex; align-items: center; gap: 10px;
     }
-    .dhr-btn-primary {
-      background: #2563eb; color: #fff !important;
-      font-size: 13px; font-weight: 600;
-      padding: 8px 18px; border-radius: 999px;
-      text-decoration: none; transition: background .12s;
-    }
-    .dhr-btn-primary:hover { background: #1d4ed8; }
     .dhr-link-secondary {
       font-size: 12px; font-weight: 500; color: #6b7280;
       text-decoration: none; transition: color .12s;
@@ -1684,43 +1677,62 @@ function renderDetail({ scroll = false } = {}) {
     return `data-bd="${btoa(bd)}"`;
   })() : '';
 
+  const dhrDrivePart = getDriveMins(resort.id) ? `${formatDrive(resort.id)} away` : null;
+  const dhrStatsLine = [
+    `${resort.vertical.toLocaleString()} ft vertical`,
+    `${resort.trails} trails`,
+    `$${resort.price} day ticket*`,
+    dhrDrivePart,
+  ].filter(Boolean).join(' · ');
+
+  const dhrSnowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
+    ? `${stormTotal.toFixed(0)}" forecast`
+    : (forecast.length && typeof forecast[0].snow === 'number' && forecast[0].snow >= 0.5)
+    ? `${forecast[0].snow.toFixed(0)}" forecast`
+    : 'Dry forecast';
+
+  const dhrCrowdPill = crowd.label === 'Light'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Low crowds</span>'
+    : crowd.label === 'Heavy'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Heavy crowds</span>'
+    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Mod. crowds</span>';
+
+  const dhrTierPillClass = vd
+    ? ({ great: 'vcard-dash-pill--cond-great', good: 'vcard-dash-pill--cond-good', marginal: 'vcard-dash-pill--cond-warn', bad: 'vcard-dash-pill--cond-bad' }[vd.tier] || 'vcard-dash-pill--cond-good')
+    : '';
+  const dhrCondPill = vd ? `<span class="vcard-dash-pill ${dhrTierPillClass}">${esc(vd.label)}</span>` : '';
+
+  const dhrVerdictHtml = vd
+    ? esc(vd.detail) + (vd.subPoints && vd.subPoints.length ? ' ' + vd.subPoints.map(p => esc(p)).join(' ') : '')
+    : wx
+    ? esc('Forecast-driven pick for this mountain.')
+    : esc('Loading forecast…');
+
+  const dhrFitPill = skis
+    ? `<span class="dhr-fit-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Fit score ${skis.skiScore} — tap for breakdown"><span class="dhr-fit-pill-dot" aria-hidden="true"></span><span class="dhr-fit-pill-num">${skis.skiScore}</span></span>`
+    : '';
+
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
 
-  <div class="detail-brief-header" style="
-    position:relative;
-    padding:28px 26px 24px;
-    background: linear-gradient(180deg, rgba(10,20,35,.5) 0%, rgba(10,20,35,.76) 100%), url('/hero-bg.jpg');
-    background-size:cover;
-    background-position:center 35%;
-    border-radius:18px 18px 0 0;
-    color:#fff;
-    overflow:hidden;
-  ">
-    <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.78);margin-bottom:6px">${esc(resort.state)} · ${esc(resort.passGroup)}${resort.region ? ' · ' + esc(resort.region) : ''}</div>
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
-      <div style="flex:1;min-width:0">
-        <h2 style="font-size:clamp(1.6rem,3.5vw,2.1rem);font-weight:600;color:#fff;margin:0 0 6px;letter-spacing:-.025em;line-height:1.1">${esc(resort.name)}</h2>
-        <div style="font-size:13px;color:rgba(255,255,255,.82);margin-bottom:14px">${resort.vertical.toLocaleString()} ft vertical · ${resort.trails} trails · avg ${resort.avgSnowfall}" snow</div>
-        ${sponsor?.tagline ? `<div style="font-size:14px;color:rgba(255,255,255,.8);font-weight:500;margin-bottom:14px">${esc(sponsor.tagline)}</div>` : ''}
-        <p style="font-size:15px;color:rgba(255,255,255,.88);line-height:1.65;margin:0 0 16px;max-width:54ch">${vd ? esc(vd.detail) : wx ? 'Forecast-driven pick for this mountain.' : 'Loading forecast…'}</p>
-        ${vd?.subPoints?.length ? `<div style="margin-bottom:14px;display:flex;flex-direction:column;gap:4px">${vd.subPoints.map(p => `<div style="font-size:13px;color:rgba(255,255,255,.7)">· ${esc(p)}</div>`).join('')}</div>` : ''}
-        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
-          ${vd ? `<span style="font-size:12px;padding:5px 11px;border-radius:999px;background:${vd.tier === 'great' ? 'rgba(74,222,128,.2)' : vd.tier === 'good' ? 'rgba(56,189,248,.2)' : vd.tier === 'marginal' ? 'rgba(251,191,36,.2)' : 'rgba(248,113,113,.2)'};border:1px solid ${vd.tier === 'great' ? 'rgba(74,222,128,.4)' : vd.tier === 'good' ? 'rgba(56,189,248,.4)' : vd.tier === 'marginal' ? 'rgba(251,191,36,.4)' : 'rgba(248,113,113,.4)'};color:${vd.tier === 'great' ? '#86efac' : vd.tier === 'good' ? '#7dd3fc' : vd.tier === 'marginal' ? '#fde68a' : '#fca5a5'}">${esc(vd.label)}</span>` : ''}
-          ${wx ? `<span style="font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85)">${stormTotal.toFixed(1)}" forecast</span>` : ''}
-          ${getDriveMins(resort.id) ? `<span style="font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85)">${formatDrive(resort.id)} drive</span>` : ''}
-          <span style="font-size:12px;padding:5px 11px;border-radius:999px;background:${crowd.label === 'Light' ? 'rgba(74,222,128,.2)' : crowd.label === 'Heavy' ? 'rgba(248,113,113,.2)' : 'rgba(251,191,36,.2)'};border:1px solid ${crowd.label === 'Light' ? 'rgba(74,222,128,.4)' : crowd.label === 'Heavy' ? 'rgba(248,113,113,.4)' : 'rgba(251,191,36,.4)'};color:${crowd.label === 'Light' ? '#86efac' : crowd.label === 'Heavy' ? '#fca5a5' : '#fde68a'}">${esc(crowd.label)} crowds</span>
-          <span style="font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85)">$${resort.price} ticket</span>
-          ${skis ? `<span class="vcard-score-mini-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Score ${skis.skiScore} — tap for breakdown" style="font-size:12px;padding:5px 11px 5px 8px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);color:rgba(255,255,255,.9);display:inline-flex;align-items:center;gap:5px;cursor:pointer"><span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;flex-shrink:0"></span>${skis.skiScore}</span>` : ''}
-        </div>
-      </div>
+  <div class="dhr">
+    <p class="dhr-eyebrow">${esc(resort.state)} · ${esc(resort.passGroup)}${resort.region ? ' · ' + esc(resort.region) : ''}</p>
+    <h2 class="dhr-name">${esc(resort.name)}</h2>
+    <p class="dhr-stats">${esc(dhrStatsLine)}</p>
+    ${sponsor?.tagline ? `<p class="dhr-tagline">${esc(sponsor.tagline)}</p>` : ''}
+    <p class="dhr-verdict">${dhrVerdictHtml}</p>
+    <div class="vcard-dash-pills">
+      ${dhrCondPill}
+      ${wx ? `<span class="vcard-dash-pill">${esc(dhrSnowPillText)}</span>` : ''}
+      ${dhrCrowdPill}
+      ${dhrFitPill}
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/" style="background:#2563eb;color:#fff!important;font-size:14px;font-weight:600;padding:10px 22px;border-radius:999px;text-decoration:none;box-shadow:0 2px 12px rgba(37,99,235,.35)">See full report →</a>
-      ${sponsor ? `<a class="btn-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer" style="background:rgba(255,255,255,.15);color:#fff!important;font-size:13px;font-weight:500;padding:9px 18px;border-radius:999px;text-decoration:none;border:1px solid rgba(255,255,255,.3)">Book now →</a>` : ''}
-      ${resort.website ? `<a style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)!important;font-size:13px;font-weight:500;padding:9px 18px;border-radius:999px;text-decoration:none;border:1px solid rgba(255,255,255,.22)" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit website ↗</a>` : ''}
+    <div class="dhr-actions">
+      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See full report →</a>
+      ${sponsor ? `<a class="dhr-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book now →</a>` : ''}
+      ${resort.website ? `<a class="dhr-btn-ghost" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit website ↗</a>` : ''}
     </div>
-    <div id="detailConditionsSlot" hidden style="margin-top:12px"></div>
+    <div id="detailConditionsSlot" class="dhr-cond-slot" hidden></div>
   </div>
 
   <div style="background:var(--panel);border:1px solid var(--border);border-top:none;border-radius:0 0 18px 18px;overflow:hidden">
