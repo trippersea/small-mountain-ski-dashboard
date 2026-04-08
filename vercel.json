@@ -1,5 +1,6 @@
 {
   "buildCommand": "node prerender-homepage.mjs",
+  "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
