@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About WhereToSkiNext.com — How It Works</title>
-  <meta name="description" content="WhereToSkiNext.com ranks 250+ US ski mountains in real time using live snow forecasts, your drive time, crowd outlook, and pass access. Free, no account needed." />
+  <meta name="description" content="WhereToSkiNext ranks 250+ U.S. ski areas from your ZIP: live snow, drive time, pass, crowd outlook, and your sliders. Free, no account. How it works and why it was built." />
   <link rel="canonical" href="https://www.wheretoskinext.com/about/" />
   <meta property="og:title" content="About WhereToSkiNext.com" />
-  <meta property="og:description" content="How 250+ mountains get ranked by live snow, drive time, crowds, and pass access — and why we built it." />
+  <meta property="og:description" content="Pick the right hill for your weekend from where you live—live snow, drive time, pass, crowds, and your preferences. How it works." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.wheretoskinext.com/about/" />
   <meta property="og:image" content="https://wheretoskinext.com/ski-decision-logo.png" />
@@ -46,7 +46,28 @@
     .hero { margin-bottom: 48px; }
     .hero-label { font-size: 0.72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 10px; }
     .hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 16px; }
-    .hero-sub { font-size: 1.1rem; color: var(--text-secondary); max-width: 640px; line-height: 1.7; }
+    .hero-sub { font-size: 1.05rem; color: var(--text-secondary); max-width: 640px; line-height: 1.7; margin-bottom: 0; }
+    .hero-tagline { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 10px 0 14px; letter-spacing: -.01em; }
+    .hero-cta { display: inline-block; margin-top: 20px; background: var(--accent); color: #fff !important; text-decoration: none; padding: 12px 22px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; transition: background .15s; }
+    .hero-cta:hover { background: #1d4ed8; }
+
+    /* ── How it works steps ── */
+    .steps-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 14px; }
+    .step-item { display: flex; gap: 16px; align-items: flex-start; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: rgba(37, 99, 235, 0.12); color: var(--accent); font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
+    .step-body strong { display: block; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 4px; }
+    .step-body span { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.55; }
+
+    /* ── Mid-page CTA ── */
+    .mid-cta { text-align: center; padding: 28px 22px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin: 8px 0 48px; }
+    .mid-cta p { font-size: 0.98rem; color: var(--text-secondary); margin-bottom: 14px !important; }
+    .mid-cta .hero-cta { margin-top: 0; }
+
+    /* ── Trust callout ── */
+    .trust-callout { background: #f1f5f9; border-left: 4px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin: 16px 0 0; }
+    .trust-callout p { font-size: 0.95rem !important; color: var(--text-secondary) !important; margin-bottom: 0 !important; }
+    .limit-list { margin: 12px 0 0 1.1rem; padding: 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.65; }
+    .limit-list li { margin-bottom: 6px; }
 
     /* ── Prose sections ── */
     .section { margin-bottom: 48px; }
@@ -85,7 +106,10 @@
 
     /* Footer: .site-footer from /styles.css */
 
-    @media (max-width: 600px) { .factor-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) {
+      .factor-grid { grid-template-columns: 1fr 1fr; }
+      .step-item { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
@@ -117,34 +141,67 @@
 <div class="page">
 
   <div class="hero">
-    <div class="hero-label">About the site</div>
-    <h1>Stop guessing.<br>Start skiing.</h1>
-    <p class="hero-sub">WhereToSkiNext.com was built to answer a question that no ski site had answered well: not which mountain is "best" in general, but which mountain is the right call for you, this weekend, from where you live.</p>
+    <div class="hero-label">About</div>
+    <h1>Pick the right ski hill for your weekend—from where you actually live</h1>
+    <p class="hero-tagline">Stop guessing. Start skiing.</p>
+    <p class="hero-sub"><strong>WhereToSkiNext.com</strong> ranks 250+ U.S. ski areas using live snow forecasts, drive time from your start, your pass, a crowd outlook, and the preferences you set—so you choose one hill with confidence instead of juggling five tabs.</p>
+    <a href="https://www.wheretoskinext.com/" class="hero-cta">See your ranked list →</a>
   </div>
 
   <div class="section">
-    <h2>The problem we solve</h2>
-    <p>Every skier has faced the same Friday night decision. There are a dozen mountains within driving distance. Some got snow this week. Some are crowded. Some are on your pass. The old approach is to check five different websites, squint at snow reports, and make your best guess. Most of the time you get it right. Sometimes you drive three hours to icy groomed runs when there was powder an hour away.</p>
-    <p>WhereToSkiNext.com was built to replace that process with a single ranked list based on what actually matters: how much snow is forecast for the next three days, how far you are willing to drive, what pass you carry, how crowded it will be, and what kind of mountain experience you are looking for.</p>
-    <p>The answer updates every time you adjust a filter. No account needed. No guessing.</p>
+    <h2>The Friday-night problem</h2>
+    <p>You’ve got a dozen hills within reach. Some picked up snow; some will be slammed on Saturday; some are on your pass. The usual move is to open too many sites, guess at reports, and hope. Sometimes you burn half a day when better snow was an hour closer.</p>
+    <p>This site replaces that with <strong>your</strong> ranked list: forecast snow, how far you’ll drive, pass match, crowd outlook, and the kind of day you want. Adjust a slider and the list updates. No account. No mystery “best resort in America” list—just what fits <em>you</em> and this weekend.</p>
   </div>
 
   <div class="section">
-    <h2>What is in the database</h2>
+    <h2>How it works</h2>
+    <p>About thirty seconds from ZIP to a shortlist:</p>
+    <ol class="steps-list">
+      <li class="step-item">
+        <span class="step-num" aria-hidden="true">1</span>
+        <div class="step-body">
+          <strong>Enter where you’re leaving from</strong>
+          <span>ZIP or city sets drive times and which mountains sit in your range.</span>
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num" aria-hidden="true">2</span>
+        <div class="step-body">
+          <strong>Set pass, distance, and what you care about</strong>
+          <span>Epic, Ikon, Indy, or indie ticket; day trip vs weekend; snow vs crowds vs price—your call.</span>
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num" aria-hidden="true">3</span>
+        <div class="step-body">
+          <strong>Get one top pick plus a sortable table</strong>
+          <span>A clear recommendation when you’ve added a start point, and a full ranking you can sort and dig into.</span>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="mid-cta">
+    <p><strong>Ready to try it?</strong> Add your start location and see this weekend from your driveway—not from a generic “top ten” list.</p>
+    <a href="https://www.wheretoskinext.com/" class="hero-cta">Rank mountains for my weekend →</a>
+  </div>
+
+  <div class="section">
+    <h2>What we cover</h2>
+    <p>More than the same destination-resort headlines. We include major mountains <em>and</em> local hills so a Saturday in Boston can mean comparing places like Ski Ward and Wachusett—not only Stowe vs Killington. Each area includes vertical, trails, acreage, average snowfall, terrain mix, ticket price, night skiing, terrain park, and pass affiliation (Epic, Ikon, Indy, independent).</p>
     <div class="stat-row">
       <div class="stat-item"><div class="stat-num">250+</div><div class="stat-label">US ski mountains</div></div>
       <div class="stat-item"><div class="stat-num">34</div><div class="stat-label">states covered</div></div>
-      <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">major passes</div></div>
-      <div class="stat-item"><div class="stat-num">Live</div><div class="stat-label">snow forecasts</div></div>
+      <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">major pass types</div></div>
+      <div class="stat-item"><div class="stat-num">Live</div><div class="stat-label">forecast models / session</div></div>
     </div>
-    <p>The database covers 250+ ski areas across the United States, from major destination resorts to small local hills. Each mountain includes vertical drop, trail count, skiable acreage, average annual snowfall, terrain breakdown, ticket pricing, night skiing, terrain park access, and pass affiliation. Pass data covers Epic, Ikon, and Indy networks as well as independent resorts.</p>
-    <p>We focused on coverage that goes beyond the usual top-20 destination resort lists. A skier in Boston should be able to see how Ski Ward compares to Wachusett on a given Saturday, not just how Stowe compares to Killington. Small mountains with great snow on a given weekend often beat the big names, and our ranking reflects that.</p>
   </div>
 
   <div class="section">
-    <h2>How the ski score works</h2>
-    <p>Every mountain gets a score from 0 to 100 each time you run a search. The score is not a fixed rating. It is calculated in real time based on your specific situation and preferences. The same mountain can score very differently for a skier in Boston versus one in Albany, or for someone who cares about powder versus someone looking for a budget day trip.</p>
-    <p>The score combines six factors:</p>
+    <h2>How we rank options for you</h2>
+    <p>Each mountain gets a <strong>fit score from 0–100</strong> that is <em>not</em> a permanent rating. It’s recomputed for your location, weather snapshot, and sliders—the same hill can rank high for you and lower for someone else, or shift after the forecast updates.</p>
+    <p>Six pieces feed that score:</p>
 
     <div class="factor-grid">
       <div class="factor-card">
@@ -173,31 +230,36 @@
       </div>
     </div>
 
-    <p>You control how much each factor matters using the preference sliders in the planner. Set snow to high and value to low and you get a powder-hunter ranking. Set crowd to high and size to small and you get the quiet local hills. The score reflects your actual priorities, not a generic formula.</p>
+    <p>You control how much each factor matters using the preference sliders. Crank snow and drop value for a powder bias; favor small hills and low crowds for quiet locals. The ranking follows <em>your</em> settings—not a one-size formula.</p>
   </div>
 
   <div class="section">
-    <h2>Weather and forecast data</h2>
-    <p>Live snow forecasts come from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a>, a free and open-source weather API that uses high-resolution forecast models. Forecasts are fetched for each mountain's coordinates at summit elevation and updated on each session. The three-day snowfall total is the primary input to the snow quality score.</p>
-    <p>Drive times use real road routing through the <a href="https://project-osrm.org" target="_blank" rel="noopener">OSRM open-source routing engine</a>. When routing is unavailable or slow, we fall back to haversine distance estimates with a conservative road-speed assumption. Estimated times are marked with a tilde so you always know what you are looking at.</p>
+    <h2>Where the numbers come from</h2>
+    <p>Snow forecasts use <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> (open, model-based data). We request conditions at each mountain’s summit coordinates and refresh when you use the site. The three-day snowfall total is the main input for the snow-quality factor.</p>
+    <p>Drive times use road routing via <a href="https://project-osrm.org" target="_blank" rel="noopener">OSRM</a> when available; if routing is slow or unavailable, we fall back to distance-based estimates and mark those times with a <strong>~</strong> so you know.</p>
+    <p><strong>Limits worth knowing:</strong></p>
+    <ul class="limit-list">
+      <li>Forecasts can shift—always double-check the morning you head out.</li>
+      <li>We’re not replacing the mountain’s own snow report or on-the-ground patrol calls.</li>
+      <li>Crowd outlook is a modeled estimate, not a live lift-line camera.</li>
+    </ul>
+    <div class="trust-callout">
+      <p><strong>Independence and sponsors.</strong> Rankings are not pay-to-play. Sponsored or featured partners are <strong>labeled</strong> on the site; they do <strong>not</strong> change the math that orders your results. A featured mountain still sits in its real scored position in the table—we just make it obvious when something is a partnership placement.</p>
+    </div>
   </div>
 
   <div class="section">
-    <h2>Who built this</h2>
+    <h2>Why I built this</h2>
     <div class="founder-photo-wrap">
       <img src="/bousquet-racing.jpg" alt="Racing at Bousquet Mountain in the Berkshires" class="founder-photo" width="480" loading="lazy" />
       <p class="founder-caption">Circa 1999, Bousquet Mountain, Pittsfield MA</p>
     </div>
-    <p>I grew up skiing Bousquet in the Berkshires, raced there through high school, and developed a genuine love for what a small mountain feels like. No high-speed quads, no resort village, just skiing. That culture stuck with me.</p>
-    <p>When friends ask me where to ski, I never just say a mountain name. I think about where they are driving from, whether they are bringing kids, whether they want a mellow day or a big vertical run, whether they care about crowds. My own family trips work the same way. I want my kids to experience the full range, from the small hills with ancient lifts and great waffles to the bigger mountains with real infrastructure. They are finding their own favorites now, and half the time it comes down to who they went with or what the waffles were like.</p>
-    <p>The more I thought about that process, the more I realized nothing online actually does it. You can Google ski mountains, but you still end up doing all the work yourself, checking conditions on one site, looking up pass coverage on another, guessing at drive time. And most results just send you to the same ten mountains everyone already knows about.</p>
-    <p>That is the gap WhereToSkiNext tries to fill. Not a directory, not a ranking of the "best" mountains, but a tool that takes your situation and finds the mountain that fits it. You might end up at Stowe. You might end up somewhere you have never heard of that turns out to be exactly right. The pass-affiliated mountains are in there, but so are the independents, the local hills, the places that do not have a marketing budget but have something real going for them.</p>
-    <p>There is no paid placement, no resort relationship, no agenda. Just the score.</p>
-    <p>Sponsored placements and featured partner listings are clearly labeled throughout the site. They do not affect ski scores or the ranked order of results. A sponsored mountain appears in its actual scored position in the comparison table, with a label indicating the sponsorship.</p>
+    <p>I grew up skiing Bousquet in the Berkshires—small hill, no village, just skiing. When people ask where to go, I don’t answer with one name; I ask where they’re driving from, who’s in the car, and whether they want quiet groomers or a big vert day. My kids are learning the same spread: shaky lifts and waffles at some places, real infrastructure at others.</p>
+    <p>None of the big ski sites actually runs that conversation for you. You still bounce between conditions, pass maps, and drive-time guesses—and most “best mountain” lists recycle the same famous ten. <strong>WhereToSkiNext</strong> is the tool I wanted on Friday night: your situation in, a ranked shortlist out—Stowe <em>or</em> a hill you’ve never heard of if it fits.</p>
   </div>
 
   <div class="section">
-    <h2>Pass comparison guides</h2>
+    <h2>Epic vs Ikon by region</h2>
     <p>Choosing between the Epic Pass and Ikon Pass is one of the biggest decisions a skier makes each spring. The coverage varies significantly by region and the two passes share almost no mountains. We publish regional breakdowns so you can see exactly which mountains are covered before you commit.</p>
     <p>See the full <a href="https://www.wheretoskinext.com/ski-pass-comparison/">Epic Pass vs Ikon Pass comparison</a>, or go straight to your region:</p>
     <ul style="margin:14px 0 0 18px;display:grid;gap:6px;">
@@ -210,14 +272,14 @@
   </div>
 
   <div class="section">
-    <h2>Contact and feedback</h2>
-    <p>If something looks wrong, a mountain is missing, or the data is off, I want to know. This is a one-person project and real feedback actually gets acted on. Resort data is updated throughout the season as things change.</p>
-    <p>If you represent a resort or have a business inquiry, reach out through the <a href="https://www.wheretoskinext.com/partners/">Partners page</a>.</p>
+    <h2>Report a fix or say hi</h2>
+    <p>Wrong data, a missing mountain, or a sharp idea—send it. This is a one-person build, and useful feedback gets handled. Resort details get tuned as the season goes.</p>
+    <p>Resort or business inquiry? Use the <a href="https://www.wheretoskinext.com/partners/">Partners page</a>.</p>
   </div>
 
   <div class="cta-block">
-    <h3>Go find your mountain.</h3>
-    <p>Enter your ZIP, set your pass, and see what weekend actually looks like from where you are.</p>
+    <h3>Your weekend, ranked from your ZIP</h3>
+    <p>Set your start point, pass, and sliders—then see the list you wish you had on Friday night.</p>
     <a href="https://www.wheretoskinext.com/" class="cta-btn">Find My Mountain &rarr;</a>
   </div>
 
