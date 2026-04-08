@@ -11,6 +11,10 @@
 
   function getFeaturedPartner(resortId) {
     return FEATURED_PARTNERS[resortId] || null;
+  'bousquet-ski-area': { bookingUrl: 'https://bousquetmountain.com/season-passes/', 
+tagline: 'Next Year Season Passes On Sale', 
+
+},
   }
 
   // ─── State page ads (ski/ state listing pages) ────────────────────────────────
