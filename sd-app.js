@@ -39,22 +39,9 @@ function getSponsor(resortId) {
 (function injectSponsorCSS() {
   const style = document.createElement('style');
   style.textContent = `
-    /* ── Table sponsored row ── */
-    .sponsored-row { outline: 2px solid #2563eb; outline-offset: -1px; background: #eff6ff !important; }
-    .sponsored-row .row-name::after {
-      content: 'Featured'; margin-left: 8px;
-      background: #2563eb; color: #fff;
-      font-size: 9px; font-weight: 700; letter-spacing: .05em;
-      padding: 2px 7px; border-radius: 999px; vertical-align: middle;
-    }
-    /* ── Mobile card sponsored ── */
-    .mob-card-sponsored { border: 2px solid #2563eb !important; background: #eff6ff !important; }
-    .mob-card-sponsored .mob-card-name::after {
-      content: 'Featured'; margin-left: 8px;
-      background: #2563eb; color: #fff;
-      font-size: 9px; font-weight: 700; letter-spacing: .05em;
-      padding: 2px 7px; border-radius: 999px; vertical-align: middle;
-    }
+    /* ── Table / mobile featured partner row (pill is in HTML; ranking unchanged) ── */
+    .sponsored-row { outline: 2px solid #1d4ed8; outline-offset: -1px; background: linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%) !important; }
+    .mob-card-sponsored { border: 2px solid #2563eb !important; background: linear-gradient(165deg, #eff6ff 0%, #f8fafc 55%, #fff 100%) !important; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.12) !important; }
     /* ── Detail panel header ── */
     .detail-header-rebuilt {
       padding: 14px 18px 10px;
@@ -1200,13 +1187,19 @@ function renderVerdict(resorts) {
         const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
         const cf = crowdForecast(item.resort);
         const _rBlurb = esc(runnerUpBlurb(_rSnow, cf, item.resort.passGroup));
-        const _rBookHtml = _rSponsor ? `<a class="hn-runner-book" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Book Now</a>` : '';
-        const _rSponsorBadge = _rSponsor ? '<span class="hn-runner-sponsor">Featured</span>' : '';
+        const _rCtaLabel = _rSponsor?.tagline ? esc(_rSponsor.tagline) : 'Visit partner';
+        const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation()">${_rCtaLabel} →</a>` : '';
+        const _rCallout = _rSponsor
+          ? `<div class="hn-runner-partner-callout" role="note">
+              <span class="hn-runner-partner-pill">Featured Partner</span>
+              <span class="hn-runner-partner-hint">Labeled partner — your ranked order and scores are unchanged.</span>
+            </div>`
+          : '';
         return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
           <div class="hn-runner-top">
             <div class="hn-runner-name">${esc(item.resort.name)}</div>
-            ${_rSponsorBadge}
           </div>
+          ${_rCallout}
           <p class="hn-runner-blurb">${_rBlurb}</p>
           <div class="hn-runner-bottom">
             <div class="hn-runner-meta">
@@ -1562,8 +1555,13 @@ function renderCompareTable(resorts) {
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td>
-          <a class="row-name row-name--report" href="/ski-report/${esc(resort.id)}/" onclick="event.stopPropagation()">${esc(resort.name)}</a>
-          <div class="row-sub">${esc(resort.state)}</div>
+          <div class="table-mountain-cell">
+            <div class="table-mountain-name-row">
+              <a class="row-name row-name--report" href="/ski-report/${esc(resort.id)}/" onclick="event.stopPropagation()">${esc(resort.name)}</a>
+              ${_sp ? '<span class="table-featured-pill" title="Advertising partner — does not change rank or score">Featured Partner</span>' : ''}
+            </div>
+            <div class="row-sub">${esc(resort.state)}</div>
+          </div>
         </td>
         <td class="compare-weekend">${esc(weekendLine)}</td>
         <td class="compare-drive ${driveCls}">${esc(formatDrive(resort.id))}</td>
@@ -2062,11 +2060,19 @@ function renderMobileCards(decorated, emptyOpts) {
 
     const crowdWord = crowd === 'Light' ? 'Quiet' : crowd === 'Heavy' ? 'Busy' : 'Mixed';
     const _mobSp = getSponsor(resort.id);
+    const _mobPartnerBanner = _mobSp
+      ? `<div class="mob-featured-banner" role="note">
+          <span class="table-featured-pill">Featured Partner</span>
+          <span class="mob-featured-hint">Does not change rank or score</span>
+          <a class="mob-partner-cta" href="${esc(_mobSp.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation()">${esc(_mobSp.tagline || 'Visit partner')} →</a>
+        </div>`
+      : '';
     return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
       <div class="mob-card-top">
         <div class="mob-card-name">${esc(resort.name)}</div>
         <span class="mob-chip mob-chip--pass" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
       </div>
+      ${_mobPartnerBanner}
       <p class="mob-card-conditions">${esc(weekendLine)}</p>
       <p class="mob-card-drive ${driveCls}">${drive !== '—' ? `${esc(drive)} in the car` : 'Add your start location for drive time'}</p>
       <div class="mob-card-meta">
