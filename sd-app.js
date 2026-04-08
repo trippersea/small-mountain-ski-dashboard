@@ -995,6 +995,27 @@ function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
 
 function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
+  // Don't render a verdict until the user has set a location — show the prompt instead
+  if (!state.origin) {
+    els.verdictSection.classList.add('hn-verdict-pre-location');
+    if (document.querySelector('.vcard-location-prompt') === null) {
+      els.verdictCard.innerHTML = `
+        <div class="vcard-location-prompt">
+          <div class="vcard-location-prompt-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2a5.5 5.5 0 0 1 5.5 5.5c0 3.5-5.5 10.5-5.5 10.5S4.5 11 4.5 7.5A5.5 5.5 0 0 1 10 2z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="7.5" r="2" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+          </div>
+          <div class="vcard-location-prompt-text">
+            <strong>Your top pick appears here</strong>
+            <span>Enter your location above — we'll score every mountain within your drive window and give you one clear answer.</span>
+          </div>
+          <button class="vcard-location-prompt-btn" onclick="document.getElementById('originInput').focus();document.getElementById('searchSection').scrollIntoView({behavior:'smooth',block:'start'})">Set location →</button>
+        </div>`;
+    }
+    const _hn = document.getElementById('hnRunnerUpSection');
+    if (_hn) _hn.hidden = true;
+    return;
+  }
+  els.verdictSection.classList.remove('hn-verdict-pre-location');
   const v = computeVerdict(resorts);
   syncWeekendLodgingStrip(v);
   const _hnSectionEarly = document.getElementById('hnRunnerUpSection');
