@@ -213,32 +213,39 @@
               <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
             </div>
           </div>
+
+          <!-- HOW IT WORKS — visible immediately below the search box -->
+          <div class="hero-steps-strip">
+            <div class="hero-step-item">
+              <span class="hero-step-n">1</span>
+              <div><strong>Enter your location</strong><span>Real drive times, not straight-line distance</span></div>
+            </div>
+            <div class="hero-step-item">
+              <span class="hero-step-n">2</span>
+              <div><strong>Set your pass &amp; snow preference</strong><span>Epic, Ikon, Indy, or no pass</span></div>
+            </div>
+            <div class="hero-step-item">
+              <span class="hero-step-n">3</span>
+              <div><strong>Get one clear pick</strong><span>Snow, crowds, and drive time — combined</span></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
 
-    <!-- TOP PICK: full width verdict card -->
-    <section id="verdictSection" class="verdict-section card panel hn-verdict-full" aria-label="Top mountain pick">
+    <!-- TOP PICK: hidden until location is entered, then populated by JS -->
+    <section id="verdictSection" class="verdict-section card panel hn-verdict-full hn-verdict-pre-location" aria-label="Top mountain pick">
       <div id="verdictCard">
-                <div class="vcard vcard--dash vcard--tier-good vcard--demo-placeholder">
-          <div class="vcard-hero-dash">
-            <div class="vcard-eyebrow-dash">ADD YOUR TOWN · DRIVE TIME COMES NEXT</div>
-            <p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — once we know where you’re leaving from, this fills in with a real pick and drive time.</p>
-            <div class="vcard-name-dash vcard-name-dash--static">Your mountain shows up after you add a starting point</div>
-            <p class="vcard-writeup vcard-writeup--dash vcard-demo-blurb">Tell us where you’re leaving from and we’ll weigh snow, drive, pass, and crowds — then point you at a hill that makes sense for this weekend.</p>
-            <div class="vcard-dash-pills">
-              <span class="vcard-dash-pill vcard-dash-pill--cond-good">Live data loads next</span>
-              <span class="vcard-dash-pill">Snow &amp; weather</span>
-              <span class="vcard-dash-pill">Drive after location</span>
-              <span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Crowds &amp; value</span>
-            </div>
+        <div class="vcard-location-prompt">
+          <div class="vcard-location-prompt-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2a5.5 5.5 0 0 1 5.5 5.5c0 3.5-5.5 10.5-5.5 10.5S4.5 11 4.5 7.5A5.5 5.5 0 0 1 10 2z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="7.5" r="2" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
           </div>
-          <div class="vcard-body vcard-body-dash">
-            <div class="vcard-actions vcard-actions-dash">
-              <span class="vcard-book-btn vcard-book-btn--disabled">Book resort →</span>
-              <span class="vcard-detail-btn vcard-detail-btn--disabled">Full conditions</span>
-            </div>
+          <div class="vcard-location-prompt-text">
+            <strong>Your top pick appears here</strong>
+            <span>Enter your location above — we'll score every mountain within your drive window and give you one clear answer.</span>
           </div>
+          <button class="vcard-location-prompt-btn" onclick="document.getElementById('originInput').focus();document.getElementById('searchSection').scrollIntoView({behavior:'smooth',block:'start'})">Set location →</button>
         </div>
       </div>
     </section>
@@ -595,8 +602,8 @@
     <!-- How it works -->
     <section class="seo-how" aria-labelledby="seo-how-title">
       <div class="seo-container">
-        <h2 id="seo-how-title" class="seo-section-title">One answer, not a list</h2>
-        <p class="seo-section-sub">Most ski planning tools give you data. We give you a decision. Enter your location and we score 250 mountains by what actually matters for <em>this</em> weekend.</p>
+        <h2 id="seo-how-title" class="seo-section-title">How WhereToSkiNext works</h2>
+        <p class="seo-section-sub">Enter your location, tell us your pass and how far you'll drive, and we score 250 US mountains in real time — combining live snow forecast, drive time, crowd outlook, and ticket price into one recommendation.</p>
         <div class="seo-steps">
           <div class="seo-step">
             <div class="seo-step-num">1</div>

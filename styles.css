@@ -4409,3 +4409,124 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 @media (max-width: 480px) {
   .seo-region-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HERO STEPS STRIP — 3-step explainer inside the hero photo background
+   ═══════════════════════════════════════════════════════════════════════════ */
+.hero-steps-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.18);
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hero-step-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.hero-step-n {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.3);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.hero-step-item div strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+.hero-step-item div span {
+  font-size: 11px;
+  color: rgba(255,255,255,.62);
+  line-height: 1.45;
+  display: block;
+}
+@media (max-width: 640px) {
+  .hero-steps-strip {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VERDICT PRE-LOCATION — shown before user enters a location
+   ═══════════════════════════════════════════════════════════════════════════ */
+.hn-verdict-pre-location {
+  background: var(--panel) !important;
+  border: 1.5px dashed var(--border) !important;
+  box-shadow: none !important;
+}
+.vcard-location-prompt {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 28px;
+  flex-wrap: wrap;
+}
+.vcard-location-prompt-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-section-alt);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.vcard-location-prompt-text {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.vcard-location-prompt-text strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.vcard-location-prompt-text span {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.vcard-location-prompt-btn {
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.vcard-location-prompt-btn:hover {
+  background: var(--accent-hover);
+}
+@media (max-width: 640px) {
+  .vcard-location-prompt { padding: 18px; }
+  .vcard-location-prompt-btn { width: 100%; text-align: center; }
+}

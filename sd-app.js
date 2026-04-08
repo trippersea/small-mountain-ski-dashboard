@@ -2483,6 +2483,7 @@ function wireEvents() {
       els.locationStatus.classList.remove('hero-location-status--error');
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
       updatePlannerOriginLabel();
+      syncVerdictVisibility();
       if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
       if (isRememberChecked()) saveOrigin(loc); else clearSavedOrigin();
       pushUrlDebounced();
@@ -2537,6 +2538,7 @@ function wireEvents() {
       els.locationStatus.textContent = '✓ Using your location';
       els.locationStatus.classList.remove('hero-location-status--error');
       updatePlannerOriginLabel();
+      syncVerdictVisibility();
       if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
     }, () => {
       els.locationStatus.textContent = 'Location blocked or unavailable — allow access in your browser, or type a ZIP or city.';
@@ -2642,6 +2644,18 @@ function wireEvents() {
 }
 
 // ─── Initialize ───────────────────────────────────────────────────────────────
+function syncVerdictVisibility() {
+  const section = els.verdictSection;
+  if (!section) return;
+  if (state.origin) {
+    section.classList.remove('hn-verdict-pre-location');
+  } else {
+    // Only add pre-location class if verdictCard still has the prompt (not a real result)
+    const hasPrompt = document.querySelector('.vcard-location-prompt');
+    if (hasPrompt) section.classList.add('hn-verdict-pre-location');
+  }
+}
+
 function initialize() {
   if (els.passFilter) els.passFilter.innerHTML = UNIQUE_PASSES.map(v => `<option value="${v}">${v === 'All' ? 'All' : v}</option>`).join('');
   els.stateFilter.innerHTML = UNIQUE_STATES.map(v => `<option value="${v}">${v}</option>`).join('');
@@ -2678,6 +2692,7 @@ function initialize() {
   }
 
   syncPlannerControls();
+  syncVerdictVisibility();
   wireEvents();
   updateHeroHeadline();
   render();
