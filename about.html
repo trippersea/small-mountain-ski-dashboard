@@ -78,6 +78,11 @@
     .cta-btn { display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; transition: background .15s; }
     .cta-btn:hover { background: #1d4ed8; }
 
+    /* ── Racing photo ── */
+    .founder-photo-wrap { margin: 28px 0 32px; }
+    .founder-photo { width: 100%; max-width: 480px; border-radius: 12px; display: block; }
+    .founder-caption { margin-top: 8px; font-size: 0.78rem; color: var(--text-light); font-style: italic; }
+
     /* Footer: .site-footer from /styles.css */
 
     @media (max-width: 600px) { .factor-grid { grid-template-columns: 1fr 1fr; } }
@@ -179,9 +184,16 @@
 
   <div class="section">
     <h2>Who built this</h2>
-    <p>WhereToSkiNext.com is an independent project built by a skier who got tired of the Friday night decision problem. The site has no affiliation with any ski resort, pass company, or travel agency. There are no paid rankings and no resort pays to appear higher in results.</p>
+    <div class="founder-photo-wrap">
+      <img src="/bousquet-racing.jpg" alt="Racing at Bousquet Mountain in the Berkshires" class="founder-photo" width="480" loading="lazy" />
+      <p class="founder-caption">Circa 1999, Bousquet Mountain, Pittsfield MA</p>
+    </div>
+    <p>I grew up skiing Bousquet in the Berkshires, raced there through high school, and developed a genuine love for what a small mountain feels like. No high-speed quads, no resort village, just skiing. That culture stuck with me.</p>
+    <p>When friends ask me where to ski, I never just say a mountain name. I think about where they are driving from, whether they are bringing kids, whether they want a mellow day or a big vertical run, whether they care about crowds. My own family trips work the same way. I want my kids to experience the full range, from the small hills with ancient lifts and great waffles to the bigger mountains with real infrastructure. They are finding their own favorites now, and half the time it comes down to who they went with or what the waffles were like.</p>
+    <p>The more I thought about that process, the more I realized nothing online actually does it. You can Google ski mountains, but you still end up doing all the work yourself, checking conditions on one site, looking up pass coverage on another, guessing at drive time. And most results just send you to the same ten mountains everyone already knows about.</p>
+    <p>That is the gap WhereToSkiNext tries to fill. Not a directory, not a ranking of the "best" mountains, but a tool that takes your situation and finds the mountain that fits it. You might end up at Stowe. You might end up somewhere you have never heard of that turns out to be exactly right. The pass-affiliated mountains are in there, but so are the independents, the local hills, the places that do not have a marketing budget but have something real going for them.</p>
+    <p>There is no paid placement, no resort relationship, no agenda. Just the score.</p>
     <p>Sponsored placements and featured partner listings are clearly labeled throughout the site. They do not affect ski scores or the ranked order of results. A sponsored mountain appears in its actual scored position in the comparison table, with a label indicating the sponsorship.</p>
-    <p>The goal is a tool that skiers can trust because the recommendations are based on real data, not commercial relationships. If that sounds useful, <a href="https://www.wheretoskinext.com/">try it</a>.</p>
   </div>
 
   <div class="section">
@@ -199,14 +211,14 @@
 
   <div class="section">
     <h2>Contact and feedback</h2>
-    <p>Questions, corrections, or resort data that looks wrong? The site is maintained actively and data updates are made throughout the season. Reach out through the <a href="https://www.wheretoskinext.com/partners/">Partners page</a> if you represent a resort or have a business inquiry.</p>
-    <p>For general feedback, the thumbs-up and thumbs-down rating on any result helps improve the recommendation engine over time.</p>
+    <p>If something looks wrong, a mountain is missing, or the data is off, I want to know. This is a one-person project and real feedback actually gets acted on. Resort data is updated throughout the season as things change.</p>
+    <p>If you represent a resort or have a business inquiry, reach out through the <a href="https://www.wheretoskinext.com/partners/">Partners page</a>.</p>
   </div>
 
   <div class="cta-block">
-    <h3>Ready to find your next mountain?</h3>
-    <p>250+ mountains ranked by live snow, your drive time, crowds, and your pass. Free. No account needed.</p>
-    <a href="https://www.wheretoskinext.com/" class="cta-btn">Find Your Mountain &rarr;</a>
+    <h3>Go find your mountain.</h3>
+    <p>Enter your ZIP, set your pass, and see what weekend actually looks like from where you are.</p>
+    <a href="https://www.wheretoskinext.com/" class="cta-btn">Find My Mountain &rarr;</a>
   </div>
 
 </div>
