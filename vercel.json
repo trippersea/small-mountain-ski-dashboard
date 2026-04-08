@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node generate-mountain-pages.mjs && node generate-state-pages.mjs && node prerender-homepage.mjs",
+  "buildCommand": "node prerender-homepage.mjs",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
