@@ -2019,34 +2019,51 @@ function renderMobileCards(decorated, emptyOpts) {
       <span>Enter your location to rank by live snow + drive time</span>
       <button onclick="document.getElementById('originInput')?.focus();window.scrollTo({top:0,behavior:'smooth'})">Set location →</button>
     </div>` : '';
-  els.mobileCardGrid.innerHTML = nudgeHtml + items.map(({ resort, breakdown, stormTotal }) => {
-    const score     = breakdown ? Math.round(breakdown.score) : null;
+  els.mobileCardGrid.innerHTML = nudgeHtml + items.map(({ resort, breakdown, stormTotal, hist }) => {
     const storm     = stormTotal !== null ? stormTotal.toFixed(1) + '"' : '…';
     const drive     = formatDrive(resort.id);
     const crowd     = crowdForecast(resort).label;
     const passColor = passColors[resort.passGroup] || '#90a4be';
+    const driveMins = getDriveMins(resort.id);
+    const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
+
+    const wx = state.weatherCache[resort.id]?.data;
+    const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
+    const weekendLine = vd?.rainLikely
+      ? 'Rain likely — not worth the drive'
+      : (stormTotal !== null && stormTotal >= 6)
+      ? `${stormTotal.toFixed(0)}" incoming`
+      : (hist?.total != null && hist.total >= 6)
+      ? `Good base, dry forecast`
+      : (stormTotal !== null && stormTotal >= 1)
+      ? `${stormTotal.toFixed(0)}" coming — mostly groomers`
+      : (stormTotal !== null)
+      ? `Dry forecast — expect firm`
+      : 'Loading forecast…';
+
+    const crowdWord = crowd === 'Light' ? 'Quiet' : crowd === 'Heavy' ? 'Busy' : 'Mixed';
     const _mobSp = getSponsor(resort.id);
     return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
       <div class="mob-card-top">
         <div class="mob-card-name">${esc(resort.name)}</div>
-        ${score !== null ? `<div class="mob-card-score" title="How well it fits your settings">${score}</div>` : ''}
+        <span class="mob-chip mob-chip--pass" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
       </div>
-      <div class="mob-card-chips">
-        <span class="mob-chip" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
-        <span class="mob-chip">${esc(resort.state)}</span>
-        ${drive !== '—' ? `<span class="mob-chip">${drive}</span>` : ''}
-        <span class="mob-chip">${storm}</span>
-      </div>
-      <div class="mob-card-stats">
-        <div><span class="mob-stat-label">Vertical</span><span class="mob-stat-val">${resort.vertical} ft</span></div>
-        <div><span class="mob-stat-label">Trails</span><span class="mob-stat-val">${resort.trails}</span></div>
-        <div><span class="mob-stat-label">Ticket</span><span class="mob-stat-val">$${resort.price}</span></div>
-        <div><span class="mob-stat-label">Crowd</span><span class="mob-stat-val ${crowdClass(crowd)}">${crowd}</span></div>
+      <p class="mob-card-conditions">${esc(weekendLine)}</p>
+      <p class="mob-card-drive ${driveCls}">${drive !== '—' ? `${esc(drive)} in the car` : 'Add your start location for drive time'}</p>
+      <div class="mob-card-meta">
+        <span class="mob-meta-state">${esc(resort.state)}</span>
+        <span class="mob-meta-divider">·</span>
+        <span class="mob-meta-crowd ${crowdClass(crowd)}">${esc(crowdWord)} lift lines</span>
+        <span class="mob-meta-divider">·</span>
+        <span class="mob-meta-price">$${resort.price} walk-up</span>
+        <span class="mob-meta-divider">·</span>
+        <span class="mob-meta-snow">${esc(storm)} forecast</span>
       </div>
       <div class="mob-card-footer">
         <label class="mob-compare-label"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /> Compare</label>
         <div class="mob-card-actions">
-          ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener noreferrer">Website</a>` : ''}
+          ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Website</a>` : ''}
+          <a class="mob-stay-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay</a>
           <button type="button" class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details →</button>
         </div>
       </div>

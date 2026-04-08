@@ -1878,6 +1878,53 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 .mob-card-detail-btn:hover { opacity: .88; }
 
+/* ── Mobile cards: lead with conditions + drive (less stat grid) ── */
+.mob-chip--pass { font-weight: 700; }
+.mob-card-conditions {
+  margin: 10px 0 6px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+  font-weight: 600;
+}
+.mob-card-drive {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+  font-weight: 500;
+}
+.mob-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.mob-meta-divider { opacity: .6; }
+.mob-card-actions > .mob-stay-btn {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.mob-card-actions > .mob-stay-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    PRIORITY 6 — Enhanced share button
    ═══════════════════════════════════════════════════════════════════════════ */
