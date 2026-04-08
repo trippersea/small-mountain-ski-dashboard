@@ -4469,10 +4469,35 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
    VERDICT PRE-LOCATION — shown before user enters a location
    ═══════════════════════════════════════════════════════════════════════════ */
 .hn-verdict-pre-location {
-  background: var(--panel) !important;
-  border: 1.5px dashed var(--border) !important;
+  background: transparent !important;
+  border: none !important;
   box-shadow: none !important;
 }
+
+.vcard-location-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  color: var(--muted);
+}
+.vcard-location-bar-text {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.vcard-location-bar-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 0;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.vcard-location-bar-btn:hover { opacity: .85; }
 .vcard-location-prompt {
   display: flex;
   align-items: center;
@@ -4529,4 +4554,5 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 @media (max-width: 640px) {
   .vcard-location-prompt { padding: 18px; }
   .vcard-location-prompt-btn { width: 100%; text-align: center; }
+  .vcard-location-bar { flex-wrap: wrap; }
 }
