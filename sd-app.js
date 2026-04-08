@@ -998,16 +998,22 @@ function renderVerdict(resorts) {
   // Don't render a verdict until the user has set a location — show the prompt instead
   if (!state.origin) {
     els.verdictSection.classList.add('hn-verdict-pre-location');
-    els.verdictCard.innerHTML = `
-      <div class="vcard-location-bar" role="status" aria-live="polite">
-        <span class="vcard-location-bar-text">Enter your starting point to get one best pick for this weekend.</span>
-        <button class="vcard-location-bar-btn" onclick="document.getElementById('originInput')?.focus();document.getElementById('searchSection')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location →</button>
-      </div>`;
+    els.verdictSection.classList.add('hn-verdict-collapsed');
+    els.verdictSection.setAttribute('aria-hidden', 'true');
+    els.verdictCard.innerHTML = '';
     const _hn = document.getElementById('hnRunnerUpSection');
     if (_hn) _hn.hidden = true;
     return;
   }
   els.verdictSection.classList.remove('hn-verdict-pre-location');
+  const wasCollapsed = els.verdictSection.classList.contains('hn-verdict-collapsed');
+  els.verdictSection.classList.remove('hn-verdict-collapsed');
+  els.verdictSection.removeAttribute('aria-hidden');
+  if (wasCollapsed) {
+    // Restart transition for a smooth reveal once location is set
+    requestAnimationFrame(() => els.verdictSection.classList.add('hn-verdict-reveal'));
+    setTimeout(() => els.verdictSection.classList.remove('hn-verdict-reveal'), 450);
+  }
   const v = computeVerdict(resorts);
   syncWeekendLodgingStrip(v);
   const _hnSectionEarly = document.getElementById('hnRunnerUpSection');
