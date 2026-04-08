@@ -1471,7 +1471,7 @@ function renderCompareTable(resorts) {
       : 'Try widening distance, easing snow or price limits, or pick another pass.';
     els.resultCount.textContent = qActive ? `0 results for “${qRaw}”` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
-      <tr><td colspan="13" class="compare-empty-state">
+      <tr><td colspan="8" class="compare-empty-state">
         <div class="ces-icon">🎿</div>
         <div class="ces-title">${title}</div>
         <div class="ces-sub">${sub}
@@ -1493,7 +1493,7 @@ function renderCompareTable(resorts) {
 
   els.comparisonBody.innerHTML = (noOriginDefault ? `
     <tr class="table-location-nudge">
-      <td colspan="13">
+      <td colspan="8">
         <div class="tln-inner">
           <span class="tln-icon">📍</span>
           <span class="tln-text">Enter your starting location above to rank by live snow forecast, drive time, and your preferences.</span>
@@ -1502,11 +1502,28 @@ function renderCompareTable(resorts) {
       </td>
     </tr>` : '') + displayed.map(({ resort, breakdown, stormTotal, hist }) => {
     const rawScore = breakdown ? breakdown.score : null;
-    const planner  = rawScore !== null ? Math.round(rawScore) : '—';
     const scoreCls = scoreBadgeClass(rawScore);
     const storm    = stormTotal !== null ? `${stormTotal.toFixed(1)}"` : '…';
     const histCell = hist !== null && hist !== undefined ? `${hist.total}"` : '…';
     const crowd    = crowdForecast(resort).label;
+    const driveMins = getDriveMins(resort.id);
+    const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
+
+    const wx = state.weatherCache[resort.id]?.data;
+    const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
+    const weekendLine = vd?.rainLikely
+      ? 'Rain likely — not worth the drive'
+      : (stormTotal !== null && stormTotal >= 6)
+      ? `${stormTotal.toFixed(0)}" incoming`
+      : (hist?.total != null && hist.total >= 6)
+      ? `Good base, dry forecast`
+      : (stormTotal !== null && stormTotal >= 1)
+      ? `${stormTotal.toFixed(0)}" coming — mostly groomers`
+      : (stormTotal !== null)
+      ? `Dry forecast — expect firm`
+      : 'Loading forecast…';
+
+    const crowdWord = crowd === 'Light' ? 'Quiet' : crowd === 'Heavy' ? 'Busy' : 'Mixed';
 
     const bdAttr = breakdown ? (() => {
       const c = breakdown.components;
@@ -1525,18 +1542,18 @@ function renderCompareTable(resorts) {
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}" data-id="${resort.id}">
         <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
-        <td><div class="row-name">${esc(resort.name)}</div></td>
-        <td>${esc(resort.state)}</td>
+        <td>
+          <a class="row-name row-name--report" href="/ski-report/${esc(resort.id)}/" onclick="event.stopPropagation()">${esc(resort.name)}</a>
+          <div class="row-sub">${esc(resort.state)}</div>
+        </td>
+        <td class="compare-weekend">${esc(weekendLine)}</td>
+        <td class="compare-drive ${driveCls}">${esc(formatDrive(resort.id))}</td>
         <td>${esc(resort.passGroup)}</td>
-        <td><span class="score-badge ${scoreCls} score-badge--tip" ${bdAttr} tabindex="0" aria-label="Fit ${planner} — hover for breakdown">${planner}</span></td>
-        <td>${storm}</td>
-        <td class="hist-cell">${histCell}</td>
-        <td>${formatDrive(resort.id)}</td>
-        <td>${resort.vertical}</td>
-        <td>${resort.trails}</td>
+        <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
-        <td class="${crowdClass(crowd)}">${crowd}</td>
-        <td><a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}">Stay →</a></td>
+        <td>
+          <a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Find a place →</a>
+        </td>
       </tr>`;
   }).join('');
 

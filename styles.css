@@ -882,6 +882,16 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 .comparison-table tbody tr:hover  { background: #f4f8ff; cursor: pointer; }
 .comparison-table tbody tr.active-row { background: #eef5ff; }
+
+/* ── Compare table: skier-first rows (less spreadsheet, more “pick a hill”) ── */
+.row-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.row-name--report { color: var(--text); text-decoration: none; font-weight: 700; }
+.row-name--report:hover { text-decoration: underline; text-decoration-color: rgba(43,109,233,.35); }
+.compare-weekend { color: var(--text); font-weight: 500; max-width: 28ch; }
+.compare-drive { font-variant-numeric: tabular-nums; }
+.compare-drive--near { color: #15803d; font-weight: 600; }
+.compare-drive--mid  { color: #b45309; font-weight: 600; }
+.compare-drive--far  { color: #b91c1c; font-weight: 600; }
 .row-name { font-weight: 700; }
 .hist-cell { font-variant-numeric: tabular-nums; font-weight: 700; color: #1d4ed8; }
 .result-count { font-size: 13px; font-weight: 700; }
