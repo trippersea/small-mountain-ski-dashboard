@@ -179,15 +179,6 @@ function buildSchemas(resort, stateName) {
       '@type': 'OpeningHoursSpecification',
       description: 'Seasonal winter operation — verify current hours with the resort.',
     },
-    ...(resort.ratingCount > 0 && {
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: resort.rating,
-        reviewCount: resort.ratingCount,
-        bestRating: 5,
-        worstRating: 1,
-      },
-    }),
     sameAs: resort.website ? [resort.website] : [],
   };
 
