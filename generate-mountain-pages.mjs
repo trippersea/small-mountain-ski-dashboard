@@ -865,8 +865,6 @@ function generateMountainPage(resort, allResorts) {
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/partners/" class="nav-primary">Partners</a>
-      <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
       <a href="${esc(compareExploreUrl)}" class="nav-find-cta">Find My Mountain →</a>
     </div>
