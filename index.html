@@ -187,10 +187,10 @@
             </div>
             <div class="hn-chips-row">
               <span class="hn-chips-lbl">When:</span>
-              <button type="button" class="hn-dchip hn-chip-on" data-val="today">Today</button>
-              <button type="button" class="hn-dchip" data-val="tomorrow">Tomorrow</button>
-              <button type="button" class="hn-dchip" data-val="saturday">This Sat</button>
-              <button type="button" class="hn-dchip" data-val="sunday">This Sun</button>
+              <button type="button" class="hn-dchip" data-val="weekday">Weekday</button>
+              <button type="button" class="hn-dchip" data-val="friday">Friday</button>
+              <button type="button" class="hn-dchip" data-val="saturday">Saturday</button>
+              <button type="button" class="hn-dchip" data-val="sunday">Sunday</button>
             </div>
             <div class="hn-meta-row">
               <button id="detectLocation" class="hero-locate-link">Use my location</button>
@@ -597,36 +597,62 @@
         });
       });
 
-      /* ── When chips → set state.targetDate and re-render ── */
-      function chipValToDate(val) {
-        var now = new Date();
-        var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        if (val === 'today') return today;
-        if (val === 'tomorrow') { var d = new Date(today); d.setDate(d.getDate() + 1); return d; }
-        if (val === 'saturday') {
+      /* ── When chips → set state.targetDate, smart default on load ── */
+      (function() {
+        function dayValToDate(val) {
+          var now = new Date();
+          var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          var dow = today.getDay(); // 0=Sun,1=Mon...6=Sat
           var d = new Date(today);
-          var daysUntil = (6 - today.getDay() + 7) % 7;
-          d.setDate(d.getDate() + (daysUntil === 0 ? 0 : daysUntil));
-          return d;
-        }
-        if (val === 'sunday') {
-          var d = new Date(today);
-          var daysUntil = (7 - today.getDay()) % 7;
-          d.setDate(d.getDate() + (daysUntil === 0 ? 0 : daysUntil));
-          return d;
-        }
-        return today;
-      }
-      document.querySelectorAll('.hn-dchip').forEach(function(chip) {
-        chip.addEventListener('click', function() {
-          document.querySelectorAll('.hn-dchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
-          this.classList.add('hn-chip-on');
-          if (typeof state !== 'undefined') {
-            state.targetDate = chipValToDate(this.dataset.val);
-            if (typeof render === 'function') render();
+          if (val === 'weekday') {
+            // Next Monday if today is Sat/Sun, otherwise today
+            if (dow === 0) d.setDate(d.getDate() + 1);
+            else if (dow === 6) d.setDate(d.getDate() + 2);
+            return d;
           }
+          if (val === 'friday') {
+            var daysUntil = (5 - dow + 7) % 7 || 7;
+            d.setDate(d.getDate() + daysUntil);
+            return d;
+          }
+          if (val === 'saturday') {
+            var daysUntil = (6 - dow + 7) % 7 || 7;
+            d.setDate(d.getDate() + daysUntil);
+            return d;
+          }
+          if (val === 'sunday') {
+            var daysUntil = (7 - dow) % 7 || 7;
+            d.setDate(d.getDate() + daysUntil);
+            return d;
+          }
+          return today;
+        }
+
+        function smartDefault() {
+          var dow = new Date().getDay();
+          if (dow === 5) return 'friday';
+          if (dow === 6) return 'saturday';
+          if (dow === 0) return 'sunday';
+          return 'saturday'; // Mon–Thu: people are planning for the weekend
+        }
+
+        function activateChip(val) {
+          document.querySelectorAll('.hn-dchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
+          var target = document.querySelector('.hn-dchip[data-val="' + val + '"]');
+          if (target) target.classList.add('hn-chip-on');
+          if (typeof state !== 'undefined') state.targetDate = dayValToDate(val);
+        }
+
+        // Set smart default immediately
+        activateChip(smartDefault());
+
+        document.querySelectorAll('.hn-dchip').forEach(function(chip) {
+          chip.addEventListener('click', function() {
+            activateChip(this.dataset.val);
+            if (typeof render === 'function') render();
+          });
         });
-      });
+      })();
 
       /* Refine panel toggle + Apply: wired in sd-app.js */
 
