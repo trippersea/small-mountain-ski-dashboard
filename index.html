@@ -58,8 +58,8 @@
     }
 
     @media (max-width: 640px) {
-      .nav-primary { display: none; }
-      .nav-link-sep { display: none; }
+      .top-nav a.nav-primary[href="/ski-pass-comparison/"] { display: none; }
+      .top-nav a[href="/about/"] + .nav-link-sep { display: none; }
       .nav-divider { display: none; }
     }
   </style>
@@ -69,7 +69,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-  <link id="leafletCss" rel="stylesheet" />
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preload" href="styles.css" as="style" />
   <link rel="stylesheet" href="styles.css" />
@@ -132,31 +131,6 @@
   <button id="backToTop" class="back-to-top" aria-label="Back to top">Top</button>
 
   <div class="container">
-    <!-- Mobile filter drawer trigger — visible only on mobile -->
-    <div class="mobile-filter-bar">
-      <button id="mobileFilterBtn" class="mobile-filter-trigger" aria-haspopup="dialog" aria-expanded="false">
-        ⚙ Filters <span id="filterBadge" class="filter-badge hidden">0</span>
-      </button>
-    </div>
-
-    <!-- Mobile filter drawer -->
-    <div id="filterDrawer" class="filter-drawer" role="dialog" aria-modal="true" aria-label="Filter options" hidden>
-      <div class="filter-drawer-overlay" id="filterDrawerOverlay"></div>
-      <div class="filter-drawer-panel">
-        <div class="filter-drawer-header">
-          <span class="filter-drawer-title">Filters</span>
-          <button id="filterDrawerClose" class="filter-drawer-close" aria-label="Close filters">✕</button>
-        </div>
-        <div class="filter-drawer-body" id="filterDrawerBody">
-          <!-- Populated by JS from the planner section -->
-        </div>
-        <div class="filter-drawer-footer">
-          <button id="filterDrawerReset" class="btn btn-secondary">Reset All</button>
-          <button id="filterDrawerDone" class="btn btn-primary">See top pick</button>
-        </div>
-      </div>
-    </div>
-
     <!-- HERO: decision-first layout -->
     <section id="searchSection" class="hero card hero-search hn-hero" aria-label="Find your mountain">
       <div class="hn-hero-bg" aria-hidden="true"></div>
@@ -268,7 +242,7 @@
       </div>
       <div class="hn-booking-right">
         <span class="hn-booking-badge">Weekend trip</span>
-        <a href="#" class="hn-booking-btn" target="_blank" rel="noopener sponsored">Browse lodging →</a>
+        <a href="https://www.awin1.com/cread.php?awinmid=6776&amp;awinaffid=2816032&amp;ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dski%2520resort" class="hn-booking-btn" target="_blank" rel="noopener sponsored">Browse lodging →</a>
       </div>
     </div>
 
@@ -520,24 +494,9 @@
       <div id="detailCard"></div>
     </section>
 
-    <!-- MAP -->
-    <section id="mapSection" class="card panel" style="display:none">
-      <div class="section-header">
-        <div><h2>Northeast Map</h2><p class="muted small">Drive radius, storm intensity, or pass network.</p></div>
-        <div class="map-mode-row">
-          <button class="map-mode-btn active" data-map-mode="drive">Drive</button>
-          <button class="map-mode-btn" data-map-mode="storm">Storm</button>
-          <button class="map-mode-btn" data-map-mode="pass">Pass</button>
-          <button class="map-mode-btn" data-map-mode="vertical">Vertical</button>
-        </div>
-      </div>
-      <div class="map-legend" id="mapLegend"></div>
-      <div id="leafletMap" class="leaflet-map"></div>
-    </section>
-
     <!-- DATABASE SUMMARY FOOTER -->
     <section class="db-summary-section">
-      <div class="db-summary-label" style="text-align:center">What we track</div>
+      <div class="db-summary-label">What we track</div>
       <div id="summaryCards" class="db-summary-grid"></div>
     </section>
 

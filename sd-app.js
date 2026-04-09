@@ -156,7 +156,6 @@ const state = Object.seal({
   weatherCache:   {},
   compareSet:     new Set(),
   conditionsCache: {},
-  mapMode:        'drive',
   weights:        loadSavedWeights(),
   passPreference: loadSavedPassPreference(),
   tableSearch:    '',
@@ -199,7 +198,6 @@ const els = {
   closeCompare:        $('closeCompare'),
   detailSection:       $('detailSection'),
   detailCard:          $('detailCard'),
-  mapLegend:           $('mapLegend'),
   backToTop:           $('backToTop'),
   toast:               $('toast'),
   aiChatInput:         $('aiChatInput'),
@@ -210,9 +208,6 @@ const els = {
   hnRefineToggle:      $('hnRefineToggle'),
   plannerSeeVerdictBtn: $('plannerSeeVerdictBtn'),
 };
-
-let _mapModeBtns = null;
-const mapModeBtns = () => _mapModeBtns || (_mapModeBtns = [...document.querySelectorAll('.map-mode-btn')]);
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 let toastTimer = null;
@@ -807,8 +802,6 @@ function updatePlannerOriginLabel() {
 }
 
 function syncPlannerControls() {
-  // Must scope to #plannerDetails only: #filterDrawer sits earlier in the DOM and keeps a clone
-  // of the planner after the mobile drawer is opened—document.querySelector would sync the wrong node.
   const plannerRoot = document.getElementById('plannerDetails');
 
   ['snow', 'value', 'crowd'].forEach(key => {
@@ -835,7 +828,6 @@ function syncPlannerControls() {
   if (els.passFilter)     els.passFilter.value = state.passFilter;
   if (els.heroPassSelect) els.heroPassSelect.value = state.passFilter;
   if (els.heroSnowSelect) els.heroSnowSelect.value = String(state.weights.snow ?? 1);
-  mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
   const _hfEl = document.getElementById('howFarFilter');
   if (_hfEl) _hfEl.value = String(state.howFar);
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
@@ -874,8 +866,8 @@ function commitPlannerPriorityChange(key, btn) {
   savePlannerState();
   syncPlannerControls();
   pushUrlDebounced();
-  if (key === 'howfar') { render(); updateFilterBadge(); }
-  else { debouncedRender(); updateFilterBadge(); }
+  if (key === 'howfar') { render(); }
+  else { debouncedRender(); }
 }
 
 /** Scroll to top pick — verdict is above the refine panel, so users need an explicit jump after changing filters. */
@@ -1293,7 +1285,7 @@ async function injectVerdictWriteup(v) {
 // ─── Summary cards ────────────────────────────────────────────────────────────
 function renderSummaryCards(resorts) {
   els.summaryCards.innerHTML = [
-    dbStatHtml('Mountains',   resorts.length,                                           'on the map'),
+    dbStatHtml('Mountains',   resorts.length,                                           'in the index'),
     dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
     dbStatHtml('Ikon',        resorts.filter(r => r.passGroup === 'Ikon').length,        'resorts'),
     dbStatHtml('Indy',        resorts.filter(r => r.passGroup === 'Indy').length,        'resorts'),
@@ -1846,77 +1838,6 @@ function renderDetail({ scroll = false } = {}) {
 
 // ─── Summary cards ────────────────────────────────────────────────────────────
 
-// ─── Map ───────────────────────────────────────────────────────────────────────
-let map = null, markers = {};
-
-function passColor(g)   { return { Epic:'#2b6de9', Ikon:'#8a4dff', Indy:'#22b38a', Independent:'#90a4be' }[g] || '#90a4be'; }
-function driveColor(m)  { return m <= 90 ? '#22b38a' : m <= 150 ? '#8ccf57' : m <= 210 ? '#f0b44c' : '#e07a5f'; }
-function stormColor(t)  { return t >= 8 ? '#1d4ed8' : t >= 5 ? '#3b82f6' : t >= 2 ? '#93c5fd' : '#cbd5e1'; }
-function verticalColor(v) {
-  if (v >= 2500) return '#1d2d6e';
-  if (v >= 1800) return '#2b6de9';
-  if (v >= 1200) return '#22b38a';
-  if (v >= 700)  return '#f0b44c';
-  return '#e07a5f';
-}
-
-function renderMapLegend() {
-  const html = state.mapMode === 'drive'
-    ? `<span class="legend-chip"><i class="legend-dot" style="background:#22b38a"></i> under 90 min</span><span class="legend-chip"><i class="legend-dot" style="background:#8ccf57"></i> 90–150 min</span><span class="legend-chip"><i class="legend-dot" style="background:#f0b44c"></i> 150–210 min</span><span class="legend-chip"><i class="legend-dot" style="background:#e07a5f"></i> 210+ min</span>`
-    : state.mapMode === 'storm'
-    ? `<span class="legend-chip"><i class="legend-dot" style="background:#1d4ed8"></i> 8"+ forecast</span><span class="legend-chip"><i class="legend-dot" style="background:#3b82f6"></i> 5–8"</span><span class="legend-chip"><i class="legend-dot" style="background:#93c5fd"></i> 2–5"</span><span class="legend-chip"><i class="legend-dot" style="background:#cbd5e1"></i> under 2"</span>`
-    : state.mapMode === 'vertical'
-    ? `<span class="legend-chip"><i class="legend-dot" style="background:#1d2d6e"></i> 2,500+ ft</span><span class="legend-chip"><i class="legend-dot" style="background:#2b6de9"></i> 1,800–2,499 ft</span><span class="legend-chip"><i class="legend-dot" style="background:#22b38a"></i> 1,200–1,799 ft</span><span class="legend-chip"><i class="legend-dot" style="background:#f0b44c"></i> 700–1,199 ft</span><span class="legend-chip"><i class="legend-dot" style="background:#e07a5f"></i> under 700 ft</span>`
-    : `<span class="legend-chip"><i class="legend-dot" style="background:#2b6de9"></i> Epic</span><span class="legend-chip"><i class="legend-dot" style="background:#8a4dff"></i> Ikon</span><span class="legend-chip"><i class="legend-dot" style="background:#22b38a"></i> Indy</span><span class="legend-chip"><i class="legend-dot" style="background:#90a4be"></i> Independent</span>`;
-  els.mapLegend.innerHTML = html;
-}
-
-function initMap() {
-  if (map) return map;
-  if (!els.leafletMap || typeof L === 'undefined' || !L?.map) return null;
-  try {
-    map = L.map('leafletMap', { zoomControl: true, scrollWheelZoom: true }).setView([43.5, -72.2], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 18 }).addTo(map);
-    return map;
-  } catch (err) { map = null; return null; }
-}
-
-function updateMap(resorts) {
-  if (!els.leafletMap || typeof L === 'undefined' || !L?.divIcon) {
-    if (els.mapLegend) els.mapLegend.innerHTML = '';
-    return;
-  }
-  const activeMap = initMap();
-  if (!activeMap) return;
-  renderMapLegend();
-  const filtered = new Set(resorts.map(r => r.id));
-  RESORTS.forEach(resort => {
-    const inFilter  = filtered.has(resort.id);
-    const selected  = resort.id === state.selectedId;
-    const wx        = state.weatherCache[resort.id]?.data;
-    const storm     = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-    const driveMins = getDriveMins(resort.id);
-    let color = passColor(resort.passGroup);
-    if (state.mapMode === 'drive' && driveMins !== null) color = driveColor(driveMins);
-    if (state.mapMode === 'storm')    color = stormColor(storm);
-    if (state.mapMode === 'vertical') color = verticalColor(resort.vertical);
-    const size = selected ? 16 : 10;
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid rgba(0,0,0,.18);opacity:${inFilter ? 1 : 0.22};box-shadow:${selected ? '0 0 0 4px rgba(43,109,233,.18)' : '0 2px 6px rgba(0,0,0,.18)'}"></div>`,
-      iconSize: [size, size], iconAnchor: [size / 2, size / 2],
-    });
-    const existing = markers[resort.id];
-    if (existing && typeof existing.setIcon === 'function') { existing.setIcon(icon); return; }
-    if (existing && typeof existing.remove === 'function') { try { existing.remove(); } catch (_) {} }
-    const marker = L.marker([resort.lat, resort.lon], { icon })
-      .addTo(activeMap)
-      .bindPopup(`<strong>${esc(resort.name)}</strong><br>${esc(resort.state)} · ${esc(resort.passGroup)}<br>Vertical ${resort.vertical} ft<br>Ticket* $${resort.price}${resort.website ? `<br><a href="${resort.website}" target="_blank" rel="noopener">Visit website</a>` : ''}`);
-    if (typeof marker.on === 'function') marker.on('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
-    markers[resort.id] = marker;
-  });
-}
-
 // ─── AI Chat — with rate limiting (SECURITY FIX) ─────────────────────────────
 async function askAI(query) {
   if (!query.trim() || aiChatLoading) return;
@@ -2123,8 +2044,6 @@ function repaintMainUI(resorts) {
   renderCompareTable(resorts);
   renderCompareTray();
   renderDetail();
-  updateMap(resorts);
-  mapModeBtns().forEach(btn => btn.classList.toggle('active', btn.dataset.mapMode === state.mapMode));
   renderVerdict(resorts);
   _renderStorm(resorts);
 }
@@ -2150,125 +2069,11 @@ function renderAllCards(resorts) {
 
 function render() { renderAllCards(filteredResorts()); }
 
-// ─── Filter badge ─────────────────────────────────────────────────────────────
-function updateFilterBadge() {
-  const badge = document.getElementById('filterBadge');
-  if (!badge) return;
-  const count = activeFilters().length;
-  badge.textContent = count;
-  badge.classList.toggle('hidden', count === 0);
-}
-
-// ─── Leaflet lazy loader ──────────────────────────────────────────────────────
-let leafletLoaded = false;
-function lazyLoadLeaflet(callback) {
-  if (leafletLoaded) { if (callback) callback(); return; }
-  const cssEl = document.getElementById('leafletCss');
-  if (cssEl) cssEl.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
-  const script = document.createElement('script');
-  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-  script.onload = () => { leafletLoaded = true; if (callback) callback(); };
-  document.head.appendChild(script);
-}
-
-// ─── Sync active button states inside the mobile drawer clone ────────────────
-function syncDrawerControls(root) {
-  const keyMap = {
-    snow:   () => String(state.weights.snow),
-    value:  () => String(state.weights.value),
-    crowd:  () => String(state.weights.crowd),
-    size:   () => state.verticalFilter,
-    temp:   () => state.tempBucket,
-    wind:   () => state.windBucket,
-    howfar: () => String(state.howFar),
-  };
-  Object.entries(keyMap).forEach(([key, getVal]) => {
-    const group = root.querySelector(`.priority-btns[data-key="${key}"]`);
-    if (!group) return;
-    const val = getVal();
-    group.querySelectorAll('.priority-btn').forEach(btn =>
-      btn.classList.toggle('active', btn.dataset.val === val)
-    );
-  });
-}
-
-// ─── Mobile filter drawer — FIX: event delegation to avoid listener leak ──────
-function wireMobileFilterDrawer() {
-  const triggerBtn = document.getElementById('mobileFilterBtn');
-  const drawer     = document.getElementById('filterDrawer');
-  const overlay    = document.getElementById('filterDrawerOverlay');
-  const closeBtn   = document.getElementById('filterDrawerClose');
-  const doneBtn    = document.getElementById('filterDrawerDone');
-  const resetBtn   = document.getElementById('filterDrawerReset');
-  const drawerBody = document.getElementById('filterDrawerBody');
-  if (!triggerBtn || !drawer) return;
-
-  function openDrawer() {
-    const plannerDetails = document.getElementById('plannerDetails');
-    if (drawerBody && plannerDetails) {
-      // FIX: innerHTML clears old clone + all its listeners before appending new clone
-      drawerBody.innerHTML = '';
-      const clone = plannerDetails.cloneNode(true);
-      clone.id = 'plannerDetails-drawer';
-      drawerBody.appendChild(clone);
-      // Sync active button states onto the cloned nodes so selections show immediately
-      syncDrawerControls(clone);
-      // Remove any previous listener before adding fresh one (prevents stacking)
-      drawerBody.removeEventListener('click', handleDrawerClick);
-      drawerBody.addEventListener('click', handleDrawerClick);
-    }
-    drawer.hidden = false;
-    requestAnimationFrame(() => drawer.classList.add('open'));
-    triggerBtn.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function handleDrawerClick(e) {
-    const btn = e.target.closest('.priority-btn');
-    if (!btn) return;
-    const key = btn.closest('.priority-btns')?.dataset.key;
-    if (!key) return;
-    commitPlannerPriorityChange(key, btn);
-    if (key === 'howfar') requestAnimationFrame(() => closeDrawer());
-    if (drawerBody) syncDrawerControls(drawerBody);
-  }
-
-  function closeDrawer() {
-    drawer.classList.remove('open');
-    triggerBtn.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-    setTimeout(() => { drawer.hidden = true; }, 300);
-  }
-
-  triggerBtn.addEventListener('click', openDrawer);
-  if (closeBtn)  closeBtn.addEventListener('click', closeDrawer);
-  if (overlay)   overlay.addEventListener('click', closeDrawer);
-  if (doneBtn) {
-    doneBtn.addEventListener('click', () => {
-      closeDrawer();
-      setTimeout(() => scrollToBestMatchFromFilters('drawer_done'), 280);
-    });
-  }
-  if (resetBtn)  resetBtn.addEventListener('click', () => { document.getElementById('resetFilters')?.click(); closeDrawer(); updateFilterBadge(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drawer.hidden) closeDrawer(); });
-}
-
 // ─── Event wiring ─────────────────────────────────────────────────────────────
 /** Debounced full render. Prefer immediate `render()` for drive tier and location so results snap in. */
 const debouncedRender = debounce(render, 50);
 
 function wireEvents() {
-  // Leaflet lazy load
-  const mapSection = document.getElementById('mapSection');
-  if (mapSection && typeof IntersectionObserver !== 'undefined') {
-    const obs = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) { lazyLoadLeaflet(() => updateMap(filteredResorts())); obs.disconnect(); }
-    }, { threshold: 0.1 });
-    obs.observe(mapSection);
-  } else { setTimeout(() => lazyLoadLeaflet(), 2000); }
-
-  wireMobileFilterDrawer();
-
   // AI chat
   if (els.aiChatBtn) els.aiChatBtn.addEventListener('click', () => { const q = els.aiChatInput?.value?.trim(); if (q) { trackEvent('ai_chat_used', { query: q }); askAI(q); } });
   if (els.aiChatInput) els.aiChatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const q = els.aiChatInput.value?.trim(); if (q) askAI(q); } });
@@ -2336,7 +2141,7 @@ function wireEvents() {
     state.howFar = Number(e.target.value);
     trackEvent('filter_applied', { filter_type: 'distance', filter_value: String(e.target.value), filter_label: _howFarEl.options[_howFarEl.selectedIndex]?.text || '' });
     if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
-    pushUrlDebounced(); syncPlannerControls(); render(); updateFilterBadge();
+    pushUrlDebounced(); syncPlannerControls(); render();
   });
 
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
@@ -2393,7 +2198,6 @@ function wireEvents() {
     els.toggleNight.setAttribute('aria-pressed', 'false'); els.toggleNight.textContent = 'Off';
     if (els.tableSearch) els.tableSearch.value = '';
     syncPlannerControls();
-    updateFilterBadge();
     pushUrlDebounced(); render();
   });
 
@@ -2408,7 +2212,7 @@ function wireEvents() {
   els.clearCompare.addEventListener('click', () => { state.compareSet.clear(); els.comparePanel.classList.add('hidden'); renderCompareTray(); render(); });
   els.closeCompare.addEventListener('click', () => els.comparePanel.classList.add('hidden'));
 
-  // Refine panel (#plannerDetails): instant apply (same model as mobile drawer).
+  // Refine panel (#plannerDetails): instant apply
   els.plannerDetails?.addEventListener('click', e => {
     const btn = e.target.closest('.priority-btn');
     if (!btn || !els.plannerDetails.contains(btn)) return;
@@ -2459,12 +2263,6 @@ function wireEvents() {
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
     });
   }
-
-  mapModeBtns().forEach(btn => btn.addEventListener('click', () => {
-    state.mapMode = btn.dataset.mapMode;
-    updateMap(filteredResorts());
-    mapModeBtns().forEach(b => b.classList.toggle('active', b.dataset.mapMode === state.mapMode));
-  }));
 
   // Table event delegation
   els.comparisonBody.addEventListener('click', e => {
@@ -2721,7 +2519,6 @@ function initialize() {
   wireEvents();
   updateHeroHeadline();
   render();
-  updateFilterBadge();
 
   if (state.origin) { applyHaversineEstimates(); loadDriveTimes(); }
 
