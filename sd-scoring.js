@@ -53,8 +53,8 @@ function windBucketMatches(wind) {
 // ─── Crowd preference gate ────────────────────────────────────────────────────
 function crowdPreferenceAllows(crowd) {
   const score = safeNum(crowd?.score, 0);
-  if (state.weights.crowd >= 10) return score < 52;
-  if (state.weights.crowd >= 5)  return score < 70;
+  if (state.weights.crowd >= 10) return score < 45;  // Avoid crowds: filter Moderate+
+  if (state.weights.crowd >= 5)  return score < 65;  // Prefer quiet: filter Busy+
   return true;
 }
 
@@ -74,52 +74,138 @@ function windScoreIndex(wind) {
   return 0.10;
 }
 
+// ─── Holiday calendar ─────────────────────────────────────────────────────────
+// Returns 0–1 holiday factor for a given Date object.
+// 1.0 = peak holiday week, 0.7 = major holiday weekend, 0.4 = minor
+function _holidayFactor(date) {
+  const month = date.getMonth() + 1;
+  const day   = date.getDate();
+  const dow   = date.getDay();
+  if (month === 12 && day >= 23)             return 1.0; // Christmas week
+  if (month === 1  && day <= 1)              return 1.0; // New Year's Day
+  if (month === 2  && day >= 15 && day <= 23) return 1.0; // Presidents Week
+  if (month === 1  && day >= 13 && day <= 21 && dow <= 1) return 0.7; // MLK weekend
+  if (month === 11 && day >= 22 && day <= 30) return 0.7; // Thanksgiving
+  if (month === 10 && day >= 7  && day <= 14 && dow <= 1) return 0.4; // Columbus Day
+  if (month === 11 && day >= 10 && day <= 12) return 0.4; // Veterans Day
+  return 0;
+}
+
+// ─── Powder carry-forward factor ─────────────────────────────────────────────
+// Blends forecast snow with recent history so day-after-storm crowds count.
+function _powderFactor(resort, wx) {
+  const fc         = tomorrowForecast(wx);
+  const forecastIn = fc?.snow || 0;
+  const hist       = historyCache.get(resort.id);
+  const recentIn   = hist?.total ?? 0;
+  const forecastF  = forecastIn >= 8 ? 1.0 : forecastIn >= 4 ? 0.5 : 0;
+  const recentF    = recentIn  >= 12 ? 0.7 : recentIn  >= 6  ? 0.4 : 0;
+  return Math.min(1.0, Math.max(forecastF, recentF));
+}
+
+// ─── Bluebird factor ──────────────────────────────────────────────────────────
+// Clear, calm, ideal-temp day = demand spike. Mutually exclusive with heavy snow.
+function _bluebirdFactor(wx) {
+  const fc = tomorrowForecast(wx);
+  if (!fc) return 0;
+  if ((fc.snow || 0) > 3) return 0; // snowing = not bluebird
+  if ((fc.wind || 0) > 20) return 0;
+  if (fc.lo == null || fc.lo < 0 || fc.lo > 38) return 0;
+  return 1;
+}
+
 // ─── Crowd forecast ───────────────────────────────────────────────────────────
-function crowdForecast(resort) {
-  let score = 35;
+// Calibrated formula: Killington Saturday bluebird → BUSY (69)
+//                     Killington Holiday Saturday powder → AVOID (81)
+//                     Bousquet Saturday bluebird → MODERATE (51)
+// Depends on: METRO_GRAVITY and LIFT_CAPACITY_TIERS lookup tables loaded before
+// this file in HTML via metro_gravity_final.js and lift_capacity_tiers_final.js
+function crowdForecast(resort, wx = null) {
+
+  // ── Step A: Base structural demand ────────────────────────────────────────
+  const rawMG  = (typeof METRO_GRAVITY !== 'undefined' ? METRO_GRAVITY[resort.id] : null) ?? 500;
+  const metroG = rawMG / 1000;
+
+  const passScore = (resort.passGroup === 'Epic' || resort.passGroup === 'Ikon') ? 0.85
+                  : resort.passGroup === 'Indy' ? 0.45
+                  : 0.30;
+
+  const destPull = Math.min(1, (resort.vertical / 3000) * 0.6 + (resort.acres / 1500) * 0.4);
+
+  const resortAttr = Math.min(1,
+    Math.min(1, resort.vertical / 3000) * 0.50 +
+    (resort.terrainPark ? 0.20 : 0) +
+    (resort.night       ? 0.15 : 0) +
+    0.15
+  );
+
+  // Weights: metroGravity 40%, passScore 25%, destPull 20%, resortAttractors 15%
+  const Dbase = 0.40*metroG + 0.25*passScore + 0.20*destPull + 0.15*resortAttr;
+
+  // ── Step B: Day-specific multipliers ──────────────────────────────────────
+  // Use target ski date (state.targetDate) if set, else today
+  const targetDate = (state.targetDate instanceof Date) ? state.targetDate : new Date();
+  const dow        = targetDate.getDay();
+  const weekendF   = dow === 6 ? 1.0 : dow === 0 ? 0.7 : dow === 5 ? 0.3 : 0;
+  const holidayF   = _holidayFactor(targetDate);
+  const Mday       = 1 + 0.35*weekendF + 0.45*holidayF;
+
+  const wxAvail  = !!wx;
+  const powderF  = wxAvail ? _powderFactor(resort, wx) : 0;
+  const blueF    = wxAvail ? _bluebirdFactor(wx)       : 0;
+  const fc       = tomorrowForecast(wx);
+  const rainF    = (fc && fc.lo > 32 && (fc.snow || 0) < 1 && (fc.wind || 0) > 10) ? 0.6 : 0;
+  const Mweather = 1 + 0.40*powderF + 0.15*blueF - 0.25*rainF;
+
+  // Soft clamp: tanh preserves differentiation at the top end
+  const Draw = Dbase * Mday * Mweather;
+  const D    = Math.tanh(Draw / 1.5);
+
+  // ── Step C: Capacity amplifier ────────────────────────────────────────────
+  const rawTier  = (typeof LIFT_CAPACITY_TIERS !== 'undefined' ? LIFT_CAPACITY_TIERS[resort.id] : null) ?? 3;
+  const liftInv  = (5 - rawTier) / (5 - 1); // linear: tier5=0, tier1=1
+  const parkingC = resort.acres < 100 ? 0.75 : resort.acres < 300 ? 0.55 : 0.40;
+  const terrainC = rawTier <= 2 ? 0.65 : rawTier <= 3 ? 0.50 : 0.35;
+  const A        = 0.45*liftInv + 0.35*parkingC + 0.20*terrainC;
+
+  // ── Final score: logistic squash (alpha=3.5, beta=1.5, center=0.40) ───────
+  const logitIn = 3.5*(D - 0.40) + 1.5*(A - 0.5);
+  const score   = Math.max(5, Math.min(100, Math.round(100 / (1 + Math.exp(-logitIn)))));
+
+  // ── Labels ────────────────────────────────────────────────────────────────
+  const label = score >= 80 ? 'Avoid'
+              : score >= 65 ? 'Busy'
+              : score >= 45 ? 'Moderate'
+              :               'Quiet';
+
+  // ── Confidence ────────────────────────────────────────────────────────────
+  const confidence = (wxAvail && state.origin) ? 'High'
+                   : (wxAvail || state.origin)  ? 'Medium'
+                   :                              'Low';
+
+  // ── Reasons ───────────────────────────────────────────────────────────────
   const reasons = [];
+  if (dow === 6)                    reasons.push('Saturday — peak ski day');
+  else if (dow === 0)               reasons.push('Sunday — still busy');
+  else if (dow === 5)               reasons.push('Friday — early arrivals');
+  else                              reasons.push('Midweek — lighter traffic');
+  if (holidayF >= 1.0)              reasons.push('Holiday week — expect peak crowds');
+  else if (holidayF >= 0.7)         reasons.push('Holiday weekend — busy');
+  if (powderF >= 0.7)               reasons.push('Fresh snow — high demand');
+  else if (powderF >= 0.4)          reasons.push('Recent snow drawing extra traffic');
+  if (blueF)                        reasons.push('Bluebird day — peak demand conditions');
+  if (rainF > 0)                    reasons.push('Wet/icy forecast — lighter crowds');
+  if (resort.passGroup === 'Epic' || resort.passGroup === 'Ikon')
+                                    reasons.push(`${resort.passGroup} pass — large network demand`);
+  if (rawTier <= 2)                 reasons.push('Small hill — crowds build quickly');
 
-  const day = new Date().getDay();
-  if (day === 6)            { score += 20; reasons.push('Saturday — busiest ski day'); }
-  else if (day === 0)       { score += 12; reasons.push('Sunday traffic'); }
-  else if (day === 5)       { score += 6;  reasons.push('Friday arrivals'); }
-  else if (day >= 1 && day <= 4) { score -= 12; reasons.push('Midweek traffic drop'); }
-
-  if (state.nightOnly) { score += 8; reasons.push('After-work night crowd'); }
-
-  const drive = getDriveMins(resort.id);
-  if (drive !== null) {
-    if (drive <= 90)       { score += 16; reasons.push('Easy day-trip distance'); }
-    else if (drive <= 150) { score += 8; }
-    else if (drive >= 240) { score -= 8; reasons.push('Long drive filters casual traffic'); }
-  }
-
-  if (resort.passGroup === 'Epic' || resort.passGroup === 'Ikon') {
-    score += 10; reasons.push('Major pass — large network traffic');
-  } else if (resort.passGroup === 'Indy') {
-    score += 4;
-  }
-
-  if (resort.vertical >= 1800) { score += 6; reasons.push('Big-mountain draw'); }
-  if (resort.terrainPark)       { score += 4; reasons.push('Terrain park attracts crowds'); }
-  if (resort.night)             { score += 5; reasons.push('Night skiing draws extra traffic'); }
-  if (resort.price <= 85)       { score += 4; reasons.push('Value pricing drives volume'); }
-
-  score = Math.max(5, Math.min(SCORING.CROWD_SCALE, score));
-
-  let label;
-  if (score >= 70)      label = 'Heavy';
-  else if (score >= 52) label = 'Moderate';
-  else if (score >= 35) label = 'Light-Moderate';
-  else                  label = 'Light';
-
-  return { score, label, confidence: 'Medium', reasons };
+  return { score, label, confidence, reasons };
 }
 
 // ─── Crowd outlook score index ────────────────────────────────────────────────
 function crowdOutlookIndex(crowd) {
   const score = safeNum(crowd?.score, 35);
-  return Math.max(0, Math.min(1, 1 - (score - 5) / Math.max(1, (SCORING.CROWD_SCALE - 5))));
+  return Math.max(0, Math.min(1, 1 - (score - 5) / 95));
 }
 
 // ─── Skiability index (temp × wind tomorrow) ──────────────────────────────────
@@ -413,14 +499,16 @@ function preferenceReasons(resort, wx, breakdown) {
   }
 
   // ── Crowd preference ──────────────────────────────────────────────────────
-  const crowd = crowdForecast(resort);
+  const crowd = crowdForecast(resort, wx);
   if (crowdPref >= 10) {
-    if (crowd.label === 'Light' || crowd.label === 'Light-Moderate') {
-      reasons.push(`${crowd.label} crowds — what you wanted if you asked for quiet`);
+    if (crowd.label === 'Quiet') {
+      reasons.push('Quiet crowds — what you asked for');
+    } else if (crowd.label === 'Moderate') {
+      reasons.push('Moderate crowds — manageable but not empty');
     } else {
       reasons.push(`${crowd.label} crowds — busier than you said you like`);
     }
-  } else if (crowd.label === 'Light') {
+  } else if (crowd.label === 'Quiet') {
     reasons.push('Should be pretty quiet');
   } else {
     reasons.push(`${crowd.label} crowds expected`);
@@ -526,7 +614,7 @@ function primaryReasons(item) {
   else if (liveDrive !== null && liveDrive <= 120)
     reasons.push(`Close by at ${formatDrive(item.resort.id)}`);
   const cLabel = item.crowd?.label || '';
-  if (cLabel === 'Light' || cLabel === 'Light-Moderate')
+  if (cLabel === 'Quiet' || cLabel === 'Moderate')
     reasons.push('Lighter crowd outlook');
   if (state.nightOnly && item.resort.night)
     reasons.push('Night skiing available');
