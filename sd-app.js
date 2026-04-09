@@ -161,7 +161,6 @@ const state = Object.seal({
   passPreference: loadSavedPassPreference(),
   tableSearch:    '',
   tableViewAll:   false,
-  targetDate:     null,
 });
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -266,11 +265,13 @@ function runnerUpBlurb(snowInches, cf, passGroup) {
       : `not much snow in the forecast`);
   }
   if (cf) {
-    if (cf.label === 'Light') {
+    if (cf.label === 'Quiet') {
       bits.push(cf.score <= 36 ? `usually stays pretty quiet` : `crowds tend to stay manageable`);
-    } else if (cf.label === 'Heavy') {
+    } else if (cf.label === 'Avoid') {
+      bits.push(`expect a very busy day — long lift lines likely`);
+    } else if (cf.label === 'Busy') {
       bits.push(`expect a busy day on the hill`);
-    } else if (cf.label === 'Moderate' || cf.label === 'Light-Moderate') {
+    } else if (cf.label === 'Moderate') {
       bits.push(`moderate crowds`);
     }
   }
@@ -1100,11 +1101,13 @@ function renderVerdict(resorts) {
     : 'Dry forecast';
 
   const crowdLbl = crowdForecast(resort).label;
-  const crowdPill = crowdLbl === 'Light'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Low crowds</span>'
-    : crowdLbl === 'Heavy'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Heavy crowds</span>'
-    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Mod. crowds</span>';
+  const crowdPill = crowdLbl === 'Quiet'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Quiet crowds</span>'
+    : crowdLbl === 'Avoid'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Avoid — very busy</span>'
+    : crowdLbl === 'Busy'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Busy</span>'
+    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Moderate crowds</span>';
 
   const zipNudgeHtml = !state.origin
     ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — once we know where you’re leaving from, this swaps to a real mountain with drive time.</p>`
@@ -1536,7 +1539,10 @@ function renderCompareTable(resorts) {
       ? `Dry forecast — expect firm`
       : 'Loading forecast…';
 
-    const crowdWord = crowd === 'Light' ? 'Quiet' : crowd === 'Heavy' ? 'Busy' : 'Mixed';
+    const crowdWord = crowd === 'Quiet' ? 'Quiet'
+                    : crowd === 'Busy'  ? 'Busy'
+                    : crowd === 'Avoid' ? 'Avoid'
+                    : 'Moderate';
 
     const bdAttr = breakdown ? (() => {
       const c = breakdown.components;
@@ -1711,11 +1717,13 @@ function renderDetail({ scroll = false } = {}) {
     ? `${forecast[0].snow.toFixed(0)}" forecast`
     : 'Dry forecast';
 
-  const dhrCrowdPill = crowd.label === 'Light'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Low crowds</span>'
-    : crowd.label === 'Heavy'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Heavy crowds</span>'
-    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Mod. crowds</span>';
+  const dhrCrowdPill = crowd.label === 'Quiet'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Quiet crowds</span>'
+    : crowd.label === 'Avoid'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Avoid — very busy</span>'
+    : crowd.label === 'Busy'
+    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Busy</span>'
+    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Moderate crowds</span>';
 
   const dhrTierPillClass = vd
     ? ({ great: 'vcard-dash-pill--cond-great', good: 'vcard-dash-pill--cond-good', marginal: 'vcard-dash-pill--cond-warn', bad: 'vcard-dash-pill--cond-bad' }[vd.tier] || 'vcard-dash-pill--cond-good')
@@ -2059,7 +2067,10 @@ function renderMobileCards(decorated, emptyOpts) {
       ? `Dry forecast — expect firm`
       : 'Loading forecast…';
 
-    const crowdWord = crowd === 'Light' ? 'Quiet' : crowd === 'Heavy' ? 'Busy' : 'Mixed';
+    const crowdWord = crowd === 'Quiet' ? 'Quiet'
+                    : crowd === 'Busy'  ? 'Busy'
+                    : crowd === 'Avoid' ? 'Avoid'
+                    : 'Moderate';
     const _mobSp = getSponsor(resort.id);
     const _mobPartnerBanner = _mobSp
       ? `<div class="mob-featured-banner" role="note">
@@ -2149,7 +2160,7 @@ function renderAllCards(resorts) {
   renderAsyncPanels(resorts);
 }
 
-function render() { renderAllCards(filteredResorts()); updateHeroHeadline(); }
+function render() { renderAllCards(filteredResorts()); }
 
 // ─── Filter badge ─────────────────────────────────────────────────────────────
 function updateFilterBadge() {
@@ -2779,19 +2790,15 @@ function initialize() {
 function updateHeroHeadline() {
   const el = document.getElementById('heroHeadline');
   if (!el) return;
-  const now    = new Date();
-  const target = (state.targetDate instanceof Date) ? state.targetDate : now;
-  const day    = target.getDay();
-  const hour   = now.getHours();
-  const isToday = target.toDateString() === now.toDateString();
-
+  const now  = new Date();
+  const day  = now.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const hour = now.getHours();
   let timeframe;
-  if (isToday && hour >= 15)  timeframe = 'tonight';
-  else if (isToday)           timeframe = 'today';
-  else if (day === 6)         timeframe = 'this Saturday';
-  else if (day === 0)         timeframe = 'this Sunday';
-  else                        timeframe = 'tomorrow';
-
+  if      (day === 5 && hour >= 15) timeframe = 'this weekend';
+  else if (day === 6)               timeframe = 'this weekend';
+  else if (day === 0)               timeframe = 'today';
+  else if (hour >= 15)              timeframe = 'tomorrow';
+  else                              timeframe = 'today';
   el.innerHTML = `Where should you ski <em>${timeframe}?</em>`;
 }
 
