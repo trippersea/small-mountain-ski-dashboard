@@ -630,10 +630,13 @@
 
         function smartDefault() {
           var dow = new Date().getDay();
-          if (dow === 5) return 'friday';
-          if (dow === 6) return 'saturday';
-          if (dow === 0) return 'sunday';
-          return 'saturday'; // Mon–Thu: people are planning for the weekend
+          // Always default to the next day's chip
+          // 0=Sun→weekday, 1=Mon→weekday, 2=Tue→weekday, 3=Wed→weekday
+          // 4=Thu→friday, 5=Fri→saturday, 6=Sat→sunday
+          if (dow === 4) return 'friday';
+          if (dow === 5) return 'saturday';
+          if (dow === 6) return 'sunday';
+          return 'weekday'; // Sun, Mon, Tue, Wed, Thu → next day is a weekday
         }
 
         function activateChip(val) {
