@@ -161,6 +161,7 @@ const state = Object.seal({
   passPreference: loadSavedPassPreference(),
   tableSearch:    '',
   tableViewAll:   false,
+  targetDate:     null,
 });
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -1317,11 +1318,17 @@ function bindFeaturePanelResortCards(grid, source) {
   grid.querySelectorAll('.planner-card--clickable[data-resort-id]').forEach(card => {
     const openDetail = () => {
       const id = card.getAttribute('data-resort-id');
+      // #region agent log
+      fetch('http://127.0.0.1:7579/ingest/dc49ef5b-6ec4-43ba-8411-0c7c0a9a14ba',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'74ce02'},body:JSON.stringify({sessionId:'74ce02',runId:'post-fix-v2',hypothesisId:'F',location:'sd-app.js:bindFeaturePanelResortCards',message:'openDetail',data:{id:String(id||''),source:String(source)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (!id) return;
       state.selectedId = id;
       const _r = RESORTS.find(r => r.id === state.selectedId);
       if (_r) trackEvent('mountain_viewed', { mountain_name: _r.name, mountain_state: _r.state, source });
       renderDetail({ scroll: true });
+      // #region agent log
+      fetch('http://127.0.0.1:7579/ingest/dc49ef5b-6ec4-43ba-8411-0c7c0a9a14ba',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'74ce02'},body:JSON.stringify({sessionId:'74ce02',runId:'post-fix-v2',hypothesisId:'D',location:'sd-app.js:bindFeaturePanelResortCards:postRender',message:'detail visible',data:{detailVisible:!els.detailSection.classList.contains('hidden')},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
     };
     card.addEventListener('click', e => {
       if (e.target.closest('a')) return;
@@ -1357,6 +1364,9 @@ function _renderStorm(resorts) {
     const days = (item.wx.forecast || []).map(f => `<span class="metric-chip">${f.day}: ${f.snow.toFixed(1)}"</span>`).join('');
     const id = item.resort.id;
     const nm = esc(item.resort.name);
+    // #region agent log
+    if (i === 0) fetch('http://127.0.0.1:7579/ingest/dc49ef5b-6ec4-43ba-8411-0c7c0a9a14ba',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'74ce02'},body:JSON.stringify({sessionId:'74ce02',runId:'post-fix',hypothesisId:'C',location:'sd-app.js:_renderStorm',message:'storm card id raw vs esc',data:{rawId:String(item.resort.id),attrId:String(id),matchDom:true},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     return `<div class="planner-card planner-card--clickable ${i === 0 ? 'top' : ''}" data-resort-id="${id}" role="button" tabindex="0" aria-label="Full conditions for ${nm}">
       <div class="planner-title">${nm}</div>
       <div class="planner-meta">${esc(item.resort.state)} · ${esc(item.resort.passGroup)} · <strong>${item.storm.toFixed(1)}"</strong> over 3 days</div>
@@ -1641,6 +1651,9 @@ function renderComparePanel() {
 function renderDetail({ scroll = false } = {}) {
   const resort = RESORTS.find(r => r.id === state.selectedId);
   if (!resort) {
+    // #region agent log
+    fetch('http://127.0.0.1:7579/ingest/dc49ef5b-6ec4-43ba-8411-0c7c0a9a14ba',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'74ce02'},body:JSON.stringify({sessionId:'74ce02',runId:'pre-fix',hypothesisId:'D',location:'sd-app.js:renderDetail',message:'no resort for selectedId',data:{selectedId:String(state.selectedId)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     els.detailSection.classList.add('hidden');
     return;
   }
@@ -2136,7 +2149,7 @@ function renderAllCards(resorts) {
   renderAsyncPanels(resorts);
 }
 
-function render() { renderAllCards(filteredResorts()); }
+function render() { renderAllCards(filteredResorts()); updateHeroHeadline(); }
 
 // ─── Filter badge ─────────────────────────────────────────────────────────────
 function updateFilterBadge() {
@@ -2766,15 +2779,19 @@ function initialize() {
 function updateHeroHeadline() {
   const el = document.getElementById('heroHeadline');
   if (!el) return;
-  const now  = new Date();
-  const day  = now.getDay(); // 0=Sun, 1=Mon ... 6=Sat
-  const hour = now.getHours();
+  const now    = new Date();
+  const target = (state.targetDate instanceof Date) ? state.targetDate : now;
+  const day    = target.getDay();
+  const hour   = now.getHours();
+  const isToday = target.toDateString() === now.toDateString();
+
   let timeframe;
-  if      (day === 5 && hour >= 15) timeframe = 'this weekend';
-  else if (day === 6)               timeframe = 'this weekend';
-  else if (day === 0)               timeframe = 'today';
-  else if (hour >= 15)              timeframe = 'tomorrow';
-  else                              timeframe = 'today';
+  if (isToday && hour >= 15)  timeframe = 'tonight';
+  else if (isToday)           timeframe = 'today';
+  else if (day === 6)         timeframe = 'this Saturday';
+  else if (day === 0)         timeframe = 'this Sunday';
+  else                        timeframe = 'tomorrow';
+
   el.innerHTML = `Where should you ski <em>${timeframe}?</em>`;
 }
 

@@ -185,6 +185,13 @@
               <button type="button" class="hn-tchip" data-val="1">Weekend (3–6h)</button>
               <button type="button" class="hn-tchip" data-val="2">Any distance</button>
             </div>
+            <div class="hn-chips-row">
+              <span class="hn-chips-lbl">When:</span>
+              <button type="button" class="hn-dchip hn-chip-on" data-val="today">Today</button>
+              <button type="button" class="hn-dchip" data-val="tomorrow">Tomorrow</button>
+              <button type="button" class="hn-dchip" data-val="saturday">This Sat</button>
+              <button type="button" class="hn-dchip" data-val="sunday">This Sun</button>
+            </div>
             <div class="hn-meta-row">
               <button id="detectLocation" class="hero-locate-link">Use my location</button>
               <span class="hn-meta-sep" aria-hidden="true">·</span>
@@ -587,6 +594,37 @@
           var val = this.dataset.val;
           var filterSel = document.getElementById('howFarFilter');
           if (filterSel) { filterSel.value = val; filterSel.dispatchEvent(new Event('change', { bubbles: true })); }
+        });
+      });
+
+      /* ── When chips → set state.targetDate and re-render ── */
+      function chipValToDate(val) {
+        var now = new Date();
+        var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (val === 'today') return today;
+        if (val === 'tomorrow') { var d = new Date(today); d.setDate(d.getDate() + 1); return d; }
+        if (val === 'saturday') {
+          var d = new Date(today);
+          var daysUntil = (6 - today.getDay() + 7) % 7;
+          d.setDate(d.getDate() + (daysUntil === 0 ? 0 : daysUntil));
+          return d;
+        }
+        if (val === 'sunday') {
+          var d = new Date(today);
+          var daysUntil = (7 - today.getDay()) % 7;
+          d.setDate(d.getDate() + (daysUntil === 0 ? 0 : daysUntil));
+          return d;
+        }
+        return today;
+      }
+      document.querySelectorAll('.hn-dchip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.hn-dchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
+          this.classList.add('hn-chip-on');
+          if (typeof state !== 'undefined') {
+            state.targetDate = chipValToDate(this.dataset.val);
+            if (typeof render === 'function') render();
+          }
         });
       });
 
