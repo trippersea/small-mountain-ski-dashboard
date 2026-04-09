@@ -3678,7 +3678,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 
 .hn-chips-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
 .hn-chips-lbl { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
-.hn-pchip, .hn-tchip {
+.hn-pchip, .hn-tchip, .hn-dchip {
   font-size: 13px;
   font-weight: 500;
   padding: 6px 14px;
@@ -3690,7 +3690,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   font-family: inherit;
   transition: border-color .12s, background .12s, color .12s;
 }
-.hn-pchip:hover, .hn-tchip:hover {
+.hn-pchip:hover, .hn-tchip:hover, .hn-dchip:hover {
   border-color: #cbd5e1;
   color: var(--text);
 }
