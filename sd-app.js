@@ -969,7 +969,7 @@ function renderVerdict(resorts) {
     );
     if (filtersTightenEmpty) {
       const driveHint = state.origin && state.howFar < 2
-        ? 'If nothing is within day-trip distance, try <strong>Weekend</strong> or <strong>All distances</strong>, or adjust your starting location.'
+        ? 'If nothing is inside your current drive radius, try <strong>Any distance</strong> (Trip or Drive time), or ease snow, price, or pass filters.'
         : 'Try expanding your distance range, easing the ticket or snow filters, or choosing a different pass.';
       els.verdictCard.innerHTML = `<div class="vcard-placeholder">
         <div class="vcard-placeholder-icon">🔍</div>
@@ -1425,10 +1425,10 @@ function renderCompareTable(resorts) {
 
   if (displayed.length === 0) {
     const qActive = !!q;
-    const weekendBandBlocksAll =
+    const driveCapTooTight =
       !qActive &&
       state.origin &&
-      state.howFar === 1 &&
+      state.howFar < 2 &&
       resorts.length === 0 &&
       typeof countFilteredIfHowFar === 'function' &&
       countFilteredIfHowFar(2) > 0;
@@ -1438,11 +1438,11 @@ function renderCompareTable(resorts) {
       : (resorts.length === 0 ? 'No mountains match your current filters' : 'No rows to show');
     const sub = qActive
       ? 'Try a shorter search, check spelling, or clear the search box. Filters still apply to what you see.'
-      : weekendBandBlocksAll
-        ? '<strong>Weekend (3–6h)</strong> hides every mountain closer than 3 hours — so if nothing is 3–6 hours from you, the list is empty. Use <strong>Day trip</strong> for nearby skiing, or <strong>Any distance</strong> to see everything.'
+      : driveCapTooTight
+        ? 'Nothing is inside your current <strong>day trip</strong> or <strong>weekend</strong> drive radius, but farther resorts exist — try <strong>Any distance</strong>, or ease snow, price, or pass filters.'
         : 'Try widening distance, easing snow or price limits, or pick another pass.';
-    const weekendFix = weekendBandBlocksAll
-      ? `<div class="ces-weekend-fix"><button type="button" class="btn btn-primary ces-fix-trip-btn" id="emptyStateDayTrip">Use day trip (≤3h)</button> <button type="button" class="btn btn-secondary ces-fix-trip-btn" id="emptyStateAnyDist">Any distance</button></div>`
+    const weekendFix = driveCapTooTight
+      ? `<div class="ces-weekend-fix"><button type="button" class="btn btn-primary ces-fix-trip-btn" id="emptyStateAnyDist">Any distance</button></div>`
       : '';
     els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
@@ -1462,14 +1462,6 @@ function renderCompareTable(resorts) {
       } else {
         document.getElementById('resetFilters')?.click();
       }
-    });
-    document.getElementById('emptyStateDayTrip')?.addEventListener('click', () => {
-      state.howFar = 0;
-      const _hf = document.getElementById('howFarFilter');
-      if (_hf) _hf.value = '0';
-      syncPlannerControls();
-      pushUrlDebounced();
-      render();
     });
     document.getElementById('emptyStateAnyDist')?.addEventListener('click', () => {
       state.howFar = 2;
