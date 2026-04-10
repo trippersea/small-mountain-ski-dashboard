@@ -538,7 +538,8 @@ function labelFromNominatimResult(row) {
   return parts[0] || row.name || 'Unknown';
 }
 
-async function geocodeOrigin(query) {
+/** Client-only geocoding (used when /api/geocode is unavailable, e.g. file://). */
+async function geocodeOriginClient(query) {
   const q = query.trim();
   if (!q) return null;
 
@@ -596,6 +597,31 @@ async function geocodeOrigin(query) {
   } catch (e) {
     return null;
   }
+}
+
+/**
+ * Prefer same-origin /api/geocode so US ZIP lookups work in production: Zippopotam has no CORS,
+ * so browser fetch to zippopotam.us always failed after Nominatim postalcode missed.
+ */
+async function geocodeOrigin(query) {
+  const q = query.trim();
+  if (!q) return null;
+
+  try {
+    const res = await fetchWithTimeout(`/api/geocode?q=${encodeURIComponent(q)}`, {}, 12000);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && !data.error && Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon))) {
+        return {
+          lat: Number(data.lat),
+          lon: Number(data.lon),
+          label: data.label || 'Unknown',
+        };
+      }
+    }
+  } catch (e) {}
+
+  return geocodeOriginClient(q);
 }
 
 // ─── Shareable URL system ─────────────────────────────────────────────────────
