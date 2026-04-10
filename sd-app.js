@@ -518,10 +518,19 @@ const NOMINATIM_HEADERS = {
   'User-Agent': 'WhereToSkiNext-SkiDashboard/1.0 (+https://www.wheretoskinext.com)',
 };
 
+function normalizeLocationQuery(query) {
+  return String(query || '')
+    .replace(/[\uFEFF\u200B-\u200D\u2060]/g, '')
+    .replace(/\u00A0/g, ' ')
+    .trim();
+}
+
 function extractUsZip(query) {
-  const t = String(query || '').trim();
-  const strict = t.match(/^(\d{5})(?:-\d{4})?$/);
+  const t = normalizeLocationQuery(query).replace(/,/g, '');
+  const strict = t.match(/^(\d{5})(?:-(\d{4}))?$/);
   if (strict) return strict[1];
+  const run9 = t.match(/^(\d{5})(\d{4})$/);
+  if (run9) return run9[1];
   const loose = t.match(/\b(\d{5})(?:-\d{4})?\b/);
   return loose ? loose[1] : null;
 }
@@ -540,7 +549,7 @@ function labelFromNominatimResult(row) {
 
 /** Client-only geocoding (used when /api/geocode is unavailable, e.g. file://). */
 async function geocodeOriginClient(query) {
-  const q = query.trim();
+  const q = normalizeLocationQuery(query);
   if (!q) return null;
 
   const zip = extractUsZip(q);
@@ -604,19 +613,23 @@ async function geocodeOriginClient(query) {
  * so browser fetch to zippopotam.us always failed after Nominatim postalcode missed.
  */
 async function geocodeOrigin(query) {
-  const q = query.trim();
+  const q = normalizeLocationQuery(query);
   if (!q) return null;
 
+  const apiUrl = `/api/geocode?q=${encodeURIComponent(q)}`;
   try {
-    const res = await fetchWithTimeout(`/api/geocode?q=${encodeURIComponent(q)}`, {}, 12000);
+    const res = await fetchWithTimeout(apiUrl, {}, 12000);
     if (res.ok) {
-      const data = await res.json();
-      if (data && !data.error && Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon))) {
-        return {
-          lat: Number(data.lat),
-          lon: Number(data.lon),
-          label: data.label || 'Unknown',
-        };
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+      const lat = data != null ? Number(data.lat) : NaN;
+      const lon = data != null ? Number(data.lon) : NaN;
+      if (data && !data.error && Number.isFinite(lat) && Number.isFinite(lon)) {
+        return { lat, lon, label: data.label || 'Unknown' };
       }
     }
   } catch (e) {}
@@ -2437,19 +2450,25 @@ function initialize() {
 
   // Location geocoding
   const applyLocation = async () => {
-    const q = els.originInput.value.trim();
+    if (!els.originInput || !els.locationStatus) return;
+    const rawInput = els.originInput.value;
+    const q = normalizeLocationQuery(rawInput);
     if (!q) {
       state.origin = null; state.driveCache = {}; clearSavedOrigin();
       els.locationStatus.textContent = '';
       els.locationStatus.classList.remove('hero-location-status--error');
       render(); return;
     }
-    els.locationStatus.textContent = 'Finding location…';
+    const zipHint = extractUsZip(rawInput);
+    els.locationStatus.textContent = zipHint ? `Looking up ZIP ${zipHint}…` : 'Finding location…';
     els.locationStatus.classList.remove('hero-location-status--error');
     const loc = await geocodeOrigin(q);
     if (loc) {
       state.origin = loc; state.driveCache = {};
-      els.locationStatus.textContent = `✓ Location set to ${loc.label}`;
+      const zipOk = extractUsZip(rawInput);
+      els.locationStatus.textContent = zipOk
+        ? `✓ ZIP ${zipOk} → ${loc.label}`
+        : `✓ Location set to ${loc.label}`;
       els.locationStatus.classList.remove('hero-location-status--error');
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
       updatePlannerOriginLabel();
@@ -2459,24 +2478,27 @@ function initialize() {
       pushUrlDebounced();
       await loadDriveTimes();
     } else {
-      const raw = els.originInput.value.trim();
+      const raw = normalizeLocationQuery(els.originInput.value);
       const zipOnly = extractUsZip(raw) !== null;
+      const zipShown = extractUsZip(raw);
       els.locationStatus.textContent = zipOnly
-        ? 'No match for that ZIP — try city & state (e.g. Denver, CO) or a street address.'
+        ? `No match for ZIP ${zipShown} — try city & state (e.g. Denver, CO) or ZIP+4 with a hyphen (e.g. ${zipShown}-1234).`
         : 'Location not found — try a U.S. ZIP, city, or landmark.';
       els.locationStatus.classList.add('hero-location-status--error');
       showToast(zipOnly ? 'Invalid or unsupported ZIP — try a city name' : 'Could not find that place');
     }
   };
 
-  els.setLocation.addEventListener('click', async () => {
-    const originalText = els.setLocation.textContent;
-    els.setLocation.textContent = 'Finding…';
-    els.setLocation.disabled = true;
-    await applyLocation();
-    els.setLocation.textContent = originalText;
-    els.setLocation.disabled = false;
-  });
+  if (els.setLocation) {
+    els.setLocation.addEventListener('click', async () => {
+      const originalText = els.setLocation.textContent;
+      els.setLocation.textContent = 'Finding…';
+      els.setLocation.disabled = true;
+      await applyLocation();
+      els.setLocation.textContent = originalText;
+      els.setLocation.disabled = false;
+    });
+  }
 
   const _rememberCb = document.getElementById('rememberLocation');
   if (_rememberCb) {
@@ -2493,28 +2515,36 @@ function initialize() {
       setTimeout(() => { if (els.originInput) { els.originInput.focus(); els.originInput.select(); } }, 350);
     });
   }
-  els.originInput.addEventListener('keydown', async e => { if (e.key === 'Enter') { e.preventDefault(); await applyLocation(); } });
-  els.detectLocation.addEventListener('click', () => {
-    if (!navigator.geolocation) { showToast('Geolocation not supported'); return; }
-    els.locationStatus.textContent = 'Detecting your location…';
-    navigator.geolocation.getCurrentPosition(async pos => {
-      state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
-      els.originInput.value = 'Your location';
-      trackEvent('location_set', { location_label: 'GPS', method: 'gps' });
-      if (isRememberChecked()) saveOrigin(state.origin); else clearSavedOrigin();
-      pushUrlDebounced();
-      await loadDriveTimes();
-      els.locationStatus.textContent = '✓ Using your location';
-      els.locationStatus.classList.remove('hero-location-status--error');
-      updatePlannerOriginLabel();
-      syncVerdictVisibility();
-      if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
-    }, () => {
-      els.locationStatus.textContent = 'Location blocked or unavailable — allow access in your browser, or type a ZIP or city.';
-      els.locationStatus.classList.add('hero-location-status--error');
-      showToast('Location permission needed — use search instead');
+  if (els.originInput) {
+    els.originInput.addEventListener('keydown', async e => { if (e.key === 'Enter') { e.preventDefault(); await applyLocation(); } });
+  }
+  if (els.detectLocation) {
+    els.detectLocation.addEventListener('click', () => {
+      if (!navigator.geolocation) { showToast('Geolocation not supported'); return; }
+      if (els.locationStatus) els.locationStatus.textContent = 'Detecting your location…';
+      navigator.geolocation.getCurrentPosition(async pos => {
+        state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
+        if (els.originInput) els.originInput.value = 'Your location';
+        trackEvent('location_set', { location_label: 'GPS', method: 'gps' });
+        if (isRememberChecked()) saveOrigin(state.origin); else clearSavedOrigin();
+        pushUrlDebounced();
+        await loadDriveTimes();
+        if (els.locationStatus) {
+          els.locationStatus.textContent = '✓ Using your location';
+          els.locationStatus.classList.remove('hero-location-status--error');
+        }
+        updatePlannerOriginLabel();
+        syncVerdictVisibility();
+        if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      }, () => {
+        if (els.locationStatus) {
+          els.locationStatus.textContent = 'Location blocked or unavailable — allow access in your browser, or type a ZIP or city.';
+          els.locationStatus.classList.add('hero-location-status--error');
+        }
+        showToast('Location permission needed — use search instead');
+      });
     });
-  });
+  }
 }
 
 // PATCH 2: Headline is always "Where to Ski Next..." for brand consistency

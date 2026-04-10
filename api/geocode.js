@@ -14,10 +14,20 @@ const NOMINATIM_HEADERS = {
   'User-Agent': 'WhereToSkiNext-SkiDashboard/1.0 (+https://www.wheretoskinext.com)',
 };
 
+/** Mirrors sd-app.js so client and server agree on what counts as a U.S. ZIP. */
+function normalizeLocationQuery(query) {
+  return String(query || '')
+    .replace(/[\uFEFF\u200B-\u200D\u2060]/g, '')
+    .replace(/\u00A0/g, ' ')
+    .trim();
+}
+
 function extractUsZip(query) {
-  const t = String(query || '').trim();
-  const strict = t.match(/^(\d{5})(?:-\d{4})?$/);
+  const t = normalizeLocationQuery(query).replace(/,/g, '');
+  const strict = t.match(/^(\d{5})(?:-(\d{4}))?$/);
   if (strict) return strict[1];
+  const run9 = t.match(/^(\d{5})(\d{4})$/);
+  if (run9) return run9[1];
   const loose = t.match(/\b(\d{5})(?:-\d{4})?\b/);
   return loose ? loose[1] : null;
 }
@@ -40,7 +50,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const q = String(req.query.q || '').trim();
+  const q = normalizeLocationQuery(req.query.q);
   if (!q) return res.status(400).json({ error: 'Missing q' });
 
   const zip = extractUsZip(q);
