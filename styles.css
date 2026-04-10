@@ -1215,6 +1215,14 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   position: relative;
   overflow: hidden;
   background-color: #1a2030 !important;
+  /* Hero form tokens (accent matches headline <em>) */
+  --hn-form-accent: #a5d8ff;
+  --hn-form-accent-dim: rgba(165, 216, 255, 0.22);
+  --hn-form-accent-ring: rgba(165, 216, 255, 0.45);
+  --hn-form-text: #334155;
+  --hn-form-text-muted: #64748b;
+  --hn-form-surface: #ffffff;
+  --hn-form-surface-subtle: #f8fafc;
   /* Full-bleed breakout — escapes the max-width container */
   width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -1261,7 +1269,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   margin-bottom: 12px;
 }
 #searchSection.hn-hero .hn-headline em {
-  color: #a5d8ff;
+  color: var(--hn-form-accent);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
 }
 #searchSection.hn-hero .hn-subhead {
@@ -4639,73 +4647,87 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   UNIFIED FILTER BAR — matches mockup design
+   UNIFIED FILTER BAR — hero search (accent matches #searchSection.hn-hero .hn-headline em)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* The white pill filter bar in the hero */
+/* White bar: ~46% loc / ~13% × 3 dropdowns / ~18% CTA (grid fr units) */
 .hn-filterbar {
-  background: #fff;
-  border-radius: 14px;
-  padding: 8px 10px 8px 12px;
-  display: flex;
+  background: var(--hn-form-surface);
+  border-radius: 12px;
+  padding: 6px 8px 6px 10px;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 46fr)
+    1px
+    minmax(72px, 13fr)
+    1px
+    minmax(72px, 13fr)
+    1px
+    minmax(72px, 13fr)
+    minmax(124px, 18fr);
   align-items: stretch;
+  column-gap: 0;
+  min-width: 0;
   max-width: 960px;
   margin: 0 auto;
   width: 100%;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  border: 1px solid var(--hn-form-accent-dim);
+  box-shadow: 0 6px 28px rgba(15, 23, 42, 0.1), 0 1px 0 rgba(255, 255, 255, 0.85) inset;
   position: relative;
   z-index: 2;
 }
 .hn-fb-seg {
-  flex: 1;
   min-width: 0;
-  padding: 4px 10px 4px 0;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   justify-content: center;
+  min-height: 48px;
 }
 .hn-fb-seg--location {
-  flex: 2.55 1 45%;
-  min-width: 240px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 11px;
-  padding: 12px 16px 12px 18px;
-  margin: 4px 6px 4px 4px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 9px;
+  margin: 4px 2px;
+  background: var(--hn-form-surface-subtle);
+  border: 1px solid rgba(165, 216, 255, 0.28);
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 .hn-fb-seg--location:focus-within {
-  background: #fff;
-  border-color: rgba(37, 99, 235, 0.45);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
-}
-.hn-fb-seg--location .hn-fb-label {
-  color: #64748b;
-  font-size: 11px;
-  letter-spacing: 0.65px;
+  background: var(--hn-form-surface);
+  border-color: var(--hn-form-accent-ring);
+  box-shadow: 0 0 0 2px var(--hn-form-accent-dim);
 }
 .hn-fb-seg--clickable {
   cursor: pointer;
-  border-radius: 8px;
-  padding: 4px 10px 4px 6px;
-  margin-left: -6px;
-  transition: background 0.12s;
+  border-radius: 9px;
+  margin: 4px 2px;
+  padding-left: 10px;
+  padding-right: 10px;
+  transition: background 0.12s, border-color 0.12s;
+  border: 1px solid transparent;
 }
-.hn-fb-seg--clickable:hover { background: #f4f7fb; }
-.hn-fb-seg--open { background: #f0f6ff; }
+.hn-fb-seg--clickable:hover {
+  background: rgba(165, 216, 255, 0.09);
+}
+.hn-fb-seg--open {
+  background: rgba(165, 216, 255, 0.12);
+  border-color: rgba(165, 216, 255, 0.35);
+}
 .hn-fb-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  color: #aaa;
+  color: var(--hn-form-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.7px;
-  line-height: 1;
+  letter-spacing: 0.09em;
+  line-height: 1.15;
 }
 .hn-fb-val {
-  font-size: 14px;
-  color: #1a2030;
+  font-size: 15px;
+  color: var(--hn-form-text);
   font-weight: 500;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4716,40 +4738,50 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   padding: 0 !important;
   font-size: 16px !important;
   font-weight: 500 !important;
-  color: #1a2030 !important;
+  color: var(--hn-form-text) !important;
   background: transparent !important;
   width: 100% !important;
   font-family: inherit !important;
   box-shadow: none !important;
-  line-height: 1.45 !important;
-  min-height: 26px;
+  line-height: 1.35 !important;
+  min-height: 22px;
 }
-.hn-fb-input::placeholder { color: #94a3b8; font-weight: 400; }
+.hn-fb-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
 .hn-fb-div {
   width: 1px;
-  height: 32px;
-  background: #e8e9eb;
-  flex-shrink: 0;
-  margin: 0 4px;
   align-self: center;
+  height: 28px;
+  background: rgba(51, 65, 85, 0.12);
+  margin: 0;
 }
 .hn-fb-btn {
-  background: #2d3d52;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
+  align-self: center;
+  margin: 4px 6px 4px 4px;
+  background: linear-gradient(180deg, #2a4a66 0%, #1e3a52 100%);
+  color: #f8fafc;
+  border: 1px solid rgba(165, 216, 255, 0.35);
+  border-radius: 9px;
+  padding: 9px 14px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  flex-shrink: 0;
-  margin-left: 6px;
-  align-self: center;
-  transition: background 0.12s, transform 0.1s;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.1s;
   font-family: inherit;
+  letter-spacing: -0.01em;
 }
-.hn-fb-btn:hover { background: #3d516a; }
+.hn-fb-btn:hover {
+  border-color: var(--hn-form-accent);
+  box-shadow: 0 0 0 1px var(--hn-form-accent-dim);
+  background: linear-gradient(180deg, #315572 0%, #244560 100%);
+}
+.hn-fb-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--hn-form-surface), 0 0 0 4px var(--hn-form-accent-ring);
+}
 .hn-fb-btn:active { transform: scale(0.98); }
 
 /* Filter dropdown panels */
@@ -4763,16 +4795,17 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   background: #fff;
   border-radius: 12px;
   padding: 14px 18px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.16);
+  border: 1px solid var(--hn-form-accent-dim);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.12);
   margin-bottom: 6px;
 }
-.hn-fd-label {
+.hn-filter-dropdowns .hn-fd-label {
   display: block;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  color: rgba(255,255,255,0.55);
+  color: var(--hn-form-text-muted) !important;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.09em;
   margin-bottom: 10px;
 }
 .hn-fd-chips {
@@ -4782,27 +4815,32 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 
 /* Chips inside dropdowns */
-.hn-pchip, .hn-tchip, .hn-dchip {
+#searchSection .hn-pchip,
+#searchSection .hn-tchip,
+#searchSection .hn-dchip {
   font-size: 13px;
   font-weight: 500;
   padding: 7px 16px;
   border-radius: 999px;
-  border: 1.5px solid #e2e4e8;
-  color: #4b5563;
+  border: 1.5px solid #e2e8f0;
+  color: var(--hn-form-text);
   background: #fff;
   cursor: pointer;
   font-family: inherit;
   transition: border-color 0.12s, background 0.12s, color 0.12s;
   white-space: nowrap;
 }
-.hn-pchip:hover, .hn-tchip:hover, .hn-dchip:hover {
-  border-color: #1a2030;
-  color: #1a2030;
+#searchSection .hn-pchip:hover,
+#searchSection .hn-tchip:hover,
+#searchSection .hn-dchip:hover {
+  border-color: rgba(165, 216, 255, 0.75);
+  color: #1e3a5f;
+  background: rgba(165, 216, 255, 0.08);
 }
-.hn-chip-on {
-  background: #1a2030 !important;
-  border-color: #1a2030 !important;
-  color: #fff !important;
+#searchSection .hn-chip-on {
+  background: rgba(165, 216, 255, 0.28) !important;
+  border-color: rgba(37, 99, 235, 0.35) !important;
+  color: #1e3a5f !important;
 }
 
 /* Meta row under filter bar */
@@ -4872,29 +4910,35 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 /* Responsive */
 @media (max-width: 640px) {
   .hn-filterbar {
+    display: flex;
     flex-wrap: wrap;
     border-radius: 12px;
-    padding: 10px 12px;
-    gap: 8px;
+    padding: 8px 10px;
+    gap: 0;
+    row-gap: 8px;
   }
   .hn-fb-seg--location {
     flex: 1 1 100%;
     min-width: 0;
     margin: 0;
-    padding: 14px 16px;
-    border-bottom: 1px solid #e8e9eb;
-    margin-bottom: 0;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.1);
     border-radius: 10px;
   }
-  .hn-fb-seg--clickable { flex: 1; }
+  .hn-fb-seg--clickable {
+    flex: 1 1 calc(33.333% - 6px);
+    min-width: 0;
+    margin: 0;
+    padding: 10px 8px;
+  }
   .hn-fb-div { display: none; }
   .hn-fb-btn {
     width: 100%;
     text-align: center;
-    border-radius: 8px;
-    padding: 12px 16px;
+    border-radius: 9px;
+    padding: 11px 16px;
     font-size: 14px;
-    margin-left: 0;
+    margin: 4px 0 0;
     flex: 1 1 100%;
     align-self: stretch;
   }
@@ -4904,17 +4948,20 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 /* ── Filter bar chevron ──────────────────────────────────────────────────── */
 .hn-fb-chevron {
   display: inline-block;
-  font-size: 12px;
-  color: #9ca3af;
-  margin-left: 2px;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 3px;
   line-height: 1;
   vertical-align: middle;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, color 0.12s;
   font-style: normal;
+}
+.hn-fb-seg--clickable:hover .hn-fb-chevron {
+  color: #64748b;
 }
 .hn-fb-seg--open .hn-fb-chevron {
   transform: rotate(180deg);
-  color: #1a2030;
+  color: #2563eb;
 }
 /* Meta row centered without trust text */
 .hn-meta-row {
