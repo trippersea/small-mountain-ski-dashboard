@@ -4501,3 +4501,215 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   .vcard-location-prompt-btn { width: 100%; text-align: center; }
   .vcard-location-bar { flex-wrap: wrap; }
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   2026 REDESIGN ADDITIONS — append to end of styles.css
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Differentiator pill ─────────────────────────────────────────────────── */
+.hn-diff-pill {
+  display: inline-block;
+  background: rgba(90, 173, 220, 0.18);
+  border: 1px solid rgba(90, 173, 220, 0.40);
+  color: #a8d8f0;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+  margin-bottom: 18px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* ── Stats strip below hero ──────────────────────────────────────────────── */
+.hn-stats-strip {
+  background: #0f1622;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius);
+  padding: 0;
+  overflow: hidden;
+}
+.hn-stats-inner {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hn-stat {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 16px;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  text-align: center;
+}
+.hn-stat:last-child { border-right: none; }
+.hn-stat-num {
+  font-size: 20px;
+  font-weight: 500;
+  color: white;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+}
+.hn-stat-lbl {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 3px;
+  letter-spacing: 0.2px;
+}
+
+/* ── Metro market cards ──────────────────────────────────────────────────── */
+.hn-metro-section {
+  padding: 24px 24px 22px;
+}
+.hn-metro-header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.hn-metro-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.hn-metro-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+.hn-metro-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hn-metro-card {
+  flex: 1;
+  min-width: 120px;
+  background: #1a2030;
+  border-radius: 12px;
+  padding: 16px 16px 14px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.12s, box-shadow 0.12s;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.hn-metro-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #5aaddc;
+  transform: scaleX(0);
+  transition: transform 0.15s;
+  transform-origin: left;
+}
+.hn-metro-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+.hn-metro-card:hover::after {
+  transform: scaleX(1);
+}
+.hn-metro-city {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  line-height: 1.2;
+}
+.hn-metro-detail {
+  font-size: 12px;
+  color: rgba(255,255,255,0.42);
+  line-height: 1.4;
+}
+@media (max-width: 640px) {
+  .hn-metro-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .hn-stats-inner { flex-wrap: wrap; }
+  .hn-stat { min-width: calc(33.33% - 1px); }
+}
+
+/* ── Runner-up crowd chip ─────────────────────────────────────────────────── */
+.hn-runner-crowd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  align-self: flex-start;
+}
+.hn-runner-crowd-chip .hn-runner-crowd-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hn-crowd-dot--quiet {
+  background: #22c55e;
+}
+.hn-crowd-dot--mod {
+  background: #f59e0b;
+}
+.hn-crowd-dot--busy {
+  background: #ef4444;
+}
+.hn-runner-crowd-chip.crowd-quiet-chip {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+.hn-runner-crowd-chip.crowd-mod-chip {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+.hn-runner-crowd-chip.crowd-busy-chip {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ── Verdict crowd badge (more prominent) ────────────────────────────────── */
+.vcard-crowd-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  align-self: flex-start;
+}
+.vcard-crowd-feature .crowd-feat-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.vcard-crowd-feature.crowd-feat--quiet {
+  background: rgba(34,197,94,0.18);
+  border: 1px solid rgba(34,197,94,0.35);
+  color: #4ade80;
+}
+.vcard-crowd-feature.crowd-feat--mod {
+  background: rgba(245,158,11,0.18);
+  border: 1px solid rgba(245,158,11,0.35);
+  color: #fbbf24;
+}
+.vcard-crowd-feature.crowd-feat--busy {
+  background: rgba(239,68,68,0.18);
+  border: 1px solid rgba(239,68,68,0.35);
+  color: #f87171;
+}
+

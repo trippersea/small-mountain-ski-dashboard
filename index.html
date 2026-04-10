@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Google Tag Manager -->
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-MCCDNQGB');</script>
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({"gtm.start":
+  new Date().getTime(),event:"gtm.js"});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!="dataLayer"?"&l="+l:"";j.async=true;j.src=
+  "https://www.googletagmanager.com/gtm.js?id="+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,"script","dataLayer","GTM-MCCDNQGB");</script>
   <!-- End Google Tag Manager -->
   <title>WhereToSkiNext.com — Find the Best Mountain to Ski Next</title>
   <meta name="description" content="Stop guessing. Start skiing. WhereToSkiNext.com scores 250+ mountains by live snow, drive time, crowds, and pass — a clear top pick up front, plus a sortable full ranking when you want to dig deeper. Free, no account needed." />
@@ -31,8 +31,6 @@
       margin-top: 10px;
       letter-spacing: 0.01em;
     }
-
-    /* ── Nav primary (light bar) ── */
     .nav-primary {
       font-size: 14px;
       font-weight: 500;
@@ -56,7 +54,6 @@
       flex-shrink: 0;
       align-self: center;
     }
-
     @media (max-width: 640px) {
       .top-nav a.nav-primary[href="/ski-pass-comparison/"] { display: none; }
       .top-nav a[href="/about/"] + .nav-link-sep { display: none; }
@@ -80,7 +77,7 @@
       {
         "@type": "Question",
         "name": "Where should I ski this weekend near me?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Enter your ZIP code or city at WhereToSkiNext.com. We score every mountain within your drive window by live snow forecast, crowd outlook, and pass coverage. You get a clear top pick at the top of the page, plus a sortable full ranking below — so you start with an answer, not a blank spreadsheet." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Enter your ZIP code or city at WhereToSkiNext.com. We score every mountain within your drive window by live snow forecast, crowd outlook, and pass coverage. You get a clear top pick at the top of the page, plus a sortable full ranking below." }
       },
       {
         "@type": "Question",
@@ -124,28 +121,39 @@
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-      <a href="#searchSection" class="nav-find-cta">Find My Mountain →</a>
+      <a href="#searchSection" class="nav-find-cta">Find My Mountain &rarr;</a>
     </div>
   </nav>
 
   <button id="backToTop" class="back-to-top" aria-label="Back to top">Top</button>
 
   <div class="container">
-    <!-- HERO: decision-first layout -->
+    <!-- HERO: editorial full-bleed redesign -->
     <section id="searchSection" class="hero card hero-search hn-hero" aria-label="Find your mountain">
       <div class="hn-hero-bg" aria-hidden="true"></div>
       <div class="hn-shell">
         <div class="hn-inner">
-          <h1 id="heroHeadline" class="hn-headline">Where should you ski <em>this weekend?</em></h1>
-          <p class="hn-subhead">Enter your <strong>ZIP code</strong> or city, then <strong>Find My Mountain</strong> — we rank <span id="heroMountainCount">250</span> mountains by live snow, real drive time, your pass, and how crowded it’ll probably be.</p>
+
+          <!-- DIFFERENTIATOR PILL -->
+          <div class="hn-diff-pill">The only ski tool that combines live snow, drive time and crowds into one score</div>
+
+          <!-- HEADLINE -->
+          <h1 id="heroHeadline" class="hn-headline">Where to Ski <em>Next...</em></h1>
+
+          <!-- SUBHEAD — conversational, no em dashes -->
+          <p class="hn-subhead">Tell us where you are and we score every mountain nearby using real snow forecasts, drive times and what ski pass you carry.</p>
+
+          <!-- SEARCH + FILTER BOX -->
           <div class="hn-box">
             <div class="hn-box-top">
               <div class="hn-loc">
                 <span class="hn-loc-label">Starting from</span>
                 <input id="originInput" type="text" class="hn-loc-input" placeholder="ZIP or city — e.g. Boston, MA" autocomplete="off" />
               </div>
-              <button id="setLocation" class="hn-go-btn">Find My Mountain →</button>
+              <button id="setLocation" class="hn-go-btn">Find My Mountain &rarr;</button>
             </div>
+
+            <!-- PASS FILTER -->
             <div class="hn-chips-row">
               <span class="hn-chips-lbl">Pass:</span>
               <button type="button" class="hn-pchip hn-chip-on" data-val="All">All</button>
@@ -153,12 +161,16 @@
               <button type="button" class="hn-pchip" data-val="Ikon">Ikon</button>
               <button type="button" class="hn-pchip" data-val="Indy">Indy</button>
             </div>
+
+            <!-- TRIP TYPE FILTER -->
             <div class="hn-chips-row">
-              <span class="hn-chips-lbl">Trip type:</span>
-              <button type="button" class="hn-tchip hn-chip-on" data-val="0">Day trip (≤3h)</button>
-              <button type="button" class="hn-tchip" data-val="1">Weekend (3–6h)</button>
+              <span class="hn-chips-lbl">Trip:</span>
+              <button type="button" class="hn-tchip hn-chip-on" data-val="0">Day trip (&le;3h)</button>
+              <button type="button" class="hn-tchip" data-val="1">Weekend (3&ndash;6h)</button>
               <button type="button" class="hn-tchip" data-val="2">Any distance</button>
             </div>
+
+            <!-- WHEN FILTER -->
             <div class="hn-chips-row">
               <span class="hn-chips-lbl">When:</span>
               <button type="button" class="hn-dchip" data-val="weekday">Weekday</button>
@@ -166,18 +178,20 @@
               <button type="button" class="hn-dchip" data-val="saturday">Saturday</button>
               <button type="button" class="hn-dchip" data-val="sunday">Sunday</button>
             </div>
+
             <div class="hn-meta-row">
               <button id="detectLocation" class="hero-locate-link">Use my location</button>
-              <span class="hn-meta-sep" aria-hidden="true">·</span>
-              <button class="hn-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">✦ Describe your perfect ski day</button>
-              <span class="hn-trust-txt">Scores are independent — sponsors never influence rankings</span>
+              <span class="hn-meta-sep" aria-hidden="true">&middot;</span>
+              <button class="hn-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">&#10022; Describe your perfect ski day</button>
+              <span class="hn-trust-txt">Scores are independent &mdash; sponsors never influence rankings</span>
             </div>
+
             <!-- Hidden selects preserved for JS compatibility -->
             <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass preference"><option value="All" selected>All</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option><option value="Independent">Independent</option></select>
             <select id="heroSnowSelect" class="hn-vis-hidden" aria-label="Snow preference"><option value="1">Any Snow</option><option value="5">3&quot;+ Matters</option><option value="10">6&quot;+ Chaser</option><option value="15">Powder Day</option></select>
-            <!-- Preserved JS hooks -->
-            <label class="remember-location-label visually-hidden" id="rememberLocationLabel"><input type="checkbox" id="rememberLocation" />Remember this location<span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info<span class="location-privacy-tooltip">Saved only in your browser — never sent to our servers.</span></span></label>
+            <label class="remember-location-label visually-hidden" id="rememberLocationLabel"><input type="checkbox" id="rememberLocation" />Remember this location<span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info<span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span></span></label>
             <div id="locationStatus" class="helper-text hn-location-status"></div>
+
             <!-- AI panel -->
             <div id="aiChatPanel" class="hero-ai-panel" hidden>
               <div class="hero-ai-examples">
@@ -193,7 +207,7 @@
             </div>
           </div>
 
-          <!-- HOW IT WORKS — visible immediately below the search box -->
+          <!-- HOW IT WORKS strip -->
           <div class="hero-steps-strip">
             <div class="hero-step-item">
               <span class="hero-step-n">1</span>
@@ -201,17 +215,28 @@
             </div>
             <div class="hero-step-item">
               <span class="hero-step-n">2</span>
-              <div><strong>Set your pass &amp; snow preference</strong><span>Epic, Ikon, Indy, or no pass</span></div>
+              <div><strong>Set your pass, trip and when</strong><span>Epic, Ikon, Indy, day trip or weekend</span></div>
             </div>
             <div class="hero-step-item">
               <span class="hero-step-n">3</span>
-              <div><strong>Get one clear pick</strong><span>Snow, crowds, and drive time — combined</span></div>
+              <div><strong>Get one clear pick</strong><span>Snow, crowds, and drive time combined</span></div>
             </div>
           </div>
 
         </div>
       </div>
     </section>
+
+    <!-- STATS STRIP -->
+    <div class="hn-stats-strip">
+      <div class="hn-stats-inner">
+        <div class="hn-stat"><span class="hn-stat-num">250+</span><span class="hn-stat-lbl">US mountains</span></div>
+        <div class="hn-stat"><span class="hn-stat-num">Live</span><span class="hn-stat-lbl">Snow forecasts</span></div>
+        <div class="hn-stat"><span class="hn-stat-num">Real</span><span class="hn-stat-lbl">Drive times</span></div>
+        <div class="hn-stat"><span class="hn-stat-num">Crowd</span><span class="hn-stat-lbl">Forecasting</span></div>
+        <div class="hn-stat"><span class="hn-stat-num">Free</span><span class="hn-stat-lbl">Always</span></div>
+      </div>
+    </div>
 
     <!-- TOP PICK: hidden until location is entered, then populated by JS -->
     <section id="verdictSection" class="verdict-section card panel hn-verdict-full hn-verdict-pre-location" aria-label="Top mountain pick">
@@ -222,9 +247,9 @@
           </div>
           <div class="vcard-location-prompt-text">
             <strong>Your top pick appears here</strong>
-            <span>Enter your location above — we'll score every mountain in your drive window, show your top pick first, and keep the full sortable ranking below.</span>
+            <span>Enter your location above and we will score every mountain in your drive window, show your top pick first, and keep the full sortable ranking below.</span>
           </div>
-          <button class="vcard-location-prompt-btn" onclick="document.getElementById('originInput').focus();document.getElementById('searchSection').scrollIntoView({behavior:'smooth',block:'start'})">Set location →</button>
+          <button class="vcard-location-prompt-btn" onclick="document.getElementById('originInput').focus();document.getElementById('searchSection').scrollIntoView({behavior:'smooth',block:'start'})">Set location &rarr;</button>
         </div>
       </div>
     </section>
@@ -237,12 +262,12 @@
         </div>
         <div>
           <div class="hn-booking-head">Staying the weekend? Find lodging near your top pick</div>
-          <div class="hn-booking-sub">Hotels, condos, and ski-in properties — updated availability</div>
+          <div class="hn-booking-sub">Hotels, condos, and ski-in properties &mdash; updated availability</div>
         </div>
       </div>
       <div class="hn-booking-right">
         <span class="hn-booking-badge">Weekend trip</span>
-        <a href="https://www.awin1.com/cread.php?awinmid=6776&amp;awinaffid=2816032&amp;ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dski%2520resort" class="hn-booking-btn" target="_blank" rel="noopener sponsored">Browse lodging →</a>
+        <a href="https://www.awin1.com/cread.php?awinmid=6776&amp;awinaffid=2816032&amp;ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dski%2520resort" class="hn-booking-btn" target="_blank" rel="noopener sponsored">Browse lodging &rarr;</a>
       </div>
     </div>
 
@@ -255,6 +280,36 @@
       <div class="hn-runners-grid" id="hnRunnersGrid"></div>
     </section>
 
+    <!-- METRO MARKET CARDS: best this weekend by city (SEO + UX) -->
+    <section class="card panel hn-metro-section" aria-label="Best skiing this weekend by city">
+      <div class="hn-metro-header">
+        <div class="hn-metro-title">Best skiing this weekend near you</div>
+        <div class="hn-metro-sub">Pick your city for a personalized ranking</div>
+      </div>
+      <div class="hn-metro-grid">
+        <a href="/ski-near/boston/" class="hn-metro-card">
+          <span class="hn-metro-city">Boston</span>
+          <span class="hn-metro-detail">47 mountains nearby</span>
+        </a>
+        <a href="/ski-near/new-york/" class="hn-metro-card">
+          <span class="hn-metro-city">New York</span>
+          <span class="hn-metro-detail">38 mountains nearby</span>
+        </a>
+        <a href="/ski-near/chicago/" class="hn-metro-card">
+          <span class="hn-metro-city">Chicago</span>
+          <span class="hn-metro-detail">22 mountains nearby</span>
+        </a>
+        <a href="/ski-near/denver/" class="hn-metro-card">
+          <span class="hn-metro-city">Denver</span>
+          <span class="hn-metro-detail">31 mountains nearby</span>
+        </a>
+        <a href="/ski-near/seattle/" class="hn-metro-card">
+          <span class="hn-metro-city">Seattle</span>
+          <span class="hn-metro-detail">18 mountains nearby</span>
+        </a>
+      </div>
+    </section>
+
     <!-- PLANNER: collapsible refine panel, hidden by default -->
     <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">
       <div class="planner-col-header">
@@ -262,54 +317,49 @@
           <div class="planner-main-title">Refine your results<span id="plannerFromLabel"></span></div>
           <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" title="Edit location" hidden>Edit location</button>
         </div>
-        <p class="planner-subtitle">Change a filter and we’ll reshuffle the list. Your top pick stays <strong>above</strong> — tap <strong>See top pick</strong> when you want to jump back up.</p>
+        <p class="planner-subtitle">Change a filter and we will reshuffle the list. Your top pick stays <strong>above</strong> &mdash; tap <strong>See top pick</strong> when you want to jump back up.</p>
       </div>
       <div id="plannerDetails" class="planner-details">
         <div class="score-grid">
-
           <div class="score-control">
             <div class="score-control-label">Drive time</div>
             <div class="priority-btns priority-btns--compact" data-key="howfar">
-              <button class="priority-btn active" data-val="0">≤3h day trip</button>
-              <button class="priority-btn" data-val="1">3–6h weekend</button>
+              <button class="priority-btn active" data-val="0">&le;3h day trip</button>
+              <button class="priority-btn" data-val="1">3&ndash;6h weekend</button>
               <button class="priority-btn" data-val="2">Any distance</button>
             </div>
             <div class="slider-hint">From your starting location when set; otherwise all mountains stay in play.</div>
           </div>
-
           <div class="score-control">
             <div class="score-control-label">Fresh Snow</div>
             <div class="priority-btns" data-key="snow">
               <button class="priority-btn active" data-val="1">Any Snow</button>
-              <button class="priority-btn" data-val="5">3"+ Preferred</button>
-              <button class="priority-btn" data-val="10">6"+ Storm</button>
+              <button class="priority-btn" data-val="5">3&quot;+ Preferred</button>
+              <button class="priority-btn" data-val="10">6&quot;+ Storm</button>
               <button class="priority-btn" data-val="15">Powder Day</button>
             </div>
             <div class="slider-hint">How much new snow do you need to get excited?</div>
           </div>
-
           <div class="score-control">
             <div class="score-control-label">Temperature</div>
             <div class="priority-btns" data-key="temp">
               <button class="priority-btn active" data-val="any">Any Temp</button>
-              <button class="priority-btn" data-val="ideal">0°–32° Sweet Spot</button>
-              <button class="priority-btn" data-val="spring">33°+ Spring Day</button>
-              <button class="priority-btn" data-val="cold">Below 0° Cold Snap</button>
+              <button class="priority-btn" data-val="ideal">0&deg;&ndash;32&deg; Sweet Spot</button>
+              <button class="priority-btn" data-val="spring">33&deg;+ Spring Day</button>
+              <button class="priority-btn" data-val="cold">Below 0&deg; Cold Snap</button>
             </div>
             <div class="slider-hint">Filters to mountains matching tomorrow's forecast temp.</div>
           </div>
-
           <div class="score-control">
             <div class="score-control-label">Wind</div>
             <div class="priority-btns" data-key="wind">
               <button class="priority-btn active" data-val="any">Any Wind</button>
-              <button class="priority-btn" data-val="light">Calm (0–15 mph)</button>
-              <button class="priority-btn" data-val="breezy">Breezy (16–25 mph)</button>
+              <button class="priority-btn" data-val="light">Calm (0&ndash;15 mph)</button>
+              <button class="priority-btn" data-val="breezy">Breezy (16&ndash;25 mph)</button>
               <button class="priority-btn" data-val="holds">Gusty (25+ mph)</button>
             </div>
             <div class="slider-hint">Filters to mountains matching tomorrow's wind forecast.</div>
           </div>
-
           <div class="score-control">
             <div class="score-control-label">Mountain Size</div>
             <div class="priority-btns" data-key="size">
@@ -320,18 +370,16 @@
             </div>
             <div class="slider-hint">Filters and ranks by vertical drop and acreage.</div>
           </div>
-
           <div class="score-control">
             <div class="score-control-label">Ticket Price</div>
             <div class="priority-btns" data-key="value">
               <button class="priority-btn active" data-val="0">Any Price</button>
               <button class="priority-btn" data-val="10">Under $100</button>
-              <button class="priority-btn" data-val="5">$100–$149</button>
+              <button class="priority-btn" data-val="5">$100&ndash;$149</button>
               <button class="priority-btn" data-val="1">$150+ Fine</button>
             </div>
-            <div class="slider-hint">Sets a hard price ceiling — mountains above it are hidden.</div>
+            <div class="slider-hint">Sets a hard price ceiling &mdash; mountains above it are hidden.</div>
           </div>
-
           <div class="score-control">
             <div class="score-control-label">Crowd Level</div>
             <div class="priority-btns" data-key="crowd">
@@ -341,61 +389,52 @@
             </div>
             <div class="slider-hint">Ranks quieter mountains higher. High = crowds filtered out.</div>
           </div>
-
         </div>
       </div>
       <div class="planner-refine-footer">
-        <button type="button" class="planner-see-verdict-btn" id="plannerSeeVerdictBtn" aria-describedby="plannerSeeVerdictHint">See top pick ↑</button>
+        <button type="button" class="planner-see-verdict-btn" id="plannerSeeVerdictBtn" aria-describedby="plannerSeeVerdictHint">See top pick &uarr;</button>
         <p id="plannerSeeVerdictHint" class="planner-see-verdict-hint">Scrolls to your updated pick at the top.</p>
       </div>
     </section>
 
     <!-- COMPARE TABLE -->
     <section id="compareSection" class="card panel">
-
-      <!-- Header row: title + result count + filter toggle -->
       <div class="compare-section-header">
         <div class="compare-section-title-block">
           <h2>See full ranking</h2>
           <span id="resultCount" class="result-count" aria-live="polite"></span>
         </div>
         <button id="filterToggleBtn" class="filter-toggle-btn" aria-expanded="false" aria-controls="filterPanel">
-          <svg class="filter-toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg class="filter-toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           Filter &amp; Sort
-          <svg class="filter-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="filter-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
-
-      <!-- Collapsible filter panel -->
       <div id="filterPanel" class="filter-panel" hidden>
         <div class="filter-panel-grid">
-
           <div class="fp-field">
             <label class="fp-label" for="howFarFilter">Drive time</label>
             <select id="howFarFilter" class="fp-select">
-              <option value="0" selected>Day Trip (≤3h)</option>
-              <option value="1">Weekend (3h–6h)</option>
+              <option value="0" selected>Day Trip (&le;3h)</option>
+              <option value="1">Weekend (3h&ndash;6h)</option>
               <option value="2">All distances</option>
             </select>
-            <span class="fp-micro-hint">Same as <strong>Trip type</strong> under Find My Mountain — change either place.</span>
+            <span class="fp-micro-hint">Same as <strong>Trip</strong> under Find My Mountain &mdash; change either place.</span>
           </div>
-
           <div class="fp-field">
             <label class="fp-label" for="maxPriceFilter">Ticket Price</label>
             <select id="maxPriceFilter" class="fp-select">
               <option value="0">Any price</option>
               <option value="1">Under $100</option>
-              <option value="2">$100 – $150</option>
-              <option value="3">$150 – $200</option>
+              <option value="2">$100 &ndash; $150</option>
+              <option value="3">$150 &ndash; $200</option>
               <option value="4">$200+</option>
             </select>
           </div>
-
           <div class="fp-field">
             <label class="fp-label" for="stateFilter">State</label>
             <select id="stateFilter" class="fp-select"></select>
           </div>
-
           <div class="fp-field">
             <label class="fp-label" for="sortBy">Sort by</label>
             <select id="sortBy" class="fp-select">
@@ -407,29 +446,22 @@
               <option value="avgSnowfall">Avg Snowfall</option>
             </select>
           </div>
-
           <div class="fp-field fp-field--toggle">
             <label class="fp-label">Night Skiing</label>
             <button id="toggleNight" class="fp-toggle-btn" aria-pressed="false">Off</button>
           </div>
-
           <div class="fp-field fp-field--action">
             <button id="resetFilters" class="fp-clear-btn">Clear all filters</button>
           </div>
-
         </div>
       </div>
-
-      <!-- Search bar + active filter pills + view-all -->
       <div class="compare-toolbar">
         <div class="table-search-wrap">
-          <input id="tableSearch" type="text" class="table-search-input" placeholder="Search mountains, state, or pass…" autocomplete="off" />
+          <input id="tableSearch" type="text" class="table-search-input" placeholder="Search mountains, state, or pass&hellip;" autocomplete="off" />
         </div>
         <button id="tableViewAllBtn" class="btn btn-secondary">View All</button>
       </div>
       <div id="activeFilters" class="active-filters"></div>
-
-      <!-- Desktop table (hidden on mobile via CSS) -->
       <div class="table-wrap">
         <table id="compareTable" class="comparison-table" aria-label="Mountain comparison table">
           <caption class="visually-hidden">Mountains in our best order for your trip right now. Click any column header to sort.</caption>
@@ -437,10 +469,10 @@
             <tr>
               <th scope="col"><span class="visually-hidden">Select for comparison</span></th>
               <th scope="col" class="sortable-th" data-sort="name">Mountain <span class="sort-indicator"></span></th>
-              <th scope="col" class="sortable-th" data-sort="storm" title="How the next few days look (incoming snow, rain risk, or dry/groomer vibes)">This weekend <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="storm" title="How the next few days look">This weekend <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="drive" title="Driving time from your start location">Drive <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="pass">Pass <span class="sort-indicator"></span></th>
-              <th scope="col" class="sortable-th" data-sort="crowd" title="How busy it’s likely to feel">Lift lines <span class="sort-indicator"></span></th>
+              <th scope="col" class="sortable-th" data-sort="crowd" title="How busy it's likely to feel">Lift lines <span class="sort-indicator"></span></th>
               <th scope="col" class="sortable-th" data-sort="price" title="Listed walk-up price (varies by date)">Walk-up <span class="sort-indicator"></span></th>
               <th scope="col">Stay</th>
             </tr>
@@ -448,10 +480,7 @@
           <tbody id="comparisonBody"></tbody>
         </table>
       </div>
-
-      <!-- Mobile card grid (hidden on desktop via CSS) -->
       <div id="mobileCardGrid" class="mobile-card-grid" aria-label="Mountain cards"></div>
-
       <p class="price-disclaimer">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
     </section>
 
@@ -478,28 +507,25 @@
         </div></div>
         <div id="stormGrid" class="card-grid"></div>
       </section>
-
       <section id="hiddenGemSection" class="card panel feature-panel">
         <div class="section-header feature-panel-header"><div>
           <h2 class="feature-title">Hidden Gems</h2>
-          <p class="muted small feature-desc">Lower crowds, good value, real terrain — the anti-resort picks.</p>
+          <p class="muted small feature-desc">Lower crowds, good value, real terrain &mdash; the anti-resort picks.</p>
         </div></div>
         <div id="hiddenGemGrid" class="card-grid"></div>
       </section>
     </section>
 
-    <button type="button" class="scroll-more-fab" id="scrollMoreFab" aria-label="Scroll to more results">↓</button>
+    <button type="button" class="scroll-more-fab" id="scrollMoreFab" aria-label="Scroll to more results">&darr;</button>
 
     <section id="detailSection" class="card panel hidden">
       <div id="detailCard"></div>
     </section>
 
-    <!-- DATABASE SUMMARY FOOTER -->
     <section class="db-summary-section">
       <div class="db-summary-label">What we track</div>
       <div id="summaryCards" class="db-summary-grid"></div>
     </section>
-
   </div>
 
   <script defer src="resorts-national.js"></script>
@@ -512,7 +538,6 @@
   <script defer src="sd-app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // AI panel toggle
       const toggleBtn = document.getElementById('aiToggleBtn');
       const panel     = document.getElementById('aiChatPanel');
       if (toggleBtn && panel) {
@@ -523,7 +548,6 @@
           if (!open) setTimeout(() => { document.getElementById('aiChatInput')?.focus(); }, 50);
         });
       }
-      // Example chips pre-fill input
       document.querySelectorAll('.ai-example-chip').forEach(function (chip) {
         chip.addEventListener('click', function () {
           const input = document.getElementById('aiChatInput');
@@ -535,7 +559,6 @@
 
   <script>
     (function() {
-      /* ── Pass chips → sync hidden heroPassSelect ── */
       document.querySelectorAll('.hn-pchip').forEach(function(chip) {
         chip.addEventListener('click', function() {
           document.querySelectorAll('.hn-pchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
@@ -545,7 +568,6 @@
         });
       });
 
-      /* ── Trip type chips → same path as compare drive filter (live update + sync UI in sd-app.js) ── */
       document.querySelectorAll('.hn-tchip').forEach(function(chip) {
         chip.addEventListener('click', function() {
           document.querySelectorAll('.hn-tchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
@@ -556,58 +578,36 @@
         });
       });
 
-      /* ── When chips → set state.targetDate, smart default on load ── */
       (function() {
         function dayValToDate(val) {
           var now = new Date();
           var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          var dow = today.getDay(); // 0=Sun,1=Mon...6=Sat
+          var dow = today.getDay();
           var d = new Date(today);
           if (val === 'weekday') {
-            // Next Monday if today is Sat/Sun, otherwise today
             if (dow === 0) d.setDate(d.getDate() + 1);
             else if (dow === 6) d.setDate(d.getDate() + 2);
             return d;
           }
-          if (val === 'friday') {
-            var daysUntil = (5 - dow + 7) % 7 || 7;
-            d.setDate(d.getDate() + daysUntil);
-            return d;
-          }
-          if (val === 'saturday') {
-            var daysUntil = (6 - dow + 7) % 7 || 7;
-            d.setDate(d.getDate() + daysUntil);
-            return d;
-          }
-          if (val === 'sunday') {
-            var daysUntil = (7 - dow) % 7 || 7;
-            d.setDate(d.getDate() + daysUntil);
-            return d;
-          }
+          if (val === 'friday') { var daysUntil = (5 - dow + 7) % 7 || 7; d.setDate(d.getDate() + daysUntil); return d; }
+          if (val === 'saturday') { var daysUntil = (6 - dow + 7) % 7 || 7; d.setDate(d.getDate() + daysUntil); return d; }
+          if (val === 'sunday') { var daysUntil = (7 - dow) % 7 || 7; d.setDate(d.getDate() + daysUntil); return d; }
           return today;
         }
-
         function smartDefault() {
           var dow = new Date().getDay();
-          // Always default to the next day's chip
-          // 0=Sun→weekday, 1=Mon→weekday, 2=Tue→weekday, 3=Wed→weekday
-          // 4=Thu→friday, 5=Fri→saturday, 6=Sat→sunday
           if (dow === 4) return 'friday';
           if (dow === 5) return 'saturday';
           if (dow === 6) return 'sunday';
-          return 'weekday'; // Sun, Mon, Tue, Wed, Thu → next day is a weekday
+          return 'weekday';
         }
-
         function activateChip(val) {
           document.querySelectorAll('.hn-dchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
           var target = document.querySelector('.hn-dchip[data-val="' + val + '"]');
           if (target) target.classList.add('hn-chip-on');
           if (typeof state !== 'undefined') state.targetDate = dayValToDate(val);
         }
-
-        // Set smart default immediately
         activateChip(smartDefault());
-
         document.querySelectorAll('.hn-dchip').forEach(function(chip) {
           chip.addEventListener('click', function() {
             activateChip(this.dataset.val);
@@ -615,167 +615,79 @@
           });
         });
       })();
-
-      /* Refine panel toggle + Apply: wired in sd-app.js */
-
-      /* Runner-up section is now populated directly by renderVerdict() in sd-app.js */
     })();
   </script>
 
-  <!-- SEO CONTENT — static, crawlable. Visible before JS loads. -->
+  <!-- SEO CONTENT — static, crawlable -->
   <div class="seo-page-sections">
-
-    <!-- How it works -->
     <section class="seo-how" aria-labelledby="seo-how-title">
       <div class="seo-container">
         <h2 id="seo-how-title" class="seo-section-title">How WhereToSkiNext works</h2>
-        <p class="seo-section-sub">Enter your location, tell us your pass and how far you'll drive, and we score 250 US mountains in real time — live snow forecast, drive time, crowd outlook, and ticket price combined into a top pick up front and a full ranking you can sort.</p>
+        <p class="seo-section-sub">Enter your location, tell us your pass and how far you will drive, and we score 250 US mountains in real time using live snow forecast, drive time, crowd outlook, and ticket price combined into a top pick up front and a full ranking you can sort.</p>
         <div class="seo-steps">
           <div class="seo-step">
             <div class="seo-step-num">1</div>
-            <div class="seo-step-body">
-              <strong>Tell us where you're starting from</strong>
-              <p>Enter a ZIP code or city. We calculate real drive times — not straight-line distance — to every mountain in the database from your door.</p>
-            </div>
+            <div class="seo-step-body"><strong>Tell us where you are starting from</strong><p>Enter a ZIP code or city. We calculate real drive times to every mountain in the database from your door.</p></div>
           </div>
           <div class="seo-step">
             <div class="seo-step-num">2</div>
-            <div class="seo-step-body">
-              <strong>Set your pass, distance, and snow preference</strong>
-              <p>Hold an Epic, Ikon, or Indy pass? Tell us. Willing to drive 4 hours for powder but not for a groomer day? Tell us that too. The scoring adjusts in real time.</p>
-            </div>
+            <div class="seo-step-body"><strong>Set your pass, distance, and snow preference</strong><p>Hold an Epic, Ikon, or Indy pass? Tell us. Willing to drive 4 hours for powder but not for a groomer day? Tell us that too.</p></div>
           </div>
           <div class="seo-step">
             <div class="seo-step-num">3</div>
-            <div class="seo-step-body">
-              <strong>Get one confident pick with the reasoning behind it</strong>
-              <p>A highlighted top pick first, then a sortable table of every mountain in range — with the snow forecast, crowd outlook, and drive time behind the scores.</p>
-            </div>
+            <div class="seo-step-body"><strong>Get one confident pick with the reasoning behind it</strong><p>A highlighted top pick first, then a sortable table of every mountain in range with the snow forecast, crowd outlook, and drive time behind the scores.</p></div>
           </div>
         </div>
       </div>
     </section>
-
-    <!-- Regions -->
     <section class="seo-regions" aria-labelledby="seo-regions-title">
       <div class="seo-container">
         <h2 id="seo-regions-title" class="seo-section-title">Ski resorts across the US</h2>
         <p class="seo-section-sub">250 mountains across 34 states, from local hills to destination resorts. Every one scored the same way.</p>
         <div class="seo-region-grid">
-          <a href="/ski/vermont/" class="seo-region-card">
-            <div class="seo-region-name">Vermont</div>
-            <div class="seo-region-mountains">Killington · Stowe · Sugarbush · Jay Peak · Mad River Glen</div>
-          </a>
-          <a href="/ski/new-hampshire/" class="seo-region-card">
-            <div class="seo-region-name">New Hampshire</div>
-            <div class="seo-region-mountains">Loon Mountain · Cannon · Waterville Valley · Bretton Woods</div>
-          </a>
-          <a href="/ski/maine/" class="seo-region-card">
-            <div class="seo-region-name">Maine</div>
-            <div class="seo-region-mountains">Sunday River · Sugarloaf · Saddleback · Black Mountain</div>
-          </a>
-          <a href="/ski/new-york/" class="seo-region-card">
-            <div class="seo-region-name">New York</div>
-            <div class="seo-region-mountains">Whiteface · Hunter · Gore Mountain · Windham · Holiday Valley</div>
-          </a>
-          <a href="/ski/colorado/" class="seo-region-card">
-            <div class="seo-region-name">Colorado</div>
-            <div class="seo-region-mountains">Vail · Breckenridge · Telluride · Steamboat · Wolf Creek</div>
-          </a>
-          <a href="/ski/utah/" class="seo-region-card">
-            <div class="seo-region-name">Utah</div>
-            <div class="seo-region-mountains">Park City · Deer Valley · Alta · Snowbird · Solitude</div>
-          </a>
-          <a href="/ski/montana/" class="seo-region-card">
-            <div class="seo-region-name">Montana</div>
-            <div class="seo-region-mountains">Big Sky · Whitefish Mountain · Bridger Bowl · Red Lodge</div>
-          </a>
-          <a href="/ski/washington/" class="seo-region-card">
-            <div class="seo-region-name">Washington</div>
-            <div class="seo-region-mountains">Crystal Mountain · Stevens Pass · Mt. Baker · White Pass</div>
-          </a>
-          <a href="/ski/california/" class="seo-region-card">
-            <div class="seo-region-name">California</div>
-            <div class="seo-region-mountains">Mammoth · Palisades Tahoe · Heavenly · Kirkwood · June Mountain</div>
-          </a>
-          <a href="/ski/wyoming/" class="seo-region-card">
-            <div class="seo-region-name">Wyoming</div>
-            <div class="seo-region-mountains">Jackson Hole · Grand Targhee · Snow King</div>
-          </a>
-          <a href="/ski/idaho/" class="seo-region-card">
-            <div class="seo-region-name">Idaho</div>
-            <div class="seo-region-mountains">Sun Valley · Schweitzer · Bogus Basin · Brundage</div>
-          </a>
-          <a href="/ski/oregon/" class="seo-region-card">
-            <div class="seo-region-name">Oregon</div>
-            <div class="seo-region-mountains">Mt. Bachelor · Mt. Hood Meadows · Timberline · Willamette Pass</div>
-          </a>
+          <a href="/ski/vermont/" class="seo-region-card"><div class="seo-region-name">Vermont</div><div class="seo-region-mountains">Killington &middot; Stowe &middot; Sugarbush &middot; Jay Peak &middot; Mad River Glen</div></a>
+          <a href="/ski/new-hampshire/" class="seo-region-card"><div class="seo-region-name">New Hampshire</div><div class="seo-region-mountains">Loon Mountain &middot; Cannon &middot; Waterville Valley &middot; Bretton Woods</div></a>
+          <a href="/ski/maine/" class="seo-region-card"><div class="seo-region-name">Maine</div><div class="seo-region-mountains">Sunday River &middot; Sugarloaf &middot; Saddleback &middot; Black Mountain</div></a>
+          <a href="/ski/new-york/" class="seo-region-card"><div class="seo-region-name">New York</div><div class="seo-region-mountains">Whiteface &middot; Hunter &middot; Gore Mountain &middot; Windham &middot; Holiday Valley</div></a>
+          <a href="/ski/colorado/" class="seo-region-card"><div class="seo-region-name">Colorado</div><div class="seo-region-mountains">Vail &middot; Breckenridge &middot; Telluride &middot; Steamboat &middot; Wolf Creek</div></a>
+          <a href="/ski/utah/" class="seo-region-card"><div class="seo-region-name">Utah</div><div class="seo-region-mountains">Park City &middot; Deer Valley &middot; Alta &middot; Snowbird &middot; Solitude</div></a>
+          <a href="/ski/montana/" class="seo-region-card"><div class="seo-region-name">Montana</div><div class="seo-region-mountains">Big Sky &middot; Whitefish Mountain &middot; Bridger Bowl &middot; Red Lodge</div></a>
+          <a href="/ski/washington/" class="seo-region-card"><div class="seo-region-name">Washington</div><div class="seo-region-mountains">Crystal Mountain &middot; Stevens Pass &middot; Mt. Baker &middot; White Pass</div></a>
+          <a href="/ski/california/" class="seo-region-card"><div class="seo-region-name">California</div><div class="seo-region-mountains">Mammoth &middot; Palisades Tahoe &middot; Heavenly &middot; Kirkwood &middot; June Mountain</div></a>
+          <a href="/ski/wyoming/" class="seo-region-card"><div class="seo-region-name">Wyoming</div><div class="seo-region-mountains">Jackson Hole &middot; Grand Targhee &middot; Snow King</div></a>
+          <a href="/ski/idaho/" class="seo-region-card"><div class="seo-region-name">Idaho</div><div class="seo-region-mountains">Sun Valley &middot; Schweitzer &middot; Bogus Basin &middot; Brundage</div></a>
+          <a href="/ski/oregon/" class="seo-region-card"><div class="seo-region-name">Oregon</div><div class="seo-region-mountains">Mt. Bachelor &middot; Mt. Hood Meadows &middot; Timberline &middot; Willamette Pass</div></a>
         </div>
       </div>
     </section>
-
-    <!-- Pass guides -->
     <section class="seo-passes" aria-labelledby="seo-passes-title">
       <div class="seo-container">
         <h2 id="seo-passes-title" class="seo-section-title">Ski pass coverage</h2>
-        <p class="seo-section-sub">Already have a pass? Set it once and every score reflects what you'd actually pay at the window. <a href="/ski-pass-comparison/">Compare Epic vs Ikon vs Indy →</a></p>
+        <p class="seo-section-sub">Already have a pass? Set it once and every score reflects what you would actually pay at the window. <a href="/ski-pass-comparison/">Compare Epic vs Ikon vs Indy &rarr;</a></p>
         <div class="seo-pass-grid">
-          <div class="seo-pass-card seo-pass-epic">
-            <div class="seo-pass-label">Epic Pass</div>
-            <p>Vail, Breckenridge, Park City, Stowe, Whistler, Heavenly, Northstar, Kirkwood, Attitash, Wildcat, Crotched, Mount Sunapee, Stevens Pass, and more. The largest network by resort count.</p>
-            <a href="/ski-pass-comparison/" class="seo-pass-link">Epic pass resorts →</a>
-          </div>
-          <div class="seo-pass-card seo-pass-ikon">
-            <div class="seo-pass-label">Ikon Pass</div>
-            <p>Jackson Hole, Mammoth, Steamboat, Killington, Sugarbush, Palisades Tahoe, Alta, Snowbird, Deer Valley, Crystal Mountain, Schweitzer, Taos, and more. Strong in the west.</p>
-            <a href="/ski-pass-comparison/" class="seo-pass-link">Ikon pass resorts →</a>
-          </div>
-          <div class="seo-pass-card seo-pass-indy">
-            <div class="seo-pass-label">Indy Pass</div>
-            <p>100+ independent mountains across the US including Berkshire East, Jay Peak, Cannon, Bridger Bowl, Mt. Bachelor, Whitefish, Saddleback, and regional gems most skiers overlook.</p>
-            <a href="/ski-pass-comparison/" class="seo-pass-link">Indy pass resorts →</a>
-          </div>
+          <div class="seo-pass-card seo-pass-epic"><div class="seo-pass-label">Epic Pass</div><p>Vail, Breckenridge, Park City, Stowe, Whistler, Heavenly, Northstar, Kirkwood, Attitash, Wildcat, Crotched, Mount Sunapee, Stevens Pass, and more.</p><a href="/ski-pass-comparison/" class="seo-pass-link">Epic pass resorts &rarr;</a></div>
+          <div class="seo-pass-card seo-pass-ikon"><div class="seo-pass-label">Ikon Pass</div><p>Jackson Hole, Mammoth, Steamboat, Killington, Sugarbush, Palisades Tahoe, Alta, Snowbird, Deer Valley, Crystal Mountain, Schweitzer, Taos, and more.</p><a href="/ski-pass-comparison/" class="seo-pass-link">Ikon pass resorts &rarr;</a></div>
+          <div class="seo-pass-card seo-pass-indy"><div class="seo-pass-label">Indy Pass</div><p>100+ independent mountains across the US including Berkshire East, Jay Peak, Cannon, Bridger Bowl, Mt. Bachelor, Whitefish, Saddleback, and regional gems.</p><a href="/ski-pass-comparison/" class="seo-pass-link">Indy pass resorts &rarr;</a></div>
         </div>
       </div>
     </section>
-
-    <!-- FAQ -->
     <section class="seo-faq-section" aria-labelledby="seo-faq-title">
       <div class="seo-container">
         <h2 id="seo-faq-title" class="seo-section-title">Common questions</h2>
         <div class="seo-faq-grid">
-          <div class="seo-faq-item">
-            <h3>Where should I ski this weekend near me?</h3>
-            <p>Enter your ZIP code or city at the top of this page. We score every mountain within your drive window by live snow forecast, crowd outlook, and pass coverage. You get a clear top pick first, plus a sortable full ranking below.</p>
-          </div>
-          <div class="seo-faq-item">
-            <h3>Which ski resort has the most snow right now?</h3>
-            <p>The Storm Chaser section on the homepage shows the four mountains with the highest 3-day snowfall forecast, updated as the forecast changes. Sort the full table by Storm Snow to rank all 250 mountains by incoming snowfall.</p>
-          </div>
-          <div class="seo-faq-item">
-            <h3>Is it worth skiing without fresh snow?</h3>
-            <p>Often yes. The scoring weighs recent 7-day snowfall and base depth alongside the 3-day forecast. A mountain with 300" on the base and no incoming storm often skis better than one chasing a thin 2" system. The verdict explains the specific conditions reasoning for your pick.</p>
-          </div>
-          <div class="seo-faq-item">
-            <h3>How do I find a quieter ski resort on a holiday weekend?</h3>
-            <p>Set Crowd Level to "Quiet Slopes" in the preferences panel. The scoring will deprioritize major Epic and Ikon resorts over peak weekends and surface independent mountains with comparable or better snow conditions that most people drive straight past.</p>
-          </div>
-          <div class="seo-faq-item">
-            <h3>Does WhereToSkiNext cover small local ski areas?</h3>
-            <p>Yes — independents are scored the same way as destination resorts. A local hill with great grooming, low crowds, and a $55 ticket can outscore a $250 resort on the wrong weekend. The scoring doesn't favor mountains based on marketing budget or pass affiliation.</p>
-          </div>
-          <div class="seo-faq-item">
-            <h3>How accurate is the snow forecast?</h3>
-            <p>Snow forecasts come from Open-Meteo, a high-resolution weather model updated every few hours. We use summit-elevation-adjusted temperatures to distinguish rain-line events from actual snow. Forecasts beyond 3 days carry more uncertainty — we weight the next 24 hours most heavily.</p>
-          </div>
+          <div class="seo-faq-item"><h3>Where should I ski this weekend near me?</h3><p>Enter your ZIP code or city at the top of this page. We score every mountain within your drive window by live snow forecast, crowd outlook, and pass coverage.</p></div>
+          <div class="seo-faq-item"><h3>Which ski resort has the most snow right now?</h3><p>The Storm Chaser section shows the four mountains with the highest 3-day snowfall forecast, updated as the forecast changes.</p></div>
+          <div class="seo-faq-item"><h3>Is it worth skiing without fresh snow?</h3><p>Often yes. The scoring weighs recent 7-day snowfall and base depth alongside the 3-day forecast. A mountain with 300" on the base often skis better than one chasing a thin 2" system.</p></div>
+          <div class="seo-faq-item"><h3>How do I find a quieter ski resort on a holiday weekend?</h3><p>Set Crowd Level to Quiet Slopes in the preferences panel. The scoring will deprioritize major Epic and Ikon resorts over peak weekends and surface independent mountains nearby.</p></div>
+          <div class="seo-faq-item"><h3>Does WhereToSkiNext cover small local ski areas?</h3><p>Yes &mdash; independents are scored the same way as destination resorts. A local hill with great grooming, low crowds, and a $55 ticket can outscore a $250 resort on the wrong weekend.</p></div>
+          <div class="seo-faq-item"><h3>How accurate is the snow forecast?</h3><p>Snow forecasts come from Open-Meteo, a high-resolution weather model updated every few hours. We use summit-elevation-adjusted temperatures to distinguish rain-line events from actual snow.</p></div>
         </div>
       </div>
     </section>
-
   </div>
 
   <footer class="site-footer">
-    <p>© 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
+    <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
   </footer>
 </body>
 </html>
