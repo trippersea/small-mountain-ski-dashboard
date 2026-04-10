@@ -876,19 +876,28 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 .breakdown strong { color: var(--text); }
 
-/* ── Compare table ──────────────────────────────────────────────────────── */
+/* ── Compare table (base — extended by .compare-section-engine below) ───── */
 .table-wrap { overflow: auto; }
 .comparison-table { width: 100%; border-collapse: collapse; }
 .comparison-table th,
 .comparison-table td { padding: 11px 10px; border-bottom: 1px solid rgba(0,0,0,.05); font-size: 13px; text-align: left; }
 .comparison-table thead th {
-  position: sticky; top: 0; background: #f8fbff; z-index: 1;
-  font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace;
-  letter-spacing: .04em; text-transform: uppercase; color: var(--muted);
-  border-bottom: 2px solid var(--border);
+  position: sticky; top: 0; z-index: 2;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.02em; text-transform: none; color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
 }
-.comparison-table tbody tr:hover  { background: #f4f8ff; cursor: pointer; }
-.comparison-table tbody tr.active-row { background: #eef5ff; }
+.comparison-table tbody tr {
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+.comparison-table tbody tr:hover  {
+  background: #f1f5f9;
+  cursor: pointer;
+  box-shadow: inset 3px 0 0 0 var(--accent);
+}
+.comparison-table tbody tr.active-row { background: #eff6ff; box-shadow: inset 3px 0 0 0 var(--accent); }
 
 /* ── Compare table: skier-first rows (less spreadsheet, more “pick a hill”) ── */
 .row-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
@@ -1812,8 +1821,39 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
     display: grid;
     grid-template-columns: 1fr;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 0;
   }
+  #compareSection .mobile-card-grid {
+    padding: 0 16px 16px;
+    background: #fff;
+  }
+}
+
+.mob-location-nudge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 12px;
+  font-size: 13px;
+  color: #475569;
+}
+.mob-location-nudge button {
+  margin-left: auto;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .mob-card {
@@ -2309,10 +2349,269 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   COMPARE SECTION — redesigned filter panel
+   COMPARE SECTION — ranking engine (premium travel / comparison product)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Section header ────────────────────────────────────────────────────── */
+.compare-section-engine {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid #d8dee9;
+  background: #eceff4;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+.compare-engine-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 20px 22px 18px;
+  background: linear-gradient(165deg, #1e293b 0%, #0f172a 55%, #0c1322 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.compare-engine-head-main { min-width: 0; flex: 1; }
+.compare-engine-eyebrow {
+  margin: 0 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(165, 216, 255, 0.85);
+}
+.compare-engine-title-line { display: flex; flex-direction: column; gap: 4px; }
+.compare-engine-title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+.compare-engine-sub.result-count,
+#compareSection .compare-engine-sub {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(248, 250, 252, 0.62);
+  line-height: 1.45;
+  max-width: 52ch;
+}
+.compare-filter-btn.filter-toggle-btn {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+.compare-filter-btn.filter-toggle-btn:hover {
+  border-color: rgba(165, 216, 255, 0.55);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+.compare-filter-btn.filter-toggle-btn.filter-toggle-btn--open {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.compare-filter-panel.filter-panel {
+  margin: 0;
+  padding: 18px 20px 20px;
+  border: none;
+  border-bottom: 1px solid #d8dee9;
+  background: #f8fafc;
+}
+@media (max-width: 640px) {
+  .compare-engine-head {
+    padding: 16px 16px 14px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .compare-engine-title { font-size: 1.2rem; }
+  .compare-filter-btn.filter-toggle-btn { justify-content: center; }
+  .compare-controls-strip { padding: 12px; }
+}
+
+/* ── Unified control strip (search + view all) ─────────────────────────── */
+.compare-controls-strip {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+.compare-search-field {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+}
+.compare-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+.compare-search-input.table-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #f8fafc;
+  min-height: 42px;
+}
+.compare-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.compare-view-all-btn.btn-secondary {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.compare-view-all-btn.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #f8fafc;
+}
+
+/* ── Location hint (integrated callout, not a table row) ────────────────── */
+.compare-location-hint:not([hidden]) {
+  display: block;
+}
+.compare-location-hint {
+  padding: 0 16px;
+  margin: 0;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+.compare-location-hint-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin: 12px 0;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 12px;
+}
+.compare-location-icon {
+  flex-shrink: 0;
+  color: #2563eb;
+  display: flex;
+}
+.compare-location-copy {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569;
+}
+.compare-location-copy strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+.compare-location-btn {
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+.compare-location-btn:hover {
+  background: var(--accent-hover);
+}
+
+/* ── Table shell (white card on gray section bg) ─────────────────────────── */
+.compare-table-shell {
+  background: #fff;
+  padding: 0;
+}
+.compare-table-scroll.table-wrap {
+  overflow: auto;
+  max-height: min(70vh, 720px);
+  border-radius: 0;
+}
+.comparison-table .compare-th-rank {
+  width: 2.5rem;
+  text-align: right;
+  padding-right: 6px;
+}
+.compare-th-muted {
+  font-weight: 600;
+  color: #94a3b8;
+  font-size: 11px;
+}
+.comparison-table .compare-th-primary {
+  min-width: 11rem;
+}
+.comparison-table .compare-rank-cell {
+  width: 2.5rem;
+  text-align: right;
+  vertical-align: top;
+  padding-top: 14px;
+}
+.compare-rank {
+  display: inline-block;
+  min-width: 1.25rem;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #94a3b8;
+}
+.comparison-table .compare-select-cell {
+  width: 2.25rem;
+  text-align: center;
+  vertical-align: top;
+  padding-top: 13px;
+}
+.comparison-table tbody tr:hover .compare-rank {
+  color: #64748b;
+}
+.comparison-table tbody tr.sponsored-row {
+  background: linear-gradient(90deg, rgba(254, 243, 199, 0.35) 0%, #fff 48%);
+}
+.comparison-table tbody tr.sponsored-row:hover {
+  background: linear-gradient(90deg, rgba(254, 243, 199, 0.5) 0%, #f8fafc 48%);
+}
+
+.compare-price-note.price-disclaimer {
+  margin: 0;
+  padding: 12px 18px 16px;
+  font-size: 11px;
+  color: #64748b;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Legacy title block (unused in new markup — keep for safety) */
 .compare-section-header {
   display: flex;
   align-items: center;
@@ -2476,7 +2775,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 .fp-clear-btn:hover { color: var(--danger); }
 
-/* ── Compare toolbar: search + view-all ────────────────────────────────── */
+/* ── Compare toolbar (legacy class — prefer .compare-controls-strip) ───── */
 .compare-toolbar {
   display: flex;
   align-items: center;
@@ -2489,13 +2788,17 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 
 /* Active filter pills — below search bar */
+#compareSection .active-filters {
+  padding: 8px 16px 0;
+  background: #fff;
+}
 .active-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
-.active-filters:empty { display: none; margin: 0; }
+.active-filters:empty { display: none; margin: 0; padding: 0; }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {

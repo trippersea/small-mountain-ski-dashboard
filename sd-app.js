@@ -116,6 +116,7 @@ const els = {
   tableSearch:         $('tableSearch'),
   tableViewAllBtn:     $('tableViewAllBtn'),
   resultCount:         $('resultCount'),
+  compareLocationHint: $('compareLocationHint'),
   comparisonBody:      $('comparisonBody'),
   mobileCardGrid:      $('mobileCardGrid'),
   compareTray:         $('compareTray'),
@@ -1389,7 +1390,7 @@ function renderCompareTable(resorts) {
       : 'Try widening distance, easing snow or price limits, or pick another pass.';
     els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
-      <tr><td colspan="8" class="compare-empty-state">
+      <tr><td colspan="9" class="compare-empty-state">
         <div class="ces-icon">🎿</div>
         <div class="ces-title">${title}</div>
         <div class="ces-sub">${sub}
@@ -1405,20 +1406,35 @@ function renderCompareTable(resorts) {
         document.getElementById('resetFilters')?.click();
       }
     });
+    if (els.compareLocationHint) {
+      els.compareLocationHint.innerHTML = '';
+      els.compareLocationHint.hidden = true;
+    }
     renderMobileCards([], { mode: 'empty', qActive, resortsLen: resorts.length });
     return;
   }
 
-  els.comparisonBody.innerHTML = (noOriginDefault ? `
-    <tr class="table-location-nudge">
-      <td colspan="8">
-        <div class="tln-inner">
-          <span class="tln-icon">📍</span>
-          <span class="tln-text">Enter your starting location above to rank by live snow forecast, drive time, and your preferences.</span>
-          <button class="tln-btn" onclick="document.getElementById('originInput')?.focus();document.querySelector('.hero-search')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location →</button>
-        </div>
-      </td>
-    </tr>` : '') + displayed.map(({ resort, breakdown, stormTotal, hist }) => {
+  if (els.compareLocationHint) {
+    if (noOriginDefault) {
+      els.compareLocationHint.hidden = false;
+      els.compareLocationHint.innerHTML = `
+        <div class="compare-location-hint-inner">
+          <span class="compare-location-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.35 7-10a7 7 0 10-14 0c0 5.65 7 10 7 10z" stroke="currentColor" stroke-width="1.75"/><circle cx="12" cy="11" r="2.25" stroke="currentColor" stroke-width="1.75"/></svg></span>
+          <p class="compare-location-copy"><strong>Add your start point</strong> — we rank by live snow, drive time, and your pass using your location from the search bar above.</p>
+          <button type="button" class="compare-location-btn">Set location</button>
+        </div>`;
+      const _locBtn = els.compareLocationHint.querySelector('.compare-location-btn');
+      _locBtn?.addEventListener('click', () => {
+        document.getElementById('originInput')?.focus();
+        document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    } else {
+      els.compareLocationHint.innerHTML = '';
+      els.compareLocationHint.hidden = true;
+    }
+  }
+
+  els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }, idx) => {
     const crowd    = crowdForecast(resort).label;
     const driveMins = getDriveMins(resort.id);
     const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
@@ -1458,7 +1474,8 @@ function renderCompareTable(resorts) {
     const _sp = getSponsor(resort.id);
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}" data-id="${resort.id}">
-        <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
+        <td class="compare-rank-cell"><span class="compare-rank" aria-hidden="true">${idx + 1}</span></td>
+        <td class="compare-select-cell"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td>
           <div class="table-mountain-cell">
             <div class="table-mountain-name-row">
@@ -1861,9 +1878,9 @@ function renderMobileCards(decorated, emptyOpts) {
   const noOriginMobile = !state.origin && state.sortBy === 'planner';
   const nudgeHtml = noOriginMobile ? `
     <div class="mob-location-nudge">
-      <span>📍</span>
-      <span>Enter your location to rank by live snow + drive time</span>
-      <button onclick="document.getElementById('originInput')?.focus();window.scrollTo({top:0,behavior:'smooth'})">Set location →</button>
+      <span aria-hidden="true">📍</span>
+      <span>Add your start location to rank by live snow and drive time.</span>
+      <button type="button" onclick="document.getElementById('originInput')?.focus();document.getElementById('searchSection')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location</button>
     </div>` : '';
   els.mobileCardGrid.innerHTML = nudgeHtml + items.map(({ resort, breakdown, stormTotal, hist }) => {
     const storm     = stormTotal !== null ? stormTotal.toFixed(1) + '"' : '…';
