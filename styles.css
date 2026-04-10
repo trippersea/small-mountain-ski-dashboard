@@ -4695,3 +4695,225 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   border-color: rgba(248,113,113,.4);
   background: rgba(248,113,113,.18);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNIFIED FILTER BAR — matches mockup design
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* The white pill filter bar in the hero */
+.hn-filterbar {
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px 10px 18px;
+  display: flex;
+  align-items: center;
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  position: relative;
+  z-index: 2;
+}
+.hn-fb-seg {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 10px 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hn-fb-seg--location { flex: 1.8; }
+.hn-fb-seg--clickable {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 4px 10px 4px 6px;
+  margin-left: -6px;
+  transition: background 0.12s;
+}
+.hn-fb-seg--clickable:hover { background: #f4f7fb; }
+.hn-fb-seg--open { background: #f0f6ff; }
+.hn-fb-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  line-height: 1;
+}
+.hn-fb-val {
+  font-size: 14px;
+  color: #1a2030;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hn-fb-input {
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #1a2030 !important;
+  background: transparent !important;
+  width: 100% !important;
+  font-family: inherit !important;
+  box-shadow: none !important;
+}
+.hn-fb-input::placeholder { color: #9ca3af; font-weight: 400; }
+.hn-fb-div {
+  width: 1px;
+  height: 32px;
+  background: #e8e9eb;
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+.hn-fb-btn {
+  background: #1a2030;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 8px;
+  transition: background 0.12s, transform 0.1s;
+  font-family: inherit;
+}
+.hn-fb-btn:hover { background: #232f45; }
+.hn-fb-btn:active { transform: scale(0.98); }
+
+/* Filter dropdown panels */
+.hn-filter-dropdowns {
+  max-width: 700px;
+  margin: 8px auto 0;
+  position: relative;
+  z-index: 2;
+}
+.hn-fd-panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.16);
+  margin-bottom: 6px;
+}
+.hn-fd-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+.hn-fd-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+/* Chips inside dropdowns */
+.hn-pchip, .hn-tchip, .hn-dchip {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1.5px solid #e2e4e8;
+  color: #4b5563;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.hn-pchip:hover, .hn-tchip:hover, .hn-dchip:hover {
+  border-color: #1a2030;
+  color: #1a2030;
+}
+.hn-chip-on {
+  background: #1a2030 !important;
+  border-color: #1a2030 !important;
+  color: #fff !important;
+}
+
+/* Meta row under filter bar */
+.hn-meta-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+.hn-meta-sep { color: rgba(255,255,255,0.3); font-size: 12px; }
+.hn-ai-tog {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.12s;
+}
+.hn-ai-tog:hover { color: #fff; }
+.hn-trust-txt {
+  font-size: 11px;
+  color: rgba(255,255,255,0.38);
+  margin-left: auto;
+  font-weight: 400;
+  text-align: right;
+}
+
+/* Location status / detect button */
+.hero-locate-link {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.75);
+  font: 500 13px/1 inherit;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.12s;
+}
+.hero-locate-link:hover { color: #fff; }
+.hn-location-status {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  margin-top: 10px;
+  text-align: center;
+  min-height: 1em;
+  position: relative;
+  z-index: 1;
+}
+.hero-location-status--error { color: #fca5a5 !important; font-weight: 600; }
+
+/* Hidden select utility */
+.hn-vis-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hn-filterbar {
+    flex-wrap: wrap;
+    border-radius: 12px;
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .hn-fb-seg--location { flex: 1 1 100%; padding: 0; border-bottom: 1px solid #e8e9eb; padding-bottom: 10px; }
+  .hn-fb-seg--clickable { flex: 1; }
+  .hn-fb-div { display: none; }
+  .hn-fb-btn { width: 100%; text-align: center; border-radius: 8px; padding: 13px; margin-left: 0; flex: 1 1 100%; }
+  .hn-trust-txt { display: none; }
+}

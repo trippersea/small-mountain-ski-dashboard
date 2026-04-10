@@ -5,7 +5,6 @@
 
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
-const verdictWriteupCache = new Map();
 
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function loadSavedWeights() {
@@ -1758,9 +1757,6 @@ function renderDetail({ scroll = false } = {}) {
 }
 
 // ─── AI Chat ──────────────────────────────────────────────────────────────────
-let aiChatLoading = false;
-let aiLastCallTime = 0;
-
 async function askAI(query) {
   if (!query.trim() || aiChatLoading) return;
 
