@@ -189,19 +189,21 @@
       </div>
     </section>
 
-    <!-- ═══ STATS STRIP ════════════════════════════════════════════════════ -->
-    <div class="hn-stats-strip">
-      <div class="hn-stats-inner">
-        <div class="hn-stat"><span class="hn-stat-num">250+</span><span class="hn-stat-lbl">US mountains</span></div>
-        <div class="hn-stat"><span class="hn-stat-num">Live</span><span class="hn-stat-lbl">Snow forecasts</span></div>
-        <div class="hn-stat"><span class="hn-stat-num">Real</span><span class="hn-stat-lbl">Drive times</span></div>
-        <div class="hn-stat"><span class="hn-stat-num">Crowd</span><span class="hn-stat-lbl">Forecasting</span></div>
-        <div class="hn-stat"><span class="hn-stat-num">Free</span><span class="hn-stat-lbl">Always</span></div>
-      </div>
-    </div>
-
+    <!-- ═══ RESULTS & DISCOVERY (unified region) ═══════════════════════════ -->
+    <div class="hn-results-region">
     <!-- ═══ TOP PICK ════════════════════════════════════════════════════════ -->
-    <section id="verdictSection" class="verdict-section card panel hn-verdict-full hn-verdict-pre-location" aria-label="Top mountain pick">
+    <section id="verdictSection" class="verdict-section hn-verdict-full hn-results-panel hn-verdict-pre-location" aria-label="Top mountain pick">
+      <div class="hn-results-trust" role="region" aria-label="What powers these rankings">
+        <ul class="hn-results-trust-list">
+          <li><span class="hn-results-trust-k">250+</span> <span class="hn-results-trust-l">US mountains</span></li>
+          <li aria-hidden="true" class="hn-results-trust-sep"></li>
+          <li><span class="hn-results-trust-k">Live</span> <span class="hn-results-trust-l">snow forecasts</span></li>
+          <li aria-hidden="true" class="hn-results-trust-sep"></li>
+          <li><span class="hn-results-trust-k">Real</span> <span class="hn-results-trust-l">drive times</span></li>
+          <li aria-hidden="true" class="hn-results-trust-sep"></li>
+          <li><span class="hn-results-trust-k">Crowd</span> <span class="hn-results-trust-l">forecasting</span></li>
+        </ul>
+      </div>
       <div id="verdictCard">
         <div class="vcard-location-prompt">
           <div class="vcard-location-prompt-icon">
@@ -217,7 +219,7 @@
     </section>
 
     <!-- ═══ BOOKING STRIP ══════════════════════════════════════════════════ -->
-    <div id="hnBookingStrip" class="hn-booking-strip card" hidden>
+    <div id="hnBookingStrip" class="hn-booking-strip hn-results-panel" hidden>
       <div class="hn-booking-left">
         <div class="hn-booking-icon">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#003580"/><circle cx="9" cy="9" r="4" fill="#fff"/></svg>
@@ -234,19 +236,24 @@
     </div>
 
     <!-- ═══ RUNNER-UPS ══════════════════════════════════════════════════════ -->
-    <section id="hnRunnerUpSection" class="card panel hn-runners-section" hidden aria-label="Runner-up options">
-      <div class="hn-runners-header">
-        <span class="hn-runners-title" id="hnRunnersTitle">Runner-up options</span>
-        <button class="hn-refine-toggle" id="hnRefineToggle" aria-expanded="false">&#9881; Refine results</button>
+    <section id="hnRunnerUpSection" class="hn-runners-section hn-results-panel" hidden aria-label="Runner-up options">
+      <div class="hn-results-section-head">
+        <div class="hn-results-section-head-text">
+          <h2 class="hn-results-heading" id="hnRunnersTitle">Runner-up options</h2>
+          <p class="hn-results-sub">Solid alternatives ranked after your top pick</p>
+        </div>
+        <button type="button" class="hn-refine-toggle btn-text" id="hnRefineToggle" aria-expanded="false">Refine results</button>
       </div>
       <div class="hn-runners-grid" id="hnRunnersGrid"></div>
     </section>
 
     <!-- ═══ METRO MARKET CARDS ══════════════════════════════════════════════ -->
-    <section class="card panel hn-metro-section" aria-label="Best skiing this weekend by city">
-      <div class="hn-metro-header">
-        <div class="hn-metro-title">Best skiing this weekend near you</div>
-        <div class="hn-metro-sub">Pick your city for a personalized ranking</div>
+    <section class="hn-metro-section hn-results-panel" aria-label="Best skiing this weekend by city">
+      <div class="hn-results-section-head hn-results-section-head--metro">
+        <div class="hn-results-section-head-text">
+          <h2 class="hn-results-heading">Explore by city</h2>
+          <p class="hn-results-sub">Personalized rankings for major metros</p>
+        </div>
       </div>
       <div class="hn-metro-grid">
         <a href="/ski-near/boston/"    class="hn-metro-card"><span class="hn-metro-city">Boston</span><span class="hn-metro-detail">47 mountains nearby</span></a>
@@ -256,6 +263,8 @@
         <a href="/ski-near/seattle/"   class="hn-metro-card"><span class="hn-metro-city">Seattle</span><span class="hn-metro-detail">18 mountains nearby</span></a>
       </div>
     </section>
+
+    </div><!-- /.hn-results-region -->
 
     <!-- ═══ REFINE PANEL ════════════════════════════════════════════════════ -->
     <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">

@@ -63,11 +63,6 @@ function getSponsor(resortId) {
     .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#94a3b8; letter-spacing:.03em; }
     .table-lodging-link { font-size:11px; font-weight:600; color:#2563eb; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
-    .vcard-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid #e2e8f0; }
-    .vcard-book-btn { display:inline-flex; align-items:center; background:#2563eb; color:#fff !important; font-size:14px; font-weight:600; padding:10px 22px; border-radius:999px; text-decoration:none; border:none; cursor:pointer; font-family:inherit; transition:background .12s; white-space:nowrap; }
-    .vcard-book-btn:hover { background:#1d4ed8; }
-    .vcard-detail-btn { display:inline-flex; align-items:center; background:#fff; color:#111827; font-size:14px; font-weight:500; padding:10px 18px; border-radius:999px; border:1px solid #e5e7eb; cursor:pointer; font-family:inherit; transition:all .12s; white-space:nowrap; }
-    .vcard-detail-btn:hover { background:#f9fafb; border-color:#d1d5db; }
   `;
   document.head.appendChild(style);
 })();

@@ -23,6 +23,14 @@
   --shadow-card: 0 4px 24px rgba(17, 24, 39, 0.07);
   --radius: 16px;
   --radius-sm: 10px;
+  /* Homepage “Results & discovery” — one system */
+  --rs-radius: 14px;
+  --rs-gap: 12px;
+  --rs-surface: #ffffff;
+  --rs-surface-subtle: #f8fafc;
+  --rs-border: var(--border);
+  --rs-accent-soft: rgba(37, 99, 235, 0.1);
+  --rs-accent-line: rgba(37, 99, 235, 0.22);
 }
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -2508,11 +2516,6 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
    AUDIT FIXES — appended
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* PERFORMANCE: Prevent CLS — verdictCard has stable minimum height */
-#verdictCard {
-  min-height: 380px;
-}
-
 /* FILTERING: Empty state in compare table */
 .compare-empty-state {
   padding: 48px 24px !important;
@@ -3541,71 +3544,142 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 /* ── Top pick full width ── */
 .hn-verdict-full { width: 100%; max-width: 100%; }
 
-/* ── Booking strip ── */
+/* ── Booking strip (aligned with results system) ── */
 .hn-booking-strip:not([hidden]) {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
-  padding: 16px 22px;
-  background: #fffbeb;
-  border: 1px solid #fde68a !important;
-  border-radius: var(--radius-sm);
+  padding: 14px 20px;
+  background: var(--rs-surface-subtle);
+  border: 1px solid var(--rs-border) !important;
+  border-radius: var(--rs-radius) !important;
   box-shadow: var(--shadow-sm);
 }
 .hn-booking-left { display: flex; align-items: center; gap: 12px; }
 .hn-booking-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.hn-booking-head { font-size: 14px; font-weight: 700; color: var(--text); }
+.hn-booking-head { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
 .hn-booking-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .hn-booking-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.hn-booking-badge { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #854d0e; background: #fef3c7; border: 1px solid #fde68a; padding: 3px 9px; border-radius: 999px; }
-.hn-booking-btn { background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: var(--radius-sm); text-decoration: none; white-space: nowrap; transition: background .12s; }
+.hn-booking-badge { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: #fff; border: 1px solid var(--border); padding: 3px 9px; border-radius: 999px; }
+.hn-booking-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 18px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .12s;
+}
 .hn-booking-btn:hover { background: var(--accent-hover); }
 
 /* ── Runner-up section ── */
-.hn-runners-section { padding: 22px 22px 24px; background: #fff !important; border-radius: 16px !important; }
-.hn-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
-.hn-runners-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
-.hn-refine-toggle { background: none; border: none; color: var(--accent); font-size: 14px; font-weight: 500; cursor: pointer; padding: 0; font-family: inherit; }
-.hn-refine-toggle:hover { opacity: .8; }
-.hn-runners-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: stretch; }
-.hn-runner-card { display: flex; flex-direction: column; min-height: 0; background: linear-gradient(165deg, #f8faf6 0%, #f3f4f0 48%, #eef0ec 100%); border: 1px solid rgba(120, 130, 110, 0.22); border-radius: 14px; padding: 16px 17px 14px; text-decoration: none; color: var(--text); transition: border-color .12s, box-shadow .12s; cursor: pointer; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset; }
-.hn-runner-card:hover { border-color: rgba(37, 99, 235, 0.35); box-shadow: 0 6px 22px rgba(37, 99, 235, 0.07); }
-.hn-runner-sponsored { border-color: #f59e0b !important; border-width: 1.5px; }
+.hn-runners-section.hn-results-panel {
+  padding: 18px 20px 20px;
+}
+.hn-results-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.hn-results-section-head--metro { margin-bottom: 14px; }
+.hn-results-section-head-text { min-width: 0; }
+.hn-results-heading {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.hn-results-sub {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  line-height: 1.45;
+  max-width: 42ch;
+}
+.btn-text.hn-refine-toggle {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.btn-text.hn-refine-toggle:hover { color: var(--accent-hover); }
+@media (max-width: 640px) {
+  .hn-results-section-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .btn-text.hn-refine-toggle { align-self: flex-start; padding: 8px 0; }
+}
+.hn-runners-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: stretch; }
+.hn-runner-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-border);
+  border-radius: var(--rs-radius);
+  padding: 14px 16px 12px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .12s, box-shadow .12s;
+  cursor: pointer;
+  box-shadow: none;
+}
+.hn-runner-card:hover {
+  border-color: var(--rs-accent-line);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+.hn-runner-sponsored { border-color: rgba(217, 119, 6, 0.45) !important; border-width: 1px; }
 .hn-runner-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
-.hn-runner-sponsor { flex-shrink: 0; font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #854d0e; background: #fef3c7; border: 1px solid #fde68a; padding: 2px 7px; border-radius: 999px; }
+.hn-runner-sponsor { flex-shrink: 0; font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--rs-surface-subtle); border: 1px solid var(--border); padding: 2px 7px; border-radius: 999px; }
 .hn-runner-partner-callout {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin: 0 0 12px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, #fffbeb 0%, #fef9c3 45%, #fff 100%);
-  border: 1px solid #facc15;
-  border-radius: 10px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  background: var(--rs-surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 .hn-runner-partner-pill {
   align-self: flex-start;
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.07em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #713f12;
-  background: #fef08a;
-  border: 1px solid #eab308;
+  color: var(--muted);
+  background: #fff;
+  border: 1px solid var(--border);
   padding: 3px 9px;
   border-radius: 999px;
 }
 .hn-runner-partner-hint {
   font-size: 12px;
-  color: #78350f;
+  color: var(--muted);
   line-height: 1.45;
 }
-.hn-runner-name { font-size: 17px; font-weight: 700; color: var(--text); margin: 0; line-height: 1.25; letter-spacing: -0.02em; }
-.hn-runner-blurb { margin: 0 0 14px; font-size: 14px; line-height: 1.5; color: #3d4a3e; flex: 1; min-height: 0; }
-.hn-runner-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 4px; border-top: 1px solid rgba(120, 130, 110, 0.12); }
+.hn-runner-name { font-size: 1rem; font-weight: 600; color: var(--text); margin: 0; line-height: 1.3; letter-spacing: -0.02em; }
+.hn-runner-blurb { margin: 0 0 12px; font-size: 13px; line-height: 1.5; color: var(--muted); flex: 1; min-height: 0; }
+.hn-runner-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border); }
 .hn-runner-meta { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
 .hn-runner-drive { font-size: 12px; font-weight: 500; color: var(--muted); }
 .hn-runner-score-pill {
@@ -3780,47 +3854,49 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 
 /* ── Runner-up book button + crowd chip ── */
-.hn-runner-book { font-size: 11px; font-weight: 700; color: #854d0e; background: #fef3c7; border: 1px solid #fde68a; padding: 4px 10px; border-radius: 999px; text-decoration: none; white-space: nowrap; display: inline-block; }
-.hn-runner-book:hover { background: #fde68a; }
-.hn-rchip-crowd { background: #f0fdf4; color: #16a34a; }
-.hn-rchip-crowd-mod { background: #fff7ed; color: #c2410c; }
-.hn-rchip-warn  { background: #fff3f0; color: #c0392b; }
-.hn-rchip-pass-indy { background: #fff7ed !important; color: #c2410c !important; border: 1px solid rgba(234, 88, 12, 0.35); }
-
-/* Featured runner-up — gold frame (screenshot parity) */
-.hn-runner-sponsored {
-  border-color: #eab308 !important;
-  border-width: 2px !important;
-  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.25), 0 8px 24px rgba(234, 179, 8, 0.12) !important;
-  background: linear-gradient(180deg, #fffef7 0%, #fff 40%) !important;
-}
-.hn-runner-sponsored .hn-runner-sponsor {
-  color: #713f12;
-  background: #fef08a;
-  border-color: #eab308;
-}
 .hn-runner-book {
-  border: 2px solid #eab308 !important;
-  background: transparent !important;
-  color: #854d0e !important;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid var(--rs-accent-line);
+  padding: 6px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+  display: inline-block;
+  transition: background .12s, border-color .12s;
 }
 .hn-runner-book:hover {
-  background: #fef9c3 !important;
+  background: var(--rs-accent-soft);
+  border-color: var(--accent);
+}
+.hn-rchip-crowd { background: #f0fdf4; color: #15803d; }
+.hn-rchip-crowd-mod { background: #fffbeb; color: #92400e; }
+.hn-rchip-warn  { background: #fef2f2; color: #991b1b; }
+.hn-rchip-pass-indy { background: #faf5ff !important; color: #6b21a8 !important; border: 1px solid #e9d5ff; }
+
+.hn-runner-sponsored .hn-runner-sponsor {
+  color: var(--muted);
+  background: var(--rs-surface-subtle);
+  border-color: var(--border);
 }
 .hn-runner-book.hn-runner-book--cta {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  min-height: 38px;
   background: var(--accent) !important;
   color: #fff !important;
   border: none !important;
-  padding: 10px 16px !important;
+  padding: 0 16px !important;
   font-size: 13px !important;
-  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.28);
+  border-radius: 10px !important;
+  box-shadow: none;
 }
 .hn-runner-book.hn-runner-book--cta:hover {
   background: var(--accent-hover) !important;
-  filter: brightness(1.02);
+  filter: none;
 }
 .hn-runner-sponsored .hn-runner-bottom {
   flex-wrap: wrap;
@@ -3835,18 +3911,25 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 /* ═══════════════════════════════════════════════════════════════════════════
    Verdict card — light focal card (travel / inspiration, not dashboard)
    ═══════════════════════════════════════════════════════════════════════════ */
-.hn-verdict-full.card.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
+.hn-verdict-full.hn-results-panel {
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-border);
+  border-radius: var(--rs-radius);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   padding: 0 !important;
 }
 #verdictCard {
-  min-height: 380px;
+  min-height: 340px;
+}
+#verdictSection.hn-results-panel .vcard--dash {
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  background: var(--rs-surface);
 }
 .vcard--dash {
-  border-radius: var(--radius);
+  border-radius: var(--rs-radius);
   overflow: hidden;
   border: 1px solid var(--border);
   box-shadow: none;
@@ -3854,14 +3937,16 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 .vcard-hero-dash {
   position: relative;
-  padding: 28px 28px 22px;
+  padding: 22px 24px 20px;
+  min-height: 0;
+  max-height: 300px;
   color: #fff;
   border-bottom: none;
   background:
-    linear-gradient(180deg, rgba(10,20,35,.48) 0%, rgba(10,20,35,.74) 100%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.78) 100%),
     url('/hero-bg.jpg');
   background-size: cover;
-  background-position: center 40%;
+  background-position: center 38%;
   overflow: hidden;
 }
 .vcard-hero-dash-top {
@@ -3908,7 +3993,7 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   border: none;
   padding: 0;
   margin: 0;
-  font-size: clamp(1.75rem, 4.5vw, 2.25rem);
+  font-size: clamp(1.5rem, 4vw, 1.95rem);
   font-weight: 600;
   color: #fff;
   letter-spacing: -0.03em;
@@ -4003,8 +4088,8 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   background: rgba(248,113,113,.18);
 }
 .vcard-body-dash {
-  padding: 18px 24px 20px;
-  background: var(--panel);
+  padding: 16px 22px 18px;
+  background: var(--rs-surface);
 }
 .vcard-actions-dash {
   margin-top: 0;
@@ -4051,6 +4136,56 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   margin-top: 4px;
   padding-top: 20px;
   border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+a.vcard-book-btn,
+.vcard-book-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff !important;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+a.vcard-book-btn:hover,
+.vcard-book-btn:hover {
+  background: var(--accent-hover);
+}
+button.vcard-detail-btn,
+.vcard-detail-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 10px;
+  background: var(--rs-surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+button.vcard-detail-btn:hover,
+.vcard-detail-btn:hover {
+  background: var(--rs-surface-subtle);
+  border-color: #cbd5e1;
 }
 .vcard-book-btn--disabled,
 .vcard-detail-btn--disabled {
@@ -4366,12 +4501,6 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 /* ═══════════════════════════════════════════════════════════════════════════
    VERDICT PRE-LOCATION — shown before user enters a location
    ═══════════════════════════════════════════════════════════════════════════ */
-.hn-verdict-pre-location {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
 .hn-verdict-collapsed {
   display: none !important;
 }
@@ -4448,16 +4577,20 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 .vcard-location-prompt-btn {
   background: var(--accent);
   color: #fff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 999px;
+  padding: 0 20px;
+  min-height: 40px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
   white-space: nowrap;
   transition: background .12s;
   font-family: inherit;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .vcard-location-prompt-btn:hover {
   background: var(--accent-hover);
@@ -4474,66 +4607,73 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
    Append to end of styles.css. Do not edit anything above this block.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Stats strip (dark bar between hero and verdict card) ────────────────── */
-.hn-stats-strip {
-  background: #0f1622;
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.hn-stats-inner {
-  display: flex;
-  justify-content: center;
-}
-.hn-stat {
-  flex: 1;
-  min-width: 80px;
+/* ── Results & discovery region (homepage) ─────────────────────────────── */
+.hn-results-region {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 18px 16px;
-  border-right: 1px solid rgba(255,255,255,0.07);
-  text-align: center;
+  gap: var(--rs-gap);
+  margin: 0;
+  padding: 0;
 }
-.hn-stat:last-child { border-right: none; }
-.hn-stat-num {
-  font-size: 20px;
-  font-weight: 500;
-  color: #ffffff;
-  line-height: 1.1;
-  letter-spacing: -0.3px;
+.hn-results-region > .hn-results-panel {
+  margin: 0;
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-border);
+  border-radius: var(--rs-radius);
+  box-shadow: var(--shadow-sm);
 }
-.hn-stat-lbl {
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-  margin-top: 3px;
-  letter-spacing: 0.2px;
+#verdictSection.hn-results-panel {
+  padding: 0;
+  overflow: hidden;
 }
-@media (max-width: 640px) {
-  .hn-stats-inner { flex-wrap: wrap; }
-  .hn-stat { min-width: calc(33.33% - 1px); padding: 14px 10px; }
+.hn-results-trust {
+  margin: 0;
+  padding: 12px 18px;
+  background: var(--rs-surface-subtle);
+  border-bottom: 1px solid var(--rs-border);
 }
-
-/* ── Metro market cards ("Best skiing this weekend near you") ────────────── */
-.hn-metro-section {
-  padding: 24px 24px 22px;
-}
-.hn-metro-header {
+.hn-results-trust-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 16px;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 4px;
 }
-.hn-metro-title {
-  font-size: 17px;
+.hn-results-trust-list li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+.hn-results-trust-k {
   font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
-.hn-metro-sub {
-  font-size: 13px;
+.hn-results-trust-l {
+  font-weight: 500;
   color: var(--muted);
+}
+.hn-results-trust-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--border);
+  margin: 0 6px;
+  align-self: center;
+}
+@media (max-width: 520px) {
+  .hn-results-trust-sep { display: none; }
+  .hn-results-trust-list { gap: 10px 14px; justify-content: flex-start; }
+}
+
+/* ── Metro / explore tiles (same language as runner cards) ──────────────── */
+.hn-metro-section {
+  padding: 18px 20px 20px;
 }
 .hn-metro-grid {
   display: flex;
@@ -4542,47 +4682,32 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 }
 .hn-metro-card {
   flex: 1;
-  min-width: 120px;
-  background: #1a2030;
-  border-radius: 12px;
-  padding: 16px 16px 14px;
+  min-width: 132px;
+  background: var(--rs-surface);
+  border-radius: var(--rs-radius);
+  padding: 12px 14px;
   text-decoration: none;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.12s, box-shadow 0.12s;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-.hn-metro-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: #5aaddc;
-  transform: scaleX(0);
-  transition: transform 0.15s;
-  transform-origin: left;
+  gap: 2px;
+  border: 1px solid var(--rs-border);
+  transition: border-color 0.12s, box-shadow 0.12s;
+  box-shadow: none;
 }
 .hn-metro-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-}
-.hn-metro-card:hover::after {
-  transform: scaleX(1);
+  border-color: var(--rs-accent-line);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
 }
 .hn-metro-city {
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
-  line-height: 1.2;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 .hn-metro-detail {
   font-size: 12px;
-  color: rgba(255,255,255,0.42);
+  color: var(--muted);
   line-height: 1.4;
 }
 @media (max-width: 640px) {
@@ -4593,10 +4718,10 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
 .hn-runner-crowd-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
   border-radius: 999px;
   margin-bottom: 8px;
   align-self: flex-start;
