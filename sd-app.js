@@ -1412,12 +1412,25 @@ function renderCompareTable(resorts) {
 
   if (displayed.length === 0) {
     const qActive = !!q;
+    const weekendBandBlocksAll =
+      !qActive &&
+      state.origin &&
+      state.howFar === 1 &&
+      resorts.length === 0 &&
+      typeof countFilteredIfHowFar === 'function' &&
+      countFilteredIfHowFar(2) > 0;
+
     const title = qActive
       ? `No mountains match "${esc(qRaw)}"`
       : (resorts.length === 0 ? 'No mountains match your current filters' : 'No rows to show');
     const sub = qActive
       ? 'Try a shorter search, check spelling, or clear the search box. Filters still apply to what you see.'
-      : 'Try widening distance, easing snow or price limits, or pick another pass.';
+      : weekendBandBlocksAll
+        ? '<strong>Weekend (3–6h)</strong> hides every mountain closer than 3 hours — so if nothing is 3–6 hours from you, the list is empty. Use <strong>Day trip</strong> for nearby skiing, or <strong>Any distance</strong> to see everything.'
+        : 'Try widening distance, easing snow or price limits, or pick another pass.';
+    const weekendFix = weekendBandBlocksAll
+      ? `<div class="ces-weekend-fix"><button type="button" class="btn btn-primary ces-fix-trip-btn" id="emptyStateDayTrip">Use day trip (≤3h)</button> <button type="button" class="btn btn-secondary ces-fix-trip-btn" id="emptyStateAnyDist">Any distance</button></div>`
+      : '';
     els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
       <tr><td colspan="8" class="compare-empty-state">
@@ -1426,6 +1439,7 @@ function renderCompareTable(resorts) {
         <div class="ces-sub">${sub}
           <button type="button" class="ces-reset-link" id="emptyStateReset">${qActive ? 'Clear search' : 'Clear all filters'}</button>
         </div>
+        ${weekendFix}
       </td></tr>`;
     document.getElementById('emptyStateReset')?.addEventListener('click', () => {
       if (qActive && els.tableSearch) {
@@ -1435,6 +1449,22 @@ function renderCompareTable(resorts) {
       } else {
         document.getElementById('resetFilters')?.click();
       }
+    });
+    document.getElementById('emptyStateDayTrip')?.addEventListener('click', () => {
+      state.howFar = 0;
+      const _hf = document.getElementById('howFarFilter');
+      if (_hf) _hf.value = '0';
+      syncPlannerControls();
+      pushUrlDebounced();
+      render();
+    });
+    document.getElementById('emptyStateAnyDist')?.addEventListener('click', () => {
+      state.howFar = 2;
+      const _hf = document.getElementById('howFarFilter');
+      if (_hf) _hf.value = '2';
+      syncPlannerControls();
+      pushUrlDebounced();
+      render();
     });
     renderMobileCards([], { mode: 'empty', qActive, resortsLen: resorts.length });
     return;

@@ -89,6 +89,17 @@ function filteredResorts() {
   });
 }
 
+/** Temporarily evaluate filteredResorts() with a different Trip / drive-radius setting (sync). */
+function countFilteredIfHowFar(howFarIdx) {
+  const prev = state.howFar;
+  state.howFar = howFarIdx;
+  try {
+    return filteredResorts().length;
+  } finally {
+    state.howFar = prev;
+  }
+}
+
 // ─── Static sort (for non-score sorts) ───────────────────────────────────────
 function staticSort(resorts) {
   const sorted = [...resorts];

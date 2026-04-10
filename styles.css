@@ -2507,6 +2507,8 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   text-decoration: underline; font: inherit;
 }
 .ces-reset-link:hover { opacity: .75; }
+.ces-weekend-fix { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 18px; }
+.ces-fix-trip-btn { font-size: 14px; padding: 8px 16px; }
 
 /* Hidden gems: human-readable reasons strip */
 .gem-reasons { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
