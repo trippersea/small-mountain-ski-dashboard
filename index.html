@@ -89,13 +89,13 @@
         <div class="hn-inner">
 
           <!-- Differentiator pill -->
-          <p class="hn-diff-pill">The only ski tool that combines live snow, drive time and crowds into one score</p>
+          <p class="hn-diff-pill">The only place that scores mountains by snow, drive time and crowds together</p>
 
           <!-- Headline -->
-          <h1 id="heroHeadline" class="hn-headline">Where to Ski <em>Next...</em></h1>
+          <h1 id="heroHeadline" class="hn-headline">Stop guessing. <em>Find the right mountain.</em></h1>
 
           <!-- Subhead -->
-          <p class="hn-subhead">Tell us where you are and we score every mountain nearby using real snow forecasts, drive times and what ski pass you carry.</p>
+          <p class="hn-subhead">Real snow numbers, your actual drive time, and crowd levels. All in one place.</p>
 
           <!-- ─── UNIFIED FILTER BAR (matches mockup design) ─────────────────── -->
           <div class="hn-filterbar">
@@ -109,21 +109,21 @@
             <!-- Pass segment -->
             <div class="hn-fb-seg hn-fb-seg--clickable" id="fbPassSeg" aria-label="Select pass">
               <span class="hn-fb-label">Pass</span>
-              <span class="hn-fb-val" id="fbPassVal">All passes</span>
+              <span class="hn-fb-val" id="fbPassVal">All passes <span class="hn-fb-chevron">&#8964;</span></span>
             </div>
             <div class="hn-fb-div"></div>
 
             <!-- Trip segment -->
             <div class="hn-fb-seg hn-fb-seg--clickable" id="fbTripSeg" aria-label="Select trip type">
               <span class="hn-fb-label">Trip</span>
-              <span class="hn-fb-val" id="fbTripVal">Day trip</span>
+              <span class="hn-fb-val" id="fbTripVal">Day trip <span class="hn-fb-chevron">&#8964;</span></span>
             </div>
             <div class="hn-fb-div"></div>
 
             <!-- When segment -->
             <div class="hn-fb-seg hn-fb-seg--clickable" id="fbWhenSeg" aria-label="Select day">
               <span class="hn-fb-label">When</span>
-              <span class="hn-fb-val" id="fbWhenVal">This weekend</span>
+              <span class="hn-fb-val" id="fbWhenVal">This weekend <span class="hn-fb-chevron">&#8964;</span></span>
             </div>
 
             <!-- Find button -->
@@ -165,7 +165,6 @@
             <button id="detectLocation" class="hero-locate-link">Use my location</button>
             <span class="hn-meta-sep" aria-hidden="true">&middot;</span>
             <button class="hn-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">&#10022; Describe your perfect ski day</button>
-            <span class="hn-trust-txt">Scores are independent &mdash; sponsors never influence rankings</span>
           </div>
 
           <!-- Hidden selects for JS compat -->
@@ -563,6 +562,13 @@
     });
     document.getElementById('hn-filter-dropdowns') && document.getElementById('hn-filter-dropdowns').addEventListener('click', function(e) { e.stopPropagation(); });
 
+    // ── Helper: set segment display value with chevron preserved ────────────
+    function setSegVal(elId, text) {
+      var el = document.getElementById(elId);
+      if (!el) return;
+      el.innerHTML = text + ' <span class="hn-fb-chevron">&#8964;</span>';
+    }
+
     // ── Pass chips → sync heroPassSelect + update segment display ────────────
     var passLabels = { 'All': 'All passes', 'Epic': 'Epic Pass', 'Ikon': 'Ikon Pass', 'Indy': 'Indy Pass' };
     document.querySelectorAll('.hn-pchip').forEach(function(chip) {
@@ -570,8 +576,7 @@
         document.querySelectorAll('.hn-pchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
         this.classList.add('hn-chip-on');
         var val = this.dataset.val;
-        var displayEl = document.getElementById('fbPassVal');
-        if (displayEl) displayEl.textContent = passLabels[val] || val;
+        setSegVal('fbPassVal', passLabels[val] || val);
         // Close dropdown
         var p = document.getElementById('fdPassPanel'); if (p) p.hidden = true;
         var g = document.getElementById('fbPassSeg'); if (g) g.classList.remove('hn-fb-seg--open');
@@ -590,8 +595,7 @@
         document.querySelectorAll('.hn-tchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
         this.classList.add('hn-chip-on');
         var val = this.dataset.val;
-        var displayEl = document.getElementById('fbTripVal');
-        if (displayEl) displayEl.textContent = tripLabels[val] || val;
+        setSegVal('fbTripVal', tripLabels[val] || val);
         var p = document.getElementById('fdTripPanel'); if (p) p.hidden = true;
         var g = document.getElementById('fbTripSeg'); if (g) g.classList.remove('hn-fb-seg--open');
         var filterSel = document.getElementById('howFarFilter');
@@ -620,8 +624,7 @@
       document.querySelectorAll('.hn-dchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
       var target = document.querySelector('.hn-dchip[data-val="'+val+'"]');
       if (target) target.classList.add('hn-chip-on');
-      var displayEl = document.getElementById('fbWhenVal');
-      if (displayEl) displayEl.textContent = whenLabels[val] || val;
+      setSegVal('fbWhenVal', whenLabels[val] || val);
       if (typeof state !== 'undefined') state.targetDate = dayValToDate(val);
     }
     activateWhenChip(smartDefault());
