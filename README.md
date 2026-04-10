@@ -10,6 +10,8 @@ A static, GitHub Pages-ready ski planning dashboard for 24 New England ski mount
 | OSRM | Drive time routing |
 | Nominatim | City / address geocoding |
 | Zippopotam | ZIP code lookup |
+| Leaflet + OpenStreetMap | Interactive map |
+
 Weather is cached for 30 minutes per resort so repeated interactions don't hammer the API.
 
 ## Features
@@ -25,6 +27,7 @@ Weather is cached for 30 minutes per resort so repeated interactions don't hamme
 - **Quick filters** — Beginners, Steeps, Night, Natural snow, Terrain park, Budget (all wired and working)
 - **Compare table** — best value per column highlighted in teal; sticky header inside scrollable container
 - **Side-by-side compare** — includes cost-per-vertical-foot row
+- **Drive-time map** — colour-coded markers by drive radius; all markers update when filters change
 - **URL share / deep-link** — Share button copies `#resort-id` link; opening that URL auto-selects the resort
 - **Favorites + notes** — persisted to localStorage
 - **Surprise Me** — random resort from current filtered list

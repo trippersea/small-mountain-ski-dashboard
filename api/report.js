@@ -101,6 +101,7 @@ function buildPage(r) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="/styles.css" />
 
   <!-- Tell the client app which resort to open on load -->
@@ -149,6 +150,7 @@ function buildPage(r) {
       <div class="nav-divider"></div>
       <a href="/#stormSection" class="nav-secondary">Storm Chaser</a>
       <a href="/#hiddenGemSection" class="nav-secondary">Hidden Gems</a>
+      <a href="/#mapSection" class="nav-secondary">Map</a>
       <button class="btn-ghost nav-share" onclick="copyShareLink()">&#128279; Share</button>
     </div>
   </nav>
