@@ -35,33 +35,33 @@ function getSponsor(resortId) {
 (function injectSponsorCSS() {
   const style = document.createElement('style');
   style.textContent = `
-    .sponsored-row { outline: 2px solid #1d4ed8; outline-offset: -1px; background: linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%) !important; }
-    .mob-card-sponsored { border: 2px solid #2563eb !important; background: linear-gradient(165deg, #eff6ff 0%, #f8fafc 55%, #fff 100%) !important; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.12) !important; }
+    .sponsored-row { outline: 2px solid #2b7ab8; outline-offset: -1px; background: linear-gradient(90deg, #e8f4fc 0%, #f0f4f8 100%) !important; }
+    .mob-card-sponsored { border: 2px solid #2b7ab8 !important; background: linear-gradient(165deg, #e8f4fc 0%, #f7fafc 55%, #ffffff 100%) !important; box-shadow: 0 4px 20px rgba(43, 122, 184, 0.12) !important; }
     .detail-header-rebuilt { padding: 14px 18px 10px; }
-    .detail-header-rebuilt .dhr-eyebrow { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #667a96; margin-bottom: 4px; }
-    .detail-header-rebuilt .dhr-sub { font-size: 12px; color: #667a96; }
+    .detail-header-rebuilt .dhr-eyebrow { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #7a92a8; margin-bottom: 4px; }
+    .detail-header-rebuilt .dhr-sub { font-size: 12px; color: #7a92a8; }
     .detail-score-ring-new { width: 48px; height: 48px; border-radius: 50%; background: #22b38a; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
     .detail-score-ring-new.ring-low { background: #d95b5b; }
     .detail-score-ring-new.ring-mid { background: #f59e0b; }
-    .detail-score-ring-new .dsrn-num { font-size: 17px; font-weight: 800; color: #fff; line-height: 1; }
-    .detail-score-ring-new .dsrn-lbl { font-size: 6px; font-weight: 600; color: rgba(255,255,255,.85); text-transform: uppercase; letter-spacing: .05em; }
+    .detail-score-ring-new .dsrn-num { font-size: 17px; font-weight: 800; color: #f0f6fc; line-height: 1; }
+    .detail-score-ring-new .dsrn-lbl { font-size: 6px; font-weight: 600; color: rgba(240,246,252,.85); text-transform: uppercase; letter-spacing: .05em; }
     .detail-header-rebuilt .dhr-actions { display: flex; align-items: center; gap: 10px; }
-    .dhr-link-secondary { font-size: 12px; font-weight: 500; color: #6b7280; text-decoration: none; transition: color .12s; }
-    .dhr-link-secondary:hover { color: #2563eb; }
-    .featured-pill { display: inline-flex; align-items: center; background: #2563eb; color: #fff; border: 1px solid #2563eb; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; letter-spacing: .04em; box-shadow: 0 4px 12px rgba(43,109,233,.18); white-space: nowrap; }
-    .btn-book { background: #22b38a; color: #fff !important; font-size: 13px; font-weight: 700; padding: 8px 18px; border-radius: 999px; text-decoration: none; transition: background .12s; }
+    .dhr-link-secondary { font-size: 12px; font-weight: 500; color: #7a92a8; text-decoration: none; transition: color .12s; }
+    .dhr-link-secondary:hover { color: #2b7ab8; }
+    .featured-pill { display: inline-flex; align-items: center; background: #2b7ab8; color: #f0f6fc; border: 1px solid #2b7ab8; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; letter-spacing: .04em; box-shadow: 0 4px 12px rgba(43,122,184,.18); white-space: nowrap; }
+    .btn-book { background: #22b38a; color: #f0f6fc !important; font-size: 13px; font-weight: 700; padding: 8px 18px; border-radius: 999px; text-decoration: none; transition: background .12s; }
     .btn-book:hover { background: #1f9e78; }
     .cond-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-    .cond-chip { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,.13); color:rgba(255,255,255,.85); border:1px solid rgba(255,255,255,.18); }
+    .cond-chip { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,.13); color:rgba(240,246,252,.85); border:1px solid rgba(255,255,255,.18); }
     .cond-chip--surface { background:rgba(34,179,138,.22); color:#6ee7b7; border-color:rgba(110,231,183,.3); }
-    .vcard-lodging { margin:14px 0 0; border-radius:10px; background:#f0f7ff; border:1px solid #bfdbfe; overflow:hidden; }
-    .vcard-lodging-link { display:flex; align-items:center; gap:10px; padding:12px 16px; text-decoration:none; color:#1e40af; font-size:14px; font-weight:600; transition:background .12s; }
+    .vcard-lodging { margin:14px 0 0; border-radius:10px; background:#e8f4fc; border:1px solid #bfdbfe; overflow:hidden; }
+    .vcard-lodging-link { display:flex; align-items:center; gap:10px; padding:12px 16px; text-decoration:none; color:#1d5fa8; font-size:14px; font-weight:600; transition:background .12s; }
     .vcard-lodging-link:hover { background:#dbeafe; }
     .vcard-lodging-icon { font-size:16px; flex-shrink:0; }
     .vcard-lodging-text { flex:1; }
-    .vcard-lodging-arrow { color:#3b82f6; font-weight:700; }
-    .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#94a3b8; letter-spacing:.03em; }
-    .table-lodging-link { font-size:11px; font-weight:600; color:#2563eb; text-decoration:none; white-space:nowrap; }
+    .vcard-lodging-arrow { color:#2b7ab8; font-weight:700; }
+    .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#7a92a8; letter-spacing:.03em; }
+    .table-lodging-link { font-size:11px; font-weight:600; color:#2b7ab8; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
   `;
   document.head.appendChild(style);
@@ -2199,7 +2199,7 @@ function wireEvents() {
     if (!tip) return;
 
     const ROWS = [
-      { key: 'snow',       label: 'Snow',              color: '#2b6de9' },
+      { key: 'snow',       label: 'Snow',              color: '#2b7ab8' },
       { key: 'skiability', label: 'How it\'ll ski',    color: '#16a34a' },
       { key: 'fit',        label: 'Size match',        color: '#7c3aed' },
       { key: 'drive',      label: 'Drive',             color: '#0891b2' },
