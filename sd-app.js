@@ -801,17 +801,18 @@ function computeVerdict(resorts) {
   const w      = normalizedWeights();
   const ranked = withWx.map(r => {
     const wx = state.weatherCache[r.id].data;
-    return { resort: r, wx, breakdown: plannerScoreBreakdown(r, wx, 0, w), history: historyCache.get(r.id) || null };
+    return { resort: r, wx, breakdown: plannerScoreBreakdown(r, wx, targetForecastIndex(), w), history: historyCache.get(r.id) || null };
   }).sort((a, b) => b.breakdown.score - a.breakdown.score);
 
   const { resort, wx, breakdown, history } = ranked[0];
   const forecast   = wx.forecast || [];
-  const tomorrowIn = forecast[0]?.snow || 0;
+  const fi         = targetForecastIndex();
+  const tomorrowIn = forecast[fi]?.snow || 0;
   const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
   const histTotal  = history?.total ?? null;
   const histDays   = history?.days ?? null;
 
-  const baseLo      = forecast[0]?.lo ?? 30;
+  const baseLo      = forecast[fi]?.lo ?? 30;
   const sLo         = summitTempF(baseLo, resort.baseElevation, resort.summitElevation);
   const rainLikely  = sLo > 34;
   const warmCaution = sLo > 28 && !rainLikely;
@@ -861,7 +862,7 @@ function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
     .filter(r => r.id !== excludeResortId && state.weatherCache[r.id]?.data)
     .map(r => {
       const wx = state.weatherCache[r.id].data;
-      return { resort: r, wx, breakdown: plannerScoreBreakdown(r, wx, 0, w) };
+      return { resort: r, wx, breakdown: plannerScoreBreakdown(r, wx, targetForecastIndex(), w) };
     })
     .sort((a, b) => b.breakdown.score - a.breakdown.score);
   const out = scored.slice(0, limit);
@@ -872,8 +873,8 @@ function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
     .sort((a, b) => {
       const wa = state.weatherCache[a.id]?.data;
       const wb = state.weatherCache[b.id]?.data;
-      const sa = wa ? plannerScoreBreakdown(a, wa, 0, w).score : -Infinity;
-      const sb = wb ? plannerScoreBreakdown(b, wb, 0, w).score : -Infinity;
+      const sa = wa ? plannerScoreBreakdown(a, wa, targetForecastIndex(), w).score : -Infinity;
+      const sb = wb ? plannerScoreBreakdown(b, wb, targetForecastIndex(), w).score : -Infinity;
       if (sa !== sb) return sb - sa;
       return (getDriveMins(a.id) ?? 9999) - (getDriveMins(b.id) ?? 9999);
     });
@@ -883,7 +884,7 @@ function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
     out.push({
       resort: r,
       wx,
-      breakdown: wx ? plannerScoreBreakdown(r, wx, 0, w) : null,
+      breakdown: wx ? plannerScoreBreakdown(r, wx, targetForecastIndex(), w) : null,
     });
   }
   return out;
@@ -1332,7 +1333,7 @@ function renderCompareTable(resorts) {
     .filter(resort => !q || `${resort.name} ${resort.state} ${resort.passGroup}`.toLowerCase().includes(q))
     .map(resort => {
       const wx         = state.weatherCache[resort.id]?.data;
-      const breakdown  = wx ? plannerScoreBreakdown(resort, wx, 0, w) : null;
+      const breakdown  = wx ? plannerScoreBreakdown(resort, wx, targetForecastIndex(), w) : null;
       const stormTotal = wx ? (wx.forecast || []).reduce((sum, f) => sum + (f.snow || 0), 0) : null;
       const hist       = historyCache.get(resort.id) || null;
       return { resort, breakdown, stormTotal, hist };
@@ -1526,7 +1527,7 @@ function renderComparePanel() {
     ['Avg snowfall', r => `${r.avgSnowfall}"`],
     ['Day ticket*',  r => `$${r.price}`],
     ['Drive',        r => formatDrive(r.id)],
-    ['Fit',          r => { const wx = state.weatherCache[r.id]?.data; if (!wx) return '—'; return Math.round(plannerScoreBreakdown(r, wx, 0, w).baseScore); }],
+    ['Fit',          r => { const wx = state.weatherCache[r.id]?.data; if (!wx) return '—'; return Math.round(plannerScoreBreakdown(r, wx, targetForecastIndex(), w).baseScore); }],
     ['Crowd',        r => crowdForecast(r).label],
     ['Base/summit',  r => `${r.baseElevation} / ${r.summitElevation} ft`],
   ];
@@ -1550,7 +1551,7 @@ function renderComparePanel() {
       name: r.name, state: r.state, vertical: r.vertical, trails: r.trails,
       price: r.price, avgSnowfall: r.avgSnowfall, crowds: crowdForecast(r).label,
       drive: getDriveMins(r.id), passGroup: r.passGroup,
-      plannerScore: (() => { const wx = state.weatherCache[r.id]?.data; return wx ? Math.round(plannerScoreBreakdown(r, wx, 0, w).score) : null; })(),
+      plannerScore: (() => { const wx = state.weatherCache[r.id]?.data; return wx ? Math.round(plannerScoreBreakdown(r, wx, targetForecastIndex(), w).score) : null; })(),
     }));
     fetch('/api/recommend', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ resorts: payload }) })
       .then(r => r.json())
@@ -1577,7 +1578,7 @@ function renderDetail({ scroll = false } = {}) {
 
   const wx    = state.weatherCache[resort.id]?.data;
   const w    = normalizedWeights();
-  const bd   = wx ? plannerScoreBreakdown(resort, wx, 0, w) : null;
+  const bd   = wx ? plannerScoreBreakdown(resort, wx, targetForecastIndex(), w) : null;
   const vd   = (wx && bd) ? verdictFromBreakdown(resort, wx, bd) : null;
   const skis = bd ? {
     ...bd,
@@ -1595,6 +1596,7 @@ function renderDetail({ scroll = false } = {}) {
   const tb    = resort.terrainBreakdown;
 
   const forecast = wx?.forecast || [];
+  const fi       = targetForecastIndex();
   const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
   const hist  = historyCache.get(resort.id);
   const reportSlug = resort.id;
@@ -1622,8 +1624,8 @@ function renderDetail({ scroll = false } = {}) {
 
   const dhrSnowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
     ? `${stormTotal.toFixed(0)}" forecast`
-    : (forecast.length && typeof forecast[0].snow === 'number' && forecast[0].snow >= 0.5)
-    ? `${forecast[0].snow.toFixed(0)}" forecast`
+    : (forecast[fi] && typeof forecast[fi].snow === 'number' && forecast[fi].snow >= 0.5)
+    ? `${forecast[fi].snow.toFixed(0)}" forecast`
     : 'Dry forecast';
 
   const dhrCrowdPill = crowd.label === 'Quiet'
@@ -1801,17 +1803,18 @@ async function askAI(query) {
   const w       = normalizedWeights();
   const payload = current.slice(0, 25).map(r => {
     const wx      = state.weatherCache[r.id]?.data;
+    const fi      = targetForecastIndex();
     const snow3d  = wx ? (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-    const bd      = wx ? plannerScoreBreakdown(r, wx, 0, w) : null;
+    const bd      = wx ? plannerScoreBreakdown(r, wx, fi, w) : null;
     return {
       id: r.id, name: r.name, state: r.state, vertical: r.vertical, trails: r.trails,
       price: r.price, passGroup: r.passGroup, avgSnowfall: r.avgSnowfall,
       drive: getDriveMins(r.id), crowd: crowdForecast(r).label,
       snow3d: snow3d !== null ? Math.round(snow3d * 10) / 10 : null,
-      tomorrowSnow: wx?.forecast?.[0]?.snow ?? null,
-      tomorrowLow:  wx?.forecast?.[0]?.lo   ?? null,
-      tomorrowHigh: wx?.forecast?.[0]?.hi   ?? null,
-      tomorrowWind: wx?.forecast?.[0]?.wind ?? null,
+      tomorrowSnow: wx?.forecast?.[fi]?.snow ?? null,
+      tomorrowLow:  wx?.forecast?.[fi]?.lo   ?? null,
+      tomorrowHigh: wx?.forecast?.[fi]?.hi   ?? null,
+      tomorrowWind: wx?.forecast?.[fi]?.wind ?? null,
       plannerScore: bd ? bd.score : null,
       beginner: r.terrainBreakdown?.beginner ?? null,
     };

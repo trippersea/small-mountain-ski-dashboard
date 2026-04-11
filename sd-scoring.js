@@ -32,6 +32,23 @@ function tomorrowForecast(wx) {
   return wx?.forecast?.[0] || null;
 }
 
+// ─── Returns which forecast[] index matches state.targetDate ─────────────────
+// forecast[0] = tomorrow, forecast[1] = day after, forecast[2] = third day.
+// If targetDate is today or unset, returns 0.
+// Clamps to 0–2 (the 3 days Open-Meteo returns).
+function targetForecastIndex() {
+  if (!(state.targetDate instanceof Date)) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(state.targetDate);
+  target.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+  // diffDays 1 = tomorrow → index 0
+  // diffDays 2 = day after → index 1
+  // diffDays 3+ = three days out → index 2
+  return Math.max(0, Math.min(2, diffDays - 1));
+}
+
 // ─── Temperature bucket filter ────────────────────────────────────────────────
 function tempBucketMatches(temp) {
   if (state.tempBucket === 'any' || temp == null) return true;
@@ -94,7 +111,8 @@ function _holidayFactor(date) {
 // ─── Powder carry-forward factor ─────────────────────────────────────────────
 // Blends forecast snow with recent history so day-after-storm crowds count.
 function _powderFactor(resort, wx) {
-  const fc         = tomorrowForecast(wx);
+  const idx        = targetForecastIndex();
+  const fc         = wx?.forecast?.[idx] || null;
   const forecastIn = fc?.snow || 0;
   const hist       = historyCache.get(resort.id);
   const recentIn   = hist?.total ?? 0;
@@ -106,7 +124,8 @@ function _powderFactor(resort, wx) {
 // ─── Bluebird factor ──────────────────────────────────────────────────────────
 // Clear, calm, ideal-temp day = demand spike. Mutually exclusive with heavy snow.
 function _bluebirdFactor(wx) {
-  const fc = tomorrowForecast(wx);
+  const idx = targetForecastIndex();
+  const fc  = wx?.forecast?.[idx] || null;
   if (!fc) return 0;
   if ((fc.snow || 0) > 3) return 0; // snowing = not bluebird
   if ((fc.wind || 0) > 20) return 0;
@@ -153,7 +172,7 @@ function crowdForecast(resort, wx = null) {
   const wxAvail  = !!wx;
   const powderF  = wxAvail ? _powderFactor(resort, wx) : 0;
   const blueF    = wxAvail ? _bluebirdFactor(wx)       : 0;
-  const fc       = tomorrowForecast(wx);
+  const fc       = wx?.forecast?.[targetForecastIndex()] || null;
   const rainF    = (fc && fc.lo > 32 && (fc.snow || 0) < 1 && (fc.wind || 0) > 10) ? 0.6 : 0;
   const Mweather = 1 + 0.40*powderF + 0.15*blueF - 0.25*rainF;
 
@@ -393,12 +412,13 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
 // static score threshold labels that previously caused contradictory results.
 function verdictFromBreakdown(resort, wx, breakdown) {
   const forecast   = wx?.forecast || [];
+  const fi         = targetForecastIndex();
   const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
-  const tomorrowIn = forecast[0]?.snow || 0;
+  const tomorrowIn = forecast[fi]?.snow || 0;
   const hist       = historyCache.get(resort.id);
   const histTotal  = hist?.total ?? null;
 
-  const baseLo      = forecast[0]?.lo ?? 30;
+  const baseLo      = forecast[fi]?.lo ?? 30;
   const sLo         = summitTempF(baseLo, resort.baseElevation, resort.summitElevation);
   const rainLikely  = sLo > 34;
   const warmCaution = sLo > 28 && !rainLikely;
