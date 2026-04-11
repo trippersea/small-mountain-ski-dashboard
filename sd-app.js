@@ -89,7 +89,81 @@ const state = Object.seal({
   passPreference: loadSavedPassPreference(),
   tableSearch:    '',
   tableViewAll:   false,
+  /** Ski day for forecast index (hero “When”); set by initHeroWhenControls / wireHeroWhenChips */
+  targetDate:     null,
 });
+
+// ─── Hero “When” bar — maps chip value → next occurrence Date (local) ────────
+const HERO_WHEN_LABELS = { weekday: 'Weekday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
+
+function dayValToDate(val) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dow = today.getDay();
+  const d = new Date(today);
+  if (val === 'weekday') {
+    if (dow === 0) d.setDate(d.getDate() + 1);
+    else if (dow === 6) d.setDate(d.getDate() + 2);
+    return d;
+  }
+  if (val === 'friday') {
+    const du = (5 - dow + 7) % 7 || 7;
+    d.setDate(d.getDate() + du);
+    return d;
+  }
+  if (val === 'saturday') {
+    const du = (6 - dow + 7) % 7 || 7;
+    d.setDate(d.getDate() + du);
+    return d;
+  }
+  if (val === 'sunday') {
+    const du = (7 - dow) % 7 || 7;
+    d.setDate(d.getDate() + du);
+    return d;
+  }
+  return today;
+}
+
+function smartDefaultWhenVal() {
+  const dow = new Date().getDay();
+  if (dow === 4) return 'friday';
+  if (dow === 5) return 'saturday';
+  if (dow === 6) return 'sunday';
+  return 'weekday';
+}
+
+/** Default hero When chip + state.targetDate before first render */
+function initHeroWhenControls() {
+  const val = smartDefaultWhenVal();
+  document.querySelectorAll('.hn-dchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === val));
+  state.targetDate = dayValToDate(val);
+  const el = document.getElementById('fbWhenVal');
+  if (el) {
+    const text = HERO_WHEN_LABELS[val] || val;
+    el.innerHTML = esc(text) + ' <span class="hn-fb-chevron">&#8964;</span>';
+  }
+}
+
+function wireHeroWhenChips() {
+  document.querySelectorAll('.hn-dchip').forEach(chip => {
+    chip.addEventListener('click', e => {
+      e.stopPropagation();
+      const val = chip.dataset.val;
+      document.querySelectorAll('.hn-dchip').forEach(c => c.classList.remove('hn-chip-on'));
+      chip.classList.add('hn-chip-on');
+      state.targetDate = dayValToDate(val);
+      const el = document.getElementById('fbWhenVal');
+      if (el) {
+        const text = HERO_WHEN_LABELS[val] || val;
+        el.innerHTML = esc(text) + ' <span class="hn-fb-chevron">&#8964;</span>';
+      }
+      const p = document.getElementById('fdWhenPanel');
+      if (p) p.hidden = true;
+      document.getElementById('fbWhenSeg')?.classList.remove('hn-fb-seg--open');
+      render();
+    });
+  });
+}
 
 // ─── Element cache ────────────────────────────────────────────────────────────
 const els = {
@@ -1004,7 +1078,8 @@ function renderVerdict(resorts) {
     ? `${tomorrowIn.toFixed(0)}" forecast`
     : 'Dry forecast';
 
-  const crowdLbl = crowdForecast(resort).label;
+  const _wxVerdict = state.weatherCache[resort.id]?.data;
+  const crowdLbl = crowdForecast(resort, _wxVerdict).label;
   const crowdPill = crowdLbl === 'Quiet'
     ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Crowd forecast: Light</span>'
     : crowdLbl === 'Avoid'
@@ -1103,7 +1178,7 @@ function renderVerdict(resorts) {
         const _rScore = item.breakdown != null ? Math.round(item.breakdown.score) : '—';
         const _rSponsor = getSponsor(item.resort.id);
         const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
-        const cf = crowdForecast(item.resort);
+        const cf = crowdForecast(item.resort, item.wx);
         const _rBlurb = esc(runnerUpBlurb(_rSnow, cf, item.resort.passGroup));
         const _rCtaLabel = _rSponsor?.tagline ? esc(_rSponsor.tagline) : 'Visit partner';
         const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation()">${_rCtaLabel} →</a>` : '';
@@ -1293,11 +1368,12 @@ function renderHiddenGems(resorts) {
     els.hiddenGemGrid.innerHTML = '<div class="planner-card hidden-gems-empty" role="status">No picks here yet — widen your filters to see hidden gems.</div>';
     return;
   }
-  const withScore = resorts.map(r => ({ r, score: hiddenGemScore(r) }));
+  const withScore = resorts.map(r => ({ r, score: hiddenGemScore(r, state.weatherCache[r.id]?.data) }));
   withScore.sort((a, b) => b.score - a.score);
   const top = withScore.slice(0, 3);
   els.hiddenGemGrid.innerHTML = top.map(({ r }) => {
-    const crowd    = crowdForecast(r);
+    const _wxHg = state.weatherCache[r.id]?.data;
+    const crowd    = crowdForecast(r, _wxHg);
     const drive    = formatDrive(r.id);
     const reasons  = [
       `${crowd.label} crowds`,
@@ -1436,11 +1512,11 @@ function renderCompareTable(resorts) {
   }
 
   els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }, idx) => {
-    const crowd    = crowdForecast(resort).label;
+    const wx = state.weatherCache[resort.id]?.data;
+    const crowd    = crowdForecast(resort, wx).label;
     const driveMins = getDriveMins(resort.id);
     const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
 
-    const wx = state.weatherCache[resort.id]?.data;
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
     const weekendLine = vd?.rainLikely
       ? 'Rain likely — not worth the drive'
@@ -1528,7 +1604,7 @@ function renderComparePanel() {
     ['Day ticket*',  r => `$${r.price}`],
     ['Drive',        r => formatDrive(r.id)],
     ['Fit',          r => { const wx = state.weatherCache[r.id]?.data; if (!wx) return '—'; return Math.round(plannerScoreBreakdown(r, wx, targetForecastIndex(), w).baseScore); }],
-    ['Crowd',        r => crowdForecast(r).label],
+    ['Crowd',        r => crowdForecast(r, state.weatherCache[r.id]?.data).label],
     ['Base/summit',  r => `${r.baseElevation} / ${r.summitElevation} ft`],
   ];
   els.compareContent.innerHTML = `
@@ -1549,7 +1625,7 @@ function renderComparePanel() {
     aiBox.innerHTML = '<div class="ai-thinking">Analyzing your mountains…</div>';
     const payload = resorts.map(r => ({
       name: r.name, state: r.state, vertical: r.vertical, trails: r.trails,
-      price: r.price, avgSnowfall: r.avgSnowfall, crowds: crowdForecast(r).label,
+      price: r.price, avgSnowfall: r.avgSnowfall, crowds: crowdForecast(r, state.weatherCache[r.id]?.data).label,
       drive: getDriveMins(r.id), passGroup: r.passGroup,
       plannerScore: (() => { const wx = state.weatherCache[r.id]?.data; return wx ? Math.round(plannerScoreBreakdown(r, wx, targetForecastIndex(), w).score) : null; })(),
     }));
@@ -1592,7 +1668,7 @@ function renderDetail({ scroll = false } = {}) {
       crowd:      Math.round(bd.components.crowd),
     },
   } : null;
-  const crowd = crowdForecast(resort);
+  const crowd = crowdForecast(resort, wx);
   const tb    = resort.terrainBreakdown;
 
   const forecast = wx?.forecast || [];
@@ -1809,7 +1885,7 @@ async function askAI(query) {
     return {
       id: r.id, name: r.name, state: r.state, vertical: r.vertical, trails: r.trails,
       price: r.price, passGroup: r.passGroup, avgSnowfall: r.avgSnowfall,
-      drive: getDriveMins(r.id), crowd: crowdForecast(r).label,
+      drive: getDriveMins(r.id), crowd: crowdForecast(r, wx).label,
       snow3d: snow3d !== null ? Math.round(snow3d * 10) / 10 : null,
       tomorrowSnow: wx?.forecast?.[fi]?.snow ?? null,
       tomorrowLow:  wx?.forecast?.[fi]?.lo   ?? null,
@@ -1886,14 +1962,14 @@ function renderMobileCards(decorated, emptyOpts) {
       <button type="button" onclick="document.getElementById('originInput')?.focus();document.getElementById('searchSection')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location</button>
     </div>` : '';
   els.mobileCardGrid.innerHTML = nudgeHtml + items.map(({ resort, breakdown, stormTotal, hist }) => {
+    const wx = state.weatherCache[resort.id]?.data;
     const storm     = stormTotal !== null ? stormTotal.toFixed(1) + '"' : '…';
     const drive     = formatDrive(resort.id);
-    const crowd     = crowdForecast(resort).label;
+    const crowd     = crowdForecast(resort, wx).label;
     const passColor = passColors[resort.passGroup] || '#90a4be';
     const driveMins = getDriveMins(resort.id);
     const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
 
-    const wx = state.weatherCache[resort.id]?.data;
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
     const weekendLine = vd?.rainLikely
       ? 'Rain likely — not worth the drive'
@@ -2310,6 +2386,7 @@ function initialize() {
 
   const hadUrlState = applyUrlState();
   normalizeWeightsToPriority();
+  initHeroWhenControls();
   updatePlannerOriginLabel();
 
   if (hadUrlState && state.origin) {
@@ -2339,6 +2416,7 @@ function initialize() {
   syncPlannerControls();
   syncVerdictVisibility();
   wireEvents();
+  wireHeroWhenChips();
   // PATCH 2: Static headline — always "Where to Ski Next..."
   updateHeroHeadline();
   render();

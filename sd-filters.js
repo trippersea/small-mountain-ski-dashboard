@@ -71,18 +71,20 @@ function filteredResorts() {
     if (state.verticalFilter === 'mid'   && (r.vertical < 1000 || r.vertical > 1500)) return false;
     if (state.verticalFilter === 'big'   && r.vertical < 1500) return false;
 
-    // Crowd preference gate
-    const crowd = crowdForecast(r);
+    // Weather-based filters — same forecast day as scoring (`targetForecastIndex`)
+    const wx = state.weatherCache[r.id]?.data;
+
+    // Crowd preference gate (use live wx when available for powder/bluebird/rain modifiers)
+    const crowd = crowdForecast(r, wx);
     if (!crowdPreferenceAllows(crowd)) return false;
 
-    // Weather-based filters (only when weather is available)
-    const wx       = state.weatherCache[r.id]?.data;
-    const tomorrow = tomorrowForecast(wx);
-    if (tomorrow) {
-      if (!tempBucketMatches(tomorrow.lo))   return false;
-      if (!windBucketMatches(tomorrow.wind)) return false;
+    const fi = targetForecastIndex();
+    const fc = wx?.forecast?.[fi] ?? tomorrowForecast(wx);
+    if (fc) {
+      if (!tempBucketMatches(fc.lo))   return false;
+      if (!windBucketMatches(fc.wind)) return false;
       const target = snowPreferenceTarget();
-      if (target > 0 && (tomorrow.snow || 0) < target) return false;
+      if (target > 0 && (fc.snow || 0) < target) return false;
     }
 
     return true;
@@ -112,7 +114,12 @@ function staticSort(resorts) {
       case 'vertical':    cmp = b.vertical    - a.vertical;    break;
       case 'trails':      cmp = b.trails      - a.trails;      break;
       case 'avgSnowfall': cmp = b.avgSnowfall - a.avgSnowfall; break;
-      case 'crowd':       cmp = crowdForecast(b).score - crowdForecast(a).score; break;
+      case 'crowd': {
+        const wxA = state.weatherCache[a.id]?.data;
+        const wxB = state.weatherCache[b.id]?.data;
+        cmp = crowdForecast(b, wxB).score - crowdForecast(a, wxA).score;
+        break;
+      }
       case 'state':       cmp = a.state.localeCompare(b.state);     break;
       case 'pass':        cmp = a.passGroup.localeCompare(b.passGroup); break;
       case 'name':
@@ -165,8 +172,8 @@ function buildDecisionBrief(resorts) {
     .map(resort => {
       const wx    = state.weatherCache[resort.id]?.data;
       if (!wx) return null;
-      const ski   = skiScoreBreakdown(resort, wx, 0);
-      const crowd = crowdForecast(resort);
+      const ski   = skiScoreBreakdown(resort, wx, targetForecastIndex());
+      const crowd = crowdForecast(resort, wx);
       const drive = getDriveMins(resort.id) ?? null;
       const risk  = weatherRiskScore(wx);
       const storm = (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);

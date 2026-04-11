@@ -39,22 +39,32 @@ const esc = s => String(s ?? '')
   .replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;');
 
-// ─── Static table rows ────────────────────────────────────────────────────
+// ─── Static table rows (match compare table in index.html: 9 columns) ─────
+function awinBookingSearchHref(r) {
+  const dest = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(`${r.name}, ${r.state}`)}`;
+  return `https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2816032&ued=${encodeURIComponent(dest)}`;
+}
+
 function buildTableRows(resorts) {
-  return resorts.map(r => `<tr data-id="${esc(r.id)}" data-static="true">
-      <td><input type="checkbox" data-compare="${esc(r.id)}" /></td>
-      <td><div class="row-name"><a href="/ski-report/${esc(r.id)}/" style="color:inherit;text-decoration:none">${esc(r.name)}</a></div></td>
-      <td>${esc(r.state)}</td>
+  return resorts.map((r, idx) => `<tr data-id="${esc(r.id)}" data-static="true">
+      <td class="compare-rank-cell"><span class="compare-rank" aria-hidden="true">${idx + 1}</span></td>
+      <td class="compare-select-cell"><input type="checkbox" data-compare="${esc(r.id)}" /></td>
+      <td>
+        <div class="table-mountain-cell">
+          <div class="table-mountain-name-row">
+            <a class="row-name row-name--report" href="/ski-report/${esc(r.id)}/">${esc(r.name)}</a>
+          </div>
+          <div class="row-sub">${esc(r.state)}</div>
+        </div>
+      </td>
+      <td class="compare-weekend">—</td>
+      <td class="compare-drive">—</td>
       <td>${esc(r.passGroup)}</td>
-      <td><span class="score-badge">—</span></td>
       <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>${r.vertical.toLocaleString()}</td>
-      <td>${r.trails}</td>
       <td>$${r.price}</td>
-      <td>—</td>
-      <td>—</td>
+      <td>
+        <a class="table-lodging-link" href="${esc(awinBookingSearchHref(r))}" target="_blank" rel="noopener sponsored">Find a place →</a>
+      </td>
     </tr>`).join('\n');
 }
 

@@ -347,7 +347,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
   const forecast  = weather?.forecast || [];
   const picks     = forecastIndex === null ? forecast : (forecast[forecastIndex] ? [forecast[forecastIndex]] : []);
   const snowTotal = picks.reduce((sum, f) => sum + safeNum(f?.snow, 0), 0);
-  const crowd     = crowdForecast(resort);
+  const crowd     = crowdForecast(resort, weather);
 
   const normalized = {
     snow:       snowQualityIndex(resort, snowTotal, weather, forecastIndex),
@@ -644,8 +644,8 @@ function primaryReasons(item) {
 }
 
 // ─── Hidden gem score ─────────────────────────────────────────────────────────
-function hiddenGemScore(resort) {
-  const crowd = crowdForecast(resort).score;
+function hiddenGemScore(resort, wx = null) {
+  const crowd = crowdForecast(resort, wx).score;
   let score = 0;
   score += Math.max(0, 100 - crowd);
   score += Math.max(0, 120 - resort.price);
