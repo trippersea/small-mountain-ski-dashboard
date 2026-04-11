@@ -63,11 +63,6 @@ function getSponsor(resortId) {
     .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#94a3b8; letter-spacing:.03em; }
     .table-lodging-link { font-size:11px; font-weight:600; color:#2563eb; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
-    .vcard-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid #e2e8f0; }
-    .vcard-book-btn { display:inline-flex; align-items:center; background:#2563eb; color:#fff !important; font-size:14px; font-weight:600; padding:10px 22px; border-radius:999px; text-decoration:none; border:none; cursor:pointer; font-family:inherit; transition:background .12s; white-space:nowrap; }
-    .vcard-book-btn:hover { background:#1d4ed8; }
-    .vcard-detail-btn { display:inline-flex; align-items:center; background:#fff; color:#111827; font-size:14px; font-weight:500; padding:10px 18px; border-radius:999px; border:1px solid #e5e7eb; cursor:pointer; font-family:inherit; transition:all .12s; white-space:nowrap; }
-    .vcard-detail-btn:hover { background:#f9fafb; border-color:#d1d5db; }
   `;
   document.head.appendChild(style);
 })();
@@ -121,6 +116,7 @@ const els = {
   tableSearch:         $('tableSearch'),
   tableViewAllBtn:     $('tableViewAllBtn'),
   resultCount:         $('resultCount'),
+  compareLocationHint: $('compareLocationHint'),
   comparisonBody:      $('comparisonBody'),
   mobileCardGrid:      $('mobileCardGrid'),
   compareTray:         $('compareTray'),
@@ -242,18 +238,16 @@ function bookingSearchUrl(searchQuery) {
   return awinBookingRedirect(dest);
 }
 
-// ─── PATCH 1: Unsplash photo URL helper ───────────────────────────────────
-// Uses Unsplash Source API (free, no key) with resort state + ski keywords.
-// sig keeps images consistent per resort.
-function resortPhotoUrl(resort, width, height) {
-  if (resort && resort.photo) return resort.photo;
-  const sig = resort ? resort.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 42;
-  const kw = encodeURIComponent('ski mountain snow ' + (resort?.state || 'winter'));
-  return `https://source.unsplash.com/${width}x${height}/?${kw}&sig=${sig}`;
-}
-// Keep old helper for detail panel (still uses CSS background)
+// ─── PATCH 1: Resort photo helper ────────────────────────────────────────────
+// Defaults to Trip's own /hero-bg.jpg for every resort.
+// To add a resort-specific photo: add a `photo` field to that resort in
+// resorts-national.js, e.g. `"photo": "/photos/stowe.jpg"`
+// Unsplash option (free, no key): uncomment the two lines in the function body.
 function resortPhotoStyle(resort, gradientCss) {
-  const photo = (resort && resort.photo) ? resort.photo : resortPhotoUrl(resort, 800, 480);
+  // Uncomment below to use Unsplash auto-photos by state (no API key needed):
+  // const sig = resort.id.charCodeAt(0) + (resort.id.charCodeAt(1) || 0);
+  // const photo = `https://source.unsplash.com/800x450/?ski+mountain+${encodeURIComponent(resort.state)}&sig=${sig}`;
+  const photo = (resort && resort.photo) ? resort.photo : '/hero-bg.jpg';
   const grad = gradientCss || 'linear-gradient(180deg, rgba(10,20,35,.48) 0%, rgba(10,20,35,.74) 100%)';
   return `background-image: ${grad}, url('${photo}'); background-size: cover; background-position: center 40%;`;
 }
@@ -1035,42 +1029,33 @@ function renderVerdict(resorts) {
     return `data-bd="${btoa(bd)}"`;
   })() : '';
 
-  // New horizontal verdict card (matches mockup)
-  const _verdictPhotoUrl = resortPhotoUrl(resort, 440, 360);
-  const _condTagCls = { great: 'nvc-tag--cond-great', good: 'nvc-tag--cond-good', marginal: 'nvc-tag--cond-warn', bad: 'nvc-tag--cond-bad' }[tier] || '';
-  const _crowdTagTxt = crowdLbl === 'Quiet' ? 'Low crowds' : crowdLbl === 'Avoid' ? 'Avoid — packed' : crowdLbl === 'Busy' ? 'Busy' : 'Moderate crowds';
-  const _crowdTagCls = crowdLbl === 'Quiet' ? 'nvc-tag--cond-great' : (crowdLbl === 'Avoid' || crowdLbl === 'Busy') ? 'nvc-tag--cond-bad' : '';
+  // PATCH 3: Use resort-specific photo in verdict card hero
+  const _verdictPhotoStyle = resortPhotoStyle(resort);
 
   els.verdictCard.innerHTML = `
-    <div class="nvc-card">
-      <div class="nvc-photo" style="background-image:url('${_verdictPhotoUrl}')">
-        <div class="nvc-photo-scrim"></div>
-        <div class="nvc-badge-top">Top Pick</div>
-        <div class="nvc-score-bottom">${scoreNum}<span>/ 100</span></div>
+    <div class="vcard vcard--dash vcard--tier-${tier}">
+      <div class="vcard-hero-dash" style="${_verdictPhotoStyle}">
+        <div class="vcard-eyebrow-dash">${_eyebrow}</div>
+        ${zipNudgeHtml}
+        <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
+        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
+        <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
+        <div class="vcard-dash-pills">
+          <span class="vcard-dash-pill ${tc.pillClass}">${esc(tc.label)}</span>
+          <span class="vcard-dash-pill">${esc(snowPillText)}</span>
+          ${driveText ? `<span class="vcard-dash-pill">${esc(driveText)} drive</span>` : ''}
+          ${crowdPill}
+          <span class="vcard-score-mini-pill score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="How we ranked this pick: ${scoreNum} — tap for breakdown"><span class="vcard-score-mini-dot"></span><span class="vcard-score-mini-lbl">Fit</span><span class="vcard-score-mini-num">${scoreNum}</span></span>
+        </div>
       </div>
-      <div class="nvc-body">
-        <div class="nvc-state">${esc(resort.state)}</div>
-        <button type="button" class="nvc-name" id="verdictPickBtn">${esc(resort.name)}</button>
-        <div id="verdictWriteupSlot" class="nvc-hook nvc-hook--loading"></div>
-        <p id="verdictFallbackCopy" hidden></p>
-        <div class="nvc-tags">
-          <span class="nvc-tag ${_condTagCls}">${esc(tc.label)}</span>
-          ${snowPillText ? `<span class="nvc-tag">${esc(snowPillText)}</span>` : ''}
-          <span class="nvc-tag ${_crowdTagCls}">${esc(_crowdTagTxt)}</span>
-          ${resort.passGroup !== 'Independent' ? `<span class="nvc-tag">${esc(resort.passGroup)} Pass</span>` : ''}
-        </div>
-        <div class="nvc-stats-row">
-          ${driveText ? `<div class="nvc-stat"><strong>${esc(driveText)}</strong><span>Drive time</span></div>` : ''}
-          <div class="nvc-stat"><strong>~$${resort.price}</strong><span>Day ticket</span></div>
-          <div class="nvc-stat"><strong>${resort.trails}</strong><span>Trails</span></div>
-        </div>
+      <div class="vcard-body vcard-body-dash">
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
-        <div class="nvc-actions">
-          <button type="button" class="nvc-btn-primary" id="verdictDetailBtn">Full conditions &rarr;</button>
+        <div class="vcard-actions vcard-actions-dash">
           ${resort.website
-            ? `<a class="nvc-btn-ghost" href="${resort.website}" target="_blank" rel="noopener">${esc(_bookName)} website ↗</a>`
-            : `<a class="nvc-btn-ghost" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging</a>`
+            ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &#x2192;</a>`
+            : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging &#x2192;</a>`
           }
+          <button type="button" class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>
         </div>
       </div>
     </div>`;
@@ -1086,7 +1071,13 @@ function renderVerdict(resorts) {
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
 
-  // Runner-up section — new photo-strip card layout
+  els.verdictCard.querySelectorAll('a[data-track-placement]').forEach(a => {
+    a.addEventListener('click', () => {
+      trackEvent('booking_click', { placement: a.dataset.trackPlacement, resort: a.dataset.trackResort });
+    });
+  });
+
+  // PATCH 5: Runner-up section title — pass + proximity angle
   const _hnSection = document.getElementById('hnRunnerUpSection');
   const _hnGrid    = document.getElementById('hnRunnersGrid');
   const _hnTitle   = document.getElementById('hnRunnersTitle');
@@ -1104,43 +1095,45 @@ function renderVerdict(resorts) {
       _hnGrid.innerHTML = '';
       _hnSection.hidden = true;
     } else {
-      // Build new photo-strip runner cards; inject into a nrc-grid inside the existing grid container
-      const _nrcHtml = `<div class="nrc-grid">` + runningItems.map((item) => {
-        const _rDrive   = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
-        const _rWx      = state.weatherCache[item.resort.id]?.data;
-        const _rSnow    = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-        const _rScore   = item.breakdown != null ? Math.round(item.breakdown.score) : '—';
+      _hnGrid.innerHTML = runningItems.map((item) => {
+        const _rDrive = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
+        const _rWx    = state.weatherCache[item.resort.id]?.data;
+        const _rSnow  = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+        const _rScore = item.breakdown != null ? Math.round(item.breakdown.score) : '—';
         const _rSponsor = getSponsor(item.resort.id);
-        const cf        = crowdForecast(item.resort);
-        const _photoUrl = resortPhotoUrl(item.resort, 480, 200);
-        const _crowdCls = cf.label === 'Quiet' ? 'nrc-crowd--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'nrc-crowd--busy' : 'nrc-crowd--mod';
-        const _crowdLbl = cf.label === 'Quiet' ? 'Light crowds' : (cf.label === 'Avoid') ? 'Avoid — packed' : cf.label;
-        const _snowBit  = _rSnow !== null ? `${_rSnow.toFixed(0)}" forecast` : '';
-        const _subBits  = [_rDrive ? `${_rDrive} away` : null, _snowBit, item.resort.passGroup !== 'Independent' ? item.resort.passGroup : null].filter(Boolean).join(' · ');
-        const _bookHtml = _rSponsor
-          ? `<a class="nrc-book nrc-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation()">${esc(_rSponsor.tagline || 'Visit partner')} →</a>`
+        const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
+        const cf = crowdForecast(item.resort);
+        const _rBlurb = esc(runnerUpBlurb(_rSnow, cf, item.resort.passGroup));
+        const _rCtaLabel = _rSponsor?.tagline ? esc(_rSponsor.tagline) : 'Visit partner';
+        const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation()">${_rCtaLabel} →</a>` : '';
+        const _rCallout = _rSponsor
+          ? `<div class="hn-runner-partner-callout" role="note">
+              <span class="hn-runner-partner-pill">Featured Partner</span>
+              <span class="hn-runner-partner-hint">Labeled partner — your ranked order and scores are unchanged.</span>
+            </div>`
           : '';
-        return `<div class="nrc-card" data-runner-id="${esc(item.resort.id)}">
-          <div class="nrc-photo" style="background-image:url('${_photoUrl}')">
-            <div class="nrc-photo-scrim"></div>
-            <div class="nrc-score">${_rScore}</div>
+        // PATCH 6: Crowd forecast chip on every runner-up card
+        const _crowdDotCls = cf.label === 'Quiet' ? 'hn-crowd-dot--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'hn-crowd-dot--busy' : 'hn-crowd-dot--mod';
+        const _crowdChipCls = cf.label === 'Quiet' ? 'crowd-quiet-chip' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip' : 'crowd-mod-chip';
+        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls}"><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>Crowd forecast: ${esc(cf.label)}</div>`;
+        return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
+          <div class="hn-runner-top">
+            <div class="hn-runner-name">${esc(item.resort.name)}</div>
           </div>
-          <div class="nrc-body">
-            <div class="nrc-state">${esc(item.resort.state)}</div>
-            <div class="nrc-name">${esc(item.resort.name)}</div>
-            ${_subBits ? `<div class="nrc-sub">${esc(_subBits)}</div>` : ''}
-            <span class="nrc-crowd ${_crowdCls}">${esc(_crowdLbl)}</span>
-            ${_bookHtml}
+          ${_rCallout}
+          ${_crowdChipHtml}
+          <p class="hn-runner-blurb">${_rBlurb}</p>
+          <div class="hn-runner-bottom">
+            <div class="hn-runner-meta">
+              ${_rDrive ? `<span class="hn-runner-drive">${esc(_rDrive)} away</span>` : ''}
+              <span class="hn-runner-score-pill" title="How well this spot matches your settings"><span class="hn-runner-score-dot" aria-hidden="true"></span><span class="hn-runner-score-num">${_rScore}</span></span>
+            </div>
+            ${_rBookHtml}
           </div>
         </div>`;
-      }).join('') + `</div>`;
-      _hnGrid.innerHTML = _nrcHtml;
+      }).join('');
       _hnGrid.querySelectorAll('[data-runner-id]').forEach(card => {
-        card.addEventListener('click', (e) => {
-          if (e.target.closest('a')) return;
-          state.selectedId = card.dataset.runnerId;
-          renderDetail({ scroll: true });
-        });
+        card.addEventListener('click', () => { state.selectedId = card.dataset.runnerId; renderDetail({ scroll: true }); });
       });
       _hnSection.hidden = false;
     }
@@ -1198,12 +1191,11 @@ async function injectVerdictWriteup(v) {
     return;
   }
   slot.textContent = '';
-  slot.classList.add('nvc-hook--loading');
+  slot.classList.add('vcard-writeup--loading');
   if (fb) fb.setAttribute('hidden', '');
   const text = await fetchVerdictWriteup(v, state.origin);
   const liveSlot = document.getElementById('verdictWriteupSlot');
   if (!liveSlot) return;
-  liveSlot.classList.remove('nvc-hook--loading');
   liveSlot.classList.remove('vcard-writeup--loading');
   if (text) {
     liveSlot.textContent = text;
@@ -1398,7 +1390,7 @@ function renderCompareTable(resorts) {
       : 'Try widening distance, easing snow or price limits, or pick another pass.';
     els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
-      <tr><td colspan="8" class="compare-empty-state">
+      <tr><td colspan="9" class="compare-empty-state">
         <div class="ces-icon">🎿</div>
         <div class="ces-title">${title}</div>
         <div class="ces-sub">${sub}
@@ -1414,20 +1406,35 @@ function renderCompareTable(resorts) {
         document.getElementById('resetFilters')?.click();
       }
     });
+    if (els.compareLocationHint) {
+      els.compareLocationHint.innerHTML = '';
+      els.compareLocationHint.hidden = true;
+    }
     renderMobileCards([], { mode: 'empty', qActive, resortsLen: resorts.length });
     return;
   }
 
-  els.comparisonBody.innerHTML = (noOriginDefault ? `
-    <tr class="table-location-nudge">
-      <td colspan="8">
-        <div class="tln-inner">
-          <span class="tln-icon">📍</span>
-          <span class="tln-text">Enter your starting location above to rank by live snow forecast, drive time, and your preferences.</span>
-          <button class="tln-btn" onclick="document.getElementById('originInput')?.focus();document.querySelector('.hero-search')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location →</button>
-        </div>
-      </td>
-    </tr>` : '') + displayed.map(({ resort, breakdown, stormTotal, hist }) => {
+  if (els.compareLocationHint) {
+    if (noOriginDefault) {
+      els.compareLocationHint.hidden = false;
+      els.compareLocationHint.innerHTML = `
+        <div class="compare-location-hint-inner">
+          <span class="compare-location-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.35 7-10a7 7 0 10-14 0c0 5.65 7 10 7 10z" stroke="currentColor" stroke-width="1.75"/><circle cx="12" cy="11" r="2.25" stroke="currentColor" stroke-width="1.75"/></svg></span>
+          <p class="compare-location-copy"><strong>Add your start point</strong> — we rank by live snow, drive time, and your pass using your location from the search bar above.</p>
+          <button type="button" class="compare-location-btn">Set location</button>
+        </div>`;
+      const _locBtn = els.compareLocationHint.querySelector('.compare-location-btn');
+      _locBtn?.addEventListener('click', () => {
+        document.getElementById('originInput')?.focus();
+        document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    } else {
+      els.compareLocationHint.innerHTML = '';
+      els.compareLocationHint.hidden = true;
+    }
+  }
+
+  els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }, idx) => {
     const crowd    = crowdForecast(resort).label;
     const driveMins = getDriveMins(resort.id);
     const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
@@ -1467,7 +1474,8 @@ function renderCompareTable(resorts) {
     const _sp = getSponsor(resort.id);
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}" data-id="${resort.id}">
-        <td><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
+        <td class="compare-rank-cell"><span class="compare-rank" aria-hidden="true">${idx + 1}</span></td>
+        <td class="compare-select-cell"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td>
           <div class="table-mountain-cell">
             <div class="table-mountain-name-row">
@@ -1870,9 +1878,9 @@ function renderMobileCards(decorated, emptyOpts) {
   const noOriginMobile = !state.origin && state.sortBy === 'planner';
   const nudgeHtml = noOriginMobile ? `
     <div class="mob-location-nudge">
-      <span>📍</span>
-      <span>Enter your location to rank by live snow + drive time</span>
-      <button onclick="document.getElementById('originInput')?.focus();window.scrollTo({top:0,behavior:'smooth'})">Set location →</button>
+      <span aria-hidden="true">📍</span>
+      <span>Add your start location to rank by live snow and drive time.</span>
+      <button type="button" onclick="document.getElementById('originInput')?.focus();document.getElementById('searchSection')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location</button>
     </div>` : '';
   els.mobileCardGrid.innerHTML = nudgeHtml + items.map(({ resort, breakdown, stormTotal, hist }) => {
     const storm     = stormTotal !== null ? stormTotal.toFixed(1) + '"' : '…';
@@ -2462,9 +2470,11 @@ function initialize() {
   });
 }
 
-// PATCH 2: Headline is set in HTML — this function is a no-op to avoid overwriting it
+// PATCH 2: Headline is always "Where to Ski Next..." for brand consistency
 function updateHeroHeadline() {
-  // Headline is set directly in index.html — no dynamic override needed
+  const el = document.getElementById('heroHeadline');
+  if (!el) return;
+  el.innerHTML = 'Where to Ski <em>Next...</em>';
 }
 
 initialize();
