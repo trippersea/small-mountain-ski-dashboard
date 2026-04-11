@@ -7,9 +7,10 @@
   --navy-mid: #1e3448;
   --navy-hover: #2a4460;
   --navy-surface: #f0f4f8;
-  --text-primary: #1a2e45;
-  --text-body: #3d5166;
-  --text-muted: #7a92a8;
+  /* Headings: deep navy, softened vs near-black for less “terminal” density */
+  --text-primary: #2a4158;
+  --text-body: #4a6177;
+  --text-muted: #7f96a9;
   --text-on-dark: #f0f6fc;
   --text-on-dark-dim: rgba(240, 246, 252, 0.62);
   --accent-blue: #5aaddc;
@@ -94,7 +95,7 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); }
   margin-right: 4px; display: flex; flex-direction: column; gap: 1px;
 }
 .nav-brand-name { color: var(--text); font-weight: 600; font-size: 15px; line-height: 1.2; }
-.nav-brand-tag  { color: #7a92a8; font-size: 12px; font-weight: 400; line-height: 1.2; }
+.nav-brand-tag  { color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.2; }
 .top-nav a {
   text-decoration: none; color: var(--muted); font-weight: 500; font-size: 14px;
   padding: 7px 11px; border-radius: 8px; border: 1px solid transparent;
@@ -2552,7 +2553,7 @@ button.metric-chip:hover { background: rgba(43, 122, 184, 0.08); }
   color: var(--text-body);
 }
 .compare-location-copy strong {
-  color: var(--navy-deep);
+  color: var(--text);
   font-weight: 600;
 }
 .compare-location-btn {
@@ -3947,9 +3948,9 @@ button.metric-chip:hover { background: rgba(43, 122, 184, 0.08); }
 }
 .hn-refine-prompt-bar .btn-text.hn-refine-toggle {
   appearance: none;
-  background: #fff;
-  border: 1.5px solid var(--navy-deep);
-  color: var(--navy-deep);
+  background: var(--surface-white);
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -3964,9 +3965,9 @@ button.metric-chip:hover { background: rgba(43, 122, 184, 0.08); }
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .hn-refine-prompt-bar .btn-text.hn-refine-toggle:hover {
-  background: var(--surface-subtle);
-  color: var(--navy-mid);
-  border-color: var(--navy-mid);
+  background: var(--rs-accent-soft);
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 @media (max-width: 640px) {
   .hn-refine-prompt-bar {
@@ -4496,7 +4497,7 @@ a.vcard-book-btn,
   font-size: 14px;
   font-weight: 600;
   border-radius: 10px;
-  background: var(--navy-deep);
+  background: var(--accent);
   color: var(--text-on-dark) !important;
   text-decoration: none;
   border: none;
@@ -4507,7 +4508,7 @@ a.vcard-book-btn,
 }
 a.vcard-book-btn:hover,
 .vcard-book-btn:hover {
-  background: var(--navy-mid);
+  background: var(--accent-hover);
 }
 button.vcard-detail-btn,
 .vcard-detail-btn {
@@ -5230,7 +5231,7 @@ button.vcard-detail-btn:hover,
 .hn-fb-btn {
   align-self: center;
   margin: 4px 6px 4px 4px;
-  background: var(--navy-deep);
+  background: var(--accent);
   color: var(--text-on-dark);
   border: none;
   border-radius: 9px;
@@ -5244,7 +5245,7 @@ button.vcard-detail-btn:hover,
   letter-spacing: -0.01em;
 }
 .hn-fb-btn:hover {
-  background: var(--navy-mid);
+  background: var(--accent-hover);
 }
 .hn-fb-btn:focus-visible {
   outline: none;
