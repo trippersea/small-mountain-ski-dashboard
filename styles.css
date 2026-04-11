@@ -3911,25 +3911,43 @@ button.metric-chip:hover { background: rgba(37, 99, 235, 0.08); }
   line-height: 1.45;
   max-width: 42ch;
 }
-.btn-text.hn-refine-toggle {
-  background: none;
-  border: none;
-  color: var(--accent);
-  font-size: 13px;
+.hn-refine-prompt-bar {
+  margin-top: 20px;
+  padding: 16px 18px;
+  background: var(--rs-surface-subtle);
+  border: 1px solid var(--rs-border);
+  border-radius: var(--rs-radius);
+  display: flex;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+.hn-refine-prompt-bar .btn-text.hn-refine-toggle {
+  appearance: none;
+  background: #fff;
+  border: 1.5px solid #1a2030;
+  color: #1a2030;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  padding: 6px 0;
+  padding: 12px 24px;
+  min-height: 44px;
+  min-width: min(100%, 280px);
+  border-radius: 10px;
   font-family: inherit;
   flex-shrink: 0;
+  width: 100%;
+  max-width: 320px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.btn-text.hn-refine-toggle:hover { color: var(--accent-hover); }
+.hn-refine-prompt-bar .btn-text.hn-refine-toggle:hover {
+  background: #f8fafc;
+  color: #273044;
+  border-color: #273044;
+}
 @media (max-width: 640px) {
-  .hn-results-section-head {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
+  .hn-refine-prompt-bar {
+    padding: 14px 12px;
   }
-  .btn-text.hn-refine-toggle { align-self: flex-start; padding: 8px 0; }
 }
 .hn-runners-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: stretch; }
 .hn-runner-card {
@@ -5188,7 +5206,7 @@ button.vcard-detail-btn:hover,
 .hn-fb-btn {
   align-self: center;
   margin: 4px 6px 4px 4px;
-  background: linear-gradient(180deg, #2a4a66 0%, #1e3a52 100%);
+  background: #1a2030;
   color: #f8fafc;
   border: 1px solid rgba(165, 216, 255, 0.35);
   border-radius: 9px;
@@ -5204,7 +5222,7 @@ button.vcard-detail-btn:hover,
 .hn-fb-btn:hover {
   border-color: var(--hn-form-accent);
   box-shadow: 0 0 0 1px var(--hn-form-accent-dim);
-  background: linear-gradient(180deg, #315572 0%, #244560 100%);
+  background: #273044;
 }
 .hn-fb-btn:focus-visible {
   outline: none;
