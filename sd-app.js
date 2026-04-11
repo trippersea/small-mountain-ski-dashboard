@@ -35,8 +35,8 @@ function getSponsor(resortId) {
 (function injectSponsorCSS() {
   const style = document.createElement('style');
   style.textContent = `
-    .sponsored-row { outline: 2px solid #62AED1; outline-offset: -1px; background: linear-gradient(90deg, #e8f4fc 0%, #f0f4f8 100%) !important; }
-    .mob-card-sponsored { border: 2px solid #62AED1 !important; background: linear-gradient(165deg, #e8f4fc 0%, #f7fafc 55%, #ffffff 100%) !important; box-shadow: 0 4px 20px rgba(98, 174, 209, 0.12) !important; }
+    .sponsored-row { outline: 2px solid #2b6de9; outline-offset: -1px; background: linear-gradient(90deg, #e8f4fc 0%, #f0f4f8 100%) !important; }
+    .mob-card-sponsored { border: 2px solid #2b6de9 !important; background: linear-gradient(165deg, #e8f4fc 0%, #f7fafc 55%, #ffffff 100%) !important; box-shadow: 0 4px 20px rgba(43, 109, 233, 0.12) !important; }
     .detail-header-rebuilt { padding: 14px 18px 10px; }
     .detail-header-rebuilt .dhr-eyebrow { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #7a92a8; margin-bottom: 4px; }
     .detail-header-rebuilt .dhr-sub { font-size: 12px; color: #7a92a8; }
@@ -47,21 +47,21 @@ function getSponsor(resortId) {
     .detail-score-ring-new .dsrn-lbl { font-size: 6px; font-weight: 600; color: rgba(240,246,252,.85); text-transform: uppercase; letter-spacing: .05em; }
     .detail-header-rebuilt .dhr-actions { display: flex; align-items: center; gap: 10px; }
     .dhr-link-secondary { font-size: 12px; font-weight: 500; color: #7a92a8; text-decoration: none; transition: color .12s; }
-    .dhr-link-secondary:hover { color: #62AED1; }
-    .featured-pill { display: inline-flex; align-items: center; background: #62AED1; color: #f0f6fc; border: 1px solid #62AED1; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; letter-spacing: .04em; box-shadow: 0 4px 12px rgba(98,174,209,.18); white-space: nowrap; }
+    .dhr-link-secondary:hover { color: #2b6de9; }
+    .featured-pill { display: inline-flex; align-items: center; background: #2b6de9; color: #f0f6fc; border: 1px solid #2b6de9; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; letter-spacing: .04em; box-shadow: 0 4px 12px rgba(43,109,233,.18); white-space: nowrap; }
     .btn-book { background: #22b38a; color: #f0f6fc !important; font-size: 13px; font-weight: 700; padding: 8px 18px; border-radius: 999px; text-decoration: none; transition: background .12s; }
     .btn-book:hover { background: #1f9e78; }
     .cond-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
     .cond-chip { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,.13); color:rgba(240,246,252,.85); border:1px solid rgba(255,255,255,.18); }
     .cond-chip--surface { background:rgba(34,179,138,.22); color:#6ee7b7; border-color:rgba(110,231,183,.3); }
     .vcard-lodging { margin:14px 0 0; border-radius:10px; background:#e8f4fc; border:1px solid #bfdbfe; overflow:hidden; }
-    .vcard-lodging-link { display:flex; align-items:center; gap:10px; padding:12px 16px; text-decoration:none; color:#62AED1; font-size:14px; font-weight:600; transition:background .12s; }
+    .vcard-lodging-link { display:flex; align-items:center; gap:10px; padding:12px 16px; text-decoration:none; color:#2b6de9; font-size:14px; font-weight:600; transition:background .12s; }
     .vcard-lodging-link:hover { background:#dbeafe; }
     .vcard-lodging-icon { font-size:16px; flex-shrink:0; }
     .vcard-lodging-text { flex:1; }
-    .vcard-lodging-arrow { color:#62AED1; font-weight:700; }
+    .vcard-lodging-arrow { color:#2b6de9; font-weight:700; }
     .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#7a92a8; letter-spacing:.03em; }
-    .table-lodging-link { font-size:11px; font-weight:600; color:#62AED1; text-decoration:none; white-space:nowrap; }
+    .table-lodging-link { font-size:11px; font-weight:600; color:#2b6de9; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
   `;
   document.head.appendChild(style);
@@ -2199,7 +2199,7 @@ function wireEvents() {
     if (!tip) return;
 
     const ROWS = [
-      { key: 'snow',       label: 'Snow',              color: '#62AED1' },
+      { key: 'snow',       label: 'Snow',              color: '#2b6de9' },
       { key: 'skiability', label: 'How it\'ll ski',    color: '#16a34a' },
       { key: 'fit',        label: 'Size match',        color: '#7c3aed' },
       { key: 'drive',      label: 'Drive',             color: '#0891b2' },
