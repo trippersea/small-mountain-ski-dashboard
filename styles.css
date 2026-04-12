@@ -2398,7 +2398,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   gap: 16px;
   flex-wrap: wrap;
   padding: 20px 22px 18px;
-  background: linear-gradient(165deg, #1a2e45 0%, #0f1c2e 55%, #081422 100%);
+  background: linear-gradient(165deg, #1e3a5a 0%, #16304d 55%, #0f2540 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 /* Stay column — quiet utility link (compare table) */
