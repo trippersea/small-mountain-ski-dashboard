@@ -228,7 +228,7 @@ const els = {
   aiChatResult:        $('aiChatResult'),
   heroPassSelect:      $('heroPassSelect'),
   heroSnowSelect:      $('heroSnowSelect'),
-  hnRefineToggle:      $('hnRefineToggle'),
+  hnRefinePromptBtn:   $('hnRefinePromptBtn'),
   plannerSeeVerdictBtn: $('plannerSeeVerdictBtn'),
 };
 
@@ -244,6 +244,13 @@ function showToast(message, dur = 2600) {
 function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+function fitLabel(score) {
+  if (score >= 80) return 'Excellent';
+  if (score >= 65) return 'Good';
+  if (score >= 50) return 'Fair';
+  return 'Weak';
 }
 
 function trackEvent(eventName, params = {}) {
@@ -303,6 +310,35 @@ function runnerUpBlurb(snowInches, cf, passGroup) {
   else out = `Solid alternative with your settings`;
   return out.charAt(0).toUpperCase() + out.slice(1) + (out.endsWith('.') ? '' : '.');
 }
+
+function runnerDifferentiator(item, allRunners) {
+  const resort = item.resort;
+  const _rWx   = state.weatherCache[resort.id]?.data;
+  const _rSnow = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+  const drive  = getDriveMins(resort.id);
+
+  const drives = allRunners.map(r => getDriveMins(r.resort.id)).filter(Boolean);
+  const isClosest = drive !== null && drives.length > 1 && drive === Math.min(...drives);
+
+  const snows = allRunners
+    .map(r => {
+      const wx = state.weatherCache[r.resort.id]?.data;
+      return wx ? (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+    })
+    .filter(x => x !== null);
+  const hasMostSnow = _rSnow !== null && snows.length > 1 && _rSnow === Math.max(...snows);
+
+  const scores = allRunners.map(r => r.breakdown?.score ?? 0);
+  const isTopScore = item.breakdown && item.breakdown.score === Math.max(...scores);
+
+  if (_rSnow !== null && _rSnow >= 4) return `${_rSnow.toFixed(0)}" of snow in the forecast`;
+  if (isClosest && drive !== null)    return `Closest option — ${formatDriveMins(drive)} away`;
+  if (hasMostSnow && _rSnow > 0)     return `Most snow nearby — ${_rSnow.toFixed(0)}" forecast`;
+  if (isTopScore)                     return `Highest score of the three`;
+  if (typeof resort.price === 'number' && resort.price < 80) return `Best value — $${resort.price} walk-up ticket`;
+  return drive ? `${formatDriveMins(drive)} from your location` : 'Solid local option';
+}
+
 function formatDistanceFromOrigin(resortId) {
   const resort = RESORTS.find(r => r.id === resortId);
   if (!resort || !state.origin) return 'Distance: TBD';
@@ -986,13 +1022,16 @@ function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
 
 function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
+  const refinePromptEl = document.getElementById('hnRefinePrompt');
   if (!state.origin) {
+    if (refinePromptEl) refinePromptEl.hidden = true;
     els.verdictSection.classList.add('hn-verdict-pre-location');
     els.verdictSection.classList.add('hn-verdict-collapsed');
     els.verdictSection.setAttribute('aria-hidden', 'true');
     els.verdictCard.innerHTML = '';
     const _hn = document.getElementById('hnRunnerUpSection');
     if (_hn) _hn.hidden = true;
+    document.getElementById('hnConditionsGuidance')?.remove();
     return;
   }
   els.verdictSection.classList.remove('hn-verdict-pre-location');
@@ -1007,6 +1046,8 @@ function renderVerdict(resorts) {
   syncWeekendLodgingStrip(v);
   const _hnSectionEarly = document.getElementById('hnRunnerUpSection');
   if (!v) {
+    if (refinePromptEl) refinePromptEl.hidden = true;
+    document.getElementById('hnConditionsGuidance')?.remove();
     if (_hnSectionEarly) _hnSectionEarly.hidden = true;
     const filtersTightenEmpty = resorts.length === 0 && (
       state.passFilter !== 'All'   ||
@@ -1076,6 +1117,7 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn } = v;
   const runningItems = collectRunnerUpItems(resorts, resort.id, 3);
+  document.getElementById('hnConditionsGuidance')?.remove();
 
   const _passEw   = state.passFilter !== 'All' ? (state.passFilter + ' Pass') : null;
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
@@ -1128,9 +1170,37 @@ function renderVerdict(resorts) {
   // PATCH 3: Use resort-specific photo in verdict card hero
   const _verdictPhotoStyle = resortPhotoStyle(resort);
 
+  const verdictBadgeText = tier === 'great' ? 'Go — great conditions'
+    : tier === 'good'    ? 'Go — good conditions'
+    : tier === 'marginal'? 'Worth checking'
+    : 'Skip this weekend';
+
+  const verdictBadgeCls = tier === 'great' ? 'vb-verdict-badge--go'
+    : tier === 'good'   ? 'vb-verdict-badge--go'
+    : tier === 'marginal'? 'vb-verdict-badge--maybe'
+    : 'vb-verdict-badge--skip';
+
+  const _fitWord = fitLabel(scoreNum);
+  let primaryBtn; let secondaryBtn;
+  if (tier === 'great' || tier === 'good') {
+    primaryBtn = resort.website
+      ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &rarr;</a>`
+      : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging &rarr;</a>`;
+    secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>`;
+  } else if (tier === 'marginal') {
+    primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
+    secondaryBtn = resort.website
+      ? `<a class="vcard-detail-btn" href="${resort.website}" target="_blank" rel="noopener">Visit ${esc(_bookName)}</a>`
+      : '';
+  } else {
+    primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
+    secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictRefineFromCard">Adjust my preferences</button>`;
+  }
+
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}">
       <div class="vcard-hero-dash" style="${_verdictPhotoStyle}">
+        <div class="vb-verdict-badge ${verdictBadgeCls}">${esc(verdictBadgeText)}</div>
         <div class="vcard-eyebrow-dash">${_eyebrow}</div>
         ${zipNudgeHtml}
         <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
@@ -1141,17 +1211,14 @@ function renderVerdict(resorts) {
           <span class="vcard-dash-pill">${esc(snowPillText)}</span>
           ${driveText ? `<span class="vcard-dash-pill">${esc(driveText)} drive</span>` : ''}
           ${crowdPill}
-          <span class="vcard-score-mini-pill score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="How we ranked this pick: ${scoreNum} — tap for breakdown"><span class="vcard-score-mini-dot"></span><span class="vcard-score-mini-lbl">Fit</span><span class="vcard-score-mini-num">${scoreNum}</span></span>
+          <span class="vcard-score-mini-pill score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="How we ranked this pick: ${scoreNum} ${_fitWord} — tap for breakdown"><span class="vcard-score-mini-dot"></span><span class="vcard-score-mini-lbl">Fit</span><span class="vcard-score-mini-num">${scoreNum}</span><span class="vcard-score-fit-label">${esc(_fitWord)}</span></span>
         </div>
       </div>
       <div class="vcard-body vcard-body-dash">
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
         <div class="vcard-actions vcard-actions-dash">
-          ${resort.website
-            ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &#x2192;</a>`
-            : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging &#x2192;</a>`
-          }
-          <button type="button" class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>
+          ${primaryBtn}
+          ${secondaryBtn}
         </div>
       </div>
     </div>`;
@@ -1164,6 +1231,17 @@ function renderVerdict(resorts) {
 
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+  document.getElementById('verdictRefineFromCard')?.addEventListener('click', () => {
+    const panel = els.plannerSection;
+    if (!panel) return;
+    panel.hidden = false;
+    syncPlannerControls();
+    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+  });
+  if (refinePromptEl) {
+    refinePromptEl.hidden = false;
+    refinePromptEl.classList.toggle('hn-refine-prompt--urgent', tier === 'bad' || tier === 'marginal');
+  }
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
 
@@ -1181,11 +1259,21 @@ function renderVerdict(resorts) {
     const _passLabel = state.passFilter !== 'All' ? state.passFilter + ' Pass ' : '';
     const _distLabel = state.howFar === 0 ? 'within 3 hours' : state.howFar === 1 ? 'within 6 hours' : 'near';
     if (_hnTitle) {
-      _hnTitle.textContent = (_cityEw && _passLabel)
-        ? `Best ${_passLabel}mountains ${_distLabel} of ${_cityEw}`
-        : _cityEw
-        ? `Runner-up options near ${_cityEw}`
-        : 'Runner-up options';
+      if (tier === 'bad') {
+        _hnTitle.textContent = _cityEw
+          ? `Other options near ${_cityEw} this weekend`
+          : 'Other options this weekend';
+        const sub = _hnSection.querySelector('.hn-results-sub');
+        if (sub) sub.textContent = 'None are a strong call right now — adjust preferences below to find a better match.';
+      } else {
+        _hnTitle.textContent = (_cityEw && _passLabel)
+          ? `Best ${_passLabel}mountains ${_distLabel} of ${_cityEw}`
+          : _cityEw
+          ? `Runner-up options near ${_cityEw}`
+          : 'Runner-up options';
+        const sub = _hnSection.querySelector('.hn-results-sub');
+        if (sub) sub.textContent = 'Solid alternatives ranked after your top pick';
+      }
     }
     if (runningItems.length === 0) {
       _hnGrid.innerHTML = '';
@@ -1195,11 +1283,14 @@ function renderVerdict(resorts) {
         const _rDrive = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
         const _rWx    = state.weatherCache[item.resort.id]?.data;
         const _rSnow  = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-        const _rScore = item.breakdown != null ? Math.round(item.breakdown.score) : '—';
+        const _rScoreNum = item.breakdown != null ? Math.round(item.breakdown.score) : null;
+        const _rScore = _rScoreNum != null ? _rScoreNum : '—';
+        const _rFitLbl = _rScoreNum != null ? esc(fitLabel(_rScoreNum)) : '';
         const _rSponsor = getSponsor(item.resort.id);
         const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
         const cf = crowdForecast(item.resort, item.wx);
         const _rBlurb = esc(runnerUpBlurb(_rSnow, cf, item.resort.passGroup));
+        const _diff = esc(runnerDifferentiator(item, runningItems));
         const _rCtaLabel = _rSponsor?.tagline ? esc(_rSponsor.tagline) : 'Visit partner';
         const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation()">${_rCtaLabel} →</a>` : '';
         const _rCallout = _rSponsor
@@ -1208,21 +1299,22 @@ function renderVerdict(resorts) {
               <span class="hn-runner-partner-hint">Labeled partner — your ranked order and scores are unchanged.</span>
             </div>`
           : '';
-        // PATCH 6: Crowd forecast chip on every runner-up card
         const _crowdDotCls = cf.label === 'Quiet' ? 'hn-crowd-dot--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'hn-crowd-dot--busy' : 'hn-crowd-dot--mod';
         const _crowdChipCls = cf.label === 'Quiet' ? 'crowd-quiet-chip' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip' : 'crowd-mod-chip';
-        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls}"><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>Crowd forecast: ${esc(cf.label)}</div>`;
+        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls} nrc-crowd"><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>Crowd forecast: ${esc(cf.label)}</div>`;
         return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
-          <div class="hn-runner-top">
-            <div class="hn-runner-name">${esc(item.resort.name)}</div>
-          </div>
           ${_rCallout}
-          ${_crowdChipHtml}
-          <p class="hn-runner-blurb">${_rBlurb}</p>
+          <div class="nrc-body">
+            <div class="nrc-state">${esc(item.resort.state)}</div>
+            <div class="nrc-name hn-runner-name">${esc(item.resort.name)}</div>
+            <div class="nrc-differentiator">${_diff}</div>
+            <p class="hn-runner-blurb nrc-sub">${_rBlurb}</p>
+            ${_crowdChipHtml}
+          </div>
           <div class="hn-runner-bottom">
             <div class="hn-runner-meta">
               ${_rDrive ? `<span class="hn-runner-drive">${esc(_rDrive)} away</span>` : ''}
-              <span class="hn-runner-score-pill" title="How well this spot matches your settings"><span class="hn-runner-score-dot" aria-hidden="true"></span><span class="hn-runner-score-num">${_rScore}</span></span>
+              <span class="hn-runner-score-pill" title="How well this spot matches your settings"><span class="hn-runner-score-dot" aria-hidden="true"></span><span class="hn-runner-score-num">${_rScore}</span>${_rFitLbl ? `<span class="vcard-score-fit-label hn-runner-score-fit-label">${_rFitLbl}</span>` : ''}</span>
             </div>
             ${_rBookHtml}
           </div>
@@ -1233,6 +1325,40 @@ function renderVerdict(resorts) {
       });
       _hnSection.hidden = false;
     }
+  }
+
+  document.getElementById('hnConditionsGuidance')?.remove();
+  if (tier === 'bad' || tier === 'marginal') {
+    const guidanceBlock = document.createElement('div');
+    guidanceBlock.id = 'hnConditionsGuidance';
+    guidanceBlock.className = 'hn-conditions-guidance';
+
+    const stormNote = stormTotal > 0
+      ? `A storm system is in the forecast — conditions may improve by the end of the week.`
+      : `No storm systems are showing in the next 3 days for mountains near you.`;
+
+    guidanceBlock.innerHTML = `
+    <div class="hn-guidance-inner">
+      <div class="hn-guidance-icon">&#9729;</div>
+      <div class="hn-guidance-text">
+        <strong>Not a great weekend from ${esc(_cityEw || 'your location')}.</strong>
+        <p>${stormNote} Check back mid-week — forecasts shift quickly and a storm can change the rankings overnight.</p>
+      </div>
+      <button type="button" class="hn-guidance-btn" id="hnGuidanceRefineBtn">Adjust preferences &darr;</button>
+    </div>`;
+
+    const runnerSection = document.getElementById('hnRunnerUpSection');
+    if (runnerSection && runnerSection.parentNode) {
+      runnerSection.parentNode.insertBefore(guidanceBlock, runnerSection.nextSibling);
+    }
+
+    document.getElementById('hnGuidanceRefineBtn')?.addEventListener('click', () => {
+      const panel = els.plannerSection;
+      if (!panel) return;
+      panel.hidden = false;
+      syncPlannerControls();
+      setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+    });
   }
 }
 
@@ -2229,20 +2355,12 @@ function wireEvents() {
     commitPlannerPriorityChange(key, btn);
   });
 
-  els.hnRefineToggle?.addEventListener('click', () => {
+  els.hnRefinePromptBtn?.addEventListener('click', () => {
     const panel = els.plannerSection;
     if (!panel) return;
-    const opening = panel.hidden;
-    panel.hidden = !opening;
-    const t = els.hnRefineToggle;
-    if (t) {
-      t.textContent = opening ? '✕ Close filters' : '⚙ Refine results';
-      t.setAttribute('aria-expanded', String(opening));
-    }
-    if (opening) {
-      syncPlannerControls();
-      setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
-    }
+    panel.hidden = false;
+    syncPlannerControls();
+    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
   });
 
   els.plannerSeeVerdictBtn?.addEventListener('click', () => scrollToBestMatchFromFilters('refine_footer'));

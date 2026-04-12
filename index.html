@@ -553,17 +553,6 @@
     <div class="hn-results-region">
     <!-- ═══ TOP PICK ════════════════════════════════════════════════════════ -->
     <section id="verdictSection" class="verdict-section hn-verdict-full hn-results-panel hn-verdict-pre-location" aria-label="Top mountain pick">
-      <div class="hn-results-trust" role="region" aria-label="What powers these rankings">
-        <ul class="hn-results-trust-list">
-          <li><span class="hn-results-trust-k">250+</span> <span class="hn-results-trust-l">US mountains</span></li>
-          <li aria-hidden="true" class="hn-results-trust-sep"></li>
-          <li><span class="hn-results-trust-k">Live</span> <span class="hn-results-trust-l">snow forecasts</span></li>
-          <li aria-hidden="true" class="hn-results-trust-sep"></li>
-          <li><span class="hn-results-trust-k">Real</span> <span class="hn-results-trust-l">drive times</span></li>
-          <li aria-hidden="true" class="hn-results-trust-sep"></li>
-          <li><span class="hn-results-trust-k">Crowd</span> <span class="hn-results-trust-l">forecasting</span></li>
-        </ul>
-      </div>
       <div id="verdictCard">
         <div class="vcard-location-prompt">
           <div class="vcard-location-prompt-icon">
@@ -577,6 +566,16 @@
         </div>
       </div>
     </section>
+
+    <div class="hn-refine-prompt" id="hnRefinePrompt" hidden>
+      <div class="hn-refine-prompt-text">
+        <strong>Not seeing the right mountain?</strong>
+        <span>Adjust snow priority, crowd preference, ticket price and more.</span>
+      </div>
+      <button type="button" class="hn-refine-prompt-btn" id="hnRefinePromptBtn">
+        Refine results &darr;
+      </button>
+    </div>
 
     <!-- ═══ BOOKING STRIP ══════════════════════════════════════════════════ -->
     <div id="hnBookingStrip" class="hn-booking-strip hn-results-panel" hidden>
@@ -604,9 +603,6 @@
         </div>
       </div>
       <div class="hn-runners-grid" id="hnRunnersGrid"></div>
-      <div class="hn-refine-prompt-bar" role="group" aria-label="Refine ranking">
-        <button type="button" class="hn-refine-toggle btn-text" id="hnRefineToggle" aria-expanded="false">Refine results</button>
-      </div>
     </section>
 
     <!-- ═══ METRO MARKET CARDS ══════════════════════════════════════════════ -->
