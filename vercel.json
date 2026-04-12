@@ -7,6 +7,15 @@
     {
       "source": "/sitemap.xml",
       "headers": [{ "key": "Content-Type", "value": "application/xml" }]
+    },
+    {
+      "source": "/(.*)\\.(js|css|svg|png|jpg|jpeg|webp|ico|woff2|txt|json|xml)$",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
     }
   ],
   "redirects": [

@@ -115,9 +115,14 @@ html = html.replace(
   `<div id="summaryCards" class="db-summary-grid" data-prerendered="true">${buildSummaryCards(RESORTS)}</div>`
 );
 
-// 3. ItemList schema in <head>
-const schemaTag = `  <script type="application/ld+json">\n${buildItemListSchema(RESORTS)}\n  </script>`;
-html = html.replace('</head>', `${schemaTag}\n</head>`);
+// 3. ItemList schema in <head> — replace existing block so deploy does not duplicate JSON-LD
+const itemListHtml = `  <script type="application/ld+json" id="ld-home-itemlist">\n${buildItemListSchema(RESORTS)}\n  </script>`;
+const itemListRe = /<script type="application\/ld\+json" id="ld-home-itemlist">[\s\S]*?<\/script>/;
+if (itemListRe.test(html)) {
+  html = html.replace(itemListRe, itemListHtml);
+} else {
+  html = html.replace('</head>', `${itemListHtml}\n</head>`);
+}
 
 // 4. Write back
 writeFileSync('./index.html', html, 'utf8');

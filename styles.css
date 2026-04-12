@@ -2598,6 +2598,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .compare-table-scroll.table-wrap {
   overflow: auto;
   max-height: min(70vh, 720px);
+  min-height: min(50vh, 420px);
   border-radius: 0;
 }
 .comparison-table .compare-th-rank {

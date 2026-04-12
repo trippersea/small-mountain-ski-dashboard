@@ -90,19 +90,22 @@ function buildPage(r) {
   <meta property="og:description" content="${esc(metaDesc)}" />
   <meta property="og:site_name"   content="WhereToSkiNext.com" />
   <meta property="og:image"       content="https://www.wheretoskinext.com/ski-decision-logo.png" />
+  <meta property="og:image:alt"   content="${esc(r.name + ' — WhereToSkiNext.com')}" />
 
   <!-- Twitter -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="${esc(r.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
   <meta name="twitter:image"      content="https://www.wheretoskinext.com/ski-decision-logo.png" />
+  <meta name="twitter:image:alt"   content="${esc(r.name + ' — WhereToSkiNext.com')}" />
 
   <!-- JSON-LD structured data -->
   <script type="application/ld+json">${jsonLd}</script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="/styles.css" />
 
