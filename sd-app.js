@@ -1272,13 +1272,17 @@ function renderVerdict(resorts) {
             ? 'A storm is in the forecast — check back mid-week, conditions may improve.'
             : 'No storm systems in the next 3 days. Check back mid-week — forecasts shift fast.';
           sub.textContent = stormNote;
+          sub.classList.add('hn-results-sub--expanded');
         }
       } else if (tier === 'marginal') {
         _hnTitle.textContent = _cityEw
           ? `Other options near ${_cityEw}`
           : 'Other options';
         const sub = _hnSection.querySelector('.hn-results-sub');
-        if (sub) sub.textContent = 'Conditions are marginal across the board — refine your preferences for a better match.';
+        if (sub) {
+          sub.textContent = 'Conditions are marginal across the board — refine your preferences for a better match.';
+          sub.classList.add('hn-results-sub--expanded');
+        }
       } else {
         _hnTitle.textContent = (_cityEw && _passLabel)
           ? `Best ${_passLabel}mountains ${_distLabel} of ${_cityEw}`
@@ -1286,7 +1290,10 @@ function renderVerdict(resorts) {
           ? `Runner-up options near ${_cityEw}`
           : 'Runner-up options';
         const sub = _hnSection.querySelector('.hn-results-sub');
-        if (sub) sub.textContent = 'Solid alternatives ranked after your top pick';
+        if (sub) {
+          sub.textContent = 'Solid alternatives ranked after your top pick';
+          sub.classList.remove('hn-results-sub--expanded');
+        }
       }
     }
     if (runningItems.length === 0) {
@@ -1493,10 +1500,14 @@ function _renderStorm(resorts) {
     if (stormTitle) stormTitle.textContent = 'Storm Chaser';
     if (stormDesc)  stormDesc.textContent  = 'No major storms in the next 3 days. Check back mid-week — this updates as new systems develop.';
     stormSection?.classList.remove('storm-alert-active');
-    els.stormGrid.innerHTML = `<div class="storm-empty-state">
-      <div class="storm-empty-icon">&#9729;</div>
-      <p class="storm-empty-title">No major storms in the next 3 days.</p>
-      <p class="storm-empty-sub">Check back mid-week — forecasts shift quickly and a storm can change the rankings overnight.</p>
+    els.stormGrid.innerHTML = `<div class="storm-empty-state storm-empty-state--full">
+      <div class="storm-empty-inner">
+        <div class="storm-empty-icon">&#9729;</div>
+        <div class="storm-empty-body">
+          <p class="storm-empty-title">No major storms in the next 3 days.</p>
+          <p class="storm-empty-sub">Check back mid-week — forecasts shift quickly and a storm can change the rankings overnight.</p>
+        </div>
+      </div>
     </div>`;
     return;
   }

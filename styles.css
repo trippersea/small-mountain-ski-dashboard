@@ -5751,3 +5751,66 @@ button.vcard-detail-btn:hover,
   gap: 5px;
   margin-top: 8px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FULL-WIDTH EMPTY STATES — storm chaser + runner-up subtitle expansion
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Storm empty state spans all 3 grid columns */
+.storm-empty-state--full {
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 0;
+}
+.storm-empty-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  background: #f7fafc;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 100%;
+}
+.storm-empty-icon {
+  font-size: 28px;
+  opacity: 0.4;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.storm-empty-body {
+  flex: 1;
+  min-width: 0;
+}
+.storm-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.storm-empty-sub {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+  max-width: none;
+}
+
+/* Runner-up subtitle — expands to full width below the header row
+   when carrying a long storm note or condition warning */
+.hn-results-sub--expanded {
+  flex-basis: 100%;
+  max-width: none;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  color: #3d5166;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* Make the section head a flex-wrap container so the expanded
+   subtitle drops to its own full-width row naturally */
+.hn-results-section-head {
+  flex-wrap: wrap;
+}
