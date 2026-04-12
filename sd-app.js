@@ -61,7 +61,7 @@ function getSponsor(resortId) {
     .vcard-lodging-text { flex:1; }
     .vcard-lodging-arrow { color:#2b6de9; font-weight:700; }
     .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#7a92a8; letter-spacing:.03em; }
-    .table-lodging-link { font-size:11px; font-weight:600; color:#2b6de9; text-decoration:none; white-space:nowrap; }
+    .table-lodging-link { font-size:12px; font-weight:400; color:#9ca3af; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
   `;
   document.head.appendChild(style);
@@ -1697,7 +1697,7 @@ function renderCompareTable(resorts) {
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
         <td>
-          <a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Find a place →</a>
+          <a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay nearby</a>
         </td>
       </tr>`;
   }).join('');
@@ -2142,7 +2142,7 @@ function renderMobileCards(decorated, emptyOpts) {
         <label class="mob-compare-label"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /> Compare</label>
         <div class="mob-card-actions">
           ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Website</a>` : ''}
-          <a class="mob-stay-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay</a>
+          <a class="mob-stay-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay nearby</a>
           <button type="button" class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details →</button>
         </div>
       </div>

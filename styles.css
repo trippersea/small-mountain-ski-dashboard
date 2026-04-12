@@ -2401,6 +2401,17 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   background: linear-gradient(165deg, #1a2e45 0%, #0f1c2e 55%, #081422 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
+/* Stay column — quiet utility link (compare table) */
+.table-lodging-link {
+  color: #9ca3af;
+  font-weight: 400;
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.table-lodging-link:hover {
+  text-decoration: underline;
+}
 .compare-engine-head-main { min-width: 0; flex: 1; }
 .compare-engine-eyebrow {
   margin: 0 0 6px;
@@ -4766,7 +4777,7 @@ button.vcard-detail-btn:hover,
 .scroll-more-fab {
   position: fixed;
   left: 50%;
-  bottom: 22px;
+  bottom: 80px;
   transform: translateX(-50%);
   z-index: 60;
   width: 44px;
@@ -4788,7 +4799,7 @@ button.vcard-detail-btn:hover,
 }
 @media (max-width: 760px) {
   .scroll-more-fab {
-    bottom: 14px;
+    bottom: 68px;
   }
   .vcard-hero-dash-top {
     flex-wrap: wrap;
