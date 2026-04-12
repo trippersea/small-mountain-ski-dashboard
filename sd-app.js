@@ -132,9 +132,13 @@ function smartDefaultWhenVal() {
   return 'weekday';
 }
 
+/** Baseline “When” chip from first load (for custom segment styling) */
+let heroWhenDefaultVal = null;
+
 /** Default hero When chip + state.targetDate before first render */
 function initHeroWhenControls() {
   const val = smartDefaultWhenVal();
+  heroWhenDefaultVal = val;
   document.querySelectorAll('.hn-dchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === val));
   state.targetDate = dayValToDate(val);
   const el = document.getElementById('fbWhenVal');
@@ -160,9 +164,24 @@ function wireHeroWhenChips() {
       const p = document.getElementById('fdWhenPanel');
       if (p) p.hidden = true;
       document.getElementById('fbWhenSeg')?.classList.remove('hn-fb-seg--open');
+      updateHeroFilterSegmentsCustom();
       render();
     });
   });
+}
+
+/** Pass / Trip / When segments: show stronger styling when not at app defaults */
+function updateHeroFilterSegmentsCustom() {
+  const passSeg = document.getElementById('fbPassSeg');
+  const tripSeg = document.getElementById('fbTripSeg');
+  const whenSeg = document.getElementById('fbWhenSeg');
+  if (passSeg) passSeg.classList.toggle('hn-fb-seg--custom', state.passFilter !== 'All');
+  if (tripSeg) tripSeg.classList.toggle('hn-fb-seg--custom', state.howFar !== 0);
+  const whenChip = document.querySelector('.hn-dchip.hn-chip-on');
+  const whenVal = whenChip ? whenChip.dataset.val : heroWhenDefaultVal;
+  if (whenSeg && heroWhenDefaultVal != null) {
+    whenSeg.classList.toggle('hn-fb-seg--custom', whenVal !== heroWhenDefaultVal);
+  }
 }
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -829,6 +848,7 @@ function syncPlannerControls() {
 
   document.querySelectorAll('.hn-pchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === state.passFilter));
   document.querySelectorAll('.hn-tchip').forEach(c => c.classList.toggle('hn-chip-on', Number(c.dataset.val) === state.howFar));
+  updateHeroFilterSegmentsCustom();
   syncWeekendLodgingStrip(computeVerdict(filteredResorts()));
 }
 
@@ -2417,7 +2437,6 @@ function initialize() {
   syncVerdictVisibility();
   wireEvents();
   wireHeroWhenChips();
-  // PATCH 2: Static headline — always "Where to Ski Next..."
   updateHeroHeadline();
   render();
 
@@ -2551,11 +2570,10 @@ function initialize() {
   });
 }
 
-// PATCH 2: Headline is always "Where to Ski Next..." for brand consistency
 function updateHeroHeadline() {
   const el = document.getElementById('heroHeadline');
   if (!el) return;
-  el.innerHTML = 'Where to Ski <em>Next...</em>';
+  el.innerHTML = 'Stop guessing. <em>Find the right mountain.</em>';
 }
 
 initialize();
