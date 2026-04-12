@@ -5644,3 +5644,110 @@ button.vcard-detail-btn:hover,
 .hn-meta-row {
   justify-content: center;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STORM CHASER + HIDDEN GEMS — display chips, powder alert, empty states
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Display-only chips (distinct from clickable filter chips) ─────────── */
+/* metric-chip = interactive (blue tint, bold)
+   display-chip = informational (neutral grey, regular weight) */
+.display-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f0f4f8;
+  color: #3d5166;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+}
+.display-chip--drive {
+  background: #eaf0f8;
+  color: #1a2e45;
+  font-weight: 600;
+}
+
+/* ── Storm chip row ─────────────────────────────────────────────────────── */
+.storm-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+/* ── No-snow label inside a card ────────────────────────────────────────── */
+.storm-no-snow {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  display: block;
+}
+
+/* ── Empty state — no storm in forecast ─────────────────────────────────── */
+.storm-empty-state {
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.storm-empty-icon {
+  font-size: 22px;
+  opacity: 0.35;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.storm-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+.storm-empty-sub {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 38ch;
+}
+
+/* ── Powder alert — section-level active state ──────────────────────────── */
+.storm-alert-active {
+  background: linear-gradient(160deg, #eff6ff 0%, #f8fafc 60%) !important;
+  border-color: #93c5fd !important;
+}
+.storm-alert-active .feature-title {
+  color: #1e3a5f;
+}
+.storm-card--alert {
+  border-color: rgba(37, 99, 235, 0.3) !important;
+  background: linear-gradient(160deg, #eff6ff 0%, #fff 55%) !important;
+}
+
+/* ── "See conditions →" footer CTA on feature cards ────────────────────── */
+.feature-card-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.feature-card-cta {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 0.12s;
+}
+.planner-card--clickable:hover .feature-card-cta {
+  color: var(--accent);
+}
+
+/* ── Gem reasons row — inherit display-chip styles ──────────────────────── */
+.gem-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}

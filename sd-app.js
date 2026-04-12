@@ -1463,11 +1463,14 @@ function bindFeaturePanelResortCards(grid, source) {
 
 function _renderStorm(resorts) {
   if (!els.stormGrid) return;
+
+  // ── Loading states (no weather data yet) ──────────────────────────────────
   const enriched = resorts
     .map(r => { const wx = state.weatherCache[r.id]?.data; const storm = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0); return { resort: r, wx, storm }; })
     .filter(item => item.wx)
     .sort((a, b) => b.storm - a.storm)
-    .slice(0, 4);
+    .slice(0, 3); // cap at 3 — never allow a 3+1 orphan layout
+
   if (!enriched.length) {
     if (!weatherFetchPhase1Done) {
       els.stormGrid.innerHTML = '<div class="planner-card storm-card--loading"><span class="storm-loading-dot"></span> Loading storm outlook…</div>';
@@ -1478,14 +1481,63 @@ function _renderStorm(resorts) {
     }
     return;
   }
+
+  // ── Powder alert: update section header based on storm intensity ───────────
+  const maxStorm = enriched.reduce((m, x) => Math.max(m, x.storm), 0);
+  const stormSection = document.getElementById('stormSection');
+  const stormTitle   = stormSection?.querySelector('.feature-title');
+  const stormDesc    = stormSection?.querySelector('.feature-desc');
+
+  // ── Empty state: no meaningful snow anywhere ───────────────────────────────
+  if (maxStorm < 0.5) {
+    if (stormTitle) stormTitle.textContent = 'Storm Chaser';
+    if (stormDesc)  stormDesc.textContent  = 'No major storms in the next 3 days. Check back mid-week — this updates as new systems develop.';
+    stormSection?.classList.remove('storm-alert-active');
+    els.stormGrid.innerHTML = `<div class="storm-empty-state">
+      <div class="storm-empty-icon">&#9729;</div>
+      <p class="storm-empty-title">No major storms in the next 3 days.</p>
+      <p class="storm-empty-sub">Check back mid-week — forecasts shift quickly and a storm can change the rankings overnight.</p>
+    </div>`;
+    return;
+  }
+
+  // ── Powder alert mode: real snow incoming ─────────────────────────────────
+  if (maxStorm >= 6) {
+    if (stormTitle) stormTitle.innerHTML = '&#10052; Powder Alert';
+    if (stormDesc)  stormDesc.textContent = `${maxStorm.toFixed(0)}" incoming — these mountains have the most snow in the forecast right now.`;
+    stormSection?.classList.add('storm-alert-active');
+  } else if (maxStorm >= 2) {
+    if (stormTitle) stormTitle.textContent = 'Storm Chaser';
+    if (stormDesc)  stormDesc.textContent  = `Snow in the forecast — these are your best bets this week.`;
+    stormSection?.classList.remove('storm-alert-active');
+  } else {
+    if (stormTitle) stormTitle.textContent = 'Storm Chaser';
+    if (stormDesc)  stormDesc.textContent  = 'Light snow in the forecast — groomed conditions at best.';
+    stormSection?.classList.remove('storm-alert-active');
+  }
+
+  // ── Render cards ──────────────────────────────────────────────────────────
   els.stormGrid.innerHTML = enriched.map((item, i) => {
-    const days = (item.wx.forecast || []).map(f => `<span class="metric-chip">${f.day}: ${f.snow.toFixed(1)}"</span>`).join('');
     const id = item.resort.id;
     const nm = esc(item.resort.name);
-    return `<div class="planner-card planner-card--clickable ${i === 0 ? 'top' : ''}" data-resort-id="${id}" role="button" tabindex="0" aria-label="Full conditions for ${nm}">
+    const forecast = item.wx.forecast || [];
+
+    // Only show day chips with meaningful snow (> 0) — suppress zero rows
+    const hasAnySnow = forecast.some(f => f.snow > 0);
+    const dayChips = hasAnySnow
+      ? forecast
+          .filter(f => f.snow > 0)
+          .map(f => `<span class="display-chip">${f.day}: ${f.snow.toFixed(1)}"</span>`)
+          .join('')
+      : `<span class="storm-no-snow">No new snow forecast</span>`;
+
+    const driveStr = formatDrive(item.resort.id);
+
+    return `<div class="planner-card planner-card--clickable ${i === 0 && maxStorm >= 6 ? 'top storm-card--alert' : i === 0 ? 'top' : ''}" data-resort-id="${id}" role="button" tabindex="0" aria-label="Full conditions for ${nm}">
       <div class="planner-title">${nm}</div>
       <div class="planner-meta">${esc(item.resort.state)} · ${esc(item.resort.passGroup)} · <strong>${item.storm.toFixed(1)}"</strong> over 3 days</div>
-      ${days}<div class="metric-chip">${formatDrive(item.resort.id)}</div>
+      <div class="storm-chip-row">${dayChips}${driveStr !== '—' ? `<span class="display-chip display-chip--drive">${esc(driveStr)}</span>` : ''}</div>
+      <div class="feature-card-footer"><span class="feature-card-cta">See conditions &rarr;</span></div>
     </div>`;
   }).join('');
   bindFeaturePanelResortCards(els.stormGrid, 'storm_chaser');
@@ -1508,7 +1560,7 @@ function renderHiddenGems(resorts) {
       `${crowd.label} crowds`,
       `$${r.price} ticket`,
       `${r.vertical.toLocaleString()} ft vertical`,
-      r.avgSnowfall > 150 ? `${r.avgSnowfall}" avg snowfall` : null,
+      r.avgSnowfall > 150 ? `${r.avgSnowfall}" avg/yr` : null,
       drive !== '—' ? drive : null,
     ].filter(Boolean).slice(0, 4);
     const rid = r.id;
@@ -1516,7 +1568,8 @@ function renderHiddenGems(resorts) {
     return `<div class="planner-card planner-card--clickable" data-resort-id="${rid}" role="button" tabindex="0" aria-label="Full conditions for ${rnm}">
       <div class="planner-title">${rnm}</div>
       <div class="planner-meta">${esc(r.state)} · ${esc(r.passGroup)}</div>
-      <div class="gem-reasons">${reasons.map(re => `<span class="metric-chip">${esc(re)}</span>`).join('')}</div>
+      <div class="gem-reasons">${reasons.map(re => `<span class="display-chip">${esc(re)}</span>`).join('')}</div>
+      <div class="feature-card-footer"><span class="feature-card-cta">See conditions &rarr;</span></div>
     </div>`;
   }).join('');
   bindFeaturePanelResortCards(els.hiddenGemGrid, 'hidden_gems');
