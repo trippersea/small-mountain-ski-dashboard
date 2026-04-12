@@ -421,12 +421,14 @@ function generateMountainPage(resort, allResorts) {
   <meta property="og:description" content="${esc(metaDesc)}" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
+  <meta property="og:site_name" content="WhereToSkiNext.com" />
   <meta property="og:image" content="https://www.wheretoskinext.com/ski-decision-logo.png" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
+  <meta name="twitter:image" content="https://www.wheretoskinext.com/ski-decision-logo.png" />
 
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1160,10 +1162,23 @@ function generateMountainPage(resort, allResorts) {
 </html>`;
 }
 
+// ─── ski-near/* hubs (must match directories under ./ski-near/) ───────────────
+function listSkiNearSlugs() {
+  const dir = path.join(__dirname, 'ski-near');
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter(name => {
+      const p = path.join(dir, name);
+      return fs.statSync(p).isDirectory() && fs.existsSync(path.join(p, 'index.html'));
+    })
+    .sort();
+}
+
 // ─── Generate sitemap.xml ──────────────────────────────────────────────────────
 function generateSitemap(resorts) {
   const states = [...new Set(resorts.map(r => r.state))];
   const today  = new Date().toISOString().split('T')[0];
+  const skiNearSlugs = listSkiNearSlugs();
   // ── Static content pages — add new pages here as you build them ──────────
   const STATIC_PAGES = [
     { loc: 'https://www.wheretoskinext.com/ski-pass-comparison/',            changefreq: 'monthly', priority: '0.9' },
@@ -1179,6 +1194,9 @@ function generateSitemap(resorts) {
     `  <url><loc>https://www.wheretoskinext.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>${today}</lastmod></url>`,
     ...STATIC_PAGES.map(p =>
       `  <url><loc>${p.loc}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority><lastmod>${today}</lastmod></url>`
+    ),
+    ...skiNearSlugs.map(slug =>
+      `  <url><loc>https://www.wheretoskinext.com/ski-near/${slug}/</loc><changefreq>weekly</changefreq><priority>0.85</priority><lastmod>${today}</lastmod></url>`
     ),
     ...states.map(s =>
       `  <url><loc>https://www.wheretoskinext.com/ski/${slugifyState(s)}/</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>${today}</lastmod></url>`
@@ -1220,7 +1238,9 @@ async function main() {
   const sitemapPath = path.join(__dirname, 'sitemap.xml');
   fs.mkdirSync(path.join(__dirname), { recursive: true });
   fs.writeFileSync(sitemapPath, generateSitemap(resorts), 'utf8');
-  console.log(`✓ Generated sitemap.xml (${resorts.length + 5} URLs)`);
+  const skiNearN = listSkiNearSlugs().length;
+  const urlTotal = 2 + 6 + skiNearN + [...new Set(resorts.map(r => r.state))].length + resorts.length;
+  console.log(`✓ Generated sitemap.xml (${urlTotal} URLs, ${skiNearN} ski-near hubs)`);
 
   console.log('\nDone. Next steps:');
   console.log('  1. node generate-mountain-pages.mjs');

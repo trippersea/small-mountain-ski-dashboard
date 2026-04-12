@@ -54,8 +54,8 @@ function buildMeta(r) {
 
 // ── Full HTML page ────────────────────────────────────────────────────────────
 function buildPage(r) {
-  const slug        = slugify(r.name);
-  const canonUrl    = `https://wheretoski.com/report/${slug}`;
+  const reportSlug  = r.id || slugify(r.name);
+  const canonUrl    = `https://www.wheretoskinext.com/ski-report/${reportSlug}/`;
   const metaDesc    = buildMeta(r);
   const passClr     = passColor(r.passGroup);
   const vertTier    = r.vertical >= 2000 ? 'Big Mountain' : r.vertical >= 1200 ? 'Mid-Size' : 'Local Hill';
@@ -79,21 +79,23 @@ function buildPage(r) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>${esc(r.name)} Ski Report — Conditions, Trails & Snow Forecast | Where To Ski?!</title>
+  <title>${esc(r.name)} Ski Report — Conditions, Trails & Snow Forecast | WhereToSkiNext.com</title>
   <meta name="description" content="${esc(metaDesc)}" />
   <link rel="canonical" href="${esc(canonUrl)}" />
 
   <!-- Open Graph -->
   <meta property="og:type"        content="website" />
   <meta property="og:url"         content="${esc(canonUrl)}" />
-  <meta property="og:title"       content="${esc(r.name)} Ski Report — Where To Ski?!" />
+  <meta property="og:title"       content="${esc(r.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta property="og:description" content="${esc(metaDesc)}" />
-  <meta property="og:site_name"   content="Where To Ski?!" />
+  <meta property="og:site_name"   content="WhereToSkiNext.com" />
+  <meta property="og:image"       content="https://www.wheretoskinext.com/ski-decision-logo.png" />
 
   <!-- Twitter -->
-  <meta name="twitter:card"        content="summary" />
-  <meta name="twitter:title"       content="${esc(r.name)} — Where To Ski?!" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="${esc(r.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
+  <meta name="twitter:image"      content="https://www.wheretoskinext.com/ski-decision-logo.png" />
 
   <!-- JSON-LD structured data -->
   <script type="application/ld+json">${jsonLd}</script>
@@ -105,7 +107,7 @@ function buildPage(r) {
   <link rel="stylesheet" href="/styles.css" />
 
   <!-- Tell the client app which resort to open on load -->
-  <script>window.__REPORT_SLUG__ = ${JSON.stringify(slug)};</script>
+  <script>window.__REPORT_SLUG__ = ${JSON.stringify(reportSlug)};</script>
 </head>
 <body>
   <!-- ── Pre-rendered resort summary (crawlable, no JS needed) ─────────────── -->
@@ -143,7 +145,7 @@ function buildPage(r) {
 
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <a href="/" class="nav-brand">Where To Ski?!</a>
+      <a href="/" class="nav-brand">WhereToSkiNext.com</a>
       <div class="nav-divider"></div>
       <a href="/#verdictSection" class="nav-cta">My Pick</a>
       <a href="/#compareSection" class="nav-cta nav-cta-db">Compare</a>
