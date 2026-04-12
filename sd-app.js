@@ -1194,7 +1194,7 @@ function renderVerdict(resorts) {
       : '';
   } else {
     primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
-    secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictRefineFromCard">Adjust my preferences</button>`;
+    secondaryBtn = '';
   }
 
   els.verdictCard.innerHTML = `
@@ -1231,16 +1231,19 @@ function renderVerdict(resorts) {
 
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
-  document.getElementById('verdictRefineFromCard')?.addEventListener('click', () => {
-    const panel = els.plannerSection;
-    if (!panel) return;
-    panel.hidden = false;
-    syncPlannerControls();
-    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
-  });
   if (refinePromptEl) {
     refinePromptEl.hidden = false;
-    refinePromptEl.classList.toggle('hn-refine-prompt--urgent', tier === 'bad' || tier === 'marginal');
+    const isUrgent = tier === 'bad' || tier === 'marginal';
+    refinePromptEl.classList.toggle('hn-refine-prompt--urgent', isUrgent);
+    const titleEl = document.getElementById('hnRefinePromptTitle');
+    const subEl   = document.getElementById('hnRefinePromptSub');
+    if (isUrgent) {
+      if (titleEl) titleEl.textContent = 'Conditions are rough right now.';
+      if (subEl)   subEl.textContent   = 'Try widening your distance, easing the snow filter, or picking a different pass.';
+    } else {
+      if (titleEl) titleEl.textContent = 'Not seeing the right mountain?';
+      if (subEl)   subEl.textContent   = 'Adjust snow, crowds, ticket price or distance to find a better match.';
+    }
   }
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
@@ -1264,7 +1267,18 @@ function renderVerdict(resorts) {
           ? `Other options near ${_cityEw} this weekend`
           : 'Other options this weekend';
         const sub = _hnSection.querySelector('.hn-results-sub');
-        if (sub) sub.textContent = 'None are a strong call right now — adjust preferences below to find a better match.';
+        if (sub) {
+          const stormNote = stormTotal > 0
+            ? 'A storm is in the forecast — check back mid-week, conditions may improve.'
+            : 'No storm systems in the next 3 days. Check back mid-week — forecasts shift fast.';
+          sub.textContent = stormNote;
+        }
+      } else if (tier === 'marginal') {
+        _hnTitle.textContent = _cityEw
+          ? `Other options near ${_cityEw}`
+          : 'Other options';
+        const sub = _hnSection.querySelector('.hn-results-sub');
+        if (sub) sub.textContent = 'Conditions are marginal across the board — refine your preferences for a better match.';
       } else {
         _hnTitle.textContent = (_cityEw && _passLabel)
           ? `Best ${_passLabel}mountains ${_distLabel} of ${_cityEw}`
@@ -1327,39 +1341,8 @@ function renderVerdict(resorts) {
     }
   }
 
+  // Guidance block removed — storm note is now in the runner-up section subtitle
   document.getElementById('hnConditionsGuidance')?.remove();
-  if (tier === 'bad' || tier === 'marginal') {
-    const guidanceBlock = document.createElement('div');
-    guidanceBlock.id = 'hnConditionsGuidance';
-    guidanceBlock.className = 'hn-conditions-guidance';
-
-    const stormNote = stormTotal > 0
-      ? `A storm system is in the forecast — conditions may improve by the end of the week.`
-      : `No storm systems are showing in the next 3 days for mountains near you.`;
-
-    guidanceBlock.innerHTML = `
-    <div class="hn-guidance-inner">
-      <div class="hn-guidance-icon">&#9729;</div>
-      <div class="hn-guidance-text">
-        <strong>Not a great weekend from ${esc(_cityEw || 'your location')}.</strong>
-        <p>${stormNote} Check back mid-week — forecasts shift quickly and a storm can change the rankings overnight.</p>
-      </div>
-      <button type="button" class="hn-guidance-btn" id="hnGuidanceRefineBtn">Adjust preferences &darr;</button>
-    </div>`;
-
-    const runnerSection = document.getElementById('hnRunnerUpSection');
-    if (runnerSection && runnerSection.parentNode) {
-      runnerSection.parentNode.insertBefore(guidanceBlock, runnerSection.nextSibling);
-    }
-
-    document.getElementById('hnGuidanceRefineBtn')?.addEventListener('click', () => {
-      const panel = els.plannerSection;
-      if (!panel) return;
-      panel.hidden = false;
-      syncPlannerControls();
-      setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
-    });
-  }
 }
 
 // ─── AI verdict write-up ───────────────────────────────────────────────────────

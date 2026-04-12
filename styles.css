@@ -3958,8 +3958,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  padding: 14px 20px;
-  margin-bottom: 12px;
+  padding: 16px 20px;
   background: #fff;
   border: 1px solid #dde5ee;
   border-radius: 12px;
@@ -3967,7 +3966,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .hn-refine-prompt-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 .hn-refine-prompt-text strong {
   font-size: 14px;
@@ -3977,15 +3976,15 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .hn-refine-prompt-text span {
   font-size: 13px;
   color: #7a92a8;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .hn-refine-prompt-btn {
   flex-shrink: 0;
   background: #1a2e45;
   color: #fff;
   font-size: 13px;
-  font-weight: 500;
-  padding: 10px 20px;
+  font-weight: 600;
+  padding: 11px 22px;
   border-radius: 9px;
   border: none;
   cursor: pointer;
@@ -3994,12 +3993,23 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   transition: background 0.12s;
 }
 .hn-refine-prompt-btn:hover { background: #273044; }
+/* Urgent state — bad or marginal conditions */
 .hn-refine-prompt--urgent {
   background: #f0f6ff;
-  border-color: #bfdbfe;
+  border-color: #93c5fd;
+  border-width: 1.5px;
 }
 .hn-refine-prompt--urgent .hn-refine-prompt-text strong {
   color: #1e3a5f;
+}
+.hn-refine-prompt--urgent .hn-refine-prompt-text span {
+  color: #3d5166;
+}
+.hn-refine-prompt--urgent .hn-refine-prompt-btn {
+  background: #1e3a5f;
+}
+.hn-refine-prompt--urgent .hn-refine-prompt-btn:hover {
+  background: #0f1c2e;
 }
 @media (max-width: 640px) {
   .hn-refine-prompt { flex-direction: column; align-items: flex-start; }
