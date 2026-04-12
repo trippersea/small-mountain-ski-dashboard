@@ -3963,6 +3963,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   border: 1px solid #dde5ee;
   border-radius: 12px;
 }
+.hn-refine-prompt[hidden] { display: none; }
 .hn-refine-prompt-text {
   display: flex;
   flex-direction: column;
