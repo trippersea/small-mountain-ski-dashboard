@@ -107,8 +107,10 @@ const state = Object.seal({
   passPreference: loadSavedPassPreference(),
   tableSearch:    '',
   tableViewAll:   false,
-  /** Ski day for forecast index (hero “When”); set by initHeroWhenControls / wireHeroWhenChips */
+  /** Ski day for forecast index (hero); set by initHeroWhenControls / heroSentenceDay */
   targetDate:     null,
+  /** One of weekday|friday|saturday|sunday — matches hero sentence day control */
+  skiDayPreset:   'weekday',
 });
 
 // ─── Hero “When” bar — maps chip value → next occurrence Date (local) ────────
@@ -151,62 +153,47 @@ function smartDefaultWhenVal() {
 /** Baseline “When” chip from first load (for custom segment styling) */
 let heroWhenDefaultVal = null;
 
-/** Default hero When chip + state.targetDate before first render */
+function fillHeroSentenceDayOptions() {
+  const sel = document.getElementById('heroSentenceDay');
+  if (!sel) return;
+  const vals = [
+    ['weekday', 'Weekday'],
+    ['friday', 'Friday'],
+    ['saturday', 'Saturday'],
+    ['sunday', 'Sunday'],
+  ];
+  sel.innerHTML = vals.map(([v]) => {
+    const d = dayValToDate(v);
+    const label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    return `<option value="${v}">${label}</option>`;
+  }).join('');
+}
+
+/** Default hero ski day + state.targetDate before first render */
 function initHeroWhenControls() {
+  fillHeroSentenceDayOptions();
   const val = smartDefaultWhenVal();
   heroWhenDefaultVal = val;
-  document.querySelectorAll('.hn-dchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === val));
+  state.skiDayPreset = val;
+  const sel = document.getElementById('heroSentenceDay');
+  if (sel) sel.value = val;
   state.targetDate = dayValToDate(val);
 }
 
-function wireHeroWhenChips() {
-  document.querySelectorAll('.hn-dchip').forEach(chip => {
-    chip.addEventListener('click', e => {
-      e.stopPropagation();
-      const val = chip.dataset.val;
-      document.querySelectorAll('.hn-dchip').forEach(c => c.classList.remove('hn-chip-on'));
-      chip.classList.add('hn-chip-on');
-      state.targetDate = dayValToDate(val);
-      updateHeroFilterSegmentsCustom();
-      render();
-    });
+function wireHeroSentenceDay() {
+  const sel = document.getElementById('heroSentenceDay');
+  if (!sel) return;
+  sel.addEventListener('change', () => {
+    state.skiDayPreset = sel.value;
+    state.targetDate = dayValToDate(sel.value);
+    updateHeroFilterSegmentsCustom();
+    pushUrlDebounced();
+    render();
   });
 }
 
-/** Legacy hook (hero filter bar segments removed); kept for syncPlannerControls callers */
+/** Legacy hook; kept for syncPlannerControls callers */
 function updateHeroFilterSegmentsCustom() {}
-
-/** Pass & drive chips in hero (sync with hidden selects; change handlers run scoring) */
-function wireHeroPassTripChips() {
-  document.querySelectorAll('.hn-pchip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.hn-pchip').forEach(c => c.classList.remove('hn-chip-on'));
-      chip.classList.add('hn-chip-on');
-      const val = chip.dataset.val;
-      const sel = document.getElementById('heroPassSelect');
-      if (sel) {
-        sel.value = val;
-        sel.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-      const passF = document.getElementById('passFilter');
-      if (passF) passF.value = val;
-      updateHeroFilterSegmentsCustom();
-    });
-  });
-  document.querySelectorAll('.hn-tchip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.hn-tchip').forEach(c => c.classList.remove('hn-chip-on'));
-      chip.classList.add('hn-chip-on');
-      const val = chip.dataset.val;
-      const filterSel = document.getElementById('howFarFilter');
-      if (filterSel) {
-        filterSel.value = val;
-        filterSel.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-      updateHeroFilterSegmentsCustom();
-    });
-  });
-}
 
 // ─── Element cache ────────────────────────────────────────────────────────────
 const els = {
@@ -909,8 +896,13 @@ function syncPlannerControls() {
   if (_hfEl) _hfEl.value = String(state.howFar);
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
 
-  document.querySelectorAll('.hn-pchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === state.passFilter));
-  document.querySelectorAll('.hn-tchip').forEach(c => c.classList.toggle('hn-chip-on', Number(c.dataset.val) === state.howFar));
+  const _tripSel = document.getElementById('heroSentenceTrip');
+  if (_tripSel) _tripSel.value = String(state.howFar);
+  const _daySel = document.getElementById('heroSentenceDay');
+  if (_daySel) {
+    fillHeroSentenceDayOptions();
+    _daySel.value = state.skiDayPreset || smartDefaultWhenVal();
+  }
   updateHeroFilterSegmentsCustom();
   syncWeekendLodgingStrip(computeVerdict(filteredResorts()));
 }
@@ -946,7 +938,11 @@ function commitPlannerPriorityChange(key, btn) {
 
 function scrollToBestMatchFromFilters(source) {
   trackEvent('refine_see_verdict', { source: String(source || 'unknown') });
-  els.verdictSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (document.getElementById('searchSection')?.classList.contains('hn-hero-split')) {
+    document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    els.verdictSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
@@ -1047,15 +1043,28 @@ function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
   return out;
 }
 
+function updateHeroVerdictEmptyState() {
+  const el = document.getElementById('heroVerdictEmpty');
+  if (!el) return;
+  el.hidden = !!state.origin;
+}
+
 function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
   const refinePromptEl = document.getElementById('hnRefinePrompt');
+  const splitHero = document.getElementById('searchSection')?.classList.contains('hn-hero-split');
   if (!state.origin) {
     if (refinePromptEl) refinePromptEl.hidden = true;
     els.verdictSection.classList.add('hn-verdict-pre-location');
-    els.verdictSection.classList.add('hn-verdict-collapsed');
-    els.verdictSection.setAttribute('aria-hidden', 'true');
+    if (splitHero) {
+      els.verdictSection.classList.remove('hn-verdict-collapsed');
+      els.verdictSection.removeAttribute('aria-hidden');
+    } else {
+      els.verdictSection.classList.add('hn-verdict-collapsed');
+      els.verdictSection.setAttribute('aria-hidden', 'true');
+    }
     els.verdictCard.innerHTML = '';
+    updateHeroVerdictEmptyState();
     const _hn = document.getElementById('hnRunnerUpSection');
     if (_hn) _hn.hidden = true;
     document.getElementById('hnConditionsGuidance')?.remove();
@@ -1069,6 +1078,7 @@ function renderVerdict(resorts) {
     requestAnimationFrame(() => els.verdictSection.classList.add('hn-verdict-reveal'));
     setTimeout(() => els.verdictSection.classList.remove('hn-verdict-reveal'), 450);
   }
+  updateHeroVerdictEmptyState();
   const v = computeVerdict(resorts);
   syncWeekendLodgingStrip(v);
   const _hnSectionEarly = document.getElementById('hnRunnerUpSection');
@@ -1225,9 +1235,11 @@ function renderVerdict(resorts) {
     secondaryBtn = '';
   }
 
+  const _dockHeroCls = document.querySelector('.hn-hero-verdict-dock') ? ' vcard-hero-dash--dock' : '';
+
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}">
-      <div class="vcard-hero-dash" style="${_verdictPhotoStyle}">
+      <div class="vcard-hero-dash${_dockHeroCls}" style="${_verdictPhotoStyle}">
         <div class="vb-verdict-badge ${verdictBadgeCls}">${esc(verdictBadgeText)}</div>
         <div class="vcard-eyebrow-dash">${_eyebrow}</div>
         ${zipNudgeHtml}
@@ -1249,7 +1261,17 @@ function renderVerdict(resorts) {
           ${secondaryBtn}
         </div>
       </div>
-    </div>`;
+       </div>`;
+
+  if (document.getElementById('searchSection')?.classList.contains('hn-hero-split')) {
+    const _dock = document.querySelector('.hn-hero-verdict-dock');
+    if (_dock) {
+      requestAnimationFrame(() => {
+        _dock.classList.add('hn-hero-verdict-dock--pulse');
+        setTimeout(() => _dock.classList.remove('hn-hero-verdict-dock--pulse'), 520);
+      });
+    }
+  }
 
   const _fb = document.getElementById('verdictFallbackCopy');
   if (_fb) {
@@ -2345,6 +2367,7 @@ function wireEvents() {
   if (els.passFilter) els.passFilter.addEventListener('change', e => {
     state.passFilter = e.target.value;
     state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter;
+    if (els.heroPassSelect) els.heroPassSelect.value = state.passFilter;
     trackEvent('pass_selected', { pass_type: String(state.passFilter), source: 'compare_filter' });
     savePlannerState(); syncPlannerControls(); pushUrlDebounced(); render();
   });
@@ -2397,6 +2420,8 @@ function wireEvents() {
     state.howFar = 0; state.verticalFilter = 'any';
     state.weights = { ...DEFAULT_WEIGHTS };
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
+    state.skiDayPreset = smartDefaultWhenVal();
+    state.targetDate = dayValToDate(state.skiDayPreset);
     tableSort = { col: 'planner', dir: 'desc' };
     if (els.passFilter)     els.passFilter.value = 'All';
     els.stateFilter.value = 'All';
@@ -2452,7 +2477,19 @@ function wireEvents() {
     els.heroPassSelect.addEventListener('change', () => {
       state.passFilter = els.heroPassSelect.value || 'All';
       state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter;
+      if (els.passFilter) els.passFilter.value = state.passFilter;
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
+    });
+  }
+  const _heroTrip = document.getElementById('heroSentenceTrip');
+  if (_heroTrip) {
+    _heroTrip.addEventListener('change', e => {
+      const v = e.target.value;
+      const hf = document.getElementById('howFarFilter');
+      if (hf) {
+        hf.value = v;
+        hf.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     });
   }
   if (els.heroSnowSelect) {
@@ -2585,13 +2622,18 @@ function syncVerdictVisibility() {
   if (state.origin) {
     section.classList.remove('hn-verdict-pre-location');
   } else {
-    const hasPrompt = document.querySelector('.vcard-location-prompt');
-    if (hasPrompt) section.classList.add('hn-verdict-pre-location');
+    section.classList.add('hn-verdict-pre-location');
   }
 }
 
 function initialize() {
   if (els.passFilter) els.passFilter.innerHTML = UNIQUE_PASSES.map(v => `<option value="${v}">${v === 'All' ? 'All' : v}</option>`).join('');
+  if (els.heroPassSelect) {
+    els.heroPassSelect.innerHTML = UNIQUE_PASSES.map(v => {
+      const lab = v === 'All' ? 'any pass' : v === 'Independent' ? 'Independent / other' : `${v} Pass`;
+      return `<option value="${v}">${lab}</option>`;
+    }).join('');
+  }
   els.stateFilter.innerHTML = UNIQUE_STATES.map(v => `<option value="${v}">${v}</option>`).join('');
 
   loadWeatherCache();
@@ -2629,8 +2671,7 @@ function initialize() {
   syncPlannerControls();
   syncVerdictVisibility();
   wireEvents();
-  wireHeroPassTripChips();
-  wireHeroWhenChips();
+  wireHeroSentenceDay();
   updateHeroHeadline();
   render();
 
@@ -2701,7 +2742,7 @@ function initialize() {
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
       updatePlannerOriginLabel();
       syncVerdictVisibility();
-      if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       if (isRememberChecked()) saveOrigin(loc); else clearSavedOrigin();
       pushUrlDebounced();
       await loadDriveTimes();
@@ -2755,7 +2796,7 @@ function initialize() {
       els.locationStatus.classList.remove('hero-location-status--error');
       updatePlannerOriginLabel();
       syncVerdictVisibility();
-      if (els.verdictSection) setTimeout(() => els.verdictSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, () => {
       els.locationStatus.textContent = 'Location blocked or unavailable — allow access in your browser, or type a ZIP or city.';
       els.locationStatus.classList.add('hero-location-status--error');
@@ -2766,8 +2807,8 @@ function initialize() {
 
 function updateHeroHeadline() {
   const el = document.getElementById('heroHeadline');
-  if (!el) return;
-  el.innerHTML = 'Pick a mountain that <em>fits your day</em>';
+  if (!el || el.querySelector('.hn-editorial-line')) return;
+  el.innerHTML = '<span class="hn-editorial-line hn-editorial-line--ink">Stop guessing.</span><span class="hn-editorial-line hn-editorial-line--accent">Start skiing.</span>';
 }
 
 initialize();
