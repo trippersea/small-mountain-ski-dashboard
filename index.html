@@ -463,17 +463,32 @@
         <div class="hn-split-panel hn-split-panel--editorial">
           <div class="hn-editorial-inner">
           <p class="hn-editorial-kicker"><span class="hn-editorial-kicker-line" aria-hidden="true"></span> Real-time conditions engine</p>
-          <h1 id="heroHeadline" class="hn-editorial-headline">Stop guessing. <span class="hn-editorial-accent">Start skiing.</span></h1>
-          <p class="hn-editorial-support">Snow, drive, crowds, and pass—ranked together so you choose one mountain with confidence.</p>
+          <h1 id="heroHeadline" class="hn-editorial-headline">Find the best mountain<br /><span class="hn-editorial-headline-sub">for your next ski day.</span></h1>
+          <p class="hn-editorial-support">Snow, drive time, pass access, and crowds—ranked together in one recommendation.</p>
 
-          <div class="hn-sentence" role="group" aria-label="Your trip details">
-            <p class="hn-sentence-flow">
-              <span class="hn-sentence-lead">I am starting in</span><span class="hn-sentence-token"><input id="originInput" type="text" class="hn-sentence-field hn-sentence-field--location" placeholder="City, state, or ZIP" autocomplete="off" aria-label="Starting location" /></span><span class="hn-sentence-lead">, I have a</span><span class="hn-sentence-token"><select id="heroPassSelect" class="hn-sentence-field hn-sentence-field--select" aria-label="Pass"></select></span><span class="hn-sentence-lead">, and I&rsquo;m skiing on</span><span class="hn-sentence-token"><select id="heroSentenceDay" class="hn-sentence-field hn-sentence-field--select" aria-label="Ski day"></select></span><span class="hn-sentence-lead hn-sentence-lead--mid"> for a </span><span class="hn-sentence-token"><select id="heroSentenceTrip" class="hn-sentence-field hn-sentence-field--select" aria-label="Trip length">
-                <option value="0">day trip</option>
-                <option value="1">weekend trip</option>
-                <option value="2">long haul (any distance)</option>
-              </select></span><span class="hn-sentence-lead hn-sentence-lead--end">.</span>
-            </p>
+          <div class="hn-guided-form" role="group" aria-label="Trip details">
+            <div class="hn-guided-row">
+              <label class="hn-guided-label" for="originInput">Starting from</label>
+              <input id="originInput" type="text" class="hn-guided-input" placeholder="ZIP code or city, state" autocomplete="off" inputmode="text" />
+            </div>
+            <div class="hn-guided-row hn-guided-row--half">
+              <div class="hn-guided-field">
+                <label class="hn-guided-label" for="heroPassSelect">Pass</label>
+                <select id="heroPassSelect" class="hn-guided-select" aria-label="Pass"></select>
+              </div>
+              <div class="hn-guided-field">
+                <label class="hn-guided-label" for="heroSentenceDay">Skiing</label>
+                <select id="heroSentenceDay" class="hn-guided-select" aria-label="Ski day"></select>
+              </div>
+            </div>
+            <div class="hn-guided-row">
+              <label class="hn-guided-label" for="heroSentenceTrip">Trip type</label>
+              <select id="heroSentenceTrip" class="hn-guided-select" aria-label="Trip length">
+                <option value="0">Day trip</option>
+                <option value="1">Weekend</option>
+                <option value="2">Any distance</option>
+              </select>
+            </div>
           </div>
 
           <div class="hn-editorial-actions">
@@ -512,9 +527,9 @@
           <section id="verdictSection" class="verdict-section hn-hero-verdict-section hn-verdict-pre-location" aria-label="Top mountain pick">
             <div class="hn-hero-verdict-dock">
               <div id="heroVerdictEmpty" class="hn-hero-verdict-empty">
-                <p class="hn-hero-verdict-empty-eyebrow">Today&rsquo;s top pick</p>
-                <p class="hn-hero-verdict-empty-title">Your match appears here</p>
-                <p class="hn-hero-verdict-empty-sub">Search from the left—then watch the mountain, score, and conditions snap in.</p>
+                <p class="hn-hero-verdict-empty-eyebrow">Your top pick</p>
+                <p class="hn-hero-verdict-empty-title">Runs here after you search</p>
+                <p class="hn-hero-verdict-empty-sub">Set your start point and preferences, then tap Find My Mountain—we&rsquo;ll score every option and surface the best match.</p>
               </div>
               <div id="verdictCard" class="hn-verdict-card-root"></div>
             </div>

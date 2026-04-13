@@ -1205,9 +1205,6 @@ function renderVerdict(resorts) {
     return `data-bd="${btoa(bd)}"`;
   })() : '';
 
-  // PATCH 3: Use resort-specific photo in verdict card hero
-  const _verdictPhotoStyle = resortPhotoStyle(resort);
-
   const verdictBadgeText = tier === 'great' ? 'Go — great conditions'
     : tier === 'good'    ? 'Go — good conditions'
     : tier === 'marginal'? 'Worth checking'
@@ -1235,11 +1232,15 @@ function renderVerdict(resorts) {
     secondaryBtn = '';
   }
 
-  const _dockHeroCls = document.querySelector('.hn-hero-verdict-dock') ? ' vcard-hero-dash--dock' : '';
+  const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
+  const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock vcard-hero-dash--light' : '';
+  const _vcardHeroLightCls = _isHeroDock ? ' vcard--hero-light' : '';
+  const _verdictPhotoStyle = _isHeroDock ? '' : resortPhotoStyle(resort);
+  const _heroDashStyleAttr = _verdictPhotoStyle ? ` style="${_verdictPhotoStyle}"` : '';
 
   els.verdictCard.innerHTML = `
-    <div class="vcard vcard--dash vcard--tier-${tier}">
-      <div class="vcard-hero-dash${_dockHeroCls}" style="${_verdictPhotoStyle}">
+    <div class="vcard vcard--dash vcard--tier-${tier}${_vcardHeroLightCls}">
+      <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
         <div class="vb-verdict-badge ${verdictBadgeCls}">${esc(verdictBadgeText)}</div>
         <div class="vcard-eyebrow-dash">${_eyebrow}</div>
         ${zipNudgeHtml}
@@ -2808,9 +2809,8 @@ function initialize() {
 function updateHeroHeadline() {
   const el = document.getElementById('heroHeadline');
   if (!el) return;
-  if (!el.querySelector('.hn-editorial-accent')) {
-    el.innerHTML = 'Stop guessing. <span class="hn-editorial-accent">Start skiing.</span>';
-  }
+  if (el.querySelector('.hn-editorial-headline-sub')) return;
+  el.innerHTML = 'Find the best mountain<br /><span class="hn-editorial-headline-sub">for your next ski day.</span>';
 }
 
 initialize();
