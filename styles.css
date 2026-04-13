@@ -242,17 +242,17 @@ p { color: var(--text-body); margin: 0; }
   background-position: center 40%;
 }
 
-/* Hero text — white on photo background */
-.hero h1 {
+/* Hero text — white on photo background (split editorial hero uses its own dark type) */
+.hero:not(.hn-hero-split) h1 {
   color: var(--text-on-dark);
 }
-.hero p,
-.hero .muted,
-.hero .helper-text,
-.hero .hero-quick-label {
+.hero:not(.hn-hero-split) p,
+.hero:not(.hn-hero-split) .muted,
+.hero:not(.hn-hero-split) .helper-text,
+.hero:not(.hn-hero-split) .hero-quick-label {
   color: rgba(255, 255, 255, 0.82);
 }
-.hero .small {
+.hero:not(.hn-hero-split) .small {
   color: rgba(255, 255, 255, 0.70);
 }
 /* location-row used in hero search meta */
