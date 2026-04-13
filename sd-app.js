@@ -107,11 +107,11 @@ const state = Object.seal({
   passPreference: loadSavedPassPreference(),
   tableSearch:    '',
   tableViewAll:   false,
-  /** Ski day for forecast index (hero “When”); set by initHeroWhenControls / wireHeroWhenChips */
+  /** Ski day for forecast index (hero); set by initHeroWhenControls / heroWhenSelect */
   targetDate:     null,
 });
 
-// ─── Hero “When” bar — maps chip value → next occurrence Date (local) ────────
+// ─── Hero ski day — maps control value → forecast Date (local) ───────────────
 const HERO_WHEN_LABELS = { weekday: 'Weekday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
 
 function dayValToDate(val) {
@@ -120,86 +120,84 @@ function dayValToDate(val) {
   const dow = today.getDay();
   const d = new Date(today);
   if (val === 'weekday') {
-    if (dow === 0) d.setDate(d.getDate() + 1);
-    else if (dow === 6) d.setDate(d.getDate() + 2);
+    for (let i = 1; i <= 7; i++) {
+      const x = new Date(today);
+      x.setDate(today.getDate() + i);
+      const wd = x.getDay();
+      if (wd >= 1 && wd <= 5) {
+        x.setHours(12, 0, 0, 0);
+        return x;
+      }
+    }
+    d.setHours(12, 0, 0, 0);
     return d;
   }
   if (val === 'friday') {
     const du = (5 - dow + 7) % 7 || 7;
     d.setDate(d.getDate() + du);
+    d.setHours(12, 0, 0, 0);
     return d;
   }
   if (val === 'saturday') {
     const du = (6 - dow + 7) % 7 || 7;
     d.setDate(d.getDate() + du);
+    d.setHours(12, 0, 0, 0);
     return d;
   }
   if (val === 'sunday') {
     const du = (7 - dow) % 7 || 7;
     d.setDate(d.getDate() + du);
+    d.setHours(12, 0, 0, 0);
     return d;
   }
-  return today;
+  d.setHours(12, 0, 0, 0);
+  return d;
 }
 
+/** Default ski day in hero: tomorrow’s bucket (Fri / Sat / Sun / weekday) */
 function smartDefaultWhenVal() {
-  const dow = new Date().getDay();
-  if (dow === 4) return 'friday';
-  if (dow === 5) return 'saturday';
-  if (dow === 6) return 'sunday';
+  const t = new Date();
+  t.setDate(t.getDate() + 1);
+  const dow = t.getDay();
+  if (dow === 5) return 'friday';
+  if (dow === 6) return 'saturday';
+  if (dow === 0) return 'sunday';
   return 'weekday';
+}
+
+function heroPassOptionLabel(v) {
+  if (v === 'All') return 'any pass';
+  if (v === 'Independent') return 'Indie / unaffiliated';
+  return `${v} Pass`;
 }
 
 /** Baseline “When” chip from first load (for custom segment styling) */
 let heroWhenDefaultVal = null;
 
-/** Default hero When chip + state.targetDate before first render */
+/** Default hero ski day + state.targetDate before first render */
 function initHeroWhenControls() {
   const val = smartDefaultWhenVal();
   heroWhenDefaultVal = val;
-  document.querySelectorAll('.hn-dchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === val));
+  const whenSel = document.getElementById('heroWhenSelect');
+  if (whenSel) whenSel.value = val;
   state.targetDate = dayValToDate(val);
-  const el = document.getElementById('fbWhenVal');
-  if (el) {
-    const text = HERO_WHEN_LABELS[val] || val;
-    el.innerHTML = esc(text) + ' <span class="hn-fb-chevron">&#8964;</span>';
-  }
 }
 
-function wireHeroWhenChips() {
-  document.querySelectorAll('.hn-dchip').forEach(chip => {
-    chip.addEventListener('click', e => {
-      e.stopPropagation();
-      const val = chip.dataset.val;
-      document.querySelectorAll('.hn-dchip').forEach(c => c.classList.remove('hn-chip-on'));
-      chip.classList.add('hn-chip-on');
-      state.targetDate = dayValToDate(val);
-      const el = document.getElementById('fbWhenVal');
-      if (el) {
-        const text = HERO_WHEN_LABELS[val] || val;
-        el.innerHTML = esc(text) + ' <span class="hn-fb-chevron">&#8964;</span>';
-      }
-      const p = document.getElementById('fdWhenPanel');
-      if (p) p.hidden = true;
-      document.getElementById('fbWhenSeg')?.classList.remove('hn-fb-seg--open');
-      updateHeroFilterSegmentsCustom();
-      render();
-    });
+function wireHeroWhenSelect() {
+  const sel = document.getElementById('heroWhenSelect');
+  if (!sel) return;
+  sel.addEventListener('change', () => {
+    state.targetDate = dayValToDate(sel.value);
+    updateHeroFilterSegmentsCustom();
+    pushUrlDebounced();
+    render();
   });
 }
 
-/** Pass / Trip / When segments: show stronger styling when not at app defaults */
+/** Trip segment: stronger styling when not day-trip default */
 function updateHeroFilterSegmentsCustom() {
-  const passSeg = document.getElementById('fbPassSeg');
   const tripSeg = document.getElementById('fbTripSeg');
-  const whenSeg = document.getElementById('fbWhenSeg');
-  if (passSeg) passSeg.classList.toggle('hn-fb-seg--custom', state.passFilter !== 'All');
   if (tripSeg) tripSeg.classList.toggle('hn-fb-seg--custom', state.howFar !== 0);
-  const whenChip = document.querySelector('.hn-dchip.hn-chip-on');
-  const whenVal = whenChip ? whenChip.dataset.val : heroWhenDefaultVal;
-  if (whenSeg && heroWhenDefaultVal != null) {
-    whenSeg.classList.toggle('hn-fb-seg--custom', whenVal !== heroWhenDefaultVal);
-  }
 }
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -903,7 +901,6 @@ function syncPlannerControls() {
   if (_hfEl) _hfEl.value = String(state.howFar);
   document.querySelectorAll('.vcard-range-btn[data-tier]').forEach(b => b.classList.toggle('active', Number(b.dataset.tier) === state.howFar));
 
-  document.querySelectorAll('.hn-pchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === state.passFilter));
   document.querySelectorAll('.hn-tchip').forEach(c => c.classList.toggle('hn-chip-on', Number(c.dataset.val) === state.howFar));
   updateHeroFilterSegmentsCustom();
   syncWeekendLodgingStrip(computeVerdict(filteredResorts()));
@@ -1148,32 +1145,39 @@ function renderVerdict(resorts) {
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
 
   const tierConfig = {
-    great:    { label: 'Great conditions', pillClass: 'vcard-dash-pill--cond-great', dot: '#22c55e' },
-    good:     { label: 'Good conditions',  pillClass: 'vcard-dash-pill--cond-good', dot: '#38bdf8' },
-    marginal: { label: 'Fair conditions',    pillClass: 'vcard-dash-pill--cond-warn', dot: '#f59e0b' },
-    bad:      { label: 'Rough conditions',   pillClass: 'vcard-dash-pill--cond-bad', dot: '#f87171' },
+    great:    { label: 'Great conditions', tone: 'great' },
+    good:     { label: 'Good conditions', tone: 'good' },
+    marginal: { label: 'Fair conditions', tone: 'marginal' },
+    bad:      { label: 'Rough conditions', tone: 'bad' },
   };
   const tc = tierConfig[tier] || tierConfig.good;
 
   const scoreNum = breakdown ? Math.round(breakdown.score) : 0;
   const snowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
-    ? `${stormTotal.toFixed(0)}" forecast`
+    ? `${stormTotal.toFixed(0)}" in the forecast`
     : (typeof tomorrowIn === 'number' && tomorrowIn >= 0.5)
-    ? `${tomorrowIn.toFixed(0)}" forecast`
-    : 'Dry forecast';
+    ? `${tomorrowIn.toFixed(0)}" in the forecast`
+    : 'Mostly dry in the forecast';
 
   const _wxVerdict = state.weatherCache[resort.id]?.data;
   const crowdLbl = crowdForecast(resort, _wxVerdict).label;
-  const crowdPill = crowdLbl === 'Quiet'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Crowd forecast: Light</span>'
+  const crowdShort = crowdLbl === 'Quiet'
+    ? 'Quieter than average'
     : crowdLbl === 'Avoid'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Crowd forecast: Packed — avoid</span>'
+    ? 'Very busy — hard pass'
     : crowdLbl === 'Busy'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Crowd forecast: Busy</span>'
-    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Crowd forecast: Moderate</span>';
+    ? 'Expect lift lines'
+    : 'Pretty typical';
 
   const zipNudgeHtml = !state.origin
-    ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — once we know where you're leaving from, this swaps to a real mountain with drive time.</p>`
+    ? `<p class="vcard-pick-nudge">Drop in your <strong>town or ZIP</strong> above and hit <strong>Find My Mountain</strong> — we&rsquo;ll swap this for a real pick with drive time.</p>`
+    : '';
+
+  const driveStatHtml = driveText
+    ? `<li class="vcard-pick-stat vcard-pick-stat--drive">
+          <span class="vcard-pick-stat-label">From you</span>
+          <span class="vcard-pick-stat-value">${esc(driveText)}</span>
+        </li>`
     : '';
 
   const verdictBdAttr = breakdown?.components ? (() => {
@@ -1220,25 +1224,47 @@ function renderVerdict(resorts) {
   }
 
   els.verdictCard.innerHTML = `
-    <div class="vcard vcard--dash vcard--tier-${tier}">
-      <div class="vcard-hero-dash" style="${_verdictPhotoStyle}">
-        <div class="vb-verdict-badge ${verdictBadgeCls}">${esc(verdictBadgeText)}</div>
-        <div class="vcard-eyebrow-dash">${_eyebrow}</div>
-        ${zipNudgeHtml}
-        <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
-        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
-        <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
-        <div class="vcard-dash-pills">
-          <span class="vcard-dash-pill ${tc.pillClass}">${esc(tc.label)}</span>
-          <span class="vcard-dash-pill">${esc(snowPillText)}</span>
-          ${driveText ? `<span class="vcard-dash-pill">${esc(driveText)} drive</span>` : ''}
-          ${crowdPill}
-          <span class="vcard-score-mini-pill score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="How we ranked this pick: ${scoreNum} ${_fitWord} — tap for breakdown"><span class="vcard-score-mini-dot"></span><span class="vcard-score-mini-lbl">Fit</span><span class="vcard-score-mini-num">${scoreNum}</span><span class="vcard-score-fit-label">${esc(_fitWord)}</span></span>
+    <div class="vcard vcard--pick vcard--tier-${tier}">
+      <div class="vcard-pick-shell">
+        <div class="vcard-pick-visual" style="${_verdictPhotoStyle}">
+          <div class="vcard-pick-visual-scrim" aria-hidden="true"></div>
+          <span class="vcard-pick-kicker">Your top pick</span>
+          <span class="vb-verdict-badge vcard-pick-verdict-chip ${verdictBadgeCls}">${esc(verdictBadgeText)}</span>
+        </div>
+        <div class="vcard-pick-main">
+          ${zipNudgeHtml}
+          <p class="vcard-pick-meta">${_eyebrow}</p>
+          <button type="button" class="vcard-pick-name" id="verdictPickBtn">${esc(resort.name)}</button>
+          <h3 class="vcard-pick-hook">Why we&rsquo;d ski here first</h3>
+          <div id="verdictWriteupSlot" class="vcard-pick-writeup vcard-writeup--loading"></div>
+          <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
+          <ul class="vcard-pick-stats" aria-label="At a glance">
+            <li class="vcard-pick-stat vcard-pick-stat--cond vcard-pick-stat--tone-${tc.tone}">
+              <span class="vcard-pick-stat-label">Mountain conditions</span>
+              <span class="vcard-pick-stat-value">${esc(tc.label)}</span>
+            </li>
+            <li class="vcard-pick-stat vcard-pick-stat--snow">
+              <span class="vcard-pick-stat-label">Snow story</span>
+              <span class="vcard-pick-stat-value">${esc(snowPillText)}</span>
+            </li>
+            ${driveStatHtml}
+            <li class="vcard-pick-stat vcard-pick-stat--crowd vcard-pick-crowd--${crowdLbl === 'Quiet' ? 'low' : crowdLbl === 'Avoid' ? 'high' : crowdLbl === 'Busy' ? 'mid' : 'mod'}">
+              <span class="vcard-pick-stat-label">Lift-line vibe</span>
+              <span class="vcard-pick-stat-value">${esc(crowdShort)}</span>
+            </li>
+            <li class="vcard-pick-stat vcard-pick-stat--fit score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="How we ranked this pick: ${scoreNum} ${_fitWord} — tap for breakdown">
+              <span class="vcard-pick-stat-label">Trip fit</span>
+              <span class="vcard-pick-stat-value vcard-pick-stat-fit">
+                <span class="vcard-pick-fit-num">${scoreNum}</span>
+                <span class="vcard-pick-fit-word">${esc(_fitWord)}</span>
+              </span>
+            </li>
+          </ul>
         </div>
       </div>
-      <div class="vcard-body vcard-body-dash">
+      <div class="vcard-pick-footer">
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
-        <div class="vcard-actions vcard-actions-dash">
+        <div class="vcard-actions vcard-pick-actions">
           ${primaryBtn}
           ${secondaryBtn}
         </div>
@@ -1436,7 +1462,7 @@ async function injectVerdictWriteup(v) {
     liveSlot.classList.remove('vcard-writeup--fallback');
     if (fb) fb.setAttribute('hidden', '');
   } else {
-    liveSlot.textContent = 'Short take unavailable right now — the forecast and pick above are still live.';
+    liveSlot.textContent = 'Short take unavailable right now — the forecast and tiles above are still live.';
     liveSlot.classList.add('vcard-writeup--fallback');
     if (fb) fb.removeAttribute('hidden');
   }
@@ -2397,6 +2423,12 @@ function wireEvents() {
     const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '0';
     if (els.maxPriceFilter) els.maxPriceFilter.value = '0';
     if (els.heroPassSelect) els.heroPassSelect.value = 'All';
+    const _hwReset = document.getElementById('heroWhenSelect');
+    if (_hwReset) {
+      const v = smartDefaultWhenVal();
+      _hwReset.value = v;
+      state.targetDate = dayValToDate(v);
+    }
     if (els.heroSnowSelect) els.heroSnowSelect.value = '1';
     els.sortBy.value = 'planner';
     els.toggleNight.setAttribute('aria-pressed', 'false'); els.toggleNight.textContent = 'Off';
@@ -2586,6 +2618,9 @@ function syncVerdictVisibility() {
 
 function initialize() {
   if (els.passFilter) els.passFilter.innerHTML = UNIQUE_PASSES.map(v => `<option value="${v}">${v === 'All' ? 'All' : v}</option>`).join('');
+  if (els.heroPassSelect) {
+    els.heroPassSelect.innerHTML = UNIQUE_PASSES.map(v => `<option value="${v}">${heroPassOptionLabel(v)}</option>`).join('');
+  }
   els.stateFilter.innerHTML = UNIQUE_STATES.map(v => `<option value="${v}">${v}</option>`).join('');
 
   loadWeatherCache();
@@ -2612,6 +2647,7 @@ function initialize() {
 
   if (hadUrlState) {
     if (els.passFilter)     els.passFilter.value = state.passFilter;
+    if (els.heroPassSelect) els.heroPassSelect.value = state.passFilter;
     els.stateFilter.value   = state.stateFilter;
     els.sortBy.value        = state.sortBy;
     const _hfSync = document.getElementById('howFarFilter'); if (_hfSync) _hfSync.value = String(state.howFar);
@@ -2623,7 +2659,7 @@ function initialize() {
   syncPlannerControls();
   syncVerdictVisibility();
   wireEvents();
-  wireHeroWhenChips();
+  wireHeroWhenSelect();
   updateHeroHeadline();
   render();
 

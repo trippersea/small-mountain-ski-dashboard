@@ -455,51 +455,6 @@
 
   <button id="backToTop" class="back-to-top" aria-label="Back to top">Top</button>
 
-  <section class="hero-editorial" id="discoveryHero" aria-label="Winter season guide">
-    <div class="hero-editorial-content">
-      <span class="hero-eyebrow">Winter 2026 Season Guide</span>
-      <h1>The Mountains <br><em>Are Calling Differently</em></h1>
-      <p class="hero-lede">
-        Beyond the corporate pass lines lies a different kind of winter. We&rsquo;ve mapped 250+ independent peaks,
-        technical glades, and local legends to help you find where the snow is deep and the soul is still intact.
-      </p>
-      <div class="hero-actions">
-        <a href="#compareSection" class="nav-find-cta" style="padding: 16px 32px !important; font-size: 16px;">Start Your Discovery</a>
-      </div>
-    </div>
-  </section>
-
-  <div class="container" style="padding-top: 0;">
-    <div class="discovery-grid">
-      <div class="discovery-card">
-        <div class="discovery-image" style="background-image: url('https://images.unsplash.com/photo-1482867996988-29ec3aee816d?auto=format&amp;fit=crop&amp;q=80&amp;w=600');"></div>
-        <div class="discovery-text">
-          <h3>The Independent Spirits</h3>
-          <p>Low-key vibes, vintage chairs, and honest terrain. These are the mountains that defined the sport.</p>
-          <a href="/tag/independent" class="discovery-link">Explore the List →</a>
-        </div>
-      </div>
-
-      <div class="discovery-card">
-        <div class="discovery-image" style="background-image: url('https://images.unsplash.com/photo-1551698618-1fed5d978244?auto=format&amp;fit=crop&amp;q=80&amp;w=600');"></div>
-        <div class="discovery-text">
-          <h3>The Technical Peak</h3>
-          <p>Curated for those who live on their edges. We&rsquo;ve ranked resorts by carving vertical and sustained pitch.</p>
-          <a href="/tag/technical" class="discovery-link">See the Rankings →</a>
-        </div>
-      </div>
-
-      <div class="discovery-card">
-        <div class="discovery-image" style="background-image: url('https://images.unsplash.com/photo-1453928582365-b6ad33cbcf64?auto=format&amp;fit=crop&amp;q=80&amp;w=600');"></div>
-        <div class="discovery-text">
-          <h3>Hidden Glades</h3>
-          <p>The statistical anomalies where it snows more than the maps suggest. No crowds, just deep turns.</p>
-          <a href="/tag/storm-chasers" class="discovery-link">Find Your Spot →</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="container">
 
     <!-- ═══ HERO ═══════════════════════════════════════════════════════════ -->
@@ -509,66 +464,54 @@
         <div class="hn-inner">
 
           <!-- Headline -->
-          <h2 id="heroHeadline" class="hn-headline">This weekend, ski <em>where it actually makes sense.</em></h2>
+          <h1 id="heroHeadline" class="hn-headline">This weekend, ski <em>where it actually makes sense.</em></h1>
 
           <!-- Subhead -->
-          <p class="hn-subhead">Tell us where you&rsquo;re leaving from. We score snow, drive time, crowds, pass, and price&mdash;then surface one clear pick and the story behind it.</p>
+          <p class="hn-subhead hn-subhead--tight">Tell us the basics below. We&rsquo;ll score snow, drive, crowds, pass fit, and price&mdash;then put one clear pick up front.</p>
 
-          <div class="hn-hero-primary">
-            <label class="hn-hero-loc-label" for="originInput">Starting point</label>
-            <div class="hn-hero-primary-row">
-              <input id="originInput" type="text" class="hn-hero-loc-input" placeholder="ZIP or city, e.g. Boston, MA" autocomplete="off" />
-              <button id="setLocation" type="button" class="hn-hero-cta">Get recommendations</button>
-            </div>
-            <div class="hn-hero-loc-meta">
-              <button id="detectLocation" type="button" class="hero-locate-link">Use my location</button>
+          <div class="hn-hero-narrative" role="group" aria-label="Where and when you ski">
+            <p class="hn-hero-narrative-para">
+              <span class="hn-hero-narrative-text">I&rsquo;m arriving from</span>
+              <input id="originInput" type="text" class="hn-hero-narrative-input" placeholder="Boston or 02108" autocomplete="off" aria-label="City or ZIP you are leaving from" />
+              <span class="hn-hero-narrative-text">and looking to ski on</span>
+              <select id="heroWhenSelect" class="hn-hero-narrative-select" aria-label="Day you plan to ski">
+                <option value="weekday">a weekday</option>
+                <option value="friday">Friday</option>
+                <option value="saturday">Saturday</option>
+                <option value="sunday">Sunday</option>
+              </select>
+              <span class="hn-hero-narrative-text">using</span>
+              <select id="heroPassSelect" class="hn-hero-narrative-select" aria-label="Pass coverage">
+                <option value="All">any pass</option>
+                <option value="Epic">Epic Pass</option>
+                <option value="Ikon">Ikon Pass</option>
+                <option value="Indy">Indy Pass</option>
+                <option value="Independent">Indie / unaffiliated</option>
+              </select>
+              <span class="hn-hero-narrative-text hn-hero-narrative-text--end">.</span>
+            </p>
+            <div class="hn-hero-narrative-actions">
+              <button id="setLocation" type="button" class="hn-hero-cta hn-hero-cta--find">Find My Mountain</button>
+              <button id="detectLocation" type="button" class="hero-locate-link hero-locate-link--hero">Use my location</button>
             </div>
           </div>
 
           <details class="hn-hero-extras">
-            <summary class="hn-hero-extras-sum">Pass, how far &amp; which day <span class="hn-hero-extras-hint">optional</span></summary>
+            <summary class="hn-hero-extras-sum">How far you&rsquo;ll drive <span class="hn-hero-extras-hint">optional</span></summary>
             <div class="hn-hero-extras-body">
-              <div class="hn-filterbar hn-filterbar--no-loc">
-                <div class="hn-fb-seg hn-fb-seg--clickable" id="fbPassSeg" aria-label="Select pass">
-                  <span class="hn-fb-label">Pass</span>
-                  <span class="hn-fb-val" id="fbPassVal">All passes <span class="hn-fb-chevron">&#8964;</span></span>
-                </div>
-                <div class="hn-fb-div"></div>
-                <div class="hn-fb-seg hn-fb-seg--clickable" id="fbTripSeg" aria-label="Select trip type">
+              <div class="hn-filterbar hn-filterbar--no-loc hn-filterbar--trip-only">
+                <div class="hn-fb-seg hn-fb-seg--clickable hn-fb-seg--full" id="fbTripSeg" aria-label="Select trip type">
                   <span class="hn-fb-label">How far</span>
                   <span class="hn-fb-val" id="fbTripVal">Day trip <span class="hn-fb-chevron">&#8964;</span></span>
                 </div>
-                <div class="hn-fb-div"></div>
-                <div class="hn-fb-seg hn-fb-seg--clickable" id="fbWhenSeg" aria-label="Select day">
-                  <span class="hn-fb-label">When</span>
-                  <span class="hn-fb-val" id="fbWhenVal">This weekend <span class="hn-fb-chevron">&#8964;</span></span>
-                </div>
               </div>
               <div id="hn-filter-dropdowns" class="hn-filter-dropdowns">
-                <div class="hn-fd-panel" id="fdPassPanel" hidden>
-                  <span class="hn-fd-label">Pass</span>
-                  <div class="hn-fd-chips">
-                    <button type="button" class="hn-pchip hn-chip-on" data-val="All">All</button>
-                    <button type="button" class="hn-pchip" data-val="Epic">Epic</button>
-                    <button type="button" class="hn-pchip" data-val="Ikon">Ikon</button>
-                    <button type="button" class="hn-pchip" data-val="Indy">Indy</button>
-                  </div>
-                </div>
                 <div class="hn-fd-panel" id="fdTripPanel" hidden>
                   <span class="hn-fd-label">Trip type</span>
                   <div class="hn-fd-chips">
                     <button type="button" class="hn-tchip hn-chip-on" data-val="0">Day trip (&le;3h)</button>
                     <button type="button" class="hn-tchip" data-val="1">Weekend (3&ndash;6h)</button>
                     <button type="button" class="hn-tchip" data-val="2">Any distance</button>
-                  </div>
-                </div>
-                <div class="hn-fd-panel" id="fdWhenPanel" hidden>
-                  <span class="hn-fd-label">When</span>
-                  <div class="hn-fd-chips">
-                    <button type="button" class="hn-dchip" data-val="weekday">Weekday</button>
-                    <button type="button" class="hn-dchip" data-val="friday">Friday</button>
-                    <button type="button" class="hn-dchip" data-val="saturday">Saturday</button>
-                    <button type="button" class="hn-dchip" data-val="sunday">Sunday</button>
                   </div>
                 </div>
               </div>
@@ -590,7 +533,6 @@
           </details>
 
           <select id="passFilter" class="hn-vis-hidden" aria-label="Pass filter sync"><option value="All" selected>All</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option></select>
-          <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass preference"><option value="All" selected>All</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option><option value="Independent">Independent</option></select>
           <select id="heroSnowSelect" class="hn-vis-hidden" aria-label="Snow preference"><option value="1">Any Snow</option><option value="5">3&quot;+ Matters</option><option value="10">6&quot;+ Chaser</option><option value="15">Powder Day</option></select>
           <label class="remember-location-label visually-hidden" id="rememberLocationLabel"><input type="checkbox" id="rememberLocation" />Remember this location<span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info<span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span></span></label>
           <div id="locationStatus" class="helper-text hn-location-status"></div>
@@ -5972,9 +5914,7 @@
   (function() {
     // ── Filter bar segment dropdowns ─────────────────────────────────────────
     var segments = [
-      { segId: 'fbPassSeg',  panelId: 'fdPassPanel'  },
       { segId: 'fbTripSeg',  panelId: 'fdTripPanel'  },
-      { segId: 'fbWhenSeg',  panelId: 'fdWhenPanel'  },
     ];
     segments.forEach(function(s) {
       var seg   = document.getElementById(s.segId);
@@ -6010,25 +5950,6 @@
       el.innerHTML = text + ' <span class="hn-fb-chevron">&#8964;</span>';
     }
 
-    // ── Pass chips → sync heroPassSelect + update segment display ────────────
-    var passLabels = { 'All': 'All passes', 'Epic': 'Epic Pass', 'Ikon': 'Ikon Pass', 'Indy': 'Indy Pass' };
-    document.querySelectorAll('.hn-pchip').forEach(function(chip) {
-      chip.addEventListener('click', function() {
-        document.querySelectorAll('.hn-pchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
-        this.classList.add('hn-chip-on');
-        var val = this.dataset.val;
-        setSegVal('fbPassVal', passLabels[val] || val);
-        // Close dropdown
-        var p = document.getElementById('fdPassPanel'); if (p) p.hidden = true;
-        var g = document.getElementById('fbPassSeg'); if (g) g.classList.remove('hn-fb-seg--open');
-        // Sync hidden select
-        var sel = document.getElementById('heroPassSelect');
-        if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', { bubbles: true })); }
-        var selP = document.getElementById('passFilter');
-        if (selP) { selP.value = val; }
-      });
-    });
-
     // ── Trip chips → sync howFarFilter + update segment display ─────────────
     var tripLabels = { '0': 'Day trip', '1': 'Weekend', '2': 'Any distance' };
     document.querySelectorAll('.hn-tchip').forEach(function(chip) {
@@ -6044,7 +5965,7 @@
       });
     });
 
-    // ── When chips: state.targetDate + segment label are set in sd-app.js (initHeroWhenControls / wireHeroWhenChips)
+    // ── Ski day + pass: heroWhenSelect + heroPassSelect in sd-app.js
   })();
   </script>
 
