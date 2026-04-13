@@ -4903,6 +4903,77 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   outline-offset: 3px;
   border-radius: 4px;
 }
+/* Weekend lodging — secondary trip-planning block (not a banner ad) */
+.vcard-lodging-module {
+  margin-top: 22px;
+  padding: 16px 16px 15px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f8fbfd 0%, #f1f6fa 100%);
+  border: 1px solid rgba(34, 50, 71, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.vcard-lodging-label {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 4px 10px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #5a6a7a;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(34, 50, 71, 0.1);
+  border-radius: 999px;
+}
+.vcard-lodging-headline {
+  margin: 0 0 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  color: #1e3a4d;
+}
+.vcard-lodging-support {
+  margin: 0 0 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: #52606d;
+}
+.vcard-lodging-cta {
+  display: inline-block;
+  margin: 0 0 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+.vcard-lodging-cta:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.vcard-lodging-cta:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.vcard-lodging-disclosure {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: #6b7c8c;
+}
 a.vcard-book-btn,
 .vcard-book-btn {
   display: inline-flex;
@@ -6452,6 +6523,25 @@ button.vcard-detail-btn:hover,
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-guidance-inset-cta:hover {
   color: var(--accent-hover);
+}
+.hn-hero-verdict-dock .vcard--hero-light .vcard-lodging-module {
+  background: linear-gradient(180deg, rgba(248, 251, 253, 0.98) 0%, rgba(238, 245, 250, 0.98) 100%);
+  border-color: rgba(43, 109, 233, 0.1);
+}
+.hn-hero-verdict-dock .vcard--hero-light .vcard-lodging-headline {
+  color: #223247;
+}
+.hn-hero-verdict-dock .vcard--hero-light .vcard-lodging-support {
+  color: #52606d;
+}
+.hn-hero-verdict-dock .vcard--hero-light .vcard-lodging-cta {
+  color: var(--accent);
+}
+.hn-hero-verdict-dock .vcard--hero-light .vcard-lodging-cta:hover {
+  color: var(--accent-hover);
+}
+.hn-hero-verdict-dock .vcard--hero-light .vcard-lodging-disclosure {
+  color: #64748b;
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-zip-nudge strong {
   color: #0a0f14;

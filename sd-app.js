@@ -392,15 +392,17 @@ function resortPhotoStyle(resort, gradientCss) {
   return `background-image: ${grad}, url('${photo}'); background-size: cover; background-position: center 40%;`;
 }
 
-/** Weekend lodging strip: top-pick area search via Awin, or generic ski search if no verdict yet. */
+/** Weekend lodging strip: top-pick area search via Awin, or generic ski search if no verdict yet.
+ *  When trip is Weekend (howFar === 1) and the verdict card shows the in-card lodging module, hide this strip to avoid duplicate CTAs. */
 function syncWeekendLodgingStrip(verdict) {
   const strip = document.getElementById('hnBookingStrip');
   const a = strip?.querySelector('a.hn-booking-btn');
   if (!strip) return;
   const weekend = state.howFar >= 1;
-  strip.hidden = !weekend;
-  strip.style.display = weekend ? '' : 'none';
-  if (!a || !weekend) return;
+  const lodgingInVerdictCard = state.howFar === 1 && verdict?.resort;
+  strip.hidden = !weekend || lodgingInVerdictCard;
+  strip.style.display = (!weekend || lodgingInVerdictCard) ? 'none' : '';
+  if (!a || !weekend || lodgingInVerdictCard) return;
   a.href = verdict?.resort ? bookingUrl(verdict.resort) : bookingSearchUrl('ski resort');
   a.setAttribute('rel', 'noopener sponsored');
 }
@@ -1182,6 +1184,16 @@ function renderVerdict(resorts) {
         <button type="button" class="vcard-guidance-inset-cta" id="verdictRefineGuidanceBtn">Refine results &darr;</button>
       </div>`
     : '';
+  const _lodgingUrl = bookingUrl(resort);
+  const lodgingModuleHtml = state.howFar === 1
+    ? `<div class="vcard-lodging-module" role="region" aria-label="Lodging near ${esc(resort.name)}">
+        <span class="vcard-lodging-label">Weekend trip</span>
+        <p class="vcard-lodging-headline">Staying the weekend? Find lodging near your top pick</p>
+        <p class="vcard-lodging-support">Hotels, condos, and ski-in properties &mdash; updated availability</p>
+        <a class="vcard-lodging-cta" href="${_lodgingUrl}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_lodging" data-track-resort="${esc(resort.name)}">Browse lodging &rarr;</a>
+        <p class="vcard-lodging-disclosure">Affiliate link &mdash; we may earn a commission</p>
+      </div>`
+    : '';
   const snowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
     ? `${stormTotal.toFixed(0)}" forecast`
     : (typeof tomorrowIn === 'number' && tomorrowIn >= 0.5)
@@ -1272,6 +1284,7 @@ function renderVerdict(resorts) {
           ${secondaryBtn}
         </div>
         ${guidanceInsetHtml}
+        ${lodgingModuleHtml}
       </div>
        </div>`;
 
