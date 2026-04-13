@@ -470,25 +470,31 @@
           <p class="hn-subhead hn-subhead--tight">Tell us the basics below. We&rsquo;ll score snow, drive, crowds, pass fit, and price&mdash;then put one clear pick up front.</p>
 
           <div class="hn-hero-narrative" role="group" aria-label="Where and when you ski">
-            <p class="hn-hero-narrative-para">
-              <span class="hn-hero-narrative-text">I&rsquo;m arriving from</span>
-              <input id="originInput" type="text" class="hn-hero-narrative-input" placeholder="Boston or 02108" autocomplete="off" aria-label="City or ZIP you are leaving from" />
-              <span class="hn-hero-narrative-text">and looking to ski on</span>
-              <select id="heroWhenSelect" class="hn-hero-narrative-select" aria-label="Day you plan to ski">
-                <option value="weekday">a weekday</option>
-                <option value="friday">Friday</option>
-                <option value="saturday">Saturday</option>
-                <option value="sunday">Sunday</option>
-              </select>
-              <span class="hn-hero-narrative-text">using</span>
-              <select id="heroPassSelect" class="hn-hero-narrative-select" aria-label="Pass coverage">
-                <option value="All">any pass</option>
-                <option value="Epic">Epic Pass</option>
-                <option value="Ikon">Ikon Pass</option>
-                <option value="Indy">Indy Pass</option>
-                <option value="Independent">Indie / unaffiliated</option>
-              </select>
-              <span class="hn-hero-narrative-text hn-hero-narrative-text--end">.</span>
+            <p class="hn-hero-narrative-flow">
+              <span class="hn-hero-chunk hn-hero-chunk--from">
+                <span class="hn-hero-run">I&rsquo;m arriving from</span>
+                <input id="originInput" type="text" class="hn-hero-narrative-input" placeholder="Boston or 02108" autocomplete="off" aria-label="City or ZIP you are leaving from" />
+              </span>
+              <span class="hn-hero-chunk hn-hero-chunk--when" title="Ski day">
+                <span class="hn-hero-run">on</span>
+                <select id="heroWhenSelect" class="hn-hero-narrative-select" aria-label="Day you plan to ski">
+                  <option value="weekday">a weekday</option>
+                  <option value="friday">Friday</option>
+                  <option value="saturday">Saturday</option>
+                  <option value="sunday">Sunday</option>
+                </select>
+              </span>
+              <span class="hn-hero-chunk hn-hero-chunk--pass">
+                <span class="hn-hero-run">with</span>
+                <select id="heroPassSelect" class="hn-hero-narrative-select" aria-label="Pass coverage">
+                  <option value="All">any pass</option>
+                  <option value="Epic">Epic Pass</option>
+                  <option value="Ikon">Ikon Pass</option>
+                  <option value="Indy">Indy Pass</option>
+                  <option value="Independent">Indie / unaffiliated</option>
+                </select>
+              </span>
+              <span class="hn-hero-run hn-hero-run--period" aria-hidden="true">.</span>
             </p>
             <div class="hn-hero-narrative-actions">
               <button id="setLocation" type="button" class="hn-hero-cta hn-hero-cta--find">Find My Mountain</button>
@@ -496,8 +502,8 @@
             </div>
           </div>
 
-          <details class="hn-hero-extras">
-            <summary class="hn-hero-extras-sum">How far you&rsquo;ll drive <span class="hn-hero-extras-hint">optional</span></summary>
+          <details class="hn-hero-extras hn-hero-extras--drive">
+            <summary class="hn-hero-extras-sum">Willing to drive farther than a day trip? <span class="hn-hero-extras-hint">optional</span></summary>
             <div class="hn-hero-extras-body">
               <div class="hn-filterbar hn-filterbar--no-loc hn-filterbar--trip-only">
                 <div class="hn-fb-seg hn-fb-seg--clickable hn-fb-seg--full" id="fbTripSeg" aria-label="Select trip type">

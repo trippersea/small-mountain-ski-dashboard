@@ -6224,79 +6224,122 @@ button.vcard-detail-btn:hover,
   margin-right: auto;
 }
 .hn-hero-narrative {
-  max-width: 40rem;
+  max-width: min(100%, 52rem);
   margin: 22px auto 0;
-  text-align: left;
+  text-align: center;
 }
-.hn-hero-narrative-para {
-  margin: 0;
-  font-size: clamp(1.05rem, 2.4vw, 1.2rem);
-  line-height: 1.75;
-  color: rgba(250, 247, 242, 0.92);
+/* One sentence: "I'm arriving from [place] on [day] with [pass]." — chunks wrap as units */
+.hn-hero-narrative-flow {
+  margin: 0 auto;
+  font-size: clamp(1.05rem, 2.2vw, 1.22rem);
+  line-height: 1.65;
+  color: rgba(250, 247, 242, 0.94);
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.35rem 0.5rem;
+  justify-content: center;
+  column-gap: 0.35rem;
+  row-gap: 0.65rem;
 }
-.hn-hero-narrative-text {
-  color: rgba(250, 247, 242, 0.78);
+.hn-hero-chunk {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.38em;
+  max-width: 100%;
+}
+.hn-hero-chunk--from {
+  flex: 1 1 auto;
+  min-width: min(100%, 12rem);
+  justify-content: center;
+}
+.hn-hero-chunk--from .hn-hero-narrative-input {
+  flex: 1 1 9rem;
+  min-width: 6.5rem;
+  max-width: 16rem;
+}
+.hn-hero-chunk--when .hn-hero-narrative-select {
+  min-width: 6.25rem;
+  max-width: 12rem;
+}
+.hn-hero-chunk--pass .hn-hero-narrative-select {
+  min-width: 5.75rem;
+  max-width: 13rem;
+}
+.hn-hero-run {
+  color: rgba(250, 247, 242, 0.82);
   font-weight: 500;
+  white-space: nowrap;
 }
-.hn-hero-narrative-text--end {
+.hn-hero-run--period {
   color: rgba(250, 247, 242, 0.55);
-  margin-left: -0.15rem;
+  margin-left: -0.12em;
+  user-select: none;
 }
 .hn-hero-narrative-input {
-  flex: 1 1 140px;
-  min-width: 7.5rem;
-  max-width: 100%;
   border: none;
-  border-bottom: 2px solid rgba(250, 247, 242, 0.35);
+  border-bottom: 2px solid rgba(250, 247, 242, 0.38);
   border-radius: 0;
-  padding: 4px 2px 6px;
+  padding: 5px 4px 7px;
   font-size: inherit;
   font-weight: 600;
   color: var(--text-on-dark);
-  background: transparent;
+  background: rgba(250, 247, 242, 0.06);
+  border-radius: 6px 6px 0 0;
   font-family: inherit;
+  text-align: center;
 }
 .hn-hero-narrative-input::placeholder {
-  color: rgba(250, 247, 242, 0.45);
+  color: rgba(250, 247, 242, 0.42);
   font-weight: 500;
 }
 .hn-hero-narrative-input:focus {
   outline: none;
-  border-bottom-color: rgba(250, 247, 242, 0.85);
+  border-bottom-color: rgba(250, 247, 242, 0.9);
+  background: rgba(250, 247, 242, 0.1);
 }
 .hn-hero-narrative-select {
-  flex: 0 1 auto;
-  min-width: 5.5rem;
-  max-width: 100%;
   border: none;
-  border-bottom: 2px solid rgba(250, 247, 242, 0.35);
-  border-radius: 0;
-  padding: 4px 24px 6px 2px;
+  border-bottom: 2px solid rgba(250, 247, 242, 0.38);
+  border-radius: 6px 6px 0 0;
+  padding: 5px 26px 7px 8px;
   font-size: inherit;
   font-weight: 600;
   color: var(--text-on-dark);
-  background: transparent;
+  background-color: rgba(250, 247, 242, 0.06);
   font-family: inherit;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23faf7f2' fill-opacity='0.65' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23faf7f2' fill-opacity='0.7' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 2px center;
+  background-position: right 6px center;
 }
 .hn-hero-narrative-select:focus {
   outline: none;
-  border-bottom-color: rgba(250, 247, 242, 0.85);
+  border-bottom-color: rgba(250, 247, 242, 0.9);
+  background-color: rgba(250, 247, 242, 0.1);
 }
 .hn-hero-narrative-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 14px 20px;
-  margin-top: 22px;
+  margin-top: 24px;
+}
+/* Optional drive distance — visually tied to the sentence block */
+.hn-hero-extras--drive {
+  margin-top: 18px;
+}
+@media (max-width: 520px) {
+  .hn-hero-narrative-flow {
+    row-gap: 0.85rem;
+    column-gap: 0.25rem;
+  }
+  .hn-hero-chunk--from {
+    flex-basis: 100%;
+    justify-content: center;
+  }
 }
 .hn-hero-cta--find {
   border-radius: 999px;
