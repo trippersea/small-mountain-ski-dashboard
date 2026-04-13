@@ -112,8 +112,6 @@ const state = Object.seal({
 });
 
 // ─── Hero “When” bar — maps chip value → next occurrence Date (local) ────────
-const HERO_WHEN_LABELS = { weekday: 'Weekday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
-
 function dayValToDate(val) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -159,11 +157,6 @@ function initHeroWhenControls() {
   heroWhenDefaultVal = val;
   document.querySelectorAll('.hn-dchip').forEach(c => c.classList.toggle('hn-chip-on', c.dataset.val === val));
   state.targetDate = dayValToDate(val);
-  const el = document.getElementById('fbWhenVal');
-  if (el) {
-    const text = HERO_WHEN_LABELS[val] || val;
-    el.innerHTML = esc(text) + ' <span class="hn-fb-chevron">&#8964;</span>';
-  }
 }
 
 function wireHeroWhenChips() {
@@ -174,32 +167,45 @@ function wireHeroWhenChips() {
       document.querySelectorAll('.hn-dchip').forEach(c => c.classList.remove('hn-chip-on'));
       chip.classList.add('hn-chip-on');
       state.targetDate = dayValToDate(val);
-      const el = document.getElementById('fbWhenVal');
-      if (el) {
-        const text = HERO_WHEN_LABELS[val] || val;
-        el.innerHTML = esc(text) + ' <span class="hn-fb-chevron">&#8964;</span>';
-      }
-      const p = document.getElementById('fdWhenPanel');
-      if (p) p.hidden = true;
-      document.getElementById('fbWhenSeg')?.classList.remove('hn-fb-seg--open');
       updateHeroFilterSegmentsCustom();
       render();
     });
   });
 }
 
-/** Pass / Trip / When segments: show stronger styling when not at app defaults */
-function updateHeroFilterSegmentsCustom() {
-  const passSeg = document.getElementById('fbPassSeg');
-  const tripSeg = document.getElementById('fbTripSeg');
-  const whenSeg = document.getElementById('fbWhenSeg');
-  if (passSeg) passSeg.classList.toggle('hn-fb-seg--custom', state.passFilter !== 'All');
-  if (tripSeg) tripSeg.classList.toggle('hn-fb-seg--custom', state.howFar !== 0);
-  const whenChip = document.querySelector('.hn-dchip.hn-chip-on');
-  const whenVal = whenChip ? whenChip.dataset.val : heroWhenDefaultVal;
-  if (whenSeg && heroWhenDefaultVal != null) {
-    whenSeg.classList.toggle('hn-fb-seg--custom', whenVal !== heroWhenDefaultVal);
-  }
+/** Legacy hook (hero filter bar segments removed); kept for syncPlannerControls callers */
+function updateHeroFilterSegmentsCustom() {}
+
+/** Pass & drive chips in hero (sync with hidden selects; change handlers run scoring) */
+function wireHeroPassTripChips() {
+  document.querySelectorAll('.hn-pchip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.hn-pchip').forEach(c => c.classList.remove('hn-chip-on'));
+      chip.classList.add('hn-chip-on');
+      const val = chip.dataset.val;
+      const sel = document.getElementById('heroPassSelect');
+      if (sel) {
+        sel.value = val;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      const passF = document.getElementById('passFilter');
+      if (passF) passF.value = val;
+      updateHeroFilterSegmentsCustom();
+    });
+  });
+  document.querySelectorAll('.hn-tchip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.hn-tchip').forEach(c => c.classList.remove('hn-chip-on'));
+      chip.classList.add('hn-chip-on');
+      const val = chip.dataset.val;
+      const filterSel = document.getElementById('howFarFilter');
+      if (filterSel) {
+        filterSel.value = val;
+        filterSel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      updateHeroFilterSegmentsCustom();
+    });
+  });
 }
 
 // ─── Element cache ────────────────────────────────────────────────────────────
@@ -2623,6 +2629,7 @@ function initialize() {
   syncPlannerControls();
   syncVerdictVisibility();
   wireEvents();
+  wireHeroPassTripChips();
   wireHeroWhenChips();
   updateHeroHeadline();
   render();
@@ -2760,7 +2767,7 @@ function initialize() {
 function updateHeroHeadline() {
   const el = document.getElementById('heroHeadline');
   if (!el) return;
-  el.innerHTML = 'Stop guessing. <em>Find the right mountain.</em>';
+  el.innerHTML = 'Pick a mountain that <em>fits your day</em>';
 }
 
 initialize();
