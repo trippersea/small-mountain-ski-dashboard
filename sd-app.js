@@ -2809,8 +2809,8 @@ function initialize() {
 function updateHeroHeadline() {
   const el = document.getElementById('heroHeadline');
   if (!el) return;
-  if (el.querySelector('.hn-editorial-headline-sub')) return;
-  el.innerHTML = 'Find the best mountain<br /><span class="hn-editorial-headline-sub">for your next ski day.</span>';
+  if (el.querySelector('.hn-editorial-headline-brand')) return;
+  el.innerHTML = 'Find the best mountain<br /><span class="hn-editorial-headline-sub">for your next <span class="hn-editorial-headline-brand">ski day</span>.</span>';
 }
 
 initialize();
