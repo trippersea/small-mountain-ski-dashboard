@@ -6358,6 +6358,17 @@ button.vcard-detail-btn:hover,
   margin-right: auto;
 }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+.hero-actions .nav-find-cta {
+  margin-left: 0;
+}
+
 /* Discovery Grid Styles */
 .discovery-grid {
   display: grid;
