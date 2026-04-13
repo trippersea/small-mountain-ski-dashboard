@@ -934,14 +934,18 @@ function commitPlannerPriorityChange(key, btn) {
   savePlannerState();
   syncPlannerControls();
   pushUrlDebounced();
-  if (key === 'howfar') { render(); }
+  if (key === 'howfar') {
+    const savedScroll = window.scrollY;
+    render();
+    requestAnimationFrame(() => window.scrollTo({ top: savedScroll, behavior: 'instant' }));
+  }
   else { debouncedRender(); }
 }
 
 function scrollToBestMatchFromFilters(source) {
   trackEvent('refine_see_verdict', { source: String(source || 'unknown') });
   if (document.getElementById('searchSection')?.classList.contains('hn-hero-split')) {
-    document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } else {
     els.verdictSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1782,7 +1786,7 @@ function renderCompareTable(resorts) {
       const _locBtn = els.compareLocationHint.querySelector('.compare-location-btn');
       _locBtn?.addEventListener('click', () => {
         document.getElementById('originInput')?.focus();
-        document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     } else {
       els.compareLocationHint.innerHTML = '';
@@ -2238,7 +2242,7 @@ function renderMobileCards(decorated, emptyOpts) {
     <div class="mob-location-nudge">
       <span aria-hidden="true">📍</span>
       <span>Add your start location to rank by live snow and drive time.</span>
-      <button type="button" onclick="document.getElementById('originInput')?.focus();document.getElementById('searchSection')?.scrollIntoView({behavior:'smooth',block:'start'})">Set location</button>
+      <button type="button" onclick="document.getElementById('originInput')?.focus();window.scrollTo({top:0,behavior:'smooth'})">Set location</button>
     </div>` : '';
   els.mobileCardGrid.innerHTML = nudgeHtml + items.map(({ resort, breakdown, stormTotal, hist }) => {
     const wx = state.weatherCache[resort.id]?.data;
@@ -2778,8 +2782,7 @@ function initialize() {
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
       updatePlannerOriginLabel();
       syncVerdictVisibility();
-      document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (isRememberChecked()) saveOrigin(loc); else clearSavedOrigin();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       pushUrlDebounced();
       await loadDriveTimes();
     } else {
@@ -2813,7 +2816,7 @@ function initialize() {
 
   if (els.plannerEditLocation) {
     els.plannerEditLocation.addEventListener('click', () => {
-      document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(() => { if (els.originInput) { els.originInput.focus(); els.originInput.select(); } }, 350);
     });
   }
@@ -2832,7 +2835,7 @@ function initialize() {
       els.locationStatus.classList.remove('hero-location-status--error');
       updatePlannerOriginLabel();
       syncVerdictVisibility();
-      document.getElementById('searchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }, () => {
       els.locationStatus.textContent = 'Location blocked or unavailable — allow access in your browser, or type a ZIP or city.';
       els.locationStatus.classList.add('hero-location-status--error');
