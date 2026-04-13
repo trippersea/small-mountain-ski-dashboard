@@ -1172,6 +1172,16 @@ function renderVerdict(resorts) {
   const tc = tierConfig[tier] || tierConfig.good;
 
   const scoreNum = breakdown ? Math.round(breakdown.score) : 0;
+  const showVerdictGuidance = tier === 'bad'
+    || tier === 'marginal'
+    || (breakdown && scoreNum < 48 && tier !== 'great');
+  const guidanceInsetHtml = showVerdictGuidance
+    ? `<div class="vcard-guidance-inset" role="note" aria-label="How to improve your matches">
+        <p class="vcard-guidance-inset-title">Conditions are rough right now</p>
+        <p class="vcard-guidance-inset-body">Try widening your distance, easing the snow filter, or choosing a different pass.</p>
+        <button type="button" class="vcard-guidance-inset-cta" id="verdictRefineGuidanceBtn">Refine results &darr;</button>
+      </div>`
+    : '';
   const snowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
     ? `${stormTotal.toFixed(0)}" forecast`
     : (typeof tomorrowIn === 'number' && tomorrowIn >= 0.5)
@@ -1261,6 +1271,7 @@ function renderVerdict(resorts) {
           ${primaryBtn}
           ${secondaryBtn}
         </div>
+        ${guidanceInsetHtml}
       </div>
        </div>`;
 
@@ -1282,18 +1293,29 @@ function renderVerdict(resorts) {
 
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+  $('verdictRefineGuidanceBtn')?.addEventListener('click', () => {
+    const panel = els.plannerSection;
+    if (!panel) return;
+    panel.hidden = false;
+    syncPlannerControls();
+    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+  });
   if (refinePromptEl) {
-    refinePromptEl.hidden = false;
-    const isUrgent = tier === 'bad' || tier === 'marginal';
-    refinePromptEl.classList.toggle('hn-refine-prompt--urgent', isUrgent);
-    const titleEl = document.getElementById('hnRefinePromptTitle');
-    const subEl   = document.getElementById('hnRefinePromptSub');
-    if (isUrgent) {
-      if (titleEl) titleEl.textContent = 'Conditions are rough right now.';
-      if (subEl)   subEl.textContent   = 'Try widening your distance, easing the snow filter, or picking a different pass.';
+    if (showVerdictGuidance) {
+      refinePromptEl.hidden = true;
     } else {
-      if (titleEl) titleEl.textContent = 'Not seeing the right mountain?';
-      if (subEl)   subEl.textContent   = 'Adjust snow, crowds, ticket price or distance to find a better match.';
+      refinePromptEl.hidden = false;
+      const isUrgent = tier === 'bad' || tier === 'marginal';
+      refinePromptEl.classList.toggle('hn-refine-prompt--urgent', isUrgent);
+      const titleEl = document.getElementById('hnRefinePromptTitle');
+      const subEl   = document.getElementById('hnRefinePromptSub');
+      if (isUrgent) {
+        if (titleEl) titleEl.textContent = 'Conditions are rough right now.';
+        if (subEl)   subEl.textContent   = 'Try widening your distance, easing the snow filter, or picking a different pass.';
+      } else {
+        if (titleEl) titleEl.textContent = 'Not seeing the right mountain?';
+        if (subEl)   subEl.textContent   = 'Adjust snow, crowds, ticket price or distance to find a better match.';
+      }
     }
   }
   injectVerdictWriteup(v);
