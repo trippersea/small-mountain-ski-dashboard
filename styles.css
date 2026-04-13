@@ -5489,6 +5489,14 @@ button.vcard-detail-btn:hover,
   border-radius: var(--rs-radius);
   box-shadow: var(--shadow-sm);
 }
+/* Runner-up section overrides the generic panel background — must come AFTER the rule above */
+.hn-results-region > .hn-runners-section.hn-results-panel {
+  background-image: url('/runner-bg.jpg');
+  background-size: cover;
+  background-position: center 38%;
+  background-color: #0c1a30;
+  border: none;
+}
 #verdictSection.hn-results-panel {
   padding: 0;
   overflow: hidden;
