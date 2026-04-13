@@ -6,6 +6,10 @@
     "node": "20.x"
   },
   "scripts": {
-    "test": "node --test sd-safe-url.test.cjs"
+    "test": "node --test sd-safe-url.test.cjs",
+    "build:share-assets": "node scripts/build-share-assets.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
   }
 }

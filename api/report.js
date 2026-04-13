@@ -89,14 +89,14 @@ function buildPage(r) {
   <meta property="og:title"       content="${esc(r.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta property="og:description" content="${esc(metaDesc)}" />
   <meta property="og:site_name"   content="WhereToSkiNext.com" />
-  <meta property="og:image"       content="https://www.wheretoskinext.com/ski-decision-logo.png" />
+  <meta property="og:image"       content="https://www.wheretoskinext.com/og-image.png" />
   <meta property="og:image:alt"   content="${esc(r.name + ' — WhereToSkiNext.com')}" />
 
   <!-- Twitter -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="${esc(r.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
-  <meta name="twitter:image"      content="https://www.wheretoskinext.com/ski-decision-logo.png" />
+  <meta name="twitter:image"      content="https://www.wheretoskinext.com/og-image.png" />
   <meta name="twitter:image:alt"   content="${esc(r.name + ' — WhereToSkiNext.com')}" />
 
   <!-- JSON-LD structured data -->

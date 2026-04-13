@@ -276,7 +276,7 @@ function generateStatePage(stateAbbr, resorts) {
   <meta property="og:description" content="${count} mountains in ${stateName}. Top picks: ${topNames}. Stop guessing. Start skiing." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
-  <meta property="og:image" content="https://www.wheretoskinext.com/ski-decision-logo.png" />
+  <meta property="og:image" content="https://www.wheretoskinext.com/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -422,13 +422,13 @@ function generateMountainPage(resort, allResorts) {
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
   <meta property="og:site_name" content="WhereToSkiNext.com" />
-  <meta property="og:image" content="https://www.wheretoskinext.com/ski-decision-logo.png" />
+  <meta property="og:image" content="https://www.wheretoskinext.com/og-image.png" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
-  <meta name="twitter:image" content="https://www.wheretoskinext.com/ski-decision-logo.png" />
+  <meta name="twitter:image" content="https://www.wheretoskinext.com/og-image.png" />
 
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
