@@ -12,11 +12,29 @@ function loadSavedWeights() {
   return { ...DEFAULT_WEIGHTS };
 }
 function loadSavedPassPreference() { return 'any'; }
+function normalizeOriginForState(o) {
+  if (!o || typeof o !== 'object') return null;
+  const lat = Number(o.lat);
+  const lon = Number(o.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  const label = SDSafeUrl.sanitizeLocationLabel(o.label);
+  if (!label) return null;
+  return { lat, lon, label };
+}
 function getSavedOrigin() {
-  try { const r = localStorage.getItem('ski-saved-origin'); return r ? JSON.parse(r) : null; } catch (e) { return null; }
+  try {
+    const r = localStorage.getItem('ski-saved-origin');
+    if (!r) return null;
+    return normalizeOriginForState(JSON.parse(r));
+  } catch (e) { return null; }
 }
 function saveOrigin(origin) {
-  try { localStorage.setItem('ski-saved-origin', JSON.stringify(origin)); } catch (e) {}
+  try {
+    const n = normalizeOriginForState(origin);
+    if (!n) return;
+    localStorage.setItem('ski-saved-origin', JSON.stringify(n));
+  } catch (e) {}
 }
 function clearSavedOrigin() {
   try { localStorage.removeItem('ski-saved-origin'); } catch (e) {}
@@ -679,11 +697,11 @@ async function geocodeOrigin(query) {
         const data = await res.json();
         if (data.length) {
           const row = data[0];
-          return {
+          return normalizeOriginForState({
             lat: parseFloat(row.lat),
             lon: parseFloat(row.lon),
             label: labelFromNominatimResult(row),
-          };
+          });
         }
       }
     } catch (e) {}
@@ -694,11 +712,11 @@ async function geocodeOrigin(query) {
         const d = await res.json();
         const place = d.places?.[0];
         if (place) {
-          return {
+          return normalizeOriginForState({
             lat: parseFloat(place.latitude),
             lon: parseFloat(place.longitude),
             label: `${place['place name']}, ${place.state || place['state abbreviation'] || ''}`.replace(/,\s*$/, ''),
-          };
+          });
         }
       }
     } catch (e) {}
@@ -713,11 +731,11 @@ async function geocodeOrigin(query) {
     const data = await res.json();
     if (!data.length) return null;
     const row = data[0];
-    return {
+    return normalizeOriginForState({
       lat: parseFloat(row.lat),
       lon: parseFloat(row.lon),
       label: labelFromNominatimResult(row),
-    };
+    });
   } catch (e) {
     return null;
   }
@@ -758,14 +776,17 @@ function applyUrlState() {
   if (p.has('vert')  && ['any','small','mid','big'].includes(p.get('vert'))) state.verticalFilter = p.get('vert');
   if (p.has('pass')  && UNIQUE_PASSES.includes(p.get('pass')))  state.passFilter  = p.get('pass');
   if (p.has('st')    && UNIQUE_STATES.includes(p.get('st')))    state.stateFilter = p.get('st');
-  if (p.has('sort'))   state.sortBy   = p.get('sort');
+  if (p.has('sort')) {
+    const s = SDSafeUrl.sanitizeSortParam(p.get('sort'));
+    if (s) state.sortBy = s;
+  }
   if (p.has('night'))  state.nightOnly = true;
   if (p.has('howfar')) state.howFar = Math.min(2, Number(p.get('howfar')) || 0);
-  const lat = parseFloat(p.get('lat')), lon = parseFloat(p.get('lon')), loc = p.get('loc');
-  if (!isNaN(lat) && !isNaN(lon) && loc) state.origin = { lat, lon, label: loc };
+  const originFromUrl = SDSafeUrl.parseOriginFromUrlParams(p);
+  if (originFromUrl) state.origin = originFromUrl;
   if (p.has('compare')) {
-    const ids = p.get('compare').split(',').map(s => s.trim()).filter(Boolean);
-    if (ids.length >= 2) state.compareSet = new Set(ids);
+    const ids = SDSafeUrl.parseCompareList(p.get('compare'), RESORTS.map(r => r.id));
+    if (ids && ids.length >= 2) state.compareSet = new Set(ids);
   }
   return true;
 }
@@ -1122,7 +1143,8 @@ function renderVerdict(resorts) {
   const _passEw   = state.passFilter !== 'All' ? (state.passFilter + ' Pass') : null;
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
   const _eyebrowBase = ['Top pick', _passEw, _cityEw].filter(Boolean).join(' · ').toUpperCase();
-  const _eyebrow     = !state.origin ? `${_eyebrowBase} · ADD YOUR TOWN` : _eyebrowBase;
+  const _eyebrowRaw  = !state.origin ? `${_eyebrowBase} · ADD YOUR TOWN` : _eyebrowBase;
+  const _eyebrow     = esc(_eyebrowRaw);
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
 
   const tierConfig = {

@@ -4,5 +4,8 @@
   "private": true,
   "engines": {
     "node": "20.x"
+  },
+  "scripts": {
+    "test": "node --test sd-safe-url.test.cjs"
   }
 }
