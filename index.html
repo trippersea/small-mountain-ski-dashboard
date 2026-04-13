@@ -461,32 +461,26 @@
     <section id="searchSection" class="hero hero-search hn-hero hn-hero-split" aria-label="Find your mountain">
       <div class="hn-split-grid">
         <div class="hn-split-panel hn-split-panel--editorial">
+          <div class="hn-editorial-inner">
           <p class="hn-editorial-kicker"><span class="hn-editorial-kicker-line" aria-hidden="true"></span> Real-time conditions engine</p>
-          <h1 id="heroHeadline" class="hn-editorial-headline">
-            <span class="hn-editorial-line hn-editorial-line--ink">Stop guessing.</span>
-            <span class="hn-editorial-line hn-editorial-line--accent">Start skiing.</span>
-          </h1>
-          <p class="hn-editorial-support">Snow, drive, crowds &amp; pass—ranked together so you pick once with confidence.</p>
+          <h1 id="heroHeadline" class="hn-editorial-headline">Stop guessing. <span class="hn-editorial-accent">Start skiing.</span></h1>
+          <p class="hn-editorial-support">Snow, drive, crowds, and pass—ranked together so you choose one mountain with confidence.</p>
 
           <div class="hn-sentence" role="group" aria-label="Your trip details">
-            <span class="hn-sentence-part">I am starting in</span>
-            <input id="originInput" type="text" class="hn-sentence-field hn-sentence-field--location" placeholder="Boston, MA or ZIP" autocomplete="off" aria-label="Starting location" />
-            <span class="hn-sentence-part">, I have a</span>
-            <select id="heroPassSelect" class="hn-sentence-field hn-sentence-field--select" aria-label="Pass"></select>
-            <span class="hn-sentence-part">, and I&rsquo;m skiing on</span>
-            <select id="heroSentenceDay" class="hn-sentence-field hn-sentence-field--select" aria-label="Ski day"></select>
-            <span class="hn-sentence-part">for a</span>
-            <select id="heroSentenceTrip" class="hn-sentence-field hn-sentence-field--select" aria-label="Trip length">
-              <option value="0">day trip</option>
-              <option value="1">weekend trip</option>
-              <option value="2">long haul (any distance)</option>
-            </select>
-            <span class="hn-sentence-part hn-sentence-part--end">.</span>
+            <p class="hn-sentence-flow">
+              <span class="hn-sentence-lead">I am starting in</span><span class="hn-sentence-token"><input id="originInput" type="text" class="hn-sentence-field hn-sentence-field--location" placeholder="City, state, or ZIP" autocomplete="off" aria-label="Starting location" /></span><span class="hn-sentence-lead">, I have a</span><span class="hn-sentence-token"><select id="heroPassSelect" class="hn-sentence-field hn-sentence-field--select" aria-label="Pass"></select></span><span class="hn-sentence-lead">, and I&rsquo;m skiing on</span><span class="hn-sentence-token"><select id="heroSentenceDay" class="hn-sentence-field hn-sentence-field--select" aria-label="Ski day"></select></span><span class="hn-sentence-lead hn-sentence-lead--mid"> for a </span><span class="hn-sentence-token"><select id="heroSentenceTrip" class="hn-sentence-field hn-sentence-field--select" aria-label="Trip length">
+                <option value="0">day trip</option>
+                <option value="1">weekend trip</option>
+                <option value="2">long haul (any distance)</option>
+              </select></span><span class="hn-sentence-lead hn-sentence-lead--end">.</span>
+            </p>
           </div>
 
           <div class="hn-editorial-actions">
             <button type="button" id="setLocation" class="hn-editorial-cta"><span class="hn-editorial-cta-label">Find My Mountain</span></button>
-            <button type="button" id="detectLocation" class="hn-editorial-link">Use current location</button>
+            <div class="hn-editorial-actions-secondary">
+              <button type="button" id="detectLocation" class="hn-editorial-link">Use current location</button>
+            </div>
           </div>
 
           <select id="passFilter" class="hn-vis-hidden" aria-label="Pass filter sync"><option value="All" selected>All</option></select>
@@ -508,6 +502,7 @@
               </div>
               <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
             </div>
+          </div>
           </div>
         </div>
 

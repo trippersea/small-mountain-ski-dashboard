@@ -2807,8 +2807,10 @@ function initialize() {
 
 function updateHeroHeadline() {
   const el = document.getElementById('heroHeadline');
-  if (!el || el.querySelector('.hn-editorial-line')) return;
-  el.innerHTML = '<span class="hn-editorial-line hn-editorial-line--ink">Stop guessing.</span><span class="hn-editorial-line hn-editorial-line--accent">Start skiing.</span>';
+  if (!el) return;
+  if (!el.querySelector('.hn-editorial-accent')) {
+    el.innerHTML = 'Stop guessing. <span class="hn-editorial-accent">Start skiing.</span>';
+  }
 }
 
 initialize();
