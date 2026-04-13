@@ -37,8 +37,8 @@
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preload" href="styles.css" as="style" />
   <link rel="stylesheet" href="styles.css" />
@@ -443,7 +443,7 @@
         <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
         <span class="nav-brand">
           <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
-          <span class="nav-brand-tag">Plan the weekend on snow.</span>
+          <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
         </span>
       </a>
       <div class="nav-divider"></div>
@@ -458,138 +458,124 @@
   <div class="container">
 
     <!-- ═══ HERO ═══════════════════════════════════════════════════════════ -->
-    <section id="searchSection" class="hero card hero-search hn-hero" aria-label="Plan your ski weekend">
+    <section id="searchSection" class="hero card hero-search hn-hero" aria-label="Find your mountain">
       <div class="hn-hero-bg" aria-hidden="true"></div>
       <div class="hn-shell">
         <div class="hn-inner">
 
           <!-- Headline -->
-          <h1 id="heroHeadline" class="hn-headline">This weekend, ski <em>where it actually makes sense.</em></h1>
+          <h1 id="heroHeadline" class="hn-headline">Stop guessing. <em>Find the right mountain.</em></h1>
 
           <!-- Subhead -->
-          <p class="hn-subhead hn-subhead--tight">Tell us the basics below. We&rsquo;ll score snow, drive, crowds, pass fit, and price&mdash;then put one clear pick up front.</p>
+          <p class="hn-subhead">The only place that scores mountains by snow, drive time and crowds&nbsp;together.</p>
 
-          <div class="hn-hero-narrative" role="group" aria-label="Where and when you ski">
-            <p class="hn-hero-narrative-flow">
-              <span class="hn-hero-chunk hn-hero-chunk--from">
-                <span class="hn-hero-run">I&rsquo;m arriving from</span>
-                <input id="originInput" type="text" class="hn-hero-narrative-input" placeholder="Boston or 02108" autocomplete="off" aria-label="City or ZIP you are leaving from" />
-              </span>
-              <span class="hn-hero-chunk hn-hero-chunk--when" title="Ski day">
-                <span class="hn-hero-run">on</span>
-                <select id="heroWhenSelect" class="hn-hero-narrative-select" aria-label="Day you plan to ski">
-                  <option value="weekday">a weekday</option>
-                  <option value="friday">Friday</option>
-                  <option value="saturday">Saturday</option>
-                  <option value="sunday">Sunday</option>
-                </select>
-              </span>
-              <span class="hn-hero-chunk hn-hero-chunk--pass">
-                <span class="hn-hero-run">with</span>
-                <select id="heroPassSelect" class="hn-hero-narrative-select" aria-label="Pass coverage">
-                  <option value="All">any pass</option>
-                  <option value="Epic">Epic Pass</option>
-                  <option value="Ikon">Ikon Pass</option>
-                  <option value="Indy">Indy Pass</option>
-                  <option value="Independent">Indie / unaffiliated</option>
-                </select>
-              </span>
-              <span class="hn-hero-run hn-hero-run--period" aria-hidden="true">.</span>
-            </p>
-            <div class="hn-hero-narrative-actions">
-              <button id="setLocation" type="button" class="hn-hero-cta hn-hero-cta--find">Find My Mountain</button>
-              <button id="detectLocation" type="button" class="hero-locate-link hero-locate-link--hero">Use my location</button>
+          <!-- ─── UNIFIED FILTER BAR (matches mockup design) ─────────────────── -->
+          <div class="hn-filterbar">
+            <!-- Location segment -->
+            <div class="hn-fb-seg hn-fb-seg--location">
+              <span class="hn-fb-label">Your location</span>
+              <input id="originInput" type="text" class="hn-fb-input" placeholder="ZIP or city, e.g. Boston, MA" autocomplete="off" />
+            </div>
+            <div class="hn-fb-div"></div>
+
+            <!-- Pass segment -->
+            <div class="hn-fb-seg hn-fb-seg--clickable" id="fbPassSeg" aria-label="Select pass">
+              <span class="hn-fb-label">Pass</span>
+              <span class="hn-fb-val" id="fbPassVal">All passes <span class="hn-fb-chevron">&#8964;</span></span>
+            </div>
+            <div class="hn-fb-div"></div>
+
+            <!-- Trip segment -->
+            <div class="hn-fb-seg hn-fb-seg--clickable" id="fbTripSeg" aria-label="Select trip type">
+              <span class="hn-fb-label">Trip</span>
+              <span class="hn-fb-val" id="fbTripVal">Day trip <span class="hn-fb-chevron">&#8964;</span></span>
+            </div>
+            <div class="hn-fb-div"></div>
+
+            <!-- When segment -->
+            <div class="hn-fb-seg hn-fb-seg--clickable" id="fbWhenSeg" aria-label="Select day">
+              <span class="hn-fb-label">When</span>
+              <span class="hn-fb-val" id="fbWhenVal">This weekend <span class="hn-fb-chevron">&#8964;</span></span>
+            </div>
+
+            <!-- Find button -->
+            <button id="setLocation" class="hn-fb-btn">Find My Mountain &rarr;</button>
+          </div>
+
+          <!-- ─── FILTER DROPDOWNS (hidden by default, shown on segment click) ── -->
+          <div id="hn-filter-dropdowns" class="hn-filter-dropdowns">
+            <div class="hn-fd-panel" id="fdPassPanel" hidden>
+              <span class="hn-fd-label">Pass</span>
+              <div class="hn-fd-chips">
+                <button type="button" class="hn-pchip hn-chip-on" data-val="All">All</button>
+                <button type="button" class="hn-pchip" data-val="Epic">Epic</button>
+                <button type="button" class="hn-pchip" data-val="Ikon">Ikon</button>
+                <button type="button" class="hn-pchip" data-val="Indy">Indy</button>
+              </div>
+            </div>
+            <div class="hn-fd-panel" id="fdTripPanel" hidden>
+              <span class="hn-fd-label">Trip type</span>
+              <div class="hn-fd-chips">
+                <button type="button" class="hn-tchip hn-chip-on" data-val="0">Day trip (&le;3h)</button>
+                <button type="button" class="hn-tchip" data-val="1">Weekend (3&ndash;6h)</button>
+                <button type="button" class="hn-tchip" data-val="2">Any distance</button>
+              </div>
+            </div>
+            <div class="hn-fd-panel" id="fdWhenPanel" hidden>
+              <span class="hn-fd-label">When</span>
+              <div class="hn-fd-chips">
+                <button type="button" class="hn-dchip" data-val="weekday">Weekday</button>
+                <button type="button" class="hn-dchip" data-val="friday">Friday</button>
+                <button type="button" class="hn-dchip" data-val="saturday">Saturday</button>
+                <button type="button" class="hn-dchip" data-val="sunday">Sunday</button>
+              </div>
             </div>
           </div>
 
-          <details class="hn-hero-extras hn-hero-extras--drive">
-            <summary class="hn-hero-extras-sum">Willing to drive farther than a day trip? <span class="hn-hero-extras-hint">optional</span></summary>
-            <div class="hn-hero-extras-body">
-              <div class="hn-filterbar hn-filterbar--no-loc hn-filterbar--trip-only">
-                <div class="hn-fb-seg hn-fb-seg--clickable hn-fb-seg--full" id="fbTripSeg" aria-label="Select trip type">
-                  <span class="hn-fb-label">How far</span>
-                  <span class="hn-fb-val" id="fbTripVal">Day trip <span class="hn-fb-chevron">&#8964;</span></span>
-                </div>
-              </div>
-              <div id="hn-filter-dropdowns" class="hn-filter-dropdowns">
-                <div class="hn-fd-panel" id="fdTripPanel" hidden>
-                  <span class="hn-fd-label">Trip type</span>
-                  <div class="hn-fd-chips">
-                    <button type="button" class="hn-tchip hn-chip-on" data-val="0">Day trip (&le;3h)</button>
-                    <button type="button" class="hn-tchip" data-val="1">Weekend (3&ndash;6h)</button>
-                    <button type="button" class="hn-tchip" data-val="2">Any distance</button>
-                  </div>
-                </div>
-              </div>
-              <p class="hn-hero-ai-lead">Prefer to talk it out?</p>
-              <button type="button" class="hn-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">Describe your perfect ski day</button>
-              <div id="aiChatPanel" class="hero-ai-panel" hidden>
-                <div class="hero-ai-examples">
-                  <button type="button" class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
-                  <button type="button" class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
-                  <button type="button" class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">Hidden gem, low crowds</button>
-                </div>
-                <div class="hero-ai-input-row">
-                  <input id="aiChatInput" type="text" class="ai-chat-input hero-ai-input" placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"' aria-label="Describe your ideal ski day" />
-                  <button id="aiChatBtn" type="button" class="btn btn-ai">Ask AI</button>
-                </div>
-                <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
-              </div>
-            </div>
-          </details>
+          <!-- Secondary row -->
+          <div class="hn-meta-row">
+            <button id="detectLocation" class="hero-locate-link">Use my location</button>
+            <span class="hn-meta-sep" aria-hidden="true">&middot;</span>
+            <button class="hn-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">&#10022; Describe your perfect ski day</button>
+          </div>
 
-          <select id="passFilter" class="hn-vis-hidden" aria-label="Pass filter sync"><option value="All" selected>All</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option></select>
+          <!-- Hidden selects for JS compat -->
+          <select id="passFilter"    class="hn-vis-hidden" aria-label="Pass filter sync"><option value="All" selected>All</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option></select>
+          <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass preference"><option value="All" selected>All</option><option value="Epic">Epic</option><option value="Ikon">Ikon</option><option value="Indy">Indy</option><option value="Independent">Independent</option></select>
           <select id="heroSnowSelect" class="hn-vis-hidden" aria-label="Snow preference"><option value="1">Any Snow</option><option value="5">3&quot;+ Matters</option><option value="10">6&quot;+ Chaser</option><option value="15">Powder Day</option></select>
           <label class="remember-location-label visually-hidden" id="rememberLocationLabel"><input type="checkbox" id="rememberLocation" />Remember this location<span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info<span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span></span></label>
           <div id="locationStatus" class="helper-text hn-location-status"></div>
+
+          <!-- AI panel -->
+          <div id="aiChatPanel" class="hero-ai-panel" hidden>
+            <div class="hero-ai-examples">
+              <button class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
+              <button class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
+              <button class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">Hidden gem, low crowds</button>
+            </div>
+            <div class="hero-ai-input-row">
+              <input id="aiChatInput" type="text" class="ai-chat-input hero-ai-input" placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"' aria-label="Describe your ideal ski day" />
+              <button id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+            </div>
+            <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
+          </div>
 
         </div>
       </div>
     </section>
 
-    <section class="hn-how-works" aria-labelledby="hnHowWorksTitle">
-      <h2 id="hnHowWorksTitle" class="hn-how-works-title">How it works</h2>
-      <ol class="hn-how-works-steps">
-        <li class="hn-how-step">
-          <span class="hn-how-step-num" aria-hidden="true">1</span>
-          <div class="hn-how-step-body">
-            <strong class="hn-how-step-head">Start from your door</strong>
-            <p class="hn-how-step-text">City or ZIP is enough&mdash;we map real drive times to every mountain.</p>
-          </div>
-        </li>
-        <li class="hn-how-step">
-          <span class="hn-how-step-num" aria-hidden="true">2</span>
-          <div class="hn-how-step-body">
-            <strong class="hn-how-step-head">We blend the factors you care about</strong>
-            <p class="hn-how-step-text">Snow forecast, crowds, pass, ticket price, and distance score together&mdash;not in silos.</p>
-          </div>
-        </li>
-        <li class="hn-how-step">
-          <span class="hn-how-step-num" aria-hidden="true">3</span>
-          <div class="hn-how-step-body">
-            <strong class="hn-how-step-head">One pick up front, depth when you want it</strong>
-            <p class="hn-how-step-text">Your best match leads; runners and the full table stay a scroll away.</p>
-          </div>
-        </li>
-      </ol>
-    </section>
-
-    <div class="hn-editorial-picks">
-      <header class="hn-picks-header">
-        <p class="hn-picks-eyebrow">Your weekend</p>
-        <h2 class="hn-picks-title">The recommendation</h2>
-        <p class="hn-picks-deck">Built from live weather and terrain data&mdash;not a booking pitch.</p>
-      </header>
-
-        <section id="verdictSection" class="verdict-section hn-verdict-full hn-results-panel hn-verdict-pre-location" aria-label="Top mountain pick">
+    <!-- ═══ RESULTS & DISCOVERY (unified region) ═══════════════════════════ -->
+    <div class="hn-results-region">
+    <!-- ═══ TOP PICK ════════════════════════════════════════════════════════ -->
+    <section id="verdictSection" class="verdict-section hn-verdict-full hn-results-panel hn-verdict-pre-location" aria-label="Top mountain pick">
       <div id="verdictCard">
         <div class="vcard-location-prompt">
           <div class="vcard-location-prompt-icon">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2a5.5 5.5 0 0 1 5.5 5.5c0 3.5-5.5 10.5-5.5 10.5S4.5 11 4.5 7.5A5.5 5.5 0 0 1 10 2z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="7.5" r="2" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
           </div>
           <div class="vcard-location-prompt-text">
-            <strong>Your best pick shows up here</strong>
-            <span>Tell us where you&rsquo;re leaving from and we&rsquo;ll score every hill in range—one answer up top, the full ranking when you want to dig in.</span>
+            <strong>Your top pick appears here</strong>
+            <span>Enter your location above and we will score every mountain in your drive window, show your top pick first, and keep the full sortable ranking below.</span>
           </div>
           <button class="vcard-location-prompt-btn" onclick="document.getElementById('originInput').focus();document.getElementById('searchSection').scrollIntoView({behavior:'smooth',block:'start'})">Set location &rarr;</button>
         </div>
@@ -606,61 +592,53 @@
       </button>
     </div>
 
-    <section id="hnRunnerUpSection" class="hn-runners-section hn-results-panel hn-runners--editorial" hidden aria-label="Runner-up options">
+    <!-- ═══ BOOKING STRIP ══════════════════════════════════════════════════ -->
+    <div id="hnBookingStrip" class="hn-booking-strip hn-results-panel" hidden>
+      <div class="hn-booking-left">
+        <div class="hn-booking-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#003580"/><circle cx="9" cy="9" r="4" fill="#fff"/></svg>
+        </div>
+        <div>
+          <div class="hn-booking-head">Staying the weekend? Find lodging near your top pick</div>
+          <div class="hn-booking-sub">Hotels, condos, and ski-in properties &mdash; updated availability <span class="hn-booking-affiliate">Affiliate link &mdash; we may earn a commission</span></div>
+        </div>
+      </div>
+      <div class="hn-booking-right">
+        <span class="hn-booking-badge">Weekend trip</span>
+        <a href="https://www.awin1.com/cread.php?awinmid=6776&amp;awinaffid=2816032&amp;ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dski%2520resort" class="hn-booking-btn" target="_blank" rel="noopener sponsored">Browse lodging &rarr;</a>
+      </div>
+    </div>
+
+    <!-- ═══ RUNNER-UPS ══════════════════════════════════════════════════════ -->
+    <section id="hnRunnerUpSection" class="hn-runners-section hn-results-panel" hidden aria-label="Runner-up options">
       <div class="hn-results-section-head">
         <div class="hn-results-section-head-text">
-          <h2 class="hn-results-heading" id="hnRunnersTitle">Close contenders</h2>
-          <p class="hn-results-sub">Other mountains scoring well for your trip right now</p>
+          <h2 class="hn-results-heading" id="hnRunnersTitle">Runner-up options</h2>
+          <p class="hn-results-sub">Solid alternatives ranked after your top pick</p>
         </div>
       </div>
       <div class="hn-runners-grid" id="hnRunnersGrid"></div>
     </section>
 
-    </div><!-- /.hn-editorial-picks -->
-
-    <section id="exploreSection" class="hn-explore-flow" aria-label="Explore mountains and regions">
-      <div class="hn-explore-intro">
-        <h2 class="hn-explore-title">Snow stories &amp; starting points</h2>
-        <p class="hn-explore-deck">Wander a bit&mdash;vibe shortcuts, forecast standouts, indies we love, and big-city trailheads in one calm band.</p>
-      </div>
-      <div class="hn-explore-vibes">
-        <a href="?sort=storm&amp;howfar=1#compareSection">Chase the storm</a>
-        <a href="?w=1,0,0,10#compareSection">Quieter slopes</a>
-        <a href="?pass=Indy#compareSection">Indy day</a>
-        <a href="?w=1,0,10,1#compareSection">Easier on the wallet</a>
-        <a href="?howfar=1#compareSection">Worth the longer drive</a>
-      </div>
-      <div class="hn-explore-dual">
-        <section id="stormSection" class="hn-explore-col">
-          <div class="hn-explore-col-head">
-            <h3 class="feature-title">Where the snow is landing</h3>
-            <p class="muted small feature-desc">Three-day forecast leaders when you feel like chasing.</p>
-          </div>
-          <div id="stormGrid" class="card-grid hn-explore-card-grid"></div>
-        </section>
-        <section id="hiddenGemSection" class="hn-explore-col">
-          <div class="hn-explore-col-head">
-            <h3 class="feature-title">Smaller hills, big personality</h3>
-            <p class="muted small feature-desc">Lower crowds and real terrain&mdash;without the airport-terminal vibe.</p>
-          </div>
-          <div id="hiddenGemGrid" class="card-grid hn-explore-card-grid"></div>
-        </section>
-      </div>
-      <div class="hn-explore-metro">
-        <p class="hn-explore-metro-label">Rolling out of a major city?</p>
-        <div class="hn-metro-grid hn-metro-grid--explore">
-          <a href="/ski-near/boston/" class="hn-metro-card"><span class="hn-metro-city">Boston</span><span class="hn-metro-detail">47 nearby</span></a>
-          <a href="/ski-near/new-york/" class="hn-metro-card"><span class="hn-metro-city">New York</span><span class="hn-metro-detail">38 nearby</span></a>
-          <a href="/ski-near/chicago/" class="hn-metro-card"><span class="hn-metro-city">Chicago</span><span class="hn-metro-detail">22 nearby</span></a>
-          <a href="/ski-near/denver/" class="hn-metro-card"><span class="hn-metro-city">Denver</span><span class="hn-metro-detail">31 nearby</span></a>
-          <a href="/ski-near/seattle/" class="hn-metro-card"><span class="hn-metro-city">Seattle</span><span class="hn-metro-detail">18 nearby</span></a>
+    <!-- ═══ METRO MARKET CARDS ══════════════════════════════════════════════ -->
+    <section class="hn-metro-section hn-results-panel" aria-label="Best skiing this weekend by city">
+      <div class="hn-results-section-head hn-results-section-head--metro">
+        <div class="hn-results-section-head-text">
+          <h2 class="hn-results-heading">Explore by city</h2>
+          <p class="hn-results-sub">Personalized rankings for major metros</p>
         </div>
+      </div>
+      <div class="hn-metro-grid">
+        <a href="/ski-near/boston/"    class="hn-metro-card"><span class="hn-metro-city">Boston</span><span class="hn-metro-detail">47 mountains nearby</span></a>
+        <a href="/ski-near/new-york/"  class="hn-metro-card"><span class="hn-metro-city">New York</span><span class="hn-metro-detail">38 mountains nearby</span></a>
+        <a href="/ski-near/chicago/"   class="hn-metro-card"><span class="hn-metro-city">Chicago</span><span class="hn-metro-detail">22 mountains nearby</span></a>
+        <a href="/ski-near/denver/"    class="hn-metro-card"><span class="hn-metro-city">Denver</span><span class="hn-metro-detail">31 mountains nearby</span></a>
+        <a href="/ski-near/seattle/"   class="hn-metro-card"><span class="hn-metro-city">Seattle</span><span class="hn-metro-detail">18 mountains nearby</span></a>
       </div>
     </section>
 
-    <div class="hn-power-zone">
-      <p class="hn-power-zone-label">For skiers who want control</p>
-      <p class="hn-power-zone-deck">Dial in snow, wind, price, crowds, and more. Everything here also updates your pick above.</p>
+    </div><!-- /.hn-results-region -->
+
     <!-- ═══ REFINE PANEL ════════════════════════════════════════════════════ -->
     <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">
       <div class="planner-col-header">
@@ -747,17 +725,14 @@
         <p id="plannerSeeVerdictHint" class="planner-see-verdict-hint">Scrolls to your updated pick at the top.</p>
       </div>
     </section>
-    </div><!-- /.hn-power-zone -->
 
-    <div class="hn-compare-zone">
-      <p class="hn-compare-zone-label">Full ranking</p>
-      <p class="hn-compare-zone-deck">Every row and column when you want to go deep&mdash;filters stay tucked away until you open them.</p>
+    <!-- ═══ COMPARE TABLE ═══════════════════════════════════════════════════ -->
     <section id="compareSection" class="compare-section-engine">
       <div class="compare-engine-head">
         <div class="compare-engine-head-main">
-          <p class="compare-engine-eyebrow">Full list</p>
+          <p class="compare-engine-eyebrow">Live rankings</p>
           <div class="compare-engine-title-line">
-            <h2 class="compare-engine-title">Every mountain, your sort order</h2>
+            <h2 class="compare-engine-title">See full ranking</h2>
             <p id="resultCount" class="compare-engine-sub result-count" aria-live="polite"></p>
           </div>
         </div>
@@ -5847,7 +5822,6 @@
       <div id="mobileCardGrid" class="mobile-card-grid" aria-label="Mountain cards"></div>
       <p class="price-disclaimer compare-price-note">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
     </section>
-    </div><!-- /.hn-compare-zone -->
 
     <div id="compareTray" class="compare-tray hidden">
       <div class="compare-tray-inner">
@@ -5863,14 +5837,32 @@
       <div id="compareContent"></div>
     </section>
 
-        <button type="button" class="scroll-more-fab" id="scrollMoreFab" aria-label="Scroll to more results">&darr;</button>
+    <!-- ═══ STORM + HIDDEN GEMS ═════════════════════════════════════════════ -->
+    <section class="feature-grid">
+      <section id="stormSection" class="card panel feature-panel">
+        <div class="section-header feature-panel-header"><div>
+          <h2 class="feature-title">Storm Chaser</h2>
+          <p class="muted small feature-desc">Resorts with the most forecast snowfall in the next 3 days.</p>
+        </div></div>
+        <div id="stormGrid" class="card-grid"></div>
+      </section>
+      <section id="hiddenGemSection" class="card panel feature-panel">
+        <div class="section-header feature-panel-header"><div>
+          <h2 class="feature-title">Hidden Gems</h2>
+          <p class="muted small feature-desc">Lower crowds, good value, real terrain &mdash; the anti-resort picks.</p>
+        </div></div>
+        <div id="hiddenGemGrid" class="card-grid"></div>
+      </section>
+    </section>
+
+    <button type="button" class="scroll-more-fab" id="scrollMoreFab" aria-label="Scroll to more results">&darr;</button>
 
     <section id="detailSection" class="card panel hidden">
       <div id="detailCard"></div>
     </section>
 
     <section class="db-summary-section">
-      <div class="db-summary-label">The data behind the picks</div>
+      <div class="db-summary-label">What we track</div>
       <div id="summaryCards" class="db-summary-grid" data-prerendered="true"><div class="db-stat"><div class="db-stat-value">250</div><div class="db-stat-label">Mountains</div><div class="db-stat-sub">in the database</div></div><div class="db-stat"><div class="db-stat-value">31</div><div class="db-stat-label">Epic</div><div class="db-stat-sub">resorts</div></div><div class="db-stat"><div class="db-stat-value">42</div><div class="db-stat-label">Ikon</div><div class="db-stat-sub">resorts</div></div><div class="db-stat"><div class="db-stat-value">84</div><div class="db-stat-label">Indy</div><div class="db-stat-sub">resorts</div></div><div class="db-stat"><div class="db-stat-value">93</div><div class="db-stat-label">Independent</div><div class="db-stat-sub">resorts</div></div></div>
     </section>
 
@@ -5920,7 +5912,9 @@
   (function() {
     // ── Filter bar segment dropdowns ─────────────────────────────────────────
     var segments = [
+      { segId: 'fbPassSeg',  panelId: 'fdPassPanel'  },
       { segId: 'fbTripSeg',  panelId: 'fdTripPanel'  },
+      { segId: 'fbWhenSeg',  panelId: 'fdWhenPanel'  },
     ];
     segments.forEach(function(s) {
       var seg   = document.getElementById(s.segId);
@@ -5956,6 +5950,25 @@
       el.innerHTML = text + ' <span class="hn-fb-chevron">&#8964;</span>';
     }
 
+    // ── Pass chips → sync heroPassSelect + update segment display ────────────
+    var passLabels = { 'All': 'All passes', 'Epic': 'Epic Pass', 'Ikon': 'Ikon Pass', 'Indy': 'Indy Pass' };
+    document.querySelectorAll('.hn-pchip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.hn-pchip').forEach(function(c) { c.classList.remove('hn-chip-on'); });
+        this.classList.add('hn-chip-on');
+        var val = this.dataset.val;
+        setSegVal('fbPassVal', passLabels[val] || val);
+        // Close dropdown
+        var p = document.getElementById('fdPassPanel'); if (p) p.hidden = true;
+        var g = document.getElementById('fbPassSeg'); if (g) g.classList.remove('hn-fb-seg--open');
+        // Sync hidden select
+        var sel = document.getElementById('heroPassSelect');
+        if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+        var selP = document.getElementById('passFilter');
+        if (selP) { selP.value = val; }
+      });
+    });
+
     // ── Trip chips → sync howFarFilter + update segment display ─────────────
     var tripLabels = { '0': 'Day trip', '1': 'Weekend', '2': 'Any distance' };
     document.querySelectorAll('.hn-tchip').forEach(function(chip) {
@@ -5971,7 +5984,7 @@
       });
     });
 
-    // ── Ski day + pass: heroWhenSelect + heroPassSelect in sd-app.js
+    // ── When chips: state.targetDate + segment label are set in sd-app.js (initHeroWhenControls / wireHeroWhenChips)
   })();
   </script>
 
