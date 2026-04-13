@@ -157,6 +157,7 @@ function buildPage(r) {
       <a href="/#hiddenGemSection" class="nav-secondary">Hidden Gems</a>
       <a href="/#mapSection" class="nav-secondary">Map</a>
       <button class="btn-ghost nav-share" onclick="copyShareLink()">&#128279; Share</button>
+      <button class="btn-ghost nav-share nav-discord" onclick="copyDiscordLink()" title="Copy a link that won't auto-expand in Discord">Discord</button>
     </div>
   </nav>
 

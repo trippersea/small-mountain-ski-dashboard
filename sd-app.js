@@ -831,6 +831,16 @@ function copyShareLink() {
     navigator.clipboard.writeText(url).then(doToast).catch(() => fallbackCopy(url));
   } else { fallbackCopy(url); }
 }
+// Copies the URL wrapped in <> so Discord shows it as a plain link without an embed preview.
+function copyDiscordLink() {
+  const p   = serializeState();
+  const url = `${location.origin}${location.pathname}${p.toString() ? '?' + p : ''}`;
+  const discordUrl = `<${url}>`;
+  const doToast = () => showToast('Discord link copied — paste it and the preview won\'t auto-expand!', 3200);
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(discordUrl).then(doToast).catch(() => fallbackCopy(discordUrl));
+  } else { fallbackCopy(discordUrl); }
+}
 function fallbackCopy(text) {
   const ta = Object.assign(document.createElement('textarea'), { value: text, style: 'position:fixed;opacity:0' });
   document.body.appendChild(ta); ta.select();
@@ -1241,6 +1251,9 @@ function renderVerdict(resorts) {
         <div class="vcard-actions vcard-actions-dash">
           ${primaryBtn}
           ${secondaryBtn}
+        </div>
+        <div class="vcard-share-row">
+          <button type="button" class="vcard-discord-btn" onclick="copyDiscordLink()" title="Copy a link that won't auto-expand in Discord">Copy for Discord</button>
         </div>
       </div>
     </div>`;

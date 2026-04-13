@@ -153,6 +153,8 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); }
   transition: background .12s, color .12s;
 }
 .nav-share:hover { background: var(--bg-section-alt); color: var(--text); }
+.nav-discord { color: #5865F2; border-color: #5865F2 !important; }
+.nav-discord:hover { background: rgba(88,101,242,.08); color: #5865F2; }
 .btn-ghost {
   background: transparent; border: 1px solid var(--border);
   border-radius: 999px; padding: 7px 13px;
@@ -4735,6 +4737,23 @@ button.vcard-detail-btn:hover,
   pointer-events: none;
   cursor: default;
 }
+.vcard-share-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.vcard-discord-btn {
+  background: transparent;
+  border: 1px solid #5865F2;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font: 500 11px/1 inherit;
+  color: #5865F2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s;
+}
+.vcard-discord-btn:hover { background: rgba(88,101,242,.08); }
 .vcard-demo-blurb {
   opacity: 0.85;
 }
