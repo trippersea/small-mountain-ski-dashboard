@@ -28,6 +28,10 @@
       .top-nav a[href="/about/"] + .nav-link-sep { display:none; }
       .nav-divider { display:none; }
     }
+    /* ── Affiliate disclosure styles ── */
+    .site-footer-affiliate { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.55; }
+    .hn-booking-affiliate { display:block; font-size:11px; color:rgba(255,255,255,0.45); margin-top:3px; }
+    .affiliate-badge { display:inline-block; font-size:10px; font-weight:500; color:#9ca3af; background:#f0f4f8; padding:1px 6px; border-radius:4px; margin-left:4px; vertical-align:middle; letter-spacing:0.02em; }
   </style>
   <link rel="icon" href="ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
@@ -596,7 +600,7 @@
         </div>
         <div>
           <div class="hn-booking-head">Staying the weekend? Find lodging near your top pick</div>
-          <div class="hn-booking-sub">Hotels, condos, and ski-in properties &mdash; updated availability</div>
+          <div class="hn-booking-sub">Hotels, condos, and ski-in properties &mdash; updated availability <span class="hn-booking-affiliate">Affiliate link &mdash; we may earn a commission</span></div>
         </div>
       </div>
       <div class="hn-booking-right">
@@ -6045,6 +6049,7 @@
 
   <footer class="site-footer">
     <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
+    <p class="site-footer-affiliate">Some links on this site are affiliate links. If you book lodging through them we may earn a small commission at no extra cost to you. This never influences mountain scores or rankings.</p>
   </footer>
 </body>
 </html>

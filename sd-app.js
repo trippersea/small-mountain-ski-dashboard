@@ -1207,7 +1207,7 @@ function renderVerdict(resorts) {
   if (tier === 'great' || tier === 'good') {
     primaryBtn = resort.website
       ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &rarr;</a>`
-      : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging &rarr;</a>`;
+      : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging &rarr; <span class="affiliate-badge">affiliate</span></a>`;
     secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>`;
   } else if (tier === 'marginal') {
     primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
@@ -1783,7 +1783,7 @@ function renderCompareTable(resorts) {
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
         <td>
-          <a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay nearby</a>
+          <a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay nearby <span class="affiliate-badge">affiliate</span></a>
         </td>
       </tr>`;
   }).join('');
@@ -2228,7 +2228,7 @@ function renderMobileCards(decorated, emptyOpts) {
         <label class="mob-compare-label"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /> Compare</label>
         <div class="mob-card-actions">
           ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Website</a>` : ''}
-          <a class="mob-stay-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay nearby</a>
+          <a class="mob-stay-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay nearby <span class="affiliate-badge">affiliate</span></a>
           <button type="button" class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details →</button>
         </div>
       </div>
