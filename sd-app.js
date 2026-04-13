@@ -1519,7 +1519,7 @@ function _renderStorm(resorts) {
 
   // ── Empty state: no meaningful snow anywhere ───────────────────────────────
   if (maxStorm < 0.5) {
-    if (stormTitle) stormTitle.textContent = 'Storm Chaser';
+    if (stormTitle) stormTitle.textContent = 'Where the snow is landing';
     if (stormDesc)  stormDesc.textContent  = 'No major storms in the next 3 days. Check back mid-week — this updates as new systems develop.';
     stormSection?.classList.remove('storm-alert-active');
     els.stormGrid.innerHTML = `<div class="storm-empty-state storm-empty-state--full">
@@ -1536,15 +1536,15 @@ function _renderStorm(resorts) {
 
   // ── Powder alert mode: real snow incoming ─────────────────────────────────
   if (maxStorm >= 6) {
-    if (stormTitle) stormTitle.innerHTML = '&#10052; Powder Alert';
+    if (stormTitle) stormTitle.innerHTML = '&#10052; Powder on the way';
     if (stormDesc)  stormDesc.textContent = `${maxStorm.toFixed(0)}" incoming — these mountains have the most snow in the forecast right now.`;
     stormSection?.classList.add('storm-alert-active');
-  } else if (maxStorm >= 2) {
-    if (stormTitle) stormTitle.textContent = 'Storm Chaser';
+   } else if (maxStorm >= 2) {
+    if (stormTitle) stormTitle.textContent = 'Where the snow is landing';
     if (stormDesc)  stormDesc.textContent  = `Snow in the forecast — these are your best bets this week.`;
     stormSection?.classList.remove('storm-alert-active');
   } else {
-    if (stormTitle) stormTitle.textContent = 'Storm Chaser';
+    if (stormTitle) stormTitle.textContent = 'Where the snow is landing';
     if (stormDesc)  stormDesc.textContent  = 'Light snow in the forecast — groomed conditions at best.';
     stormSection?.classList.remove('storm-alert-active');
   }

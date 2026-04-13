@@ -37,8 +37,8 @@
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preload" href="styles.css" as="style" />
   <link rel="stylesheet" href="styles.css" />
@@ -443,7 +443,7 @@
         <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
         <span class="nav-brand">
           <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
-          <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
+          <span class="nav-brand-tag">Plan the weekend on snow.</span>
         </span>
       </a>
       <div class="nav-divider"></div>
@@ -458,22 +458,22 @@
   <div class="container">
 
     <!-- ═══ HERO ═══════════════════════════════════════════════════════════ -->
-    <section id="searchSection" class="hero card hero-search hn-hero" aria-label="Find your mountain">
+    <section id="searchSection" class="hero card hero-search hn-hero" aria-label="Plan your ski weekend">
       <div class="hn-hero-bg" aria-hidden="true"></div>
       <div class="hn-shell">
         <div class="hn-inner">
 
           <!-- Headline -->
-          <h1 id="heroHeadline" class="hn-headline">Stop guessing. <em>Find the right mountain.</em></h1>
+          <h1 id="heroHeadline" class="hn-headline">This weekend, ski <em>where it actually makes sense.</em></h1>
 
           <!-- Subhead -->
-          <p class="hn-subhead">The only place that scores mountains by snow, drive time and crowds&nbsp;together.</p>
+          <p class="hn-subhead">We rank 250+ mountains for <strong>your</strong> drive, pass, snow forecast, ticket price, and crowd outlook&mdash;then put one clear pick up top and the full list when you want to explore.</p>
 
           <!-- ─── UNIFIED FILTER BAR (matches mockup design) ─────────────────── -->
           <div class="hn-filterbar">
             <!-- Location segment -->
             <div class="hn-fb-seg hn-fb-seg--location">
-              <span class="hn-fb-label">Your location</span>
+              <span class="hn-fb-label">Starting point</span>
               <input id="originInput" type="text" class="hn-fb-input" placeholder="ZIP or city, e.g. Boston, MA" autocomplete="off" />
             </div>
             <div class="hn-fb-div"></div>
@@ -487,7 +487,7 @@
 
             <!-- Trip segment -->
             <div class="hn-fb-seg hn-fb-seg--clickable" id="fbTripSeg" aria-label="Select trip type">
-              <span class="hn-fb-label">Trip</span>
+              <span class="hn-fb-label">How far</span>
               <span class="hn-fb-val" id="fbTripVal">Day trip <span class="hn-fb-chevron">&#8964;</span></span>
             </div>
             <div class="hn-fb-div"></div>
@@ -499,7 +499,7 @@
             </div>
 
             <!-- Find button -->
-            <button id="setLocation" class="hn-fb-btn">Find My Mountain &rarr;</button>
+            <button id="setLocation" class="hn-fb-btn">Get recommendations &rarr;</button>
           </div>
 
           <!-- ─── FILTER DROPDOWNS (hidden by default, shown on segment click) ── -->
@@ -565,6 +565,20 @@
     </section>
 
     <!-- ═══ RESULTS & DISCOVERY (unified region) ═══════════════════════════ -->
+    <section id="discoverSection" class="hn-discover" aria-label="Browse by vibe">
+      <h2 class="hn-discover-kicker">Browse by vibe</h2>
+      <p class="hn-discover-lede">Quick jumps for real ski weekends&mdash;each link sets the list; you can still tweak everything below.</p>
+      <div class="hn-discover-pills">
+        <a href="?sort=storm&amp;howfar=1#compareSection">Chase the storm</a>
+        <a href="?w=1,0,0,10#compareSection">Quieter slopes</a>
+        <a href="?pass=Indy#compareSection">Indy pass day</a>
+        <a href="?w=1,0,10,1#compareSection">Easier on the wallet</a>
+        <a href="?howfar=1#compareSection">Worth a longer drive</a>
+        <a href="#hiddenGemSection">Hidden gems</a>
+        <a href="#stormSection">Deepest snow (3-day)</a>
+      </div>
+    </section>
+
     <div class="hn-results-region">
     <!-- ═══ TOP PICK ════════════════════════════════════════════════════════ -->
     <section id="verdictSection" class="verdict-section hn-verdict-full hn-results-panel hn-verdict-pre-location" aria-label="Top mountain pick">
@@ -574,8 +588,8 @@
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2a5.5 5.5 0 0 1 5.5 5.5c0 3.5-5.5 10.5-5.5 10.5S4.5 11 4.5 7.5A5.5 5.5 0 0 1 10 2z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="7.5" r="2" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
           </div>
           <div class="vcard-location-prompt-text">
-            <strong>Your top pick appears here</strong>
-            <span>Enter your location above and we will score every mountain in your drive window, show your top pick first, and keep the full sortable ranking below.</span>
+            <strong>Your best pick shows up here</strong>
+            <span>Tell us where you&rsquo;re leaving from and we&rsquo;ll score every hill in range—one answer up top, the full ranking when you want to dig in.</span>
           </div>
           <button class="vcard-location-prompt-btn" onclick="document.getElementById('originInput').focus();document.getElementById('searchSection').scrollIntoView({behavior:'smooth',block:'start'})">Set location &rarr;</button>
         </div>
@@ -594,18 +608,18 @@
 
     <!-- ═══ BOOKING STRIP ══════════════════════════════════════════════════ -->
     <div id="hnBookingStrip" class="hn-booking-strip hn-results-panel" hidden>
-      <div class="hn-booking-left">
-        <div class="hn-booking-icon">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#003580"/><circle cx="9" cy="9" r="4" fill="#fff"/></svg>
+        <div class="hn-booking-left">
+        <div class="hn-booking-icon hn-booking-icon--neutral" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
         </div>
         <div>
-          <div class="hn-booking-head">Staying the weekend? Find lodging near your top pick</div>
-          <div class="hn-booking-sub">Hotels, condos, and ski-in properties &mdash; updated availability <span class="hn-booking-affiliate">Affiliate link &mdash; we may earn a commission</span></div>
+          <div class="hn-booking-head">Turning it into a weekend? Stay near your pick</div>
+          <div class="hn-booking-sub">Lodging options in the area &mdash; availability changes fast <span class="hn-booking-affiliate">Affiliate &mdash; we may earn a commission</span></div>
         </div>
       </div>
       <div class="hn-booking-right">
-        <span class="hn-booking-badge">Weekend trip</span>
-        <a href="https://www.awin1.com/cread.php?awinmid=6776&amp;awinaffid=2816032&amp;ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dski%2520resort" class="hn-booking-btn" target="_blank" rel="noopener sponsored">Browse lodging &rarr;</a>
+        <span class="hn-booking-badge">Optional</span>
+        <a href="https://www.awin1.com/cread.php?awinmid=6776&amp;awinaffid=2816032&amp;ued=https%3A%2F%2Fwww.booking.com%2Fsearchresults.html%3Fss%3Dski%2520resort" class="hn-booking-btn" target="_blank" rel="noopener sponsored">Browse stays &rarr;</a>
       </div>
     </div>
 
@@ -613,8 +627,8 @@
     <section id="hnRunnerUpSection" class="hn-runners-section hn-results-panel" hidden aria-label="Runner-up options">
       <div class="hn-results-section-head">
         <div class="hn-results-section-head-text">
-          <h2 class="hn-results-heading" id="hnRunnersTitle">Runner-up options</h2>
-          <p class="hn-results-sub">Solid alternatives ranked after your top pick</p>
+          <h2 class="hn-results-heading" id="hnRunnersTitle">Close contenders</h2>
+          <p class="hn-results-sub">Other mountains scoring well for your trip right now</p>
         </div>
       </div>
       <div class="hn-runners-grid" id="hnRunnersGrid"></div>
@@ -624,8 +638,8 @@
     <section class="hn-metro-section hn-results-panel" aria-label="Best skiing this weekend by city">
       <div class="hn-results-section-head hn-results-section-head--metro">
         <div class="hn-results-section-head-text">
-          <h2 class="hn-results-heading">Explore by city</h2>
-          <p class="hn-results-sub">Personalized rankings for major metros</p>
+          <h2 class="hn-results-heading">Start from a city</h2>
+          <p class="hn-results-sub">Local rankings for skiers rolling out of these hubs</p>
         </div>
       </div>
       <div class="hn-metro-grid">
@@ -638,6 +652,24 @@
     </section>
 
     </div><!-- /.hn-results-region -->
+
+    <!-- ═══ STORM + HIDDEN GEMS ═════════════════════════════════════════════ -->
+    <section class="feature-grid">
+      <section id="stormSection" class="card panel feature-panel">
+        <div class="section-header feature-panel-header"><div>
+          <h2 class="feature-title">Where the snow is landing</h2>
+          <p class="muted small feature-desc">Three-day forecast leaders when you feel like chasing.</p>
+        </div></div>
+        <div id="stormGrid" class="card-grid"></div>
+      </section>
+      <section id="hiddenGemSection" class="card panel feature-panel">
+        <div class="section-header feature-panel-header"><div>
+          <h2 class="feature-title">Smaller hills, big personality</h2>
+          <p class="muted small feature-desc">Lower crowds and real terrain&mdash;the picks that feel less like an airport terminal.</p>
+        </div></div>
+        <div id="hiddenGemGrid" class="card-grid"></div>
+      </section>
+    </section>
 
     <!-- ═══ REFINE PANEL ════════════════════════════════════════════════════ -->
     <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">
@@ -730,9 +762,9 @@
     <section id="compareSection" class="compare-section-engine">
       <div class="compare-engine-head">
         <div class="compare-engine-head-main">
-          <p class="compare-engine-eyebrow">Live rankings</p>
+          <p class="compare-engine-eyebrow">Full list</p>
           <div class="compare-engine-title-line">
-            <h2 class="compare-engine-title">See full ranking</h2>
+            <h2 class="compare-engine-title">Every mountain, your sort order</h2>
             <p id="resultCount" class="compare-engine-sub result-count" aria-live="polite"></p>
           </div>
         </div>
@@ -5837,32 +5869,14 @@
       <div id="compareContent"></div>
     </section>
 
-    <!-- ═══ STORM + HIDDEN GEMS ═════════════════════════════════════════════ -->
-    <section class="feature-grid">
-      <section id="stormSection" class="card panel feature-panel">
-        <div class="section-header feature-panel-header"><div>
-          <h2 class="feature-title">Storm Chaser</h2>
-          <p class="muted small feature-desc">Resorts with the most forecast snowfall in the next 3 days.</p>
-        </div></div>
-        <div id="stormGrid" class="card-grid"></div>
-      </section>
-      <section id="hiddenGemSection" class="card panel feature-panel">
-        <div class="section-header feature-panel-header"><div>
-          <h2 class="feature-title">Hidden Gems</h2>
-          <p class="muted small feature-desc">Lower crowds, good value, real terrain &mdash; the anti-resort picks.</p>
-        </div></div>
-        <div id="hiddenGemGrid" class="card-grid"></div>
-      </section>
-    </section>
-
-    <button type="button" class="scroll-more-fab" id="scrollMoreFab" aria-label="Scroll to more results">&darr;</button>
+        <button type="button" class="scroll-more-fab" id="scrollMoreFab" aria-label="Scroll to more results">&darr;</button>
 
     <section id="detailSection" class="card panel hidden">
       <div id="detailCard"></div>
     </section>
 
     <section class="db-summary-section">
-      <div class="db-summary-label">What we track</div>
+      <div class="db-summary-label">The data behind the picks</div>
       <div id="summaryCards" class="db-summary-grid" data-prerendered="true"><div class="db-stat"><div class="db-stat-value">250</div><div class="db-stat-label">Mountains</div><div class="db-stat-sub">in the database</div></div><div class="db-stat"><div class="db-stat-value">31</div><div class="db-stat-label">Epic</div><div class="db-stat-sub">resorts</div></div><div class="db-stat"><div class="db-stat-value">42</div><div class="db-stat-label">Ikon</div><div class="db-stat-sub">resorts</div></div><div class="db-stat"><div class="db-stat-value">84</div><div class="db-stat-label">Indy</div><div class="db-stat-sub">resorts</div></div><div class="db-stat"><div class="db-stat-value">93</div><div class="db-stat-label">Independent</div><div class="db-stat-sub">resorts</div></div></div>
     </section>
 
