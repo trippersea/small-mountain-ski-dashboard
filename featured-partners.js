@@ -34,9 +34,38 @@
     return STATE_ADS[stateSlug] || null;
   }
 
+  // ─── Sponsor click tracker ────────────────────────────────────────────────────
+  // Call this on any partner/sponsor link click.
+  // sponsorName  = resort or brand name (e.g. 'Bousquet Mountain')
+  // placement    = where on the site (e.g. 'runner_card', 'detail_panel', 'mobile_card', 'state_page')
+  // resortPage   = resort slug if on a resort page (e.g. 'bousquet-ski-area'), else ''
+  // statePage    = state slug if on a state page (e.g. 'massachusetts'), else ''
+  function trackSponsorClick(sponsorName, placement, resortPage, statePage) {
+    const sessionId = (function () {
+      try {
+        let id = sessionStorage.getItem('wsn_session');
+        if (!id) { id = Math.random().toString(36).slice(2); sessionStorage.setItem('wsn_session', id); }
+        return id;
+      } catch (e) { return 'unknown'; }
+    })();
+
+    fetch('/api/track-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sponsor_name: sponsorName || '',
+        placement:    placement   || '',
+        resort_page:  resortPage  || '',
+        state_page:   statePage   || '',
+        session_id:   sessionId
+      })
+    }).catch(function () {}); // silent fail — never block the navigation
+  }
+
   root.FEATURED_PARTNERS  = FEATURED_PARTNERS;
   root.getFeaturedPartner = getFeaturedPartner;
   root.STATE_ADS          = STATE_ADS;
   root.getStateAd         = getStateAd;
+  root.trackSponsorClick  = trackSponsorClick;
 
 })(typeof globalThis !== 'undefined' ? globalThis : this);

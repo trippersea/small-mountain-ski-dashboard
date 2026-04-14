@@ -1476,7 +1476,7 @@ function renderVerdict(resorts) {
         const _rBlurb = esc(runnerUpBlurb(_rSnow, cf, item.resort.passGroup));
         const _diff = esc(runnerDifferentiator(item, runningItems));
         const _rCtaLabel = _rSponsor?.tagline ? esc(_rSponsor.tagline) : 'Visit partner';
-        const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation()">${_rCtaLabel} →</a>` : '';
+        const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation();trackSponsorClick('${esc(item.resort.name)}','runner_card','${esc(item.resort.id)}','')">${_rCtaLabel} →</a>` : '';
         const _rCallout = _rSponsor
           ? `<div class="hn-runner-partner-callout" role="note">
               <span class="hn-runner-partner-pill">Featured Partner</span>
@@ -2131,7 +2131,7 @@ function renderDetail({ scroll = false } = {}) {
     </div>
     <div class="dhr-actions">
       <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See full report →</a>
-      ${sponsor ? `<a class="dhr-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer">Book now →</a>` : ''}
+      ${sponsor ? `<a class="dhr-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer" onclick="trackSponsorClick('${esc(resort.name)}','detail_panel','${esc(resort.id)}','')">Book now →</a>` : ''}
       ${resort.website ? `<a class="dhr-btn-ghost" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit website ↗</a>` : ''}
     </div>
     <div id="detailConditionsSlot" class="dhr-cond-slot" hidden></div>
@@ -2345,7 +2345,7 @@ function renderMobileCards(decorated, emptyOpts) {
       ? `<div class="mob-featured-banner" role="note">
           <span class="table-featured-pill">Featured Partner</span>
           <span class="mob-featured-hint">Does not change rank or score</span>
-          <a class="mob-partner-cta" href="${esc(_mobSp.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation()">${esc(_mobSp.tagline || 'Visit partner')} →</a>
+          <a class="mob-partner-cta" href="${esc(_mobSp.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation();trackSponsorClick('${esc(resort.name)}','mobile_card','${esc(resort.id)}','')">${esc(_mobSp.tagline || 'Visit partner')} →</a>
         </div>`
       : '';
     return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
@@ -2428,6 +2428,27 @@ function renderAllCards(resorts) {
 function render() { renderAllCards(filteredResorts()); }
 const debouncedRender = debounce(render, 50);
 
+// ─── Filter event tracker ─────────────────────────────────────────────────────
+function trackFilterEvent(filterType, filterValue) {
+  const sessionId = (function () {
+    try {
+      let id = sessionStorage.getItem('wsn_session');
+      if (!id) { id = Math.random().toString(36).slice(2); sessionStorage.setItem('wsn_session', id); }
+      return id;
+    } catch (e) { return 'unknown'; }
+  })();
+
+  fetch('/api/track-filter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filter_type:  filterType  || '',
+      filter_value: filterValue || '',
+      session_id:   sessionId
+    })
+  }).catch(function () {}); // silent fail — never interrupt the UI
+}
+
 // ─── Hero pill filters ────────────────────────────────────────────────────────
 function wireHeroPills() {
   document.querySelectorAll('.hn-hero-pills[data-pill-target]').forEach(group => {
@@ -2439,6 +2460,7 @@ function wireHeroPills() {
         pill.classList.add('active');
         targetEl.value = pill.dataset.value;
         targetEl.dispatchEvent(new Event('change', { bubbles: true }));
+        trackFilterEvent(group.dataset.pillTarget, pill.dataset.value);
       });
     });
   });
