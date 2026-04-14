@@ -2923,10 +2923,28 @@ function initialize() {
     }
   };
 
+  // ─── Log all current filter state when user clicks Find My Mountain ──────────
+  // Captures defaults even if the user never changed anything
+  function logCurrentFilters() {
+    const passMap   = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
+    const tripMap   = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
+    const priorityMap = { 1: 'Best fit', 10: 'Fresh snow', 5: 'Quiet slopes' };
+
+    const filters = [
+      { type: 'heroPassSelect',    value: passMap[state.passFilter]    || state.passFilter    || 'Any'      },
+      { type: 'heroSentenceTrip',  value: tripMap[state.howFar]        || String(state.howFar)              },
+      { type: 'heroSentenceDay',   value: state.skiDayPreset           || 'weekday'                         },
+      { type: 'heroSnowSelect',    value: priorityMap[state.weights?.snow] || String(state.weights?.snow || 1) },
+    ];
+
+    filters.forEach(f => trackFilterEvent(f.type, f.value));
+  }
+
   els.setLocation.addEventListener('click', async () => {
     const originalText = els.setLocation.textContent;
     els.setLocation.textContent = 'Finding…';
     els.setLocation.disabled = true;
+    logCurrentFilters();
     await applyLocation();
     els.setLocation.textContent = originalText;
     els.setLocation.disabled = false;
