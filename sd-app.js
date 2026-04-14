@@ -1119,7 +1119,7 @@ function renderVerdict(resorts) {
   updateHeroVerdictEmptyState();
 
   if (verdictLockedUntil > Date.now()) {
-    els.verdictCard.innerHTML = '<div class="vcard-placeholder vcard-placeholder--loading"><div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div><div class="vcard-placeholder-title">Finding your best mountain match…</div><div class="vcard-placeholder-sub">Giving the trails one last pass — your top pick will appear in just a moment.</div></div>';
+    els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading"><div class="vcard-placeholder-icon vcard-loading-pulse">&#x26F7;</div><div class="vcard-placeholder-title">Finding your best mountain match...</div><div class="vcard-placeholder-sub">Giving the trails one last pass &mdash; your top pick will appear in just a moment.</div></div>`;
     return;
   }
 
