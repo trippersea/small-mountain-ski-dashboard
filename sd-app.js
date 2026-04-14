@@ -143,11 +143,11 @@ function dayValToDate(val) {
 }
 
 function smartDefaultWhenVal() {
-  const dow = new Date().getDay();
-  if (dow === 4) return 'friday';
-  if (dow === 5) return 'saturday';
-  if (dow === 6) return 'sunday';
-  return 'weekday';
+  const dow = new Date().getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+  if (dow === 5) return 'saturday';  // Friday  → next day is Saturday
+  if (dow === 6) return 'sunday';    // Saturday → next day is Sunday
+  if (dow === 0) return 'weekday';   // Sunday   → next day is a weekday
+  return 'friday';                   // Mon–Thu  → next ski day is Friday
 }
 
 /** Baseline “When” chip from first load (for custom segment styling) */
@@ -2381,6 +2381,9 @@ function syncHeroPills() {
   });
   document.querySelectorAll('.hn-hero-pills[data-pill-target="heroSnowSelect"] .hn-hero-pill').forEach(p => {
     p.classList.toggle('active', p.dataset.value === String(state.weights?.snow ?? 1));
+  });
+  document.querySelectorAll('.hn-hero-pills[data-pill-target="heroSentenceDay"] .hn-hero-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.value === (state.skiDayPreset || 'weekday'));
   });
 }
 
