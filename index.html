@@ -471,23 +471,41 @@
               <label class="hn-guided-label" for="originInput">Starting from</label>
               <input id="originInput" type="text" class="hn-guided-input" placeholder="ZIP code or city, state" autocomplete="off" inputmode="text" />
             </div>
-            <div class="hn-guided-row hn-guided-row--half">
-              <div class="hn-guided-field">
-                <label class="hn-guided-label" for="heroPassSelect">Pass</label>
-                <select id="heroPassSelect" class="hn-guided-select" aria-label="Pass"></select>
+            <!-- Hidden selects kept for JS state compatibility -->
+            <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass"></select>
+            <select id="heroSentenceDay" class="hn-vis-hidden" aria-label="Ski day"></select>
+            <select id="heroSentenceTrip" class="hn-vis-hidden" aria-label="Trip length">
+              <option value="0">Day trip</option>
+              <option value="1">Weekend</option>
+              <option value="2">Any distance</option>
+            </select>
+            <!-- Pill filters -->
+            <div class="hn-hero-pills-section">
+              <div class="hn-hero-pill-group">
+                <span class="hn-hero-pill-label">Pass</span>
+                <div class="hn-hero-pills" data-pill-target="heroPassSelect">
+                  <button type="button" class="hn-hero-pill active" data-value="All">Any</button>
+                  <button type="button" class="hn-hero-pill" data-value="Epic">Epic</button>
+                  <button type="button" class="hn-hero-pill" data-value="Ikon">Ikon</button>
+                  <button type="button" class="hn-hero-pill" data-value="Indy">Indy</button>
+                </div>
               </div>
-              <div class="hn-guided-field">
-                <label class="hn-guided-label" for="heroSentenceDay">Skiing</label>
-                <select id="heroSentenceDay" class="hn-guided-select" aria-label="Ski day"></select>
+              <div class="hn-hero-pill-group">
+                <span class="hn-hero-pill-label">Trip</span>
+                <div class="hn-hero-pills" data-pill-target="heroSentenceTrip">
+                  <button type="button" class="hn-hero-pill active" data-value="0">Day trip</button>
+                  <button type="button" class="hn-hero-pill" data-value="1">Weekend</button>
+                  <button type="button" class="hn-hero-pill" data-value="2">Any distance</button>
+                </div>
               </div>
-            </div>
-            <div class="hn-guided-row">
-              <label class="hn-guided-label" for="heroSentenceTrip">Trip type</label>
-              <select id="heroSentenceTrip" class="hn-guided-select" aria-label="Trip length">
-                <option value="0">Day trip</option>
-                <option value="1">Weekend</option>
-                <option value="2">Any distance</option>
-              </select>
+              <div class="hn-hero-pill-group">
+                <span class="hn-hero-pill-label">Priority</span>
+                <div class="hn-hero-pills" data-pill-target="heroSnowSelect">
+                  <button type="button" class="hn-hero-pill active" data-value="1">Best fit</button>
+                  <button type="button" class="hn-hero-pill" data-value="10">Fresh snow</button>
+                  <button type="button" class="hn-hero-pill" data-value="5">Quiet slopes</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -595,33 +613,6 @@
     </section>
 
     </div><!-- /.hn-results-region -->
-
-    <!-- ═══ FEATURE DISCOVERY — Storm + Hidden Gems (pre-location) ══════════ -->
-    <div id="featureDiscovery" class="feature-discovery-section">
-      <div class="feature-discovery-inner">
-        <div class="feature-discovery-head">
-          <p class="feature-discovery-eyebrow">No location set yet</p>
-          <h2 class="feature-discovery-title">What's worth checking out right now</h2>
-          <p class="feature-discovery-sub">Enter your ZIP above to get a personalized pick — or explore what's looking good across the country.</p>
-        </div>
-        <div class="feature-grid">
-          <section id="stormSection" class="card panel feature-panel">
-            <div class="section-header feature-panel-header"><div>
-              <h2 class="feature-title">Storm Chaser</h2>
-              <p class="muted small feature-desc">Resorts with the most forecast snowfall in the next 3 days.</p>
-            </div></div>
-            <div id="stormGrid" class="card-grid"></div>
-          </section>
-          <section id="hiddenGemSection" class="card panel feature-panel">
-            <div class="section-header feature-panel-header"><div>
-              <h2 class="feature-title">Hidden Gems</h2>
-              <p class="muted small feature-desc">Lower crowds, good value, real terrain &mdash; the anti-resort picks.</p>
-            </div></div>
-            <div id="hiddenGemGrid" class="card-grid"></div>
-          </section>
-        </div>
-      </div>
-    </div>
 
     <!-- ═══ REFINE PANEL ════════════════════════════════════════════════════ -->
     <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">
@@ -5819,6 +5810,24 @@
     <section id="comparePanel" class="card panel hidden">
       <div class="section-header"><h2>Side-by-Side Comparison</h2><button id="closeCompare" class="btn btn-secondary">Close</button></div>
       <div id="compareContent"></div>
+    </section>
+
+    <!-- ═══ STORM + HIDDEN GEMS ═════════════════════════════════════════════ -->
+    <section class="feature-grid">
+      <section id="stormSection" class="card panel feature-panel">
+        <div class="section-header feature-panel-header"><div>
+          <h2 class="feature-title">Storm Chaser</h2>
+          <p class="muted small feature-desc">Resorts with the most forecast snowfall in the next 3 days.</p>
+        </div></div>
+        <div id="stormGrid" class="card-grid"></div>
+      </section>
+      <section id="hiddenGemSection" class="card panel feature-panel">
+        <div class="section-header feature-panel-header"><div>
+          <h2 class="feature-title">Hidden Gems</h2>
+          <p class="muted small feature-desc">Lower crowds, good value, real terrain &mdash; the anti-resort picks.</p>
+        </div></div>
+        <div id="hiddenGemGrid" class="card-grid"></div>
+      </section>
     </section>
 
     <button type="button" class="scroll-more-fab" id="scrollMoreFab" aria-label="Scroll to more results">&darr;</button>

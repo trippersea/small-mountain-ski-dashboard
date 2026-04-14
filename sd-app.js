@@ -907,6 +907,7 @@ function syncPlannerControls() {
   }
   updateHeroFilterSegmentsCustom();
   syncWeekendLodgingStrip(computeVerdict(filteredResorts()));
+  syncHeroPills();
 }
 
 function updateStateFromPlannerPriorityButton(key, btn) {
@@ -1057,8 +1058,6 @@ function updateHeroVerdictEmptyState() {
 
 function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
-  const fd = document.getElementById('featureDiscovery');
-  if (fd) fd.hidden = !!state.origin;
   const refinePromptEl = document.getElementById('hnRefinePrompt');
   const splitHero = document.getElementById('searchSection')?.classList.contains('hn-hero-split');
   if (!state.origin) {
@@ -2357,8 +2356,37 @@ function renderAllCards(resorts) {
 function render() { renderAllCards(filteredResorts()); }
 const debouncedRender = debounce(render, 50);
 
+// ─── Hero pill filters ────────────────────────────────────────────────────────
+function wireHeroPills() {
+  document.querySelectorAll('.hn-hero-pills[data-pill-target]').forEach(group => {
+    const targetEl = document.getElementById(group.dataset.pillTarget);
+    if (!targetEl) return;
+    group.querySelectorAll('.hn-hero-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        group.querySelectorAll('.hn-hero-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        targetEl.value = pill.dataset.value;
+        targetEl.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+  });
+}
+
+function syncHeroPills() {
+  document.querySelectorAll('.hn-hero-pills[data-pill-target="heroPassSelect"] .hn-hero-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.value === (state.passFilter || 'All'));
+  });
+  document.querySelectorAll('.hn-hero-pills[data-pill-target="heroSentenceTrip"] .hn-hero-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.value === String(state.howFar));
+  });
+  document.querySelectorAll('.hn-hero-pills[data-pill-target="heroSnowSelect"] .hn-hero-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.value === String(state.weights?.snow ?? 1));
+  });
+}
+
 // ─── Event wiring ─────────────────────────────────────────────────────────────
 function wireEvents() {
+  wireHeroPills();
   if (els.aiChatBtn) els.aiChatBtn.addEventListener('click', () => { const q = els.aiChatInput?.value?.trim(); if (q) { trackEvent('ai_chat_used', { query: q }); askAI(q); } });
   if (els.aiChatInput) els.aiChatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const q = els.aiChatInput.value?.trim(); if (q) askAI(q); } });
   if (els.aiChatResult) {
@@ -2666,8 +2694,6 @@ function syncVerdictVisibility() {
   } else {
     section.classList.add('hn-verdict-pre-location');
   }
-  const fd = document.getElementById('featureDiscovery');
-  if (fd) fd.hidden = !!state.origin;
 }
 
 function initialize() {
