@@ -5,11 +5,6 @@
 
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
-
-// ─── Verdict loading lock ─────────────────────────────────────────────────────
-// Prevents flickering as weather data loads in two phases.
-// When fresh data is needed, we hold a loading message for up to 5s before
-// revealing the verdict so the top pick doesn't visibly switch mid-load.
 let verdictLockedUntil = 0;
 let verdictLockTimer   = null;
 
@@ -1123,18 +1118,10 @@ function renderVerdict(resorts) {
   }
   updateHeroVerdictEmptyState();
 
-  // ── Verdict loading lock ─────────────────────────────────────────────────
-  // Hold a friendly message for up to 5s while weather data loads so the
-  // top pick doesn't visibly switch as each resort's forecast comes in.
   if (verdictLockedUntil > Date.now()) {
-    els.verdictCard.innerHTML = \`<div class="vcard-placeholder vcard-placeholder--loading">
-      <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
-      <div class="vcard-placeholder-title">Finding your best mountain match…</div>
-      <div class="vcard-placeholder-sub">Giving the trails one last pass — your top pick will appear in just a moment.</div>
-    </div>\`;
+    els.verdictCard.innerHTML = '<div class="vcard-placeholder vcard-placeholder--loading"><div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div><div class="vcard-placeholder-title">Finding your best mountain match…</div><div class="vcard-placeholder-sub">Giving the trails one last pass — your top pick will appear in just a moment.</div></div>';
     return;
   }
-  // ────────────────────────────────────────────────────────────────────────
 
   const v = computeVerdict(resorts);
   syncWeekendLodgingStrip(v);
@@ -1298,7 +1285,7 @@ function renderVerdict(resorts) {
   if (tier === 'great' || tier === 'good') {
     primaryBtn = resort.website
       ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &rarr;</a>`
-      : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored">Find lodging &rarr; <span class="affiliate-badge">affiliate</span></a>`;
+      : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" onclick="trackSponsorClick('${esc(resort.name)}','verdict_book_btn','${esc(resort.id)}','')" >Find lodging &rarr; <span class="affiliate-badge">affiliate</span></a>`;
     secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>`;
   } else if (tier === 'marginal') {
     primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
@@ -1436,6 +1423,7 @@ function renderVerdict(resorts) {
   els.verdictCard.querySelectorAll('a[data-track-placement]').forEach(a => {
     a.addEventListener('click', () => {
       trackEvent('booking_click', { placement: a.dataset.trackPlacement, resort: a.dataset.trackResort });
+      trackSponsorClick(a.dataset.trackResort || '', a.dataset.trackPlacement || 'verdict_lodging', '', '');
     });
   });
 
@@ -1946,7 +1934,7 @@ function renderCompareTable(resorts) {
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
         <td>
-          <a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay nearby <span class="affiliate-badge">affiliate</span></a>
+          <a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation();trackSponsorClick('${esc(resort.name)}','mobile_stay','${esc(resort.id)}','')">Stay nearby <span class="affiliate-badge">affiliate</span></a>
         </td>
       </tr>`;
   }).join('');
@@ -1956,6 +1944,7 @@ function renderCompareTable(resorts) {
   els.comparisonBody.querySelectorAll('a[data-track-placement="table_row"]').forEach(a => {
     a.addEventListener('click', () => {
       trackEvent('booking_click', { placement: 'table_row', resort: a.dataset.trackResort });
+      trackSponsorClick(a.dataset.trackResort || '', 'table_row', '', '');
     });
   });
 }
@@ -2443,13 +2432,12 @@ function renderAllCards(resorts) {
   if (needWx) {
     weatherFetchPhase1Done = false;
     weatherFetchPhase2Done = false;
-    // Lock the verdict card for up to 5s while data loads to prevent flickering
     verdictLockedUntil = Date.now() + 5000;
     if (verdictLockTimer) clearTimeout(verdictLockTimer);
     verdictLockTimer = setTimeout(function () {
       verdictLockTimer = null;
       repaintMainUI(filteredResorts());
-    }, 5100); // 100ms buffer after lock expires
+    }, 5100);
   }
   repaintMainUI(resorts);
   renderAsyncPanels(resorts);
@@ -2460,7 +2448,14 @@ const debouncedRender = debounce(render, 50);
 
 // ─── Resort view tracker ──────────────────────────────────────────────────────
 // Call when a resort detail panel opens. action = 'detail_open' | 'card_click'
+var _lastResortViewKey = null;
+
 function trackResortView(resortId, resortName, action, passGroup) {
+  // Only log when the viewed resort actually changes
+  const viewKey = resortId + '|' + action;
+  if (viewKey === _lastResortViewKey) return;
+  _lastResortViewKey = viewKey;
+
   const sessionId = (function () {
     try {
       let id = sessionStorage.getItem('wsn_session');
@@ -2571,23 +2566,6 @@ function logCurrentFilters() {
     { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)             },
   ];
 
-  filters.forEach(function(f, i) {
-    setTimeout(function() { trackFilterEvent(f.type, f.value); }, i * 150);
-  });
-}
-
-// ─── Log all current filter state on Find My Mountain click ──────────────────
-function logCurrentFilters() {
-  var passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
-  var tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
-  var priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
-  var snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
-  var filters = [
-    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any' },
-    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)        },
-    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                   },
-    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)             },
-  ];
   filters.forEach(function(f, i) {
     setTimeout(function() { trackFilterEvent(f.type, f.value); }, i * 150);
   });
