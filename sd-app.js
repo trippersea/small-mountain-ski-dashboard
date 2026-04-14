@@ -2456,42 +2456,56 @@ function trackResortView(resortId, resortName, action, passGroup) {
 
 // ─── Recommendation event tracker ─────────────────────────────────────────────
 // Call when the verdict card surfaces a top-pick resort
-// Tracks last logged recommendation to avoid duplicate rows on repaint
-var _lastRecommendedKey = null;
+// Debounce timer and last-logged key for recommendation deduplication
+var _recommendDebounceTimer = null;
+var _lastRecommendedKey     = null;
 
 function trackRecommendation(resortId, resortName) {
-  // Only log when resort OR filter state actually changes
-  const snowVal  = (state.weights && state.weights.snow) ? state.weights.snow : 1;
-  const stateKey = [resortId, state.passFilter, state.howFar, state.skiDayPreset, snowVal].join('|');
-  if (stateKey === _lastRecommendedKey) return;
-  _lastRecommendedKey = stateKey;
-
   const passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
   const tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
   const priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
+  const snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
 
-  const sessionId = (function () {
-    try {
-      let id = sessionStorage.getItem('wsn_session');
-      if (!id) { id = Math.random().toString(36).slice(2); sessionStorage.setItem('wsn_session', id); }
-      return id;
-    } catch (e) { return 'unknown'; }
-  })();
+  // Build a key representing the full recommendation state
+  const stateKey = [resortId, state.passFilter, state.howFar, state.skiDayPreset, snowVal, state.origin && state.origin.label].join('|');
 
-  fetch('/api/track-recommendation', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      top_resort_id:   resortId   || '',
-      top_resort_name: resortName || '',
-      pass_filter:     passMap[state.passFilter]      || state.passFilter      || 'Any',
-      trip_type:       tripMap[state.howFar]          || String(state.howFar),
-      ski_day:         state.skiDayPreset             || 'weekday',
-      priority:        priorityMap[state.weights?.snow] || String(state.weights?.snow || 1),
-      origin_label:    state.origin?.label            || '',
-      session_id:      sessionId
-    })
-  }).catch(function () {});
+  // Skip entirely if nothing changed since last logged row
+  if (stateKey === _lastRecommendedKey) return;
+
+  // Debounce: renderVerdict fires on every weather update — wait 2s for things to settle
+  if (_recommendDebounceTimer) clearTimeout(_recommendDebounceTimer);
+
+  _recommendDebounceTimer = setTimeout(function () {
+    _recommendDebounceTimer = null;
+
+    // Check again after debounce in case state changed while waiting
+    const currentKey = [resortId, state.passFilter, state.howFar, state.skiDayPreset, snowVal, state.origin && state.origin.label].join('|');
+    if (currentKey === _lastRecommendedKey) return;
+    _lastRecommendedKey = currentKey;
+
+    const sessionId = (function () {
+      try {
+        let id = sessionStorage.getItem('wsn_session');
+        if (!id) { id = Math.random().toString(36).slice(2); sessionStorage.setItem('wsn_session', id); }
+        return id;
+      } catch (e) { return 'unknown'; }
+    })();
+
+    fetch('/api/track-recommendation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        top_resort_id:   resortId   || '',
+        top_resort_name: resortName || '',
+        pass_filter:     passMap[state.passFilter]  || state.passFilter  || 'Any',
+        trip_type:       tripMap[state.howFar]      || String(state.howFar),
+        ski_day:         state.skiDayPreset         || 'weekday',
+        priority:        priorityMap[snowVal]       || String(snowVal),
+        origin_label:    (state.origin && state.origin.label) || '',
+        session_id:      sessionId
+      })
+    }).catch(function () {});
+  }, 2000); // wait 2s after last render before logging
 }
 
 // ─── Filter event tracker ─────────────────────────────────────────────────────
@@ -2517,16 +2531,16 @@ function trackFilterEvent(filterType, filterValue) {
 
 // ─── Log all current filter state on Find My Mountain click ──────────────────
 function logCurrentFilters() {
-  const passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
-  const tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
-  const priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
-  const snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
+  var passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
+  var tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
+  var priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
+  var snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
 
   var filters = [
-    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any'   },
-    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)          },
-    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                     },
-    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)               },
+    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any' },
+    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)        },
+    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                   },
+    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)             },
   ];
 
   filters.forEach(function(f, i) {
