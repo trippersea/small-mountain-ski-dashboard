@@ -6015,20 +6015,20 @@ button.vcard-detail-btn:hover,
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  background: #1a3d5c !important;
+  background: #1a3d5c url("/hero-bg.jpg") right 38% / cover no-repeat !important;
   min-height: min(640px, 92vh);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 #searchSection.hn-hero-split.card {
-  background: #1a3d5c !important;
+  background: #1a3d5c url("/hero-bg.jpg") right 38% / cover no-repeat !important;
 }
 .hn-split-grid {
   display: grid;
-  grid-template-columns: minmax(auto, 700px) 1fr;
+  grid-template-columns: 0.88fr 1.12fr;
   min-height: min(640px, 92vh);
-  max-width: none;
+  max-width: 1480px;
   margin: 0 auto;
   align-items: stretch;
 }
@@ -6038,7 +6038,7 @@ button.vcard-detail-btn:hover,
   justify-content: center;
   padding: clamp(40px, 6vw, 88px) clamp(32px, 5vw, 64px) clamp(44px, 6vw, 88px) clamp(36px, 5.5vw, 72px);
   text-align: left;
-  background: transparent;
+  background: rgba(20, 44, 70, 0.88);
 }
 .hn-editorial-inner {
   max-width: 36.5rem;
