@@ -6352,8 +6352,8 @@ button.vcard-detail-btn:hover,
 .hn-split-visual-bg {
   position: absolute;
   inset: 0;
-  background-color: #1a3d5c;
-  background-image: url("/hero-bg.jpg");
+  background-color: transparent;
+  background-image: none;
   background-size: cover;
   background-position: center 38%;
 }
