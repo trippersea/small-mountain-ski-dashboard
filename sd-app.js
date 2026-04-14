@@ -2507,32 +2507,24 @@ function trackFilterEvent(filterType, filterValue) {
 }
 
 // ─── Log all current filter state on Find My Mountain click ──────────────────
-// Sends all four filter values in one batch request to avoid dropped calls
+// Uses staggered calls 150ms apart so each goes through cleanly
 function logCurrentFilters() {
   const passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
   const tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
   const priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
 
-  const sessionId = (function () {
-    try {
-      let id = sessionStorage.getItem('wsn_session');
-      if (!id) { id = Math.random().toString(36).slice(2); sessionStorage.setItem('wsn_session', id); }
-      return id;
-    } catch (e) { return 'unknown'; }
-  })();
+  const snowVal   = (state.weights && state.weights.snow) ? state.weights.snow : 1;
 
   const filters = [
-    { filter_type: 'heroPassSelect',   filter_value: passMap[state.passFilter]       || state.passFilter    || 'Any'      },
-    { filter_type: 'heroSentenceTrip', filter_value: tripMap[state.howFar]           || String(state.howFar)              },
-    { filter_type: 'heroSentenceDay',  filter_value: state.skiDayPreset              || 'weekday'                         },
-    { filter_type: 'heroSnowSelect',   filter_value: priorityMap[state.weights && state.weights.snow] || String((state.weights && state.weights.snow) || 1) },
-  ].map(f => ({ ...f, session_id: sessionId }));
+    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any'     },
+    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)            },
+    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                       },
+    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)                 },
+  ];
 
-  fetch('/api/track-filter', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ batch: filters })
-  }).catch(function () {}); // silent fail — never interrupt the UI
+  filters.forEach(function(f, i) {
+    setTimeout(function() { trackFilterEvent(f.type, f.value); }, i * 150);
+  });
 }
 
 // ─── Hero pill filters ────────────────────────────────────────────────────────
