@@ -81,6 +81,35 @@ function getSponsor(resortId) {
     .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#7a92a8; letter-spacing:.03em; }
     .table-lodging-link { font-size:12px; font-weight:400; color:#9ca3af; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
+
+    /* ── Runner-up mini strip inside verdict card ───────────────────────────── */
+    .vcard-runners-strip { margin: 10px -22px -18px; padding: 11px 22px 14px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 0 0 12px 12px; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 11px 1.35rem 14px; border-top: 1px solid rgba(15,23,42,.08); background: #e8eef5; border-radius: 0 0 10px 10px; }
+    .vcard-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .vcard-runners-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,246,252,.5); }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: #7a92a8; }
+    .vcard-runners-mini { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 1px; }
+    .vcard-runners-mini::-webkit-scrollbar { display: none; }
+    .vcard-mini-runner { display: flex; flex-direction: column; gap: 3px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; min-width: 100px; max-width: 130px; flex-shrink: 0; transition: background .15s, border-color .15s; }
+    .vcard-mini-runner:hover { background: rgba(255,255,255,.17); border-color: rgba(255,255,255,.28); }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner { background: #fff; border-color: #dde3ea; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner:hover { background: #eef4ff; border-color: #93c5fd; }
+    .vmr-name { font-size: 11px; font-weight: 700; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-name { color: #1a2030; }
+    .vmr-drive { font-size: 10px; color: rgba(240,246,252,.55); margin-top: 1px; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-drive { color: #7a92a8; }
+    .vmr-crowd-mini { font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 999px; display: inline-flex; align-items: center; gap: 3px; width: fit-content; margin-top: 2px; }
+    .vmr-crowd-mini.crowd-quiet-chip { background: rgba(34,179,138,.2); color: #6ee7b7; }
+    .vmr-crowd-mini.crowd-busy-chip  { background: rgba(248,113,113,.15); color: #fca5a5; }
+    .vmr-crowd-mini.crowd-mod-chip   { background: rgba(245,158,11,.15); color: #fcd34d; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-crowd-mini.crowd-quiet-chip { background: #dcfce7; color: #15803d; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-crowd-mini.crowd-busy-chip  { background: #fee2e2; color: #b91c1c; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-crowd-mini.crowd-mod-chip   { background: #fef9c3; color: #92400e; }
+    .vcard-runners-see-all { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); border-radius: 8px; padding: 8px 11px; cursor: pointer; font-size: 10px; font-weight: 600; color: rgba(240,246,252,.65); flex-shrink: 0; min-width: 58px; transition: background .15s; line-height: 1.3; }
+    .vcard-runners-see-all:hover { background: rgba(255,255,255,.15); color: #f0f6fc; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-see-all { background: #f0f4f8; border-color: #c8d4e0; color: #5a7080; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-see-all:hover { background: #dce8f5; border-color: #93c5fd; color: #1a2030; }
+    .vcard-runners-see-all-arrow { font-size: 13px; }
   `;
   document.head.appendChild(style);
 })();
@@ -1265,6 +1294,35 @@ function renderVerdict(resorts) {
   const _verdictPhotoStyle = _isHeroDock ? '' : resortPhotoStyle(resort);
   const _heroDashStyleAttr = _verdictPhotoStyle ? ` style="${_verdictPhotoStyle}"` : '';
 
+  // ── Runner-up mini strip — always-on teaser inside the verdict card ─────────
+  const runnerStripHtml = runningItems.length > 0 ? (() => {
+    const miniCards = runningItems.map(item => {
+      const _rDrive = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
+      const _rWx    = state.weatherCache[item.resort.id]?.data;
+      const cf      = crowdForecast(item.resort, _rWx);
+      const _crowdCls = cf.label === 'Quiet' ? 'crowd-quiet-chip'
+        : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip'
+        : 'crowd-mod-chip';
+      return `<button type="button" class="vcard-mini-runner" data-mini-runner-id="${esc(item.resort.id)}">
+        <span class="vmr-name">${esc(item.resort.name)}</span>
+        ${_rDrive ? `<span class="vmr-drive">${esc(_rDrive)} away</span>` : ''}
+        <span class="vmr-crowd-mini ${_crowdCls}">${esc(cf.label)}</span>
+      </button>`;
+    }).join('');
+    return `<div class="vcard-runners-strip">
+      <div class="vcard-runners-header">
+        <span class="vcard-runners-label">Also consider</span>
+      </div>
+      <div class="vcard-runners-mini">
+        ${miniCards}
+        <button type="button" class="vcard-runners-see-all" id="verdictSeeAllRunners">
+          <span class="vcard-runners-see-all-arrow">↓</span>
+          <span>See all</span>
+        </button>
+      </div>
+    </div>`;
+  })() : '';
+
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}${_vcardHeroLightCls}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
@@ -1290,6 +1348,7 @@ function renderVerdict(resorts) {
         </div>
         ${guidanceInsetHtml}
         ${lodgingModuleHtml}
+        ${runnerStripHtml}
       </div>
        </div>`;
 
@@ -1311,6 +1370,19 @@ function renderVerdict(resorts) {
 
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+
+  // Mini runner-up cards — open detail panel on click
+  els.verdictCard.querySelectorAll('.vcard-mini-runner[data-mini-runner-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.selectedId = btn.dataset.miniRunnerId;
+      renderDetail({ scroll: true });
+    });
+  });
+  // "See all" scrolls down to the full runner-up section
+  document.getElementById('verdictSeeAllRunners')?.addEventListener('click', () => {
+    const run = document.getElementById('hnRunnerUpSection');
+    if (run && !run.hidden) run.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   $('verdictRefineGuidanceBtn')?.addEventListener('click', () => {
     const panel = els.plannerSection;
     if (!panel) return;
