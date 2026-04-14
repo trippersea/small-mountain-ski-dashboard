@@ -963,6 +963,7 @@ function commitPlannerPriorityChange(key, btn) {
     preference_value: btn.dataset.val,
     preference_label: btn.textContent.trim(),
   });
+  trackFilterEvent('planner_' + key, btn.textContent.trim() || btn.dataset.val || '');
   savePlannerState();
   syncPlannerControls();
   pushUrlDebounced();
@@ -1377,13 +1378,15 @@ function renderVerdict(resorts) {
     _fb.setAttribute('hidden', '');
   }
 
-  $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
-  $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; renderDetail({ scroll: true }); });
+  $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_name_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
+  $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
 
   // Mini runner-up cards — open detail panel on click
   els.verdictCard.querySelectorAll('.vcard-mini-runner[data-mini-runner-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       state.selectedId = btn.dataset.miniRunnerId;
+      const _miniResort = RESORTS.find(r => r.id === btn.dataset.miniRunnerId);
+      if (_miniResort) trackResortView(_miniResort.id, _miniResort.name, 'mini_runner_click', _miniResort.passGroup || '');
       renderDetail({ scroll: true });
     });
   });
@@ -1391,6 +1394,7 @@ function renderVerdict(resorts) {
   document.getElementById('verdictSeeAllRunners')?.addEventListener('click', () => {
     const run = document.getElementById('hnRunnerUpSection');
     if (run && !run.hidden) run.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    trackFilterEvent('engagement', 'see_all_runners');
   });
   $('verdictRefineGuidanceBtn')?.addEventListener('click', () => {
     const panel = els.plannerSection;
@@ -1515,7 +1519,7 @@ function renderVerdict(resorts) {
         </div>`;
       }).join('');
       _hnGrid.querySelectorAll('[data-runner-id]').forEach(card => {
-        card.addEventListener('click', () => { state.selectedId = card.dataset.runnerId; renderDetail({ scroll: true }); });
+        card.addEventListener('click', () => { state.selectedId = card.dataset.runnerId; const _rc = RESORTS.find(r => r.id === card.dataset.runnerId); if (_rc) trackResortView(_rc.id, _rc.name, 'runner_card_click', _rc.passGroup || ''); renderDetail({ scroll: true }); });
       });
       _hnSection.hidden = false;
     }
@@ -2615,7 +2619,16 @@ function syncHeroPills() {
 // ─── Event wiring ─────────────────────────────────────────────────────────────
 function wireEvents() {
   wireHeroPills();
-  if (els.aiChatBtn) els.aiChatBtn.addEventListener('click', () => { const q = els.aiChatInput?.value?.trim(); if (q) { trackEvent('ai_chat_used', { query: q }); askAI(q); } });
+  // Weekend lodging strip affiliate tracking
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('a.hn-booking-btn');
+    if (!btn) return;
+    const verdict = computeVerdict(filteredResorts());
+    const resortName = verdict && verdict.resort ? verdict.resort.name : '';
+    const resortId   = verdict && verdict.resort ? verdict.resort.id   : '';
+    trackSponsorClick(resortName, 'weekend_lodging_strip', resortId, '');
+  });
+  if (els.aiChatBtn) els.aiChatBtn.addEventListener('click', () => { const q = els.aiChatInput?.value?.trim(); if (q) { trackEvent('ai_chat_used', { query: q }); trackFilterEvent('ai_chat_query', q); askAI(q); } });
   if (els.aiChatInput) els.aiChatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const q = els.aiChatInput.value?.trim(); if (q) askAI(q); } });
   if (els.aiChatResult) {
     els.aiChatResult.addEventListener('click', e => {
@@ -2672,13 +2685,16 @@ function wireEvents() {
   els.stateFilter.addEventListener('change', e => {
     state.stateFilter = e.target.value;
     trackEvent('filter_applied', { filter_type: 'state', filter_value: String(e.target.value) });
+    trackFilterEvent('planner_state', String(e.target.value));
     pushUrlDebounced(); render();
   });
 
   const _howFarEl = document.getElementById('howFarFilter');
   if (_howFarEl) _howFarEl.addEventListener('change', e => {
     state.howFar = Number(e.target.value);
+    const _distLabel = Number(e.target.value) === 0 ? 'Day trip' : Number(e.target.value) === 1 ? 'Weekend' : 'Any distance';
     trackEvent('filter_applied', { filter_type: 'distance', filter_value: String(e.target.value) });
+    trackFilterEvent('planner_distance', _distLabel);
     if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
     pushUrlDebounced(); syncPlannerControls(); render();
   });
@@ -2767,6 +2783,7 @@ function wireEvents() {
     btn.addEventListener('click', () => {
       state.passPreference = btn.dataset.pass;
       state.passFilter = btn.dataset.pass === 'any' ? 'All' : btn.dataset.pass;
+      trackFilterEvent('planner_pass', btn.textContent.trim() || btn.dataset.pass || '');
       savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
     });
   });
