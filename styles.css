@@ -6015,20 +6015,20 @@ button.vcard-detail-btn:hover,
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  background: #070b0f !important;
+  background: #1a3d5c !important;
   min-height: min(640px, 92vh);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 #searchSection.hn-hero-split.card {
-  background: #070b0f !important;
+  background: #1a3d5c !important;
 }
 .hn-split-grid {
   display: grid;
-  grid-template-columns: 0.88fr 1.12fr;
+  grid-template-columns: minmax(auto, 700px) 1fr;
   min-height: min(640px, 92vh);
-  max-width: 1480px;
+  max-width: none;
   margin: 0 auto;
   align-items: stretch;
 }
@@ -6346,13 +6346,13 @@ button.vcard-detail-btn:hover,
 .hn-split-panel--visual {
   position: relative;
   min-height: min(640px, 92vh);
-  background: #070b0f;
+  background: #1a3d5c;
   box-shadow: -32px 0 64px rgba(12, 18, 24, 0.07);
 }
 .hn-split-visual-bg {
   position: absolute;
   inset: 0;
-  background-color: #070b0f;
+  background-color: #1a3d5c;
   background-image: url("/hero-bg.jpg");
   background-size: cover;
   background-position: center 38%;
@@ -6444,7 +6444,7 @@ button.vcard-detail-btn:hover,
   font-size: 1.12rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #0a0f14;
+  color: #1d4ed8;
   margin: 0 0 0.35rem;
 }
 .hn-hero-verdict-empty-sub {
