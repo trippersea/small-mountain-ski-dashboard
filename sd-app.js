@@ -6,6 +6,13 @@
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
 
+// ─── Verdict loading lock ─────────────────────────────────────────────────────
+// Prevents flickering as weather data loads in two phases.
+// When fresh data is needed, we hold a loading message for up to 5s before
+// revealing the verdict so the top pick doesn't visibly switch mid-load.
+let verdictLockedUntil = 0;
+let verdictLockTimer   = null;
+
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function loadSavedWeights() {
   try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
@@ -1115,6 +1122,20 @@ function renderVerdict(resorts) {
     setTimeout(() => els.verdictSection.classList.remove('hn-verdict-reveal'), 450);
   }
   updateHeroVerdictEmptyState();
+
+  // ── Verdict loading lock ─────────────────────────────────────────────────
+  // Hold a friendly message for up to 5s while weather data loads so the
+  // top pick doesn't visibly switch as each resort's forecast comes in.
+  if (verdictLockedUntil > Date.now()) {
+    els.verdictCard.innerHTML = \`<div class="vcard-placeholder vcard-placeholder--loading">
+      <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
+      <div class="vcard-placeholder-title">Finding your best mountain match…</div>
+      <div class="vcard-placeholder-sub">Giving the trails one last pass — your top pick will appear in just a moment.</div>
+    </div>\`;
+    return;
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
   const v = computeVerdict(resorts);
   syncWeekendLodgingStrip(v);
   const _hnSectionEarly = document.getElementById('hnRunnerUpSection');
@@ -2422,6 +2443,13 @@ function renderAllCards(resorts) {
   if (needWx) {
     weatherFetchPhase1Done = false;
     weatherFetchPhase2Done = false;
+    // Lock the verdict card for up to 5s while data loads to prevent flickering
+    verdictLockedUntil = Date.now() + 5000;
+    if (verdictLockTimer) clearTimeout(verdictLockTimer);
+    verdictLockTimer = setTimeout(function () {
+      verdictLockTimer = null;
+      repaintMainUI(filteredResorts());
+    }, 5100); // 100ms buffer after lock expires
   }
   repaintMainUI(resorts);
   renderAsyncPanels(resorts);
@@ -2543,6 +2571,23 @@ function logCurrentFilters() {
     { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)             },
   ];
 
+  filters.forEach(function(f, i) {
+    setTimeout(function() { trackFilterEvent(f.type, f.value); }, i * 150);
+  });
+}
+
+// ─── Log all current filter state on Find My Mountain click ──────────────────
+function logCurrentFilters() {
+  var passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
+  var tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
+  var priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
+  var snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
+  var filters = [
+    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any' },
+    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)        },
+    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                   },
+    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)             },
+  ];
   filters.forEach(function(f, i) {
     setTimeout(function() { trackFilterEvent(f.type, f.value); }, i * 150);
   });
