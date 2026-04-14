@@ -6346,8 +6346,8 @@ button.vcard-detail-btn:hover,
 .hn-split-panel--visual {
   position: relative;
   min-height: min(640px, 92vh);
-  background: #1a3d5c;
-  box-shadow: -32px 0 64px rgba(12, 18, 24, 0.07);
+  background: transparent;
+  box-shadow: none;
 }
 .hn-split-visual-bg {
   position: absolute;
