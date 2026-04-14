@@ -1190,6 +1190,7 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn } = v;
   const runningItems = collectRunnerUpItems(resorts, resort.id, 3);
+  trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
 
   const _passEw   = state.passFilter !== 'All' ? (state.passFilter + ' Pass') : null;
@@ -2007,6 +2008,7 @@ function renderDetail({ scroll = false } = {}) {
     return;
   }
   els.detailSection.classList.remove('hidden');
+  trackResortView(resort.id, resort.name, 'detail_open', resort.passGroup || '');
 
   const wx    = state.weatherCache[resort.id]?.data;
   const w    = normalizedWeights();
@@ -2427,6 +2429,61 @@ function renderAllCards(resorts) {
 
 function render() { renderAllCards(filteredResorts()); }
 const debouncedRender = debounce(render, 50);
+
+// ─── Resort view tracker ──────────────────────────────────────────────────────
+// Call when a resort detail panel opens. action = 'detail_open' | 'card_click'
+function trackResortView(resortId, resortName, action, passGroup) {
+  const sessionId = (function () {
+    try {
+      let id = sessionStorage.getItem('wsn_session');
+      if (!id) { id = Math.random().toString(36).slice(2); sessionStorage.setItem('wsn_session', id); }
+      return id;
+    } catch (e) { return 'unknown'; }
+  })();
+
+  fetch('/api/track-resort-view', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      resort_id:   resortId   || '',
+      resort_name: resortName || '',
+      action:      action     || 'detail_open',
+      pass_group:  passGroup  || '',
+      session_id:  sessionId
+    })
+  }).catch(function () {});
+}
+
+// ─── Recommendation event tracker ─────────────────────────────────────────────
+// Call when the verdict card surfaces a top-pick resort
+function trackRecommendation(resortId, resortName) {
+  const passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
+  const tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
+  const priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
+
+  const sessionId = (function () {
+    try {
+      let id = sessionStorage.getItem('wsn_session');
+      if (!id) { id = Math.random().toString(36).slice(2); sessionStorage.setItem('wsn_session', id); }
+      return id;
+    } catch (e) { return 'unknown'; }
+  })();
+
+  fetch('/api/track-recommendation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      top_resort_id:   resortId   || '',
+      top_resort_name: resortName || '',
+      pass_filter:     passMap[state.passFilter]      || state.passFilter      || 'Any',
+      trip_type:       tripMap[state.howFar]          || String(state.howFar),
+      ski_day:         state.skiDayPreset             || 'weekday',
+      priority:        priorityMap[state.weights?.snow] || String(state.weights?.snow || 1),
+      origin_label:    state.origin?.label            || '',
+      session_id:      sessionId
+    })
+  }).catch(function () {});
+}
 
 // ─── Filter event tracker ─────────────────────────────────────────────────────
 function trackFilterEvent(filterType, filterValue) {
