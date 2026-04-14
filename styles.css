@@ -1057,6 +1057,29 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   .comparison-table td { font-size: 12px; padding: 9px 7px; }
 }
 
+/* ── Mobile-first tweaks (common breakpoints) ───────────────────────────── */
+@media (max-width: 768px) {
+  /* Prefer iPad mini portrait as “mobile” for table/cards */
+  .table-wrap { display: none; }
+  .mobile-card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 0;
+  }
+  #compareSection .mobile-card-grid {
+    padding: 0 16px 16px;
+    background: #fff;
+  }
+}
+
+/* Touch targets (44px) for common controls on mobile */
+@media (max-width: 768px) {
+  .hn-booking-btn { min-height: 44px; }
+  .mob-location-nudge button { min-height: 44px; }
+  .planner-toggle-btn { min-height: 44px; }
+}
+
 /* ─── Sortable Table Headers ─────────────────────────────────────────────── */
 .sortable-th {
   cursor: pointer;
@@ -1856,17 +1879,9 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 
 /* Mobile (≤ 760px): hide table, show cards */
 @media (max-width: 760px) {
-  .table-wrap      { display: none; }
-  .mobile-card-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-top: 0;
-  }
-  #compareSection .mobile-card-grid {
-    padding: 0 16px 16px;
-    background: #fff;
-  }
+  /* Kept for backwards-compat with older breakpoints; 768px block above is canonical. */
+  .table-wrap { display: none; }
+  .mobile-card-grid { display: grid; }
 }
 
 .mob-location-nudge {
@@ -1884,7 +1899,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 }
 .mob-location-nudge button {
   margin-left: auto;
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 14px;
   border-radius: 10px;
   border: none;
@@ -4019,6 +4034,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   color: var(--text-on-dark);
   font-size: 15px;
   font-weight: 600;
+  min-height: 44px;
   padding: 0 24px;
   border-radius: var(--radius-sm);
   border: none;
@@ -4034,7 +4050,8 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .hn-pchip, .hn-tchip, .hn-dchip {
   font-size: 13px;
   font-weight: 500;
-  padding: 6px 14px;
+  min-height: 44px;
+  padding: 10px 14px;
   border-radius: 999px;
   border: 1px solid var(--border);
   color: var(--muted);
@@ -4046,6 +4063,11 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .hn-pchip:hover, .hn-tchip:hover, .hn-dchip:hover {
   border-color: var(--border-mid);
   color: var(--text);
+}
+.hn-pchip:focus-visible, .hn-tchip:focus-visible, .hn-dchip:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(43, 109, 233, 0.14);
 }
 .hn-chip-on {
   background: #eff6ff !important;
@@ -5785,6 +5807,16 @@ button.vcard-detail-btn:hover,
   .hn-trust-txt { display: none; }
 }
 
+@media (max-width: 414px) {
+  /* Common phone widths (414/390/375) */
+  .hn-inner--playful { padding: 32px 14px 28px; }
+  .hn-hero-card { padding: 16px 14px 14px; }
+  .hn-hero-pill-label { width: 42px; }
+  .hn-results-section-head { gap: 10px; }
+  .hn-runners-section.hn-results-panel { padding: 20px 14px 22px; }
+  .compare-tray-inner { padding: 10px 12px; border-radius: 16px; }
+}
+
 /* ── Filter bar chevron ──────────────────────────────────────────────────── */
 .hn-fb-chevron {
   display: inline-block;
@@ -6309,7 +6341,8 @@ button.vcard-detail-btn:hover,
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
-  padding: 5px 13px;
+  min-height: 44px;
+  padding: 10px 13px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.07);
@@ -6323,6 +6356,11 @@ button.vcard-detail-btn:hover,
   border-color: rgba(147, 197, 253, 0.4);
   color: rgba(200, 220, 240, 0.9);
 }
+.hn-hero-pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(43, 109, 233, 0.22);
+  border-color: rgba(147, 197, 253, 0.55);
+}
 .hn-hero-pill.active {
   background: rgba(43, 109, 233, 0.32);
   border-color: rgba(123, 179, 240, 0.55);
@@ -6331,7 +6369,7 @@ button.vcard-detail-btn:hover,
 @media (max-width: 520px) {
   .hn-hero-pill-group { gap: 8px; }
   .hn-hero-pill-label { width: 44px; font-size: 9px; }
-  .hn-hero-pill { font-size: 11px; padding: 4px 10px; }
+  .hn-hero-pill { font-size: 11px; padding: 10px 10px; }
 }
 #searchSection.hn-hero-split .hn-editorial-ai-panel .ai-example-chip {
   color: var(--hn-accent);
