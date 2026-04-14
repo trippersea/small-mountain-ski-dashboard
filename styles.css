@@ -6,7 +6,7 @@
   --navy-deep: #0f1c2e;
   --navy-mid: #1e3448;
   --navy-hover: #2a4460;
-  --navy-surface: #f0f4f8;
+  --navy-surface: #d4e8f8;
   /* Headings: deep navy, softened vs near-black for less “terminal” density */
   --text-primary: #2a4158;
   --text-body: #4a6177;
@@ -6026,9 +6026,9 @@ button.vcard-detail-btn:hover,
 }
 .hn-split-grid {
   display: grid;
-  grid-template-columns: 1.02fr 0.98fr;
+  grid-template-columns: minmax(320px, 640px) 1fr;
   min-height: min(640px, 92vh);
-  max-width: 1480px;
+  max-width: none;
   margin: 0 auto;
   align-items: stretch;
 }
@@ -6444,7 +6444,7 @@ button.vcard-detail-btn:hover,
   font-size: 1.12rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--hn-ink);
+  color: #0a0f14;
   margin: 0 0 0.35rem;
 }
 .hn-hero-verdict-empty-sub {
@@ -6498,7 +6498,7 @@ button.vcard-detail-btn:hover,
   padding: 1.2rem 1.35rem 1rem !important;
   background: transparent !important;
   background-image: none !important;
-  color: var(--hn-ink);
+  color: #0a0f14;
   border-bottom: 1px solid rgba(12, 18, 24, 0.08);
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-body-dash {
@@ -6509,7 +6509,7 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard--hero-light .vcard-name-dash {
   font-size: clamp(1.25rem, 2.6vw, 1.58rem);
   font-weight: 700;
-  color: var(--hn-ink);
+  color: #0a0f14;
   text-shadow: none;
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-name-dash:hover {
