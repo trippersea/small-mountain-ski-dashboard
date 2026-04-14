@@ -6,7 +6,7 @@
   --navy-deep: #0f1c2e;
   --navy-mid: #1e3448;
   --navy-hover: #2a4460;
-  --navy-surface: #f0f4f8;
+  --navy-surface: #f7f5f2;
   /* Headings: deep navy, softened vs near-black for less “terminal” density */
   --text-primary: #2a4158;
   --text-body: #4a6177;
@@ -876,6 +876,74 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   .vcard-name { font-size: 1.5rem; }
   .vcard-alts-list { grid-template-columns: 1fr; }
   .planner-col .score-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Feature discovery section — Storm + Gems (pre-location state) ──────── */
+.feature-discovery-section {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  background: linear-gradient(150deg, #0d2b4e 0%, #1a5276 45%, #0f3358 100%);
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+.feature-discovery-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 50%, rgba(37, 99, 168, 0.35) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 80% at 80% 30%, rgba(14, 116, 144, 0.2) 0%, transparent 60%);
+  pointer-events: none;
+}
+.feature-discovery-inner {
+  position: relative;
+  z-index: 1;
+  max-width: min(1120px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 40px 16px 44px;
+}
+.feature-discovery-head {
+  margin-bottom: 28px;
+}
+.feature-discovery-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(147, 197, 253, 0.75);
+  margin: 0 0 10px;
+}
+.feature-discovery-title {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+.feature-discovery-sub {
+  font-size: 14px;
+  color: rgba(200, 220, 240, 0.65);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 52ch;
+}
+.feature-discovery-section[hidden] {
+  display: none;
+}
+/* Cards inside feature discovery — white on blue */
+.feature-discovery-section .feature-panel.card {
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+}
+.feature-discovery-section .feature-title {
+  color: #0f1c2e;
+}
+.feature-discovery-section .feature-desc {
+  color: #7a92a8;
 }
 
 /* ── Feature grid ───────────────────────────────────────────────────────── */
@@ -5186,8 +5254,8 @@ button.vcard-detail-btn:hover,
 /* ── How it works ─────────────────────────────────────────────────────── */
 .seo-how {
   padding: 52px 0 48px;
-  background: var(--bg-section-alt);
-  border-top: 1px solid var(--border);
+  background: #f7f5f2;
+  border-top: 1px solid #ede9e3;
 }
 
 .seo-steps {
@@ -5239,8 +5307,8 @@ button.vcard-detail-btn:hover,
 /* ── Regions ──────────────────────────────────────────────────────────── */
 .seo-regions {
   padding: 52px 0 48px;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
+  background: #ffffff;
+  border-top: 1px solid #ede9e3;
 }
 
 .seo-region-grid {
@@ -5254,8 +5322,8 @@ button.vcard-detail-btn:hover,
   flex-direction: column;
   gap: 5px;
   padding: 14px 16px;
-  background: var(--bg-section-alt);
-  border: 1px solid var(--border);
+  background: #f7f5f2;
+  border: 1px solid #ede9e3;
   border-radius: 12px;
   text-decoration: none;
   transition: border-color .12s, background .12s;
@@ -5282,8 +5350,8 @@ button.vcard-detail-btn:hover,
 /* ── Pass cards ──────────────────────────────────────────────────────── */
 .seo-passes {
   padding: 52px 0 48px;
-  background: var(--bg-section-alt);
-  border-top: 1px solid var(--border);
+  background: #f7f5f2;
+  border-top: 1px solid #ede9e3;
 }
 
 .seo-pass-grid {
@@ -5333,8 +5401,8 @@ button.vcard-detail-btn:hover,
 /* ── FAQ ──────────────────────────────────────────────────────────────── */
 .seo-faq-section {
   padding: 52px 0 56px;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
+  background: #ffffff;
+  border-top: 1px solid #ede9e3;
 }
 
 .seo-faq-grid {
@@ -5503,7 +5571,7 @@ button.vcard-detail-btn:hover,
 }
 /* Runner-up section overrides the generic panel background — must come AFTER the rule above */
 .hn-results-region > .hn-runners-section.hn-results-panel {
-  background-image: url('/runner-bg.jpg');
+  background-image: url('/hero-bg.jpg');
   background-size: cover;
   background-position: center 38%;
   background-color: #0c1a30;

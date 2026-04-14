@@ -1057,6 +1057,8 @@ function updateHeroVerdictEmptyState() {
 
 function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
+  const fd = document.getElementById('featureDiscovery');
+  if (fd) fd.hidden = !!state.origin;
   const refinePromptEl = document.getElementById('hnRefinePrompt');
   const splitHero = document.getElementById('searchSection')?.classList.contains('hn-hero-split');
   if (!state.origin) {
@@ -2664,6 +2666,8 @@ function syncVerdictVisibility() {
   } else {
     section.classList.add('hn-verdict-pre-location');
   }
+  const fd = document.getElementById('featureDiscovery');
+  if (fd) fd.hidden = !!state.origin;
 }
 
 function initialize() {
