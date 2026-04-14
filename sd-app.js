@@ -2456,7 +2456,16 @@ function trackResortView(resortId, resortName, action, passGroup) {
 
 // ─── Recommendation event tracker ─────────────────────────────────────────────
 // Call when the verdict card surfaces a top-pick resort
+// Tracks last logged recommendation to avoid duplicate rows on repaint
+var _lastRecommendedKey = null;
+
 function trackRecommendation(resortId, resortName) {
+  // Only log when resort OR filter state actually changes
+  const snowVal  = (state.weights && state.weights.snow) ? state.weights.snow : 1;
+  const stateKey = [resortId, state.passFilter, state.howFar, state.skiDayPreset, snowVal].join('|');
+  if (stateKey === _lastRecommendedKey) return;
+  _lastRecommendedKey = stateKey;
+
   const passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
   const tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
   const priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
@@ -2507,19 +2516,17 @@ function trackFilterEvent(filterType, filterValue) {
 }
 
 // ─── Log all current filter state on Find My Mountain click ──────────────────
-// Uses staggered calls 150ms apart so each goes through cleanly
 function logCurrentFilters() {
   const passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
   const tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
   const priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
+  const snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
 
-  const snowVal   = (state.weights && state.weights.snow) ? state.weights.snow : 1;
-
-  const filters = [
-    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any'     },
-    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)            },
-    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                       },
-    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)                 },
+  var filters = [
+    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any'   },
+    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)          },
+    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                     },
+    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)               },
   ];
 
   filters.forEach(function(f, i) {
