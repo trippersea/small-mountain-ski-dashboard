@@ -57,7 +57,10 @@
   --rs-accent-line: rgba(43, 109, 233, 0.22);
 }
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
+@supports not (overflow: clip) {
+  html { overflow-x: hidden; }
+}
 body {
   margin: 0;
   font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
@@ -163,7 +166,7 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); }
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 .container {
-  width: min(1120px, calc(100vw - 32px));
+  width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
   padding: 28px 0 88px;
   display: grid;
@@ -1043,7 +1046,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   .detail-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 760px) {
-  .container { width: calc(100vw - 14px); }
+  .container { width: calc(100% - 14px); }
   .planner-col { padding: 20px 18px 18px; }
   .planner-main-title { font-size: 19px; }
   .planner-subtitle { font-size: 13px; }
@@ -2326,7 +2329,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 
 /* ===== 2026 hero + decision-flow overrides ===== */
 .top-nav-inner { max-width: 1100px; padding: 10px 24px; }
-.container { width: min(1120px, calc(100vw - 32px)); margin: 0 auto; padding: 18px 0 64px; gap: 18px; }
+.container { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 18px 0 64px; gap: 18px; }
 /* Full-bleed split hero is first in .container — remove top padding so it meets the nav flush */
 .container:has(> #searchSection.hn-hero-split:first-child) {
   padding-top: 0;
