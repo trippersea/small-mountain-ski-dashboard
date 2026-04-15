@@ -85,21 +85,21 @@ function getSponsor(resortId) {
     .table-lodging-link:hover { text-decoration:underline; }
 
     /* ── Runner-up mini strip inside verdict card ───────────────────────────── */
-    .vcard-runners-strip { margin: 10px -20px -14px; padding: 10px 20px 13px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); border-radius: 0 0 12px 12px; }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 11px 1.35rem 14px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.2); border-radius: 0 0 10px 10px; }
+    .vcard-runners-strip { margin: 10px -22px -18px; padding: 11px 22px 14px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 0 0 12px 12px; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 11px 1.35rem 14px; border-top: 1px solid rgba(15,23,42,.08); background: #e8eef5; border-radius: 0 0 10px 10px; }
     .vcard-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .vcard-runners-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: rgba(240,246,252,.6); }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: rgba(255,255,255,.55); }
+    .vcard-runners-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,246,252,.5); }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: #7a92a8; }
     .vcard-runners-mini { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 1px; }
     .vcard-runners-mini::-webkit-scrollbar { display: none; }
-    .vcard-mini-runner { display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.22); border-radius: 10px; padding: 10px 12px; cursor: pointer; text-align: left; min-width: 112px; max-width: 145px; flex-shrink: 0; transition: background .15s, border-color .15s, transform .12s; }
-    .vcard-mini-runner:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.38); transform: translateY(-1px); }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); box-shadow: none; }
+    .vcard-mini-runner { display: flex; flex-direction: column; gap: 3px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; min-width: 100px; max-width: 130px; flex-shrink: 0; transition: background .15s, border-color .15s; }
+    .vcard-mini-runner:hover { background: rgba(255,255,255,.17); border-color: rgba(255,255,255,.28); }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner { background: #fff; border-color: #dde3ea; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner:hover { background: #eef4ff; border-color: #93c5fd; }
-    .vmr-name { font-size: 12px; font-weight: 700; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .hn-hero-verdict-dock .vcard--hero-light .vmr-name { color: rgba(255,255,255,.92); }
-    .vmr-drive { font-size: 11px; color: rgba(240,246,252,.6); margin-top: 1px; }
-    .hn-hero-verdict-dock .vcard--hero-light .vmr-drive { color: rgba(255,255,255,.55); }
+    .vmr-name { font-size: 11px; font-weight: 700; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-name { color: #1a2030; }
+    .vmr-drive { font-size: 10px; color: rgba(240,246,252,.55); margin-top: 1px; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-drive { color: #7a92a8; }
     .vmr-crowd-mini { font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 999px; display: inline-flex; align-items: center; gap: 3px; width: fit-content; margin-top: 2px; }
     .vmr-crowd-mini.crowd-quiet-chip { background: rgba(34,179,138,.2); color: #6ee7b7; }
     .vmr-crowd-mini.crowd-busy-chip  { background: rgba(248,113,113,.15); color: #fca5a5; }
@@ -112,12 +112,10 @@ function getSponsor(resortId) {
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-see-all { background: #f0f4f8; border-color: #c8d4e0; color: #5a7080; }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-see-all:hover { background: #dce8f5; border-color: #93c5fd; color: #1a2030; }
     .vcard-runners-see-all-arrow { font-size: 13px; }
-
-    /* ── Editorial stat row ─────────────────────────────────────────────────── */
     .vcard-stat-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
     .vcard-stat-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; }
     .vcard-stat-item { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.78); }
-    .vcard-stat-sep { font-size: 13px; color: rgba(255,255,255,.35); font-weight: 400; }
+    .vcard-stat-sep { font-size: 13px; color: rgba(255,255,255,.35); }
     .vcard-stat-row .vcard-dash-pill { padding: 0; background: none; border: none; font-size: 13px; font-weight: 500; }
     .vcard-stat-row .vcard-dash-pill--crowd-low  { color: #4ade80; }
     .vcard-stat-row .vcard-dash-pill--crowd-mod  { color: #fbbf24; }
@@ -1238,7 +1236,7 @@ function renderVerdict(resorts) {
   const guidanceInsetHtml = showVerdictGuidance
     ? `<div class="vcard-guidance-inset" role="note" aria-label="How to improve your matches">
         <p class="vcard-guidance-inset-title">Conditions are rough right now</p>
-        <p class="vcard-guidance-inset-body">Widen your distance, ease the snow filter, or try a different pass to find better options.</p>
+        <p class="vcard-guidance-inset-body">Try widening your distance, easing the snow filter, or choosing a different pass.</p>
         <button type="button" class="vcard-guidance-inset-cta" id="verdictRefineGuidanceBtn">Refine results &darr;</button>
       </div>`
     : '';
@@ -1313,9 +1311,9 @@ function renderVerdict(resorts) {
   }
 
   const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
-  const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock vcard-hero-dash--light' : '';
-  const _vcardHeroLightCls = _isHeroDock ? ' vcard--hero-light' : '';
-  const _verdictPhotoStyle = _isHeroDock ? '' : resortPhotoStyle(resort);
+  const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock' : '';
+  const _vcardHeroLightCls = ''; // Always dark — never light mode
+  const _verdictPhotoStyle = resortPhotoStyle(resort, 'linear-gradient(180deg,rgba(8,16,28,.18) 0%,rgba(8,16,28,.62) 50%,rgba(8,16,28,.94) 100%)');
   const _heroDashStyleAttr = _verdictPhotoStyle ? ` style="${_verdictPhotoStyle}"` : '';
 
   // ── Runner-up mini strip — always-on teaser inside the verdict card ─────────
@@ -1335,13 +1333,13 @@ function renderVerdict(resorts) {
     }).join('');
     return `<div class="vcard-runners-strip">
       <div class="vcard-runners-header">
-        <span class="vcard-runners-label">Also worth it</span>
+        <span class="vcard-runners-label">Also consider</span>
       </div>
       <div class="vcard-runners-mini">
         ${miniCards}
         <button type="button" class="vcard-runners-see-all" id="verdictSeeAllRunners">
           <span class="vcard-runners-see-all-arrow">↓</span>
-          <span>More</span>
+          <span>See all</span>
         </button>
       </div>
     </div>`;
@@ -2570,26 +2568,17 @@ function trackFilterEvent(filterType, filterValue) {
 }
 
 // ─── Log all current filter state on Find My Mountain click ──────────────────
-// Tracks last logged filter snapshot to prevent duplicate rows
-var _lastLoggedFilterSnapshot = null;
-
 function logCurrentFilters() {
   var passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
   var tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
   var priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
-  var dayMap      = { weekday: 'Weekday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
   var snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
 
-  // Skip if this exact combination was already logged this session
-  var snapshotKey = [state.passFilter, state.howFar, state.skiDayPreset, snowVal].join('|');
-  if (snapshotKey === _lastLoggedFilterSnapshot) return;
-  _lastLoggedFilterSnapshot = snapshotKey;
-
   var filters = [
-    { type: 'heroPassSelect',   value: passMap[state.passFilter]           || state.passFilter  || 'Any'     },
-    { type: 'heroSentenceTrip', value: tripMap[state.howFar]               || String(state.howFar)           },
-    { type: 'heroSentenceDay',  value: dayMap[state.skiDayPreset]          || state.skiDayPreset || 'Weekday' },
-    { type: 'heroSnowSelect',   value: priorityMap[snowVal]                || String(snowVal)                },
+    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any' },
+    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)        },
+    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                   },
+    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)             },
   ];
 
   filters.forEach(function(f, i) {
@@ -3077,7 +3066,6 @@ function initialize() {
       els.locationStatus.textContent = `✓ Location set to ${loc.label}`;
       els.locationStatus.classList.remove('hero-location-status--error');
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
-      logCurrentFilters(); // Log full filter snapshot only on successful location resolve
       updatePlannerOriginLabel();
       syncVerdictVisibility();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3098,6 +3086,7 @@ function initialize() {
     const originalText = els.setLocation.textContent;
     els.setLocation.textContent = 'Finding…';
     els.setLocation.disabled = true;
+    logCurrentFilters();
     await applyLocation();
     els.setLocation.textContent = originalText;
     els.setLocation.disabled = false;
