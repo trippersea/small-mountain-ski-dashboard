@@ -90,9 +90,9 @@ function getSponsor(resortId) {
     .vcard-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .vcard-runners-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,246,252,.5); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: #7a92a8; }
-    .vcard-runners-mini { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 1px; }
+    .vcard-runners-mini { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 1px; justify-content: center; }
     .vcard-runners-mini::-webkit-scrollbar { display: none; }
-    .vcard-mini-runner { display: flex; flex-direction: column; gap: 3px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; min-width: 100px; max-width: 130px; flex-shrink: 0; transition: background .15s, border-color .15s; }
+    .vcard-mini-runner { display: flex; flex-direction: column; gap: 3px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; min-width: 130px; max-width: 160px; flex-shrink: 0; transition: background .15s, border-color .15s; }
     .vcard-mini-runner:hover { background: rgba(255,255,255,.17); border-color: rgba(255,255,255,.28); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner { background: #fff; border-color: #dde3ea; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner:hover { background: #eef4ff; border-color: #93c5fd; }
