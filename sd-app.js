@@ -3061,12 +3061,24 @@ function initialize() {
   if (reportSlug) {
     const found = findResortBySlug(reportSlug);
     if (found) {
-      state.selectedId = found.id;
-      document.title = found.name + ' — WhereToSkiNext.com';
-      setTimeout(() => {
-        renderDetail();
-        document.getElementById('detailSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 600);
+      // Ski-report CTAs use ?resort=…#searchSection so users land in the planner. Shared planner
+      // links include loc/lat in the query. In those cases do not auto-open the bottom detail
+      // panel or scroll past the hero — a linked resort (e.g. Grand Targhee) looked like it
+      // "loaded first" while the real top pick was still fetching forecasts.
+      const hashId = (window.location.hash || '').replace(/^#/, '');
+      const plannerFirstHash = hashId === 'searchSection' || hashId === 'compareSection' || hashId === 'comparePanel';
+      const _sp = new URLSearchParams(window.location.search);
+      const hasPlannerLocationInUrl = _sp.has('loc') || _sp.has('lat');
+      const deferResortDetail = plannerFirstHash || (!!resortParam && hasPlannerLocationInUrl);
+
+      if (!deferResortDetail) {
+        state.selectedId = found.id;
+        document.title = found.name + ' — WhereToSkiNext.com';
+        setTimeout(() => {
+          renderDetail();
+          document.getElementById('detailSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 600);
+      }
     }
   }
 
