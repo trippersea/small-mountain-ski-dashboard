@@ -1009,6 +1009,21 @@ function scrollToBestMatchFromFilters(source) {
   }
 }
 
+function scrollToResultsAfterLocationSet() {
+  // On mobile, bring the user to the Top pick/results after setting location.
+  // Desktop keeps the hero in view.
+  try {
+    if (!window.matchMedia || !window.matchMedia('(max-width: 960px)').matches) return;
+    // Prefer the Top pick card; fall back to the results region.
+    const target =
+      document.getElementById('verdictSection') ||
+      document.querySelector('.hn-results-region') ||
+      document.getElementById('compareSection');
+    if (!target) return;
+    requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  } catch (e) {}
+}
+
 // ─── Verdict engine ───────────────────────────────────────────────────────────
 function computeVerdict(resorts) {
   const verdictPool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
@@ -3094,8 +3109,9 @@ function initialize() {
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
       updatePlannerOriginLabel();
       syncVerdictVisibility();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       pushUrlDebounced();
+      render();
+      scrollToResultsAfterLocationSet();
       await loadDriveTimes();
     } else {
       const raw = els.originInput.value.trim();
@@ -3143,12 +3159,13 @@ function initialize() {
       trackEvent('location_set', { location_label: 'GPS', method: 'gps' });
       if (isRememberChecked()) saveOrigin(state.origin); else clearSavedOrigin();
       pushUrlDebounced();
+      render();
+      scrollToResultsAfterLocationSet();
       await loadDriveTimes();
       els.locationStatus.textContent = '✓ Using your location';
       els.locationStatus.classList.remove('hero-location-status--error');
       updatePlannerOriginLabel();
       syncVerdictVisibility();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }, () => {
       els.locationStatus.textContent = 'Location blocked or unavailable — allow access in your browser, or type a ZIP or city.';
       els.locationStatus.classList.add('hero-location-status--error');
