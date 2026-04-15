@@ -3,6 +3,24 @@
 // Handles both single { filter_type, filter_value, session_id }
 // and batch { batch: [{ filter_type, filter_value, session_id }, ...] }
 
+async function readJsonBody(req) {
+  let body = req.body;
+  if (Buffer.isBuffer(body)) {
+    try { return JSON.parse(body.toString()); } catch { return {}; }
+  }
+  if (body && typeof body === 'object') return body;
+  if (typeof body === 'string') {
+    try { return body ? JSON.parse(body) : {}; } catch { return {}; }
+  }
+  const raw = await new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', chunk => { data += chunk; });
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+  try { return raw ? JSON.parse(raw) : {}; } catch { return {}; }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -10,7 +28,13 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const body = req.body || {};
+  const base = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!base || !key) {
+    return res.status(503).json({ error: 'Tracking unavailable' });
+  }
+
+  const body = await readJsonBody(req);
 
   // Support both single row and batch array
   const rows = Array.isArray(body.batch) && body.batch.length > 0
@@ -31,13 +55,13 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/filter_events`,
+      `${base}/rest/v1/filter_events`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': process.env.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+          'apikey': key,
+          'Authorization': `Bearer ${key}`,
           'Prefer': 'return=minimal'
         },
         body: JSON.stringify(validRows)
