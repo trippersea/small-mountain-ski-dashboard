@@ -86,20 +86,20 @@ function getSponsor(resortId) {
 
     /* ── Runner-up mini strip inside verdict card ───────────────────────────── */
     .vcard-runners-strip { margin: 10px -20px -14px; padding: 10px 20px 13px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); border-radius: 0 0 12px 12px; }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 11px 1.35rem 14px; border-top: 1px solid rgba(15,23,42,.08); background: #e8eef5; border-radius: 0 0 10px 10px; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 11px 1.35rem 14px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.2); border-radius: 0 0 10px 10px; }
     .vcard-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .vcard-runners-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: rgba(240,246,252,.6); }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: #7a92a8; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: rgba(255,255,255,.55); }
     .vcard-runners-mini { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 1px; }
     .vcard-runners-mini::-webkit-scrollbar { display: none; }
     .vcard-mini-runner { display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.22); border-radius: 10px; padding: 10px 12px; cursor: pointer; text-align: left; min-width: 112px; max-width: 145px; flex-shrink: 0; transition: background .15s, border-color .15s, transform .12s; }
     .vcard-mini-runner:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.38); transform: translateY(-1px); }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner { background: #fff; border-color: #dde3ea; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); box-shadow: none; }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner:hover { background: #eef4ff; border-color: #93c5fd; }
     .vmr-name { font-size: 12px; font-weight: 700; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .hn-hero-verdict-dock .vcard--hero-light .vmr-name { color: #1a2030; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-name { color: rgba(255,255,255,.92); }
     .vmr-drive { font-size: 11px; color: rgba(240,246,252,.6); margin-top: 1px; }
-    .hn-hero-verdict-dock .vcard--hero-light .vmr-drive { color: #7a92a8; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-drive { color: rgba(255,255,255,.55); }
     .vmr-crowd-mini { font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 999px; display: inline-flex; align-items: center; gap: 3px; width: fit-content; margin-top: 2px; }
     .vmr-crowd-mini.crowd-quiet-chip { background: rgba(34,179,138,.2); color: #6ee7b7; }
     .vmr-crowd-mini.crowd-busy-chip  { background: rgba(248,113,113,.15); color: #fca5a5; }
@@ -112,6 +112,20 @@ function getSponsor(resortId) {
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-see-all { background: #f0f4f8; border-color: #c8d4e0; color: #5a7080; }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-see-all:hover { background: #dce8f5; border-color: #93c5fd; color: #1a2030; }
     .vcard-runners-see-all-arrow { font-size: 13px; }
+
+    /* ── Editorial stat row ─────────────────────────────────────────────────── */
+    .vcard-stat-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .vcard-stat-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; }
+    .vcard-stat-item { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.78); }
+    .vcard-stat-sep { font-size: 13px; color: rgba(255,255,255,.35); font-weight: 400; }
+    .vcard-stat-row .vcard-dash-pill { padding: 0; background: none; border: none; font-size: 13px; font-weight: 500; }
+    .vcard-stat-row .vcard-dash-pill--crowd-low  { color: #4ade80; }
+    .vcard-stat-row .vcard-dash-pill--crowd-mod  { color: #fbbf24; }
+    .vcard-stat-row .vcard-dash-pill--crowd-high { color: #f87171; }
+    .vcard-stat-badge.vcard-dash-pill--cond-great,
+    .vcard-stat-badge.vcard-dash-pill--cond-good  { color: #4ade80; background: rgba(74,222,128,.18); border: 1px solid rgba(74,222,128,.35); }
+    .vcard-stat-badge.vcard-dash-pill--cond-warn  { color: #fbbf24; background: rgba(251,191,36,.18); border: 1px solid rgba(251,191,36,.35); }
+    .vcard-stat-badge.vcard-dash-pill--cond-bad   { color: #f87171; background: rgba(248,113,113,.18); border: 1px solid rgba(248,113,113,.35); }
   `;
   document.head.appendChild(style);
 })();
@@ -1342,11 +1356,11 @@ function renderVerdict(resorts) {
         <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
-        <div class="vcard-dash-pills">
-          <span class="vcard-dash-pill ${tc.pillClass}">${esc(tc.label)}</span>
-          <span class="vcard-dash-pill">${esc(snowPillText)}</span>
-          ${driveText ? `<span class="vcard-dash-pill">${esc(driveText)} drive</span>` : ''}
-          ${crowdPill}
+        <div class="vcard-stat-row">
+          <span class="vcard-stat-badge ${tc.pillClass}">${esc(tc.label)}</span>
+          ${driveText ? `<span class="vcard-stat-sep">·</span><span class="vcard-stat-item">${esc(driveText)} drive</span>` : ''}
+          <span class="vcard-stat-sep">·</span><span class="vcard-stat-item">${esc(snowPillText)}</span>
+          <span class="vcard-stat-sep">·</span>${crowdPill}
         </div>
       </div>
       <div class="vcard-body vcard-body-dash">
