@@ -125,15 +125,14 @@ function getSponsor(resortId) {
     .vcard-stat-badge.vcard-dash-pill--cond-warn  { color: #fbbf24; background: rgba(251,191,36,.18); border: 1px solid rgba(251,191,36,.35); }
     .vcard-stat-badge.vcard-dash-pill--cond-bad   { color: #f87171; background: rgba(248,113,113,.18); border: 1px solid rgba(248,113,113,.35); }
 
-    /* ── Compact guidance row (replaces full guidance inset card) ───────────── */
+    /* ── Compact guidance row ───────────────────────────────────────────────── */
     .vcard-guidance-compact { display: flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 12px; background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25); border-radius: 8px; font-size: 12px; color: rgba(240,246,252,.8); line-height: 1.4; flex-wrap: wrap; }
     .vcard-guidance-compact-icon { font-size: 13px; flex-shrink: 0; }
     .vcard-guidance-compact-btn { background: none; border: none; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: #fca5a5; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color .12s; }
     .vcard-guidance-compact-btn:hover { color: #f87171; }
 
-    /* ── Lodging slim row (replaces full lodging module card) ───────────────── */
+    /* ── Lodging slim row ───────────────────────────────────────────────────── */
     .vcard-lodging-slim { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); border-radius: 8px; }
-    .vcard-lodging-slim-icon { font-size: 14px; flex-shrink: 0; }
     .vcard-lodging-slim-link { font-size: 12px; font-weight: 600; color: #93c5fd; text-decoration: none; flex: 1; transition: color .12s; }
     .vcard-lodging-slim-link:hover { color: #bfdbfe; text-decoration: underline; }
     .vcard-lodging-slim-tag { font-size: 10px; color: rgba(240,246,252,.35); white-space: nowrap; flex-shrink: 0; }
@@ -1255,7 +1254,6 @@ function renderVerdict(resorts) {
   const _lodgingUrl = bookingUrl(resort);
   const lodgingModuleHtml = state.howFar === 1
     ? `<div class="vcard-lodging-slim">
-        <span class="vcard-lodging-slim-icon">🏨</span>
         <a class="vcard-lodging-slim-link" href="${_lodgingUrl}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_lodging" data-track-resort="${esc(resort.name)}">Find lodging near ${esc(_bookName)} &rarr;</a>
         <span class="vcard-lodging-slim-tag">weekend &middot; affiliate</span>
       </div>`
@@ -1295,8 +1293,8 @@ function renderVerdict(resorts) {
 
   const verdictBadgeText = tier === 'great' ? 'Go — great conditions'
     : tier === 'good'    ? 'Go — good conditions'
-    : tier === 'marginal'? 'Worth checking'
-    : 'Skip this weekend';
+    : tier === 'marginal'? 'Worth checking — fair conditions'
+    : 'Skip — rough conditions';
 
   const verdictBadgeCls = tier === 'great' ? 'vb-verdict-badge--go'
     : tier === 'good'   ? 'vb-verdict-badge--go'
@@ -1365,9 +1363,7 @@ function renderVerdict(resorts) {
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         <div class="vcard-stat-row">
-          <span class="vcard-stat-badge ${tc.pillClass}">${esc(tc.label)}</span>
-          ${driveText ? `<span class="vcard-stat-sep">·</span><span class="vcard-stat-item">${esc(driveText)} drive</span>` : ''}
-          <span class="vcard-stat-sep">·</span><span class="vcard-stat-item">${esc(snowPillText)}</span>
+          ${driveText ? `<span class="vcard-stat-item">${esc(driveText)} drive</span><span class="vcard-stat-sep">·</span>` : ''}<span class="vcard-stat-item">${esc(snowPillText)}</span>
           <span class="vcard-stat-sep">·</span>${crowdPill}
         </div>
       </div>
