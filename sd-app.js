@@ -124,6 +124,19 @@ function getSponsor(resortId) {
     .vcard-stat-badge.vcard-dash-pill--cond-good  { color: #4ade80; background: rgba(74,222,128,.18); border: 1px solid rgba(74,222,128,.35); }
     .vcard-stat-badge.vcard-dash-pill--cond-warn  { color: #fbbf24; background: rgba(251,191,36,.18); border: 1px solid rgba(251,191,36,.35); }
     .vcard-stat-badge.vcard-dash-pill--cond-bad   { color: #f87171; background: rgba(248,113,113,.18); border: 1px solid rgba(248,113,113,.35); }
+
+    /* ── Compact guidance row (replaces full guidance inset card) ───────────── */
+    .vcard-guidance-compact { display: flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 12px; background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25); border-radius: 8px; font-size: 12px; color: rgba(240,246,252,.8); line-height: 1.4; flex-wrap: wrap; }
+    .vcard-guidance-compact-icon { font-size: 13px; flex-shrink: 0; }
+    .vcard-guidance-compact-btn { background: none; border: none; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: #fca5a5; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color .12s; }
+    .vcard-guidance-compact-btn:hover { color: #f87171; }
+
+    /* ── Lodging slim row (replaces full lodging module card) ───────────────── */
+    .vcard-lodging-slim { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); border-radius: 8px; }
+    .vcard-lodging-slim-icon { font-size: 14px; flex-shrink: 0; }
+    .vcard-lodging-slim-link { font-size: 12px; font-weight: 600; color: #93c5fd; text-decoration: none; flex: 1; transition: color .12s; }
+    .vcard-lodging-slim-link:hover { color: #bfdbfe; text-decoration: underline; }
+    .vcard-lodging-slim-tag { font-size: 10px; color: rgba(240,246,252,.35); white-space: nowrap; flex-shrink: 0; }
   `;
   document.head.appendChild(style);
 })();
@@ -1234,20 +1247,17 @@ function renderVerdict(resorts) {
     || tier === 'marginal'
     || (breakdown && scoreNum < 48 && tier !== 'great');
   const guidanceInsetHtml = showVerdictGuidance
-    ? `<div class="vcard-guidance-inset" role="note" aria-label="How to improve your matches">
-        <p class="vcard-guidance-inset-title">Conditions are rough right now</p>
-        <p class="vcard-guidance-inset-body">Try widening your distance, easing the snow filter, or choosing a different pass.</p>
-        <button type="button" class="vcard-guidance-inset-cta" id="verdictRefineGuidanceBtn">Refine results &darr;</button>
+    ? `<div class="vcard-guidance-compact" role="note">
+        <span class="vcard-guidance-compact-icon">⚠</span>
+        <span>Conditions are rough &mdash; <button type="button" class="vcard-guidance-compact-btn" id="verdictRefineGuidanceBtn">widen your search &darr;</button></span>
       </div>`
     : '';
   const _lodgingUrl = bookingUrl(resort);
   const lodgingModuleHtml = state.howFar === 1
-    ? `<div class="vcard-lodging-module" role="region" aria-label="Lodging near ${esc(resort.name)}">
-        <span class="vcard-lodging-label">Weekend trip</span>
-        <p class="vcard-lodging-headline">Staying the weekend? Find lodging near your top pick</p>
-        <p class="vcard-lodging-support">Hotels, condos, and ski-in properties &mdash; updated availability</p>
-        <a class="vcard-lodging-cta" href="${_lodgingUrl}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_lodging" data-track-resort="${esc(resort.name)}">Browse lodging &rarr;</a>
-        <p class="vcard-lodging-disclosure">Affiliate link &mdash; we may earn a commission</p>
+    ? `<div class="vcard-lodging-slim">
+        <span class="vcard-lodging-slim-icon">🏨</span>
+        <a class="vcard-lodging-slim-link" href="${_lodgingUrl}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_lodging" data-track-resort="${esc(resort.name)}">Find lodging near ${esc(_bookName)} &rarr;</a>
+        <span class="vcard-lodging-slim-tag">weekend &middot; affiliate</span>
       </div>`
     : '';
   const snowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
