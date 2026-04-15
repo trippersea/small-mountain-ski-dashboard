@@ -2557,17 +2557,26 @@ function trackFilterEvent(filterType, filterValue) {
 }
 
 // ─── Log all current filter state on Find My Mountain click ──────────────────
+// Tracks last logged filter snapshot to prevent duplicate rows
+var _lastLoggedFilterSnapshot = null;
+
 function logCurrentFilters() {
   var passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
   var tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
   var priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
+  var dayMap      = { weekday: 'Weekday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
   var snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
 
+  // Skip if this exact combination was already logged this session
+  var snapshotKey = [state.passFilter, state.howFar, state.skiDayPreset, snowVal].join('|');
+  if (snapshotKey === _lastLoggedFilterSnapshot) return;
+  _lastLoggedFilterSnapshot = snapshotKey;
+
   var filters = [
-    { type: 'heroPassSelect',   value: passMap[state.passFilter]  || state.passFilter  || 'Any' },
-    { type: 'heroSentenceTrip', value: tripMap[state.howFar]      || String(state.howFar)        },
-    { type: 'heroSentenceDay',  value: state.skiDayPreset         || 'weekday'                   },
-    { type: 'heroSnowSelect',   value: priorityMap[snowVal]       || String(snowVal)             },
+    { type: 'heroPassSelect',   value: passMap[state.passFilter]           || state.passFilter  || 'Any'     },
+    { type: 'heroSentenceTrip', value: tripMap[state.howFar]               || String(state.howFar)           },
+    { type: 'heroSentenceDay',  value: dayMap[state.skiDayPreset]          || state.skiDayPreset || 'Weekday' },
+    { type: 'heroSnowSelect',   value: priorityMap[snowVal]                || String(snowVal)                },
   ];
 
   filters.forEach(function(f, i) {
@@ -3055,6 +3064,7 @@ function initialize() {
       els.locationStatus.textContent = `✓ Location set to ${loc.label}`;
       els.locationStatus.classList.remove('hero-location-status--error');
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
+      logCurrentFilters(); // Log full filter snapshot only on successful location resolve
       updatePlannerOriginLabel();
       syncVerdictVisibility();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3075,7 +3085,6 @@ function initialize() {
     const originalText = els.setLocation.textContent;
     els.setLocation.textContent = 'Finding…';
     els.setLocation.disabled = true;
-    logCurrentFilters();
     await applyLocation();
     els.setLocation.textContent = originalText;
     els.setLocation.disabled = false;
