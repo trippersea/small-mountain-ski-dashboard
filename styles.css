@@ -599,7 +599,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   flex-direction: column;
   gap: 16px;
   padding: 18px 22px 18px;
-  overflow-y: auto;
+  overflow-y: visible;
 }
 
 .vcard-chips {
@@ -2162,7 +2162,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   display: grid;
   grid-template-columns: 1.08fr 0.92fr;
   gap: 18px;
-  align-items: stretch;
+  align-items: start;
 }
 
 /* ── Left column — planner ──────────────────────────────────────────────── */
@@ -2320,10 +2320,10 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 }
 /* #verdictCard must grow to fill the section, then vcard fills #verdictCard */
 #verdictCard {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: auto;
 }
 
 
