@@ -5,8 +5,8 @@
 
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
-let verdictLockedUntil = 0;
-let verdictLockTimer   = null;
+// Phase-1 weather set (the "near" batch) so the verdict can be stable.
+let weatherPhase1Ids     = [];
 
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function loadSavedWeights() {
@@ -637,6 +637,7 @@ async function injectConditionsBadge(resortId, slotId) {
 async function ensureWeather(resorts) {
   const near = nearestCandidates(resorts, 20);
   const rest  = resorts.filter(r => !near.find(n => n.id === r.id));
+  weatherPhase1Ids = near.map(r => r.id);
 
   const q1 = [...near.filter(r => !state.weatherCache[r.id]?.data)];
   await Promise.all(Array.from({ length: 8 }, async () => {
@@ -961,7 +962,7 @@ function syncPlannerControls() {
     _daySel.value = state.skiDayPreset || smartDefaultWhenVal();
   }
   updateHeroFilterSegmentsCustom();
-  syncWeekendLodgingStrip(computeVerdict(filteredResorts()));
+  syncWeekendLodgingStrip(computeVerdictStaged(filteredResorts()));
   syncHeroPills();
 }
 
@@ -1069,6 +1070,35 @@ function computeVerdict(resorts) {
   return { tier, headline, detail, subPoints, resort, breakdown, drive, driveText, tomorrowIn, stormTotal, histTotal, histDays };
 }
 
+function computeVerdictPhase1(resorts) {
+  // Only rank within the fixed phase-1 set (nearest batch) so "Top pick" doesn't flip-flop
+  // as forecasts stream in.
+  const verdictPool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
+  const phasePool = verdictPool.filter(r => weatherPhase1Ids.includes(r.id));
+  if (!phasePool.length) return null;
+  // Require full phase-1 coverage to avoid choosing the first resort that happened to return.
+  if (phasePool.some(r => !state.weatherCache[r.id]?.data)) return null;
+  return computeVerdict(phasePool);
+}
+
+function computeVerdictStaged(resorts) {
+  if (!state.origin) return null;
+  if (!weatherFetchPhase1Done) return null;
+  const phase1Verdict = computeVerdictPhase1(resorts);
+  if (!weatherFetchPhase2Done) return phase1Verdict;
+
+  // Phase 2 finished: only switch picks if the "final" winner is meaningfully better.
+  // Prevents late flip-flops from small score differences as background fetches complete.
+  const VERDICT_UPGRADE_DELTA = 3; // points
+  const finalVerdict = computeVerdict(resorts);
+  if (!phase1Verdict) return finalVerdict;
+  if (!finalVerdict) return phase1Verdict;
+  const p1 = phase1Verdict.breakdown?.score;
+  const p2 = finalVerdict.breakdown?.score;
+  if (Number.isFinite(p1) && Number.isFinite(p2) && (p2 - p1) >= VERDICT_UPGRADE_DELTA) return finalVerdict;
+  return phase1Verdict;
+}
+
 function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
   const w = normalizedWeights();
   const pool = state.origin
@@ -1143,12 +1173,7 @@ function renderVerdict(resorts) {
   }
   updateHeroVerdictEmptyState();
 
-  if (verdictLockedUntil > Date.now()) {
-    els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading"><div class="vcard-placeholder-icon vcard-loading-pulse">&#x26F7;</div><div class="vcard-placeholder-title">Finding your best mountain match...</div><div class="vcard-placeholder-sub">Giving the trails one last pass &mdash; your top pick will appear in just a moment.</div></div>`;
-    return;
-  }
-
-  const v = computeVerdict(resorts);
+  const v = computeVerdictStaged(resorts);
   syncWeekendLodgingStrip(v);
   const _hnSectionEarly = document.getElementById('hnRunnerUpSection');
   if (!v) {
@@ -2453,12 +2478,7 @@ function renderAllCards(resorts) {
   if (needWx) {
     weatherFetchPhase1Done = false;
     weatherFetchPhase2Done = false;
-    verdictLockedUntil = Date.now() + 5000;
-    if (verdictLockTimer) clearTimeout(verdictLockTimer);
-    verdictLockTimer = setTimeout(function () {
-      verdictLockTimer = null;
-      repaintMainUI(filteredResorts());
-    }, 5100);
+    weatherPhase1Ids = [];
   }
   repaintMainUI(resorts);
   renderAsyncPanels(resorts);
@@ -2640,7 +2660,7 @@ function wireEvents() {
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('a.hn-booking-btn');
     if (!btn) return;
-    const verdict = computeVerdict(filteredResorts());
+    const verdict = computeVerdictStaged(filteredResorts());
     const resortName = verdict && verdict.resort ? verdict.resort.name : '';
     const resortId   = verdict && verdict.resort ? verdict.resort.id   : '';
     trackSponsorClick(resortName, 'weekend_lodging_strip', resortId, '');
