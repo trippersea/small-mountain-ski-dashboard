@@ -4690,9 +4690,8 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding: 22px 24px 20px;
+  padding: 18px 22px 16px;
   min-height: 0;
-  max-height: 300px;
   color: var(--text-on-dark);
   border-bottom: none;
   background:
@@ -4821,15 +4820,15 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .vcard-dash-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 6px;
+  margin-top: 10px;
 }
 .vcard-dash-pill {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
+  padding: 5px 11px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   background: rgba(255,255,255,.15);
   border: 1px solid rgba(255,255,255,.25);
@@ -4867,7 +4866,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   background: rgba(248,113,113,.18);
 }
 .vcard-body-dash {
-  padding: 16px 22px 18px;
+  padding: 12px 20px 14px;
   background: var(--rs-surface);
 }
 .vcard-actions-dash {
@@ -4876,10 +4875,10 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   border-top: none;
 }
 .vcard-writeup--dash {
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.55;
   color: rgba(255,255,255,.85);
-  margin: 10px 0 16px;
+  margin: 8px 0 12px;
   padding: 0;
   background: none !important;
   border: none !important;
@@ -4912,8 +4911,8 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   border-color: var(--border-light) !important;
 }
 .vcard-actions-dash {
-  margin-top: 4px;
-  padding-top: 20px;
+  margin-top: 0;
+  padding-top: 12px;
   border-top: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
@@ -4922,9 +4921,9 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 }
 /* Supportive nudge when conditions are weak or fit is low — icy inset, not an alert */
 .vcard-guidance-inset {
-  margin-top: 20px;
-  padding: 15px 16px 17px;
-  border-radius: 12px;
+  margin-top: 12px;
+  padding: 10px 14px 12px;
+  border-radius: 10px;
   background: linear-gradient(180deg, #f0f7ff 0%, #e8f2fc 100%);
   border: 1px solid rgba(43, 109, 233, 0.16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
@@ -4972,47 +4971,36 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 }
 /* Weekend lodging — secondary trip-planning block (not a banner ad) */
 .vcard-lodging-module {
-  margin-top: 22px;
-  padding: 16px 16px 15px;
-  border-radius: 12px;
+  margin-top: 14px;
+  padding: 11px 14px 12px;
+  border-radius: 10px;
   background: linear-gradient(180deg, #f8fbfd 0%, #f1f6fa 100%);
   border: 1px solid rgba(34, 50, 71, 0.09);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .vcard-lodging-label {
-  display: inline-block;
-  margin: 0 0 10px;
-  padding: 4px 10px;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: #5a6a7a;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(34, 50, 71, 0.1);
-  border-radius: 999px;
+  display: none;
 }
 .vcard-lodging-headline {
-  margin: 0 0 8px;
+  margin: 0 0 2px;
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: -0.02em;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
   color: #1e3a4d;
+  flex: 1;
 }
 .vcard-lodging-support {
-  margin: 0 0 14px;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 1.45;
-  font-weight: 500;
-  color: #52606d;
+  display: none;
 }
 .vcard-lodging-cta {
   display: inline-block;
-  margin: 0 0 12px;
+  margin: 0;
+  white-space: nowrap;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -5034,12 +5022,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   border-radius: 4px;
 }
 .vcard-lodging-disclosure {
-  margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 12px;
-  line-height: 1.45;
-  font-weight: 500;
-  color: #6b7c8c;
+  display: none;
 }
 a.vcard-book-btn,
 .vcard-book-btn {

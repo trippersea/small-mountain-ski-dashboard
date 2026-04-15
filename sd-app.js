@@ -85,20 +85,20 @@ function getSponsor(resortId) {
     .table-lodging-link:hover { text-decoration:underline; }
 
     /* ── Runner-up mini strip inside verdict card ───────────────────────────── */
-    .vcard-runners-strip { margin: 10px -22px -18px; padding: 11px 22px 14px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 0 0 12px 12px; }
+    .vcard-runners-strip { margin: 10px -20px -14px; padding: 10px 20px 13px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); border-radius: 0 0 12px 12px; }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 11px 1.35rem 14px; border-top: 1px solid rgba(15,23,42,.08); background: #e8eef5; border-radius: 0 0 10px 10px; }
     .vcard-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .vcard-runners-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,246,252,.5); }
+    .vcard-runners-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: rgba(240,246,252,.6); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: #7a92a8; }
     .vcard-runners-mini { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 1px; }
     .vcard-runners-mini::-webkit-scrollbar { display: none; }
-    .vcard-mini-runner { display: flex; flex-direction: column; gap: 3px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; min-width: 100px; max-width: 130px; flex-shrink: 0; transition: background .15s, border-color .15s; }
-    .vcard-mini-runner:hover { background: rgba(255,255,255,.17); border-color: rgba(255,255,255,.28); }
+    .vcard-mini-runner { display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.22); border-radius: 10px; padding: 10px 12px; cursor: pointer; text-align: left; min-width: 112px; max-width: 145px; flex-shrink: 0; transition: background .15s, border-color .15s, transform .12s; }
+    .vcard-mini-runner:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.38); transform: translateY(-1px); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner { background: #fff; border-color: #dde3ea; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner:hover { background: #eef4ff; border-color: #93c5fd; }
-    .vmr-name { font-size: 11px; font-weight: 700; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vmr-name { font-size: 12px; font-weight: 700; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .hn-hero-verdict-dock .vcard--hero-light .vmr-name { color: #1a2030; }
-    .vmr-drive { font-size: 10px; color: rgba(240,246,252,.55); margin-top: 1px; }
+    .vmr-drive { font-size: 11px; color: rgba(240,246,252,.6); margin-top: 1px; }
     .hn-hero-verdict-dock .vcard--hero-light .vmr-drive { color: #7a92a8; }
     .vmr-crowd-mini { font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 999px; display: inline-flex; align-items: center; gap: 3px; width: fit-content; margin-top: 2px; }
     .vmr-crowd-mini.crowd-quiet-chip { background: rgba(34,179,138,.2); color: #6ee7b7; }
@@ -1224,7 +1224,7 @@ function renderVerdict(resorts) {
   const guidanceInsetHtml = showVerdictGuidance
     ? `<div class="vcard-guidance-inset" role="note" aria-label="How to improve your matches">
         <p class="vcard-guidance-inset-title">Conditions are rough right now</p>
-        <p class="vcard-guidance-inset-body">Try widening your distance, easing the snow filter, or choosing a different pass.</p>
+        <p class="vcard-guidance-inset-body">Widen your distance, ease the snow filter, or try a different pass to find better options.</p>
         <button type="button" class="vcard-guidance-inset-cta" id="verdictRefineGuidanceBtn">Refine results &darr;</button>
       </div>`
     : '';
@@ -1321,13 +1321,13 @@ function renderVerdict(resorts) {
     }).join('');
     return `<div class="vcard-runners-strip">
       <div class="vcard-runners-header">
-        <span class="vcard-runners-label">Also consider</span>
+        <span class="vcard-runners-label">Also worth it</span>
       </div>
       <div class="vcard-runners-mini">
         ${miniCards}
         <button type="button" class="vcard-runners-see-all" id="verdictSeeAllRunners">
           <span class="vcard-runners-see-all-arrow">↓</span>
-          <span>See all</span>
+          <span>More</span>
         </button>
       </div>
     </div>`;
@@ -1347,7 +1347,6 @@ function renderVerdict(resorts) {
           <span class="vcard-dash-pill">${esc(snowPillText)}</span>
           ${driveText ? `<span class="vcard-dash-pill">${esc(driveText)} drive</span>` : ''}
           ${crowdPill}
-          <span class="vcard-score-mini-pill score-badge--tip" ${verdictBdAttr} tabindex="0" aria-label="How we ranked this pick: ${scoreNum} ${_fitWord} — tap for breakdown"><span class="vcard-score-mini-dot"></span><span class="vcard-score-mini-lbl">Fit</span><span class="vcard-score-mini-num">${scoreNum}</span><span class="vcard-score-fit-label">${esc(_fitWord)}</span></span>
         </div>
       </div>
       <div class="vcard-body vcard-body-dash">
