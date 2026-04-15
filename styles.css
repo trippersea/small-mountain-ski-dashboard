@@ -6467,6 +6467,9 @@ button.vcard-detail-btn:hover,
     0 2px 0 rgba(255, 255, 255, 0.75) inset,
     0 12px 40px rgba(12, 18, 24, 0.14);
   color: #0a0f14;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 .hn-hero-verdict-empty[hidden] {
   display: none !important;
@@ -6490,10 +6493,10 @@ button.vcard-detail-btn:hover,
 }
 .hn-hero-verdict-empty-sub {
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.52;
-  font-weight: 600;
-  color: #334155;
+  font-weight: 500;
+  color: #64748b;
   margin: 0;
 }
 #verdictCard.hn-verdict-card-root {

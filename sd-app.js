@@ -3184,6 +3184,30 @@ function initialize() {
       showToast('Location permission needed — use search instead');
     });
   });
+
+  // ── Silent auto-geolocation on first visit ──────────────────────────────
+  // If no saved/URL origin, quietly ask the browser for location.
+  // User sees a real scored result immediately instead of the empty state.
+  // If denied or unavailable we fail silently — the improved empty state handles it.
+  if (!state.origin && navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async function(pos) {
+        if (state.origin) return; // user set manually while we waited — don't override
+        state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
+        els.originInput.value = 'Your location';
+        els.locationStatus.textContent = '✓ Using your location';
+        els.locationStatus.classList.remove('hero-location-status--error');
+        trackEvent('location_set', { location_label: 'GPS', method: 'auto' });
+        if (isRememberChecked()) saveOrigin(state.origin);
+        updatePlannerOriginLabel();
+        syncVerdictVisibility();
+        render();
+        await loadDriveTimes();
+      },
+      function() { /* silently fail — improved empty state guides the user */ },
+      { timeout: 8000, maximumAge: 600000 }
+    );
+  }
 }
 
 function updateHeroHeadline() {

@@ -32,6 +32,74 @@
     .site-footer-affiliate { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.55; }
     .hn-booking-affiliate { display:block; font-size:11px; color:#7a92a8; margin-top:3px; }
     .affiliate-badge { display:inline-block; font-size:10px; font-weight:500; color:#9ca3af; background:#f0f4f8; padding:1px 6px; border-radius:4px; margin-left:4px; vertical-align:middle; letter-spacing:0.02em; }
+
+    /* ── Empty state redesign ─────────────────────────────────────────────── */
+    .hn-verdict-empty-inner {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 10px;
+    }
+    .hn-verdict-empty-icon { font-size: 32px; line-height: 1; margin-bottom: 2px; }
+    .hn-verdict-empty-locate-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 999px;
+      padding: 10px 20px; font: 700 14px/1 inherit;
+      cursor: pointer; transition: opacity .12s; margin-top: 4px;
+    }
+    .hn-verdict-empty-locate-btn:hover { opacity: .88; }
+    .hn-verdict-empty-or {
+      font-size: 12px; color: var(--muted); margin: 0;
+    }
+    .hn-verdict-empty-chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      justify-content: center; margin-top: 8px;
+      padding-top: 14px; border-top: 1px solid var(--border);
+    }
+    .hn-verdict-empty-chip {
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+      background: #f0f6ff; border: 1px solid #bfdbfe;
+      color: #1e40af; white-space: nowrap;
+    }
+
+    /* ── Trust / credibility strip ──────────────────────────────────────────── */
+    .wtsn-trust-strip {
+      margin: 0 auto 0;
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .wtsn-trust-inner {
+      max-width: 1120px; margin: 0 auto;
+      display: flex; align-items: flex-start;
+      gap: 0; flex-wrap: wrap;
+    }
+    .wtsn-trust-item {
+      display: flex; align-items: flex-start; gap: 9px;
+      flex: 1; min-width: 220px;
+      font-size: 12px; color: var(--muted); line-height: 1.55;
+      padding: 4px 16px 4px 0;
+    }
+    .wtsn-trust-item strong { color: var(--text); }
+    .wtsn-trust-icon { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+    .wtsn-trust-sep {
+      width: 1px; background: var(--border);
+      align-self: stretch; margin: 0 12px 0 0;
+      flex-shrink: 0;
+    }
+    .wtsn-trust-link { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .wtsn-trust-link:hover { text-decoration: underline; }
+    @media (max-width: 760px) {
+      .wtsn-trust-sep { display: none; }
+      .wtsn-trust-item { min-width: 100%; padding: 4px 0; }
+      .wtsn-trust-inner { gap: 8px; }
+    }
+
+    /* ── AI input: open by default — give the toggle label more presence ──── */
+    .hn-editorial-ai-tog {
+      font-weight: 700 !important;
+    }
   </style>
   <link rel="icon" href="ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
@@ -531,8 +599,8 @@
           <div id="locationStatus" class="hn-editorial-status" role="status"></div>
 
           <div class="hn-editorial-ai">
-            <button type="button" class="hn-editorial-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">Describe your ideal day</button>
-            <div id="aiChatPanel" class="hero-ai-panel hn-editorial-ai-panel" hidden>
+            <button type="button" class="hn-editorial-ai-tog" id="aiToggleBtn" aria-expanded="true" aria-controls="aiChatPanel">Or describe your ideal day</button>
+            <div id="aiChatPanel" class="hero-ai-panel hn-editorial-ai-panel">
               <div class="hero-ai-examples">
                 <button type="button" class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
                 <button type="button" class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
@@ -554,8 +622,22 @@
           <section id="verdictSection" class="verdict-section hn-hero-verdict-section hn-verdict-pre-location" aria-label="Top mountain pick">
             <div class="hn-hero-verdict-dock">
               <div id="heroVerdictEmpty" class="hn-hero-verdict-empty">
-                <p class="hn-hero-verdict-empty-title">Good ski days start here</p>
-                <p class="hn-hero-verdict-empty-sub">Set your location, pass, and trip details, and we&rsquo;ll point you to the best fit.</p>
+                <div class="hn-verdict-empty-inner">
+                  <div class="hn-verdict-empty-icon" aria-hidden="true">⛷</div>
+                  <p class="hn-hero-verdict-empty-title">Your top pick appears here</p>
+                  <p class="hn-hero-verdict-empty-sub">We score 250+ mountains on live snow, your exact drive time, crowd outlook, and pass — then surface the one worth the trip.</p>
+                  <button type="button" class="hn-verdict-empty-locate-btn" id="verdictEmptyLocateBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+                    Use my location
+                  </button>
+                  <p class="hn-verdict-empty-or">or type a ZIP or city above ↑</p>
+                </div>
+                <div class="hn-verdict-empty-chips">
+                  <span class="hn-verdict-empty-chip">❄ Live snow forecast</span>
+                  <span class="hn-verdict-empty-chip">🚗 Real drive times</span>
+                  <span class="hn-verdict-empty-chip">👥 Crowd outlook</span>
+                  <span class="hn-verdict-empty-chip">🎫 Pass coverage</span>
+                </div>
               </div>
               <div id="verdictCard" class="hn-verdict-card-root"></div>
             </div>
@@ -622,6 +704,26 @@
     </section>
 
     </div><!-- /.hn-results-region -->
+
+    <!-- ═══ TRUST / CREDIBILITY STRIP ══════════════════════════════════════ -->
+    <div class="wtsn-trust-strip" aria-label="About this tool">
+      <div class="wtsn-trust-inner">
+        <div class="wtsn-trust-item">
+          <svg class="wtsn-trust-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4 4 0 003 15z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Scores update daily using live Open-Meteo snow forecasts, real OSRM drive times, and a crowd model that factors weekend demand, holiday calendars, and regional traffic</span>
+        </div>
+        <div class="wtsn-trust-sep" aria-hidden="true"></div>
+        <div class="wtsn-trust-item">
+          <svg class="wtsn-trust-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span><strong>No mountain pays for ranking.</strong> Every score is based on conditions, drive time, and fit — not who has a marketing budget</span>
+        </div>
+        <div class="wtsn-trust-sep" aria-hidden="true"></div>
+        <div class="wtsn-trust-item">
+          <svg class="wtsn-trust-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Built by a skier who got tired of driving two hours to bad conditions. <a href="/about/" class="wtsn-trust-link">About this tool &rarr;</a></span>
+        </div>
+      </div>
+    </div>
 
     <!-- ═══ REFINE PANEL ════════════════════════════════════════════════════ -->
     <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">
@@ -5889,6 +5991,12 @@
         if (input) { input.value = chip.getAttribute('data-prompt'); input.focus(); }
       });
     });
+    // Wire the empty-state locate button to the existing detectLocation handler
+    var emptyLocateBtn = document.getElementById('verdictEmptyLocateBtn');
+    var detectBtn      = document.getElementById('detectLocation');
+    if (emptyLocateBtn && detectBtn) {
+      emptyLocateBtn.addEventListener('click', function() { detectBtn.click(); });
+    }
   });
   </script>
 
