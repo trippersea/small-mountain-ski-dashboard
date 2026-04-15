@@ -6658,8 +6658,9 @@ button.vcard-detail-btn:hover,
     min-height: 0;
   }
   .hn-split-panel--visual {
-    min-height: 300px;
-    order: -1;
+    /* On mobile/tablet: keep hero inputs first, then top pick/results */
+    min-height: 0;
+    order: 0;
     box-shadow: none;
   }
   .hn-split-panel--editorial {
@@ -6671,13 +6672,32 @@ button.vcard-detail-btn:hover,
   .hn-hero-verdict-section {
     position: relative;
     inset: auto;
-    min-height: 280px;
+    min-height: 0;
     padding: 1.25rem 1rem 1.5rem;
     background: transparent !important;
+    /* Stack below hero inputs; avoid overlay behavior on mobile */
+    display: block;
+    pointer-events: auto;
   }
   .hn-split-visual-meta {
     top: 14px;
     left: 16px;
     right: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  /* Prevent pill rows / labels from clipping on narrow phones */
+  .hn-hero-pill-group {
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .hn-hero-pill-label {
+    width: 100%;
+    flex-basis: 100%;
+    margin-bottom: 2px;
+  }
+  .hn-hero-pills {
+    width: 100%;
   }
 }
