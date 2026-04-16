@@ -590,6 +590,23 @@
             </div>
           </div>
 
+          <!-- Describe your ideal day — sits under the CTA -->
+          <div class="hn-editorial-ai hn-editorial-ai--hero">
+            <button type="button" class="hn-editorial-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">Describe your ideal day</button>
+            <div id="aiChatPanel" class="hero-ai-panel hn-editorial-ai-panel" hidden>
+              <div class="hero-ai-examples">
+                <button type="button" class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
+                <button type="button" class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
+                <button type="button" class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">Hidden gem, low crowds</button>
+              </div>
+              <div class="hero-ai-input-row">
+                <input id="aiChatInput" type="text" class="ai-chat-input hero-ai-input" placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"' aria-label="Describe your ideal ski day" />
+                <button type="button" id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+              </div>
+              <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
+            </div>
+          </div>
+
           <div class="hero-v2__aux">
             <button type="button" id="detectLocation" class="hero-v2__link">Use current location</button>
             <div id="locationStatus" class="hero-v2__status" role="status"></div>
@@ -657,23 +674,6 @@
       </button>
     </div>
 
-    <!-- AI module moved below fold to match hero mockup (IDs preserved for JS wiring) -->
-    <div class="hn-editorial-ai hn-editorial-ai--belowfold">
-      <button type="button" class="hn-editorial-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">Describe your ideal day</button>
-      <div id="aiChatPanel" class="hero-ai-panel hn-editorial-ai-panel" hidden>
-        <div class="hero-ai-examples">
-          <button type="button" class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
-          <button type="button" class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
-          <button type="button" class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">Hidden gem, low crowds</button>
-        </div>
-        <div class="hero-ai-input-row">
-          <input id="aiChatInput" type="text" class="ai-chat-input hero-ai-input" placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"' aria-label="Describe your ideal ski day" />
-          <button type="button" id="aiChatBtn" class="btn btn-ai">Ask AI</button>
-        </div>
-        <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
-      </div>
-    </div>
-
     <!-- ═══ BOOKING STRIP ══════════════════════════════════════════════════ -->
     <div id="hnBookingStrip" class="hn-booking-strip hn-results-panel" hidden>
       <div class="hn-booking-left">
@@ -693,16 +693,6 @@
 
     <!-- ═══ RUNNER-UPS ══════════════════════════════════════════════════════ -->
     </div><!-- /.hn-results-region -->
-
-    <!-- ═══ TRUST / CREDIBILITY STRIP ══════════════════════════════════════ -->
-    <div class="wtsn-trust-strip" aria-label="About this tool">
-      <div class="wtsn-trust-inner">
-        <div class="wtsn-trust-item">
-          <svg class="wtsn-trust-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span>Built by a skier who got tired of driving two hours to bad conditions. <a href="/about/" class="wtsn-trust-link">About this tool &rarr;</a></span>
-        </div>
-      </div>
-    </div>
 
     <!-- ═══ REFINE PANEL ════════════════════════════════════════════════════ -->
     <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">

@@ -7344,3 +7344,227 @@ button.vcard-detail-btn:hover,
     width: 100%;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESORT LISTING — dark theme (matches /compare page aesthetic)
+   Applied via #compareSection specificity to override light defaults.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Section shell ─────────────────────────────────────────────────────── */
+#compareSection.compare-section-engine {
+  background: linear-gradient(165deg, rgba(12, 32, 58, 0.97) 0%, rgba(4, 12, 26, 0.99) 100%);
+  border-color: rgba(142, 178, 226, 0.22);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Section head ──────────────────────────────────────────────────────── */
+#compareSection .compare-engine-head {
+  background: transparent;
+  border-bottom-color: rgba(142, 178, 226, 0.15);
+}
+#compareSection .compare-engine-eyebrow {
+  color: #45a2ff;
+}
+#compareSection .compare-engine-title {
+  color: #f0f6fc;
+}
+#compareSection .compare-engine-sub,
+#compareSection #resultCount {
+  color: rgba(240, 246, 252, 0.5);
+}
+
+/* ── Filter toggle button ──────────────────────────────────────────────── */
+#compareSection .compare-filter-btn.filter-toggle-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(142, 178, 226, 0.25);
+  color: rgba(240, 246, 252, 0.78);
+}
+#compareSection .compare-filter-btn.filter-toggle-btn:hover {
+  background: rgba(69, 162, 255, 0.12);
+  border-color: rgba(94, 148, 222, 0.5);
+  color: #45a2ff;
+}
+#compareSection .compare-filter-btn.filter-toggle-btn.filter-toggle-btn--open {
+  background: #45a2ff;
+  border-color: #45a2ff;
+  color: #f0f6fc;
+}
+
+/* ── Filter panel ──────────────────────────────────────────────────────── */
+#compareSection .compare-filter-panel.filter-panel {
+  background: rgba(8, 18, 38, 0.7);
+  border-bottom-color: rgba(142, 178, 226, 0.15);
+}
+#compareSection .fp-label {
+  color: rgba(240, 246, 252, 0.5);
+}
+#compareSection .fp-select {
+  background: rgba(255, 255, 255, 0.07);
+  color: #f0f6fc;
+  border-color: rgba(142, 178, 226, 0.25);
+}
+#compareSection .fp-select option {
+  background: #0b1b2b;
+  color: #f0f6fc;
+}
+#compareSection .fp-clear-btn {
+  color: rgba(240, 246, 252, 0.52);
+  background: transparent;
+  border-color: rgba(142, 178, 226, 0.25);
+}
+#compareSection .fp-clear-btn:hover {
+  color: #45a2ff;
+  border-color: #45a2ff;
+}
+#compareSection .fp-toggle-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(142, 178, 226, 0.25);
+  color: rgba(240, 246, 252, 0.78);
+}
+#compareSection .fp-micro-hint {
+  color: rgba(240, 246, 252, 0.35);
+}
+
+/* ── Controls strip (search + view all) ────────────────────────────────── */
+#compareSection .compare-controls-strip {
+  background: rgba(8, 18, 38, 0.5);
+  border-bottom: 1px solid rgba(142, 178, 226, 0.12);
+}
+#compareSection .table-search-input.compare-search-input {
+  background: rgba(255, 255, 255, 0.07);
+  color: #f0f6fc;
+  border-color: rgba(142, 178, 226, 0.25);
+}
+#compareSection .table-search-input.compare-search-input::placeholder {
+  color: rgba(240, 246, 252, 0.32);
+}
+#compareSection .compare-search-icon {
+  color: rgba(240, 246, 252, 0.35);
+}
+#compareSection .compare-view-all-btn.btn-secondary {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(142, 178, 226, 0.25);
+  color: rgba(240, 246, 252, 0.78);
+}
+#compareSection .compare-view-all-btn.btn-secondary:hover {
+  background: rgba(69, 162, 255, 0.12);
+  border-color: #45a2ff;
+  color: #45a2ff;
+}
+
+/* ── Active filters chips ───────────────────────────────────────────────── */
+#compareSection .active-filter-chip {
+  background: rgba(69, 162, 255, 0.15);
+  border-color: rgba(69, 162, 255, 0.35);
+  color: #93c5fd;
+}
+
+/* ── Table shell & scroll ───────────────────────────────────────────────── */
+#compareSection .compare-table-shell {
+  background: transparent;
+}
+#compareSection .compare-table-scroll.table-wrap {
+  border-top: 1px solid rgba(142, 178, 226, 0.12);
+}
+
+/* ── Table head ─────────────────────────────────────────────────────────── */
+#compareSection .comparison-table thead th {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(240, 246, 252, 0.48);
+  border-bottom-color: rgba(142, 178, 226, 0.15);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+#compareSection .comparison-table thead th.sortable-th {
+  color: rgba(240, 246, 252, 0.48);
+}
+#compareSection .comparison-table thead th.sortable-th:hover {
+  color: #45a2ff;
+  background: rgba(69, 162, 255, 0.08);
+}
+#compareSection .compare-th-muted {
+  color: rgba(240, 246, 252, 0.35);
+}
+
+/* ── Table rows ─────────────────────────────────────────────────────────── */
+#compareSection .comparison-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+#compareSection .comparison-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+#compareSection .comparison-table tbody td {
+  color: rgba(240, 246, 252, 0.72);
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Mountain name + state ──────────────────────────────────────────────── */
+#compareSection .row-name {
+  color: #f0f6fc;
+  font-weight: 600;
+}
+#compareSection .row-name:hover {
+  color: #45a2ff;
+}
+#compareSection .row-sub {
+  color: rgba(240, 246, 252, 0.42);
+}
+
+/* ── Rank number ────────────────────────────────────────────────────────── */
+#compareSection .compare-rank {
+  color: rgba(240, 246, 252, 0.35);
+}
+
+/* ── Sponsored row ──────────────────────────────────────────────────────── */
+#compareSection .comparison-table tbody tr.sponsored-row {
+  background: linear-gradient(90deg, rgba(43, 109, 233, 0.14) 0%, transparent 60%);
+  outline-color: rgba(43, 109, 233, 0.4);
+}
+#compareSection .comparison-table tbody tr.sponsored-row:hover {
+  background: linear-gradient(90deg, rgba(43, 109, 233, 0.22) 0%, rgba(255,255,255,0.04) 60%);
+}
+
+/* ── Lodging link ───────────────────────────────────────────────────────── */
+#compareSection .table-lodging-link {
+  color: rgba(240, 246, 252, 0.38);
+}
+#compareSection .table-lodging-link:hover {
+  color: #45a2ff;
+}
+
+/* ── Checkbox ───────────────────────────────────────────────────────────── */
+#compareSection input[type="checkbox"] {
+  accent-color: #45a2ff;
+}
+
+/* ── Price note ─────────────────────────────────────────────────────────── */
+#compareSection .compare-price-note.price-disclaimer {
+  background: rgba(8, 18, 38, 0.5);
+  border-top-color: rgba(142, 178, 226, 0.12);
+  color: rgba(240, 246, 252, 0.3);
+}
+
+/* ── Location hint / empty states ──────────────────────────────────────── */
+#compareSection .compare-location-hint {
+  color: rgba(240, 246, 252, 0.52);
+  border-color: rgba(142, 178, 226, 0.2);
+  background: rgba(69, 162, 255, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AI MODULE — hero variant (inside search card, under Find My Mountain)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.hn-editorial-ai--hero {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.hn-editorial-ai--hero .hn-editorial-ai-tog {
+  font-size: 13px;
+  color: rgba(240, 246, 252, 0.65);
+  text-decoration-color: rgba(240, 246, 252, 0.3);
+}
+.hn-editorial-ai--hero .hn-editorial-ai-tog:hover {
+  color: rgba(240, 246, 252, 0.9);
+}
