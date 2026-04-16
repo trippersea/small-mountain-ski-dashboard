@@ -2709,6 +2709,7 @@ function renderAllCards(resorts) {
 }
 
 function render() {
+  const _fr = filteredResorts();
   // #region agent log
   __wtsnLog('sd-app.js:render', 'render()', {
     hasOrigin: !!state.origin,
@@ -2717,11 +2718,24 @@ function render() {
     howFar: state.howFar,
     skiDayPreset: state.skiDayPreset,
     snowWeight: state.weights?.snow,
+    stateFilter: state.stateFilter,
+    nightOnly: !!state.nightOnly,
+    priceRange: state.priceRange,
+    tempBucket: state.tempBucket,
+    windBucket: state.windBucket,
+    verticalFilter: state.verticalFilter,
+    weightsValue: state.weights?.value,
     weatherKeys: Object.keys(state.weatherCache || {}).length,
-    driveKeys: Object.keys(state.driveCache || {}).length
+    driveKeys: Object.keys(state.driveCache || {}).length,
+    filteredCount: _fr.length,
+    dom: {
+      resultCount: !!els.resultCount,
+      comparisonBody: !!els.comparisonBody,
+      mobileCardGrid: !!els.mobileCardGrid
+    }
   }, 'pre', 'H3');
   // #endregion agent log
-  renderAllCards(filteredResorts());
+  renderAllCards(_fr);
 }
 
 // #region agent log
