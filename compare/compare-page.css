@@ -1,7 +1,6 @@
 /* Compare page — full-page dark glass over hero photo (mock / design reference) */
 
 :root {
-  --cp-bg-fallback: #030d18;
   --cp-text: #f0f6fc;
   --cp-text-dim: rgba(240, 246, 252, 0.74);
   --cp-text-faint: rgba(240, 246, 252, 0.52);
@@ -17,14 +16,15 @@
 body.compare-page-body {
   margin: 0;
   min-height: 100vh;
-  background-color: var(--cp-bg-fallback);
+  /* Same base + photo alignment as homepage hero-v2; dark wash so glass sections read */
+  background-color: #0b1b2b;
   background-image:
-    linear-gradient(180deg, rgba(2, 8, 20, 0.88) 0%, rgba(2, 10, 22, 0.9) 45%, rgba(2, 12, 24, 0.93) 100%),
+    linear-gradient(180deg, rgba(8, 18, 32, 0.9) 0%, rgba(8, 18, 32, 0.94) 50%, rgba(4, 12, 24, 0.96) 100%),
     url("/hero-bg.jpg");
-  background-position: center top;
-  background-size: cover;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background-position: center top, right 38% top;
+  background-size: cover, cover;
+  background-attachment: fixed, fixed;
+  background-repeat: no-repeat, no-repeat;
   color: var(--cp-text);
   -webkit-font-smoothing: antialiased;
 }
@@ -69,20 +69,43 @@ body.compare-page-body .nav-divider {
 .compare-page-shell {
   width: min(1240px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 28px 0 72px;
+  padding: 0 0 72px;
 }
 
-/* Hero: headline sits on the photo; no outer “page” panel */
+/* Full-bleed hero — same photo stack + left→right scrim as #searchSection.hero-v2 (index.html) */
 .compare-page-hero {
   position: relative;
+  overflow: hidden;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   border: none;
   border-radius: 0;
   box-shadow: none;
-  background: transparent;
+  background: #0b1b2b url("/hero-bg.jpg") right 38% / cover no-repeat;
+  min-height: min(640px, 92vh);
   color: var(--cp-text);
 }
+.compare-page-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(8, 18, 32, 0.97) 0%,
+    rgba(8, 18, 32, 0.93) 32%,
+    rgba(8, 18, 32, 0.62) 52%,
+    rgba(8, 18, 32, 0.18) 72%,
+    rgba(8, 18, 32, 0.04) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
 .compare-page-hero__inner {
-  padding: 0 0 8px;
+  position: relative;
+  z-index: 1;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 72px) clamp(24px, 4.6vw, 60px) clamp(24px, 3.5vw, 40px);
 }
 .compare-page-hero__toprow {
   display: flex;
