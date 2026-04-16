@@ -53,9 +53,11 @@ body.compare-page-body .top-nav .nav-primary:hover {
   color: #f0f6fc;
   background: rgba(255, 255, 255, 0.08);
 }
-body.compare-page-body .nav-brand-name,
-body.compare-page-body .nav-brand-name .nav-brand-next {
+body.compare-page-body .nav-brand-name {
   color: #f0f6fc;
+}
+body.compare-page-body .nav-brand-name .nav-brand-next {
+  color: var(--accent);
 }
 body.compare-page-body .nav-brand-tag {
   color: rgba(200, 220, 240, 0.52);
