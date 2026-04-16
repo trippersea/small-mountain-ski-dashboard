@@ -37,32 +37,30 @@ body.compare-page-body h4 {
   color: var(--cp-text);
 }
 
+/* Match homepage when #searchSection.hero-v2 — same rules as styles.css */
 body.compare-page-body .top-nav {
-  background: rgba(4, 14, 28, 0.88);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 16, 28, 0.82);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
 body.compare-page-body .top-nav a,
 body.compare-page-body .top-nav .nav-primary {
-  color: rgba(240, 246, 252, 0.82);
+  color: rgba(240, 246, 252, 0.78);
 }
 body.compare-page-body .top-nav a:hover,
 body.compare-page-body .top-nav .nav-primary:hover {
   color: #f0f6fc;
   background: rgba(255, 255, 255, 0.08);
 }
-body.compare-page-body .nav-brand-name {
-  color: #f0f6fc;
-}
+body.compare-page-body .nav-brand-name,
 body.compare-page-body .nav-brand-name .nav-brand-next {
-  color: var(--accent);
+  color: #f0f6fc;
 }
 body.compare-page-body .nav-brand-tag {
   color: rgba(200, 220, 240, 0.52);
 }
-body.compare-page-body .nav-link-sep,
-body.compare-page-body .nav-divider {
+body.compare-page-body .nav-link-sep {
   background: rgba(255, 255, 255, 0.12);
 }
 
