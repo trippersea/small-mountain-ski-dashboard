@@ -1922,6 +1922,7 @@ async function injectVerdictWriteup(v) {
 
 // ─── Summary cards ────────────────────────────────────────────────────────────
 function renderSummaryCards(resorts) {
+  if (!els.summaryCards) return;
   els.summaryCards.innerHTML = [
     dbStatHtml('Mountains',   resorts.length,                                           'in the index'),
     dbStatHtml('Epic',        resorts.filter(r => r.passGroup === 'Epic').length,        'resorts'),
