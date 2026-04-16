@@ -33,35 +33,6 @@
     .hn-booking-affiliate { display:block; font-size:11px; color:#7a92a8; margin-top:3px; }
     .affiliate-badge { display:inline-block; font-size:10px; font-weight:500; color:#9ca3af; background:#f0f4f8; padding:1px 6px; border-radius:4px; margin-left:4px; vertical-align:middle; letter-spacing:0.02em; }
 
-    /* ── Empty state redesign ─────────────────────────────────────────────── */
-    .hn-verdict-empty-inner {
-      display: flex; flex-direction: column; align-items: center;
-      text-align: center; gap: 10px;
-    }
-    .hn-verdict-empty-icon { font-size: 32px; line-height: 1; margin-bottom: 2px; }
-    .hn-verdict-empty-locate-btn {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: var(--accent); color: #fff;
-      border: none; border-radius: 999px;
-      padding: 10px 20px; font: 700 14px/1 inherit;
-      cursor: pointer; transition: opacity .12s; margin-top: 4px;
-    }
-    .hn-verdict-empty-locate-btn:hover { opacity: .88; }
-    .hn-verdict-empty-or {
-      font-size: 12px; color: var(--muted); margin: 0;
-    }
-    .hn-verdict-empty-chips {
-      display: flex; flex-wrap: wrap; gap: 6px;
-      justify-content: center; margin-top: 8px;
-      padding-top: 14px; border-top: 1px solid var(--border);
-    }
-    .hn-verdict-empty-chip {
-      font-size: 11px; font-weight: 600;
-      padding: 4px 10px; border-radius: 999px;
-      background: #f0f6ff; border: 1px solid #bfdbfe;
-      color: #1e40af; white-space: nowrap;
-    }
-
     /* ── Trust / credibility strip ──────────────────────────────────────────── */
     .wtsn-trust-strip {
       margin: 0 auto 0;
@@ -526,153 +497,177 @@
   <div class="container">
 
     <!-- ═══ HERO ═══════════════════════════════════════════════════════════ -->
-    <section id="searchSection" class="hero hero-search hn-hero hn-hero-split" aria-label="Find your mountain">
-      <div class="hn-split-grid">
-        <div class="hn-split-panel hn-split-panel--editorial">
-          <div class="hn-editorial-inner">
-          <p class="hn-editorial-kicker"><span class="hn-editorial-kicker-line" aria-hidden="true"></span> LIVE SNOW • DRIVE • CROWD FORECAST</p>
-          <h1 id="heroHeadline" class="hn-editorial-headline">Find the best mountain<br /><span class="hn-editorial-headline-sub">for your next <span class="hn-editorial-headline-brand">ski day</span>.</span></h1>
-          <p class="hn-editorial-support">We combine live snow forecasts, drive times, pass access, and crowd outlook to surface the mountain worth the trip.</p>
+    <section id="searchSection" class="hero hero-search hero-v2 hn-hero-split" aria-label="Find your mountain">
+      <div class="hero-v2__grid">
+        <div class="hero-v2__left">
+          <div class="hero-v2__eyebrow">LIVE SNOW • DRIVE • CROWD FORECAST</div>
+          <h1 class="hero-v2__headline">
+            Find the best mountain<br />
+            for your next <span class="hero-v2__headline-accent">ski day</span>.
+          </h1>
+          <p class="hero-v2__support">
+            We combine live snow forecasts, drive times, pass access,<br />
+            and crowd outlook to surface the mountain worth the trip.
+          </p>
 
-          <div class="hn-guided-form" role="group" aria-label="Trip details">
-            <div class="hn-guided-row">
-              <label class="hn-guided-label" for="originInput">Starting from</label>
-              <div class="hn-guided-input-shell">
-                <span class="hn-guided-input-ico" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.2 7-12a7 7 0 10-14 0c0 6.8 7 12 7 12z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
-                </span>
-                <input id="originInput" type="text" class="hn-guided-input hn-guided-input--shell" placeholder="ZIP code or city, state" autocomplete="off" inputmode="text" />
-                <span class="hn-guided-input-suf" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-              </div>
+          <div class="hero-v2__field">
+            <label class="hero-v2__label" for="originInput">Starting from</label>
+            <div class="hero-v2__location">
+              <span class="hero-v2__location-ico" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.2 7-12a7 7 0 10-14 0c0 6.8 7 12 7 12z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
+              </span>
+              <input id="originInput" class="hero-v2__location-input" type="text" value="Boston, MA" placeholder="ZIP code or city, state" autocomplete="off" inputmode="text" />
+              <span class="hero-v2__location-suf" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
             </div>
-            <!-- Hidden selects kept for JS state compatibility -->
-            <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass"></select>
-            <select id="heroSentenceDay" class="hn-vis-hidden" aria-label="Ski day"></select>
-            <select id="heroSentenceTrip" class="hn-vis-hidden" aria-label="Trip length">
-              <option value="0">Day trip</option>
-              <option value="1">Weekend</option>
-              <option value="2">Any distance</option>
-            </select>
-            <!-- Pill filters -->
-            <div class="hn-hero-pills-section">
-              <div class="hn-hero-pill-group">
-                <span class="hn-hero-pill-label">Pass</span>
-                <div class="hn-hero-pills" data-pill-target="heroPassSelect">
-                  <button type="button" class="hn-hero-pill active" data-value="All">Any</button>
-                  <button type="button" class="hn-hero-pill" data-value="Epic">Epic</button>
-                  <button type="button" class="hn-hero-pill" data-value="Ikon">Ikon</button>
-                  <button type="button" class="hn-hero-pill" data-value="Indy">Indy</button>
-                </div>
-              </div>
-              <div class="hn-hero-pill-group">
-                <span class="hn-hero-pill-label">Trip</span>
-                <div class="hn-hero-pills" data-pill-target="heroSentenceTrip">
-                  <button type="button" class="hn-hero-pill active" data-value="0">Day trip</button>
-                  <button type="button" class="hn-hero-pill" data-value="1">Weekend</button>
-                  <button type="button" class="hn-hero-pill" data-value="2">Any distance</button>
-                </div>
-              </div>
+          </div>
+
+          <div class="hero-v2__pill-row" aria-label="Pass">
+            <div class="hero-v2__pill-label">Pass</div>
+            <div class="hero-v2__pills" id="heroV2PassPills">
+              <button type="button" class="hero-v2__pill is-active" data-pass="All">Any</button>
+              <button type="button" class="hero-v2__pill" data-pass="Epic">Epic</button>
+              <button type="button" class="hero-v2__pill" data-pass="Ikon">Ikon</button>
+              <button type="button" class="hero-v2__pill" data-pass="Indy">Indy</button>
+            </div>
+          </div>
+
+          <div class="hero-v2__pill-row" aria-label="Trip">
+            <div class="hero-v2__pill-label">Trip</div>
+            <div class="hero-v2__pills" id="heroV2TripPills">
+              <button type="button" class="hero-v2__pill is-active" data-trip="0">Day trip</button>
+              <button type="button" class="hero-v2__pill" data-trip="1">Weekend</button>
+              <button type="button" class="hero-v2__pill" data-trip="2">Any distance</button>
+            </div>
+          </div>
+
+          <div class="hero-v2__defaults" aria-label="Defaults for this search">
+            <div class="hero-v2__defaults-head">
+              <div class="hero-v2__defaults-label">Defaults for this search</div>
+              <button type="button" class="hero-v2__change" id="heroV2DefaultsChange" aria-expanded="false" aria-controls="heroV2DefaultsEditor">Change</button>
+            </div>
+            <div class="hero-v2__defaults-row">
+              <button type="button" class="hero-v2__chip" id="heroV2DayChip" aria-controls="heroV2DefaultsEditor">
+                <span class="hero-v2__chip-ico" aria-hidden="true">📅</span>
+                <span id="heroV2DayLabel">Ski day: Friday</span>
+              </button>
+              <button type="button" class="hero-v2__chip" id="heroV2PriorityChip" aria-controls="heroV2DefaultsEditor">
+                <span class="hero-v2__chip-ico" aria-hidden="true">🎛</span>
+                <span id="heroV2PriorityLabel">Priority: Best fit</span>
+              </button>
             </div>
 
-            <!-- Defaults row: Day + Priority are active defaults (not optional) -->
-            <div class="hn-hero-defaults" aria-label="Defaults for this search">
-              <div class="hn-hero-defaults-head">
-                <div class="hn-hero-defaults-label">Defaults for this search</div>
-                <button type="button" class="hn-hero-defaults-change" id="heroDefaultsChange" aria-expanded="false" aria-controls="heroDefaultsEditor">Change</button>
-              </div>
-              <div class="hn-hero-defaults-chips">
-                <button type="button" class="hn-hero-default-chip" id="heroDefaultDayChip" aria-controls="heroDefaultsEditor">
-                  <span class="hn-hero-default-chip-ico" aria-hidden="true">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M7 3v3M17 3v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 8h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 5h12a2 2 0 012 2v13a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z" stroke="currentColor" stroke-width="2"/></svg>
-                  </span>
-                  <span id="heroDefaultDayLabel">Ski day: —</span>
-                </button>
-                <button type="button" class="hn-hero-default-chip" id="heroDefaultPriorityChip" aria-controls="heroDefaultsEditor">
-                  <span class="hn-hero-default-chip-ico" aria-hidden="true">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 7h10M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14 7l6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="2.5" fill="currentColor"/><circle cx="8" cy="17" r="2.5" fill="currentColor"/></svg>
-                  </span>
-                  <span id="heroDefaultPriorityLabel">Priority: —</span>
-                </button>
-              </div>
-
-              <!-- Editor (collapsed by default): keeps existing hero pill wiring -->
-              <div id="heroDefaultsEditor" class="hn-hero-defaults-editor" hidden>
-                <div class="hn-hero-pill-group hn-hero-pill-group--secondary">
-                  <span class="hn-hero-pill-label hn-hero-pill-label--secondary">Ski day</span>
-                  <div class="hn-hero-pills" data-pill-target="heroSentenceDay">
-                    <button type="button" class="hn-hero-pill active" data-value="weekday">Weekday</button>
-                    <button type="button" class="hn-hero-pill" data-value="friday">Friday</button>
-                    <button type="button" class="hn-hero-pill" data-value="saturday">Saturday</button>
-                    <button type="button" class="hn-hero-pill" data-value="sunday">Sunday</button>
-                  </div>
+            <div id="heroV2DefaultsEditor" class="hero-v2__defaults-editor" hidden>
+              <div class="hero-v2__mini-row">
+                <div class="hero-v2__mini-label">Ski day</div>
+                <div class="hero-v2__mini-pills" id="heroV2DayPills">
+                  <button type="button" class="hero-v2__mini-pill" data-day="weekday">Weekday</button>
+                  <button type="button" class="hero-v2__mini-pill is-active" data-day="friday">Friday</button>
+                  <button type="button" class="hero-v2__mini-pill" data-day="saturday">Saturday</button>
+                  <button type="button" class="hero-v2__mini-pill" data-day="sunday">Sunday</button>
                 </div>
-                <div class="hn-hero-pill-group hn-hero-pill-group--secondary">
-                  <span class="hn-hero-pill-label hn-hero-pill-label--secondary">Priority</span>
-                  <div class="hn-hero-pills" data-pill-target="heroSnowSelect">
-                    <button type="button" class="hn-hero-pill active" data-value="1">Best fit</button>
-                    <button type="button" class="hn-hero-pill" data-value="10">Fresh snow</button>
-                    <button type="button" class="hn-hero-pill" data-value="5">Quiet slopes</button>
-                  </div>
+              </div>
+              <div class="hero-v2__mini-row">
+                <div class="hero-v2__mini-label">Priority</div>
+                <div class="hero-v2__mini-pills" id="heroV2PriorityPills">
+                  <button type="button" class="hero-v2__mini-pill is-active" data-priority="1">Best fit</button>
+                  <button type="button" class="hero-v2__mini-pill" data-priority="10">Fresh snow</button>
+                  <button type="button" class="hero-v2__mini-pill" data-priority="5">Quiet slopes</button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="hn-editorial-actions">
-            <div class="hn-editorial-actions-main">
-              <button type="button" id="setLocation" class="hn-editorial-cta"><span class="hn-editorial-cta-label">Find my mountain</span></button>
-              <div class="hn-hero-trust" role="note" aria-label="Trust and methodology notes">
-                <div class="hn-hero-trust-line">
-                  <span class="hn-hero-trust-ico" aria-hidden="true">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-                  </span>
-                  <span>Live forecast • Real drive times • Crowd model</span>
-                </div>
-                <div class="hn-hero-trust-sub">Rankings not sponsored</div>
+          <div class="hero-v2__cta-row">
+            <button type="button" id="setLocation" class="hero-v2__cta">Find my mountain <span aria-hidden="true">→</span></button>
+            <div class="hero-v2__trust" role="note" aria-label="Trust and methodology notes">
+              <div class="hero-v2__trust-top">
+                <span class="hero-v2__trust-ico" aria-hidden="true">🛡</span>
+                <span>Live forecast • Real drive times • Crowd model</span>
               </div>
-            </div>
-            <div class="hn-editorial-actions-secondary">
-              <button type="button" id="detectLocation" class="hn-editorial-link">Use current location</button>
+              <div class="hero-v2__trust-sub">Rankings not sponsored</div>
             </div>
           </div>
 
+          <div class="hero-v2__aux">
+            <button type="button" id="detectLocation" class="hero-v2__link">Use current location</button>
+            <div id="locationStatus" class="hero-v2__status" role="status"></div>
+          </div>
+
+          <!-- Hidden selects preserved for state compatibility -->
+          <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass"></select>
+          <select id="heroSentenceTrip" class="hn-vis-hidden" aria-label="Trip length">
+            <option value="0">Day trip</option>
+            <option value="1">Weekend</option>
+            <option value="2">Any distance</option>
+          </select>
+          <select id="heroSentenceDay" class="hn-vis-hidden" aria-label="Ski day"></select>
           <select id="passFilter" class="hn-vis-hidden" aria-label="Pass filter sync"><option value="All" selected>All</option></select>
-          <select id="heroSnowSelect" class="hn-vis-hidden" aria-label="Snow preference"><option value="1">Any Snow</option><option value="5">3&quot;+ Matters</option><option value="10">6&quot;+ Chaser</option><option value="15">Powder Day</option></select>
-          <label class="remember-location-label visually-hidden" id="rememberLocationLabel"><input type="checkbox" id="rememberLocation" />Remember this location<span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info<span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span></span></label>
-          <div id="locationStatus" class="hn-editorial-status" role="status"></div>
-          </div>
+          <select id="heroSnowSelect" class="hn-vis-hidden" aria-label="Snow preference">
+            <option value="1">Any Snow</option>
+            <option value="5">3&quot;+ Matters</option>
+            <option value="10">6&quot;+ Chaser</option>
+            <option value="15">Powder Day</option>
+          </select>
         </div>
 
-        <div class="hn-split-panel hn-split-panel--visual">
-          <div class="hn-split-visual-bg" aria-hidden="true"></div>
-          <div class="hn-split-visual-meta" aria-hidden="true"><span class="hn-split-visual-coords">Live snow &amp; drive scores</span></div>
-          <section id="verdictSection" class="verdict-section hn-hero-verdict-section hn-verdict-pre-location" aria-label="Top mountain pick">
-            <div class="hn-hero-verdict-dock">
-              <div id="heroVerdictEmpty" class="hn-hero-verdict-empty">
-                <div class="hn-verdict-empty-inner">
-                  <div class="hn-verdict-empty-icon" aria-hidden="true">⛷</div>
-                  <p class="hn-hero-verdict-empty-title">Your top pick appears here</p>
-                  <p class="hn-hero-verdict-empty-sub">We score 250+ mountains on live snow, your exact drive time, crowd outlook, and pass — then surface the one worth the trip.</p>
-                  <button type="button" class="hn-verdict-empty-locate-btn" id="verdictEmptyLocateBtn">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-                    Use my location
-                  </button>
-                  <p class="hn-verdict-empty-or">or type a ZIP or city above ↑</p>
+        <div class="hero-v2__right" aria-label="Top pick">
+          <div class="hero-v2__card">
+            <div class="hero-v2__top-pill">TOP PICK • FROM BOSTON</div>
+            <div class="hero-v2__card-name">Wachusett</div>
+            <div class="hero-v2__card-rec">Closest solid option for tomorrow.</div>
+            <p class="hero-v2__card-body">
+              No fresh snow means most mountains will ski similarly tomorrow. Wachusett gets you on snow fastest with light crowds and no pass required.
+            </p>
+
+            <div class="hero-v2__stats">
+              <div class="hero-v2__stat">
+                <div class="hero-v2__stat-top">1h 48m</div>
+                <div class="hero-v2__stat-sub">drive</div>
+              </div>
+              <div class="hero-v2__stat">
+                <div class="hero-v2__stat-top">Dry forecast</div>
+                <div class="hero-v2__stat-sub">high 38°F</div>
+              </div>
+              <div class="hero-v2__stat">
+                <div class="hero-v2__stat-top">Light crowds</div>
+                <div class="hero-v2__stat-sub">great choice</div>
+              </div>
+            </div>
+
+            <div class="hero-v2__card-actions">
+              <button type="button" class="hero-v2__card-cta">See full conditions <span aria-hidden="true">→</span></button>
+              <button type="button" class="hero-v2__card-link">Compare nearby options</button>
+            </div>
+
+            <div class="hero-v2__divider" role="separator" aria-hidden="true"></div>
+
+            <div class="hero-v2__runnerups">
+              <div class="hero-v2__runnerups-label">ALSO CONSIDER</div>
+              <div class="hero-v2__runnerups-grid">
+                <div class="hero-v2__mini">
+                  <div class="hero-v2__mini-name">Gunstock</div>
+                  <div class="hero-v2__mini-sub">1h 56m • Quiet</div>
                 </div>
-                <div class="hn-verdict-empty-chips">
-                  <span class="hn-verdict-empty-chip">❄ Live snow forecast</span>
-                  <span class="hn-verdict-empty-chip">🚗 Real drive times</span>
-                  <span class="hn-verdict-empty-chip">👥 Crowd outlook</span>
-                  <span class="hn-verdict-empty-chip">🎫 Pass coverage</span>
+                <div class="hero-v2__mini">
+                  <div class="hero-v2__mini-name">Pats Peak</div>
+                  <div class="hero-v2__mini-sub">2h 01m • Quiet</div>
+                </div>
+                <div class="hero-v2__mini">
+                  <div class="hero-v2__mini-name">Ragged Mountain</div>
+                  <div class="hero-v2__mini-sub">2h 16m • Quiet</div>
                 </div>
               </div>
-              <div id="verdictCard" class="hn-verdict-card-root"></div>
             </div>
-          </section>
+          </div>
         </div>
       </div>
+    </section>
+
+    <!-- Legacy verdict container kept for JS compatibility, not rendered in hero -->
+    <section id="verdictSection" class="hn-vis-hidden" aria-hidden="true">
+      <div id="verdictCard"></div>
     </section>
 
     <!-- ═══ RESULTS & DISCOVERY (unified region) ═══════════════════════════ -->

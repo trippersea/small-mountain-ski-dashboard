@@ -329,6 +329,108 @@ function wireHeroDefaultsRow() {
   });
 }
 
+// ─── Homepage Hero V2 (replacement markup) ────────────────────────────────────
+function syncHeroV2UI() {
+  const root = document.getElementById('searchSection');
+  if (!root || !root.classList.contains('hero-v2')) return;
+
+  // Active pills (Pass / Trip)
+  document.querySelectorAll('#heroV2PassPills .hero-v2__pill[data-pass]').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.pass === (state.passFilter || 'All'));
+  });
+  document.querySelectorAll('#heroV2TripPills .hero-v2__pill[data-trip]').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.trip === String(state.howFar ?? 0));
+  });
+
+  // Defaults chips
+  const dayLblEl = document.getElementById('heroV2DayLabel');
+  const prLblEl  = document.getElementById('heroV2PriorityLabel');
+  if (dayLblEl) {
+    const v = state.skiDayPreset || smartDefaultWhenVal();
+    const lab = (HERO_DAY_LABELS[v] || String(v));
+    dayLblEl.textContent = `Ski day: ${lab}`;
+  }
+  if (prLblEl) {
+    const snowVal = (state.weights && state.weights.snow != null) ? state.weights.snow : 1;
+    const prLab = (HERO_PRIORITY_LABELS[Number(snowVal)] || heroPriorityLabelFromSnowWeight(snowVal));
+    prLblEl.textContent = `Priority: ${prLab}`;
+  }
+
+  // Editor active pills
+  document.querySelectorAll('#heroV2DayPills .hero-v2__mini-pill[data-day]').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.day === (state.skiDayPreset || smartDefaultWhenVal()));
+  });
+  document.querySelectorAll('#heroV2PriorityPills .hero-v2__mini-pill[data-priority]').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.priority === String(state.weights?.snow ?? 1));
+  });
+}
+
+function setHeroV2EditorOpen(open) {
+  const editor = document.getElementById('heroV2DefaultsEditor');
+  const change = document.getElementById('heroV2DefaultsChange');
+  if (!editor || !change) return;
+  editor.hidden = !open;
+  change.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function wireHeroV2() {
+  const root = document.getElementById('searchSection');
+  if (!root || !root.classList.contains('hero-v2')) return;
+
+  const passSel = document.getElementById('heroPassSelect');
+  const tripSel = document.getElementById('heroSentenceTrip');
+  const daySel  = document.getElementById('heroSentenceDay');
+  const prSel   = document.getElementById('heroSnowSelect');
+
+  document.getElementById('heroV2PassPills')?.addEventListener('click', e => {
+    const btn = e.target.closest('.hero-v2__pill[data-pass]');
+    if (!btn || !passSel) return;
+    passSel.value = btn.dataset.pass;
+    passSel.dispatchEvent(new Event('change', { bubbles: true }));
+    syncHeroV2UI();
+  });
+
+  document.getElementById('heroV2TripPills')?.addEventListener('click', e => {
+    const btn = e.target.closest('.hero-v2__pill[data-trip]');
+    if (!btn || !tripSel) return;
+    tripSel.value = btn.dataset.trip;
+    tripSel.dispatchEvent(new Event('change', { bubbles: true }));
+    syncHeroV2UI();
+  });
+
+  const change = document.getElementById('heroV2DefaultsChange');
+  const dayChip = document.getElementById('heroV2DayChip');
+  const prChip  = document.getElementById('heroV2PriorityChip');
+  const editor  = document.getElementById('heroV2DefaultsEditor');
+  if (change && editor) {
+    change.addEventListener('click', () => setHeroV2EditorOpen(editor.hidden));
+    dayChip?.addEventListener('click', () => setHeroV2EditorOpen(true));
+    prChip?.addEventListener('click', () => setHeroV2EditorOpen(true));
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') setHeroV2EditorOpen(false); });
+  }
+
+  document.getElementById('heroV2DayPills')?.addEventListener('click', e => {
+    const btn = e.target.closest('.hero-v2__mini-pill[data-day]');
+    if (!btn || !daySel) return;
+    daySel.value = btn.dataset.day;
+    daySel.dispatchEvent(new Event('change', { bubbles: true }));
+    syncHeroV2UI();
+  });
+  document.getElementById('heroV2PriorityPills')?.addEventListener('click', e => {
+    const btn = e.target.closest('.hero-v2__mini-pill[data-priority]');
+    if (!btn || !prSel) return;
+    prSel.value = btn.dataset.priority;
+    prSel.dispatchEvent(new Event('change', { bubbles: true }));
+    syncHeroV2UI();
+  });
+
+  // Keep in sync with existing state changes.
+  passSel?.addEventListener('change', syncHeroV2UI);
+  tripSel?.addEventListener('change', syncHeroV2UI);
+  daySel?.addEventListener('change', syncHeroV2UI);
+  prSel?.addEventListener('change', syncHeroV2UI);
+}
+
 // ─── Element cache ────────────────────────────────────────────────────────────
 const els = {
   verdictSection:      $('verdictSection'),
@@ -1044,6 +1146,7 @@ function syncPlannerControls() {
   syncWeekendLodgingStrip(computeVerdictStaged(filteredResorts()));
   syncHeroPills();
   syncHeroDefaultsRow();
+  syncHeroV2UI();
 }
 
 function updateStateFromPlannerPriorityButton(key, btn) {
@@ -2758,6 +2861,7 @@ function syncHeroPills() {
 function wireEvents() {
   wireHeroPills();
   wireHeroDefaultsRow();
+  wireHeroV2();
   // Weekend lodging strip affiliate tracking
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('a.hn-booking-btn');
@@ -3127,6 +3231,7 @@ function initialize() {
   wireEvents();
   wireHeroSentenceDay();
   updateHeroHeadline();
+  syncHeroV2UI();
   render();
 
   if (state.origin) { applyHaversineEstimates(); loadDriveTimes(); }
