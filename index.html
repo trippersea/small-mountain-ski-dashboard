@@ -530,14 +530,22 @@
       <div class="hn-split-grid">
         <div class="hn-split-panel hn-split-panel--editorial">
           <div class="hn-editorial-inner">
-          <p class="hn-editorial-kicker"><span class="hn-editorial-kicker-line" aria-hidden="true"></span> Real-time mountain recommendations</p>
+          <p class="hn-editorial-kicker"><span class="hn-editorial-kicker-line" aria-hidden="true"></span> LIVE SNOW • DRIVE • CROWD FORECAST</p>
           <h1 id="heroHeadline" class="hn-editorial-headline">Find the best mountain<br /><span class="hn-editorial-headline-sub">for your next <span class="hn-editorial-headline-brand">ski day</span>.</span></h1>
-          <p class="hn-editorial-support">We rank snow, drive time, pass access, and crowds to surface the best match.</p>
+          <p class="hn-editorial-support">We combine live snow forecasts, drive times, pass access, and crowd outlook to surface the mountain worth the trip.</p>
 
           <div class="hn-guided-form" role="group" aria-label="Trip details">
             <div class="hn-guided-row">
               <label class="hn-guided-label" for="originInput">Starting from</label>
-              <input id="originInput" type="text" class="hn-guided-input" placeholder="ZIP code or city, state" autocomplete="off" inputmode="text" />
+              <div class="hn-guided-input-shell">
+                <span class="hn-guided-input-ico" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.2 7-12a7 7 0 10-14 0c0 6.8 7 12 7 12z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
+                </span>
+                <input id="originInput" type="text" class="hn-guided-input hn-guided-input--shell" placeholder="ZIP code or city, state" autocomplete="off" inputmode="text" />
+                <span class="hn-guided-input-suf" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </div>
             </div>
             <!-- Hidden selects kept for JS state compatibility -->
             <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass"></select>
@@ -575,8 +583,18 @@
                 <button type="button" class="hn-hero-defaults-change" id="heroDefaultsChange" aria-expanded="false" aria-controls="heroDefaultsEditor">Change</button>
               </div>
               <div class="hn-hero-defaults-chips">
-                <button type="button" class="hn-hero-default-chip" id="heroDefaultDayChip" aria-controls="heroDefaultsEditor">Ski day: —</button>
-                <button type="button" class="hn-hero-default-chip" id="heroDefaultPriorityChip" aria-controls="heroDefaultsEditor">Priority: —</button>
+                <button type="button" class="hn-hero-default-chip" id="heroDefaultDayChip" aria-controls="heroDefaultsEditor">
+                  <span class="hn-hero-default-chip-ico" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M7 3v3M17 3v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 8h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 5h12a2 2 0 012 2v13a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z" stroke="currentColor" stroke-width="2"/></svg>
+                  </span>
+                  <span id="heroDefaultDayLabel">Ski day: —</span>
+                </button>
+                <button type="button" class="hn-hero-default-chip" id="heroDefaultPriorityChip" aria-controls="heroDefaultsEditor">
+                  <span class="hn-hero-default-chip-ico" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 7h10M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14 7l6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="2.5" fill="currentColor"/><circle cx="8" cy="17" r="2.5" fill="currentColor"/></svg>
+                  </span>
+                  <span id="heroDefaultPriorityLabel">Priority: —</span>
+                </button>
               </div>
 
               <!-- Editor (collapsed by default): keeps existing hero pill wiring -->
@@ -603,7 +621,18 @@
           </div>
 
           <div class="hn-editorial-actions">
-            <button type="button" id="setLocation" class="hn-editorial-cta"><span class="hn-editorial-cta-label">Find My Mountain</span></button>
+            <div class="hn-editorial-actions-main">
+              <button type="button" id="setLocation" class="hn-editorial-cta"><span class="hn-editorial-cta-label">Find my mountain</span></button>
+              <div class="hn-hero-trust" role="note" aria-label="Trust and methodology notes">
+                <div class="hn-hero-trust-line">
+                  <span class="hn-hero-trust-ico" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                  </span>
+                  <span>Live forecast • Real drive times • Crowd model</span>
+                </div>
+                <div class="hn-hero-trust-sub">Rankings not sponsored</div>
+              </div>
+            </div>
             <div class="hn-editorial-actions-secondary">
               <button type="button" id="detectLocation" class="hn-editorial-link">Use current location</button>
             </div>

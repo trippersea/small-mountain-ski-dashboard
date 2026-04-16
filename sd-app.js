@@ -266,17 +266,17 @@ function heroPriorityLabelFromSnowWeight(v) {
 }
 
 function syncHeroDefaultsRow() {
-  const dayChip = document.getElementById('heroDefaultDayChip');
-  const prChip  = document.getElementById('heroDefaultPriorityChip');
-  if (!dayChip || !prChip) return;
+  const dayLblEl = document.getElementById('heroDefaultDayLabel');
+  const prLblEl  = document.getElementById('heroDefaultPriorityLabel');
+  if (!dayLblEl || !prLblEl) return;
 
   const dayVal = state.skiDayPreset || smartDefaultWhenVal();
   const dayLbl = HERO_DAY_LABELS[dayVal] || String(dayVal);
-  dayChip.textContent = `Ski day: ${dayLbl}`;
+  dayLblEl.textContent = `Ski day: ${dayLbl}`;
 
   const snowVal = (state.weights && state.weights.snow != null) ? state.weights.snow : 1;
   const prLbl = heroPriorityLabelFromSnowWeight(snowVal);
-  prChip.textContent = `Priority: ${prLbl}`;
+  prLblEl.textContent = `Priority: ${prLbl}`;
 }
 
 function setHeroDefaultsEditorOpen(open, opts = {}) {
@@ -1346,11 +1346,9 @@ function renderVerdict(resorts) {
   trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
 
-  const _passEw   = state.passFilter !== 'All' ? (state.passFilter + ' Pass') : null;
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
-  const _eyebrowBase = ['Top pick', _passEw, _cityEw].filter(Boolean).join(' · ').toUpperCase();
-  const _eyebrowRaw  = !state.origin ? `${_eyebrowBase} · ADD YOUR TOWN` : _eyebrowBase;
-  const _eyebrow     = esc(_eyebrowRaw);
+  const _fromCity = _cityEw || 'your town';
+  const _topPill  = esc(`TOP PICK • FROM ${_fromCity}`);
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
 
   const tierConfig = {
@@ -1372,7 +1370,7 @@ function renderVerdict(resorts) {
       </div>`
     : '';
   const _lodgingUrl = bookingUrl(resort);
-  const lodgingModuleHtml = state.howFar === 1
+  const lodgingModuleHtml = state.howFar === 1 && !splitHero
     ? `<div class="vcard-lodging-slim">
         <a class="vcard-lodging-slim-link" href="${_lodgingUrl}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_lodging" data-track-resort="${esc(resort.name)}">Find lodging near ${esc(_bookName)} &rarr;</a>
         <span class="vcard-lodging-slim-tag">weekend &middot; affiliate</span>
@@ -1422,27 +1420,25 @@ function renderVerdict(resorts) {
     : 'vb-verdict-badge--skip';
 
   const _fitWord = fitLabel(scoreNum);
-  let primaryBtn; let secondaryBtn;
-  if (tier === 'great' || tier === 'good') {
-    primaryBtn = resort.website
-      ? `<a class="vcard-book-btn" href="${resort.website}" target="_blank" rel="noopener">Book ${esc(_bookName)} &rarr;</a>`
-      : `<a class="vcard-book-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" onclick="trackSponsorClick('${esc(resort.name)}','verdict_book_btn','${esc(resort.id)}','')" >Find lodging &rarr; <span class="affiliate-badge">affiliate</span></a>`;
-    secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictDetailBtn">Full conditions</button>`;
-  } else if (tier === 'marginal') {
-    primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
-    secondaryBtn = resort.website
-      ? `<a class="vcard-detail-btn" href="${resort.website}" target="_blank" rel="noopener">Visit ${esc(_bookName)}</a>`
-      : '';
-  } else {
-    primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
-    secondaryBtn = '';
-  }
+  // Match hero mock: primary = full conditions, secondary = compare nearby options.
+  const primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
+  const secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictSeeAllRunnersBtn">Compare nearby options</button>`;
 
   const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
   const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock' : '';
   const _vcardHeroLightCls = ''; // Always dark — never light mode
   const _verdictPhotoStyle = resortPhotoStyle(resort, 'linear-gradient(180deg,rgba(8,16,28,.18) 0%,rgba(8,16,28,.62) 50%,rgba(8,16,28,.94) 100%)');
   const _heroDashStyleAttr = _verdictPhotoStyle ? ` style="${_verdictPhotoStyle}"` : '';
+
+  const _recLine = esc(headline || '');
+  const _bodyCopy = esc([detail, ...subPoints].filter(Boolean).join(' '));
+  const _driveTop = driveText ? esc(driveText) : '—';
+  const _wxTop = esc(snowPillText);
+  const _wxSub = _wxVerdict?.forecast?.[targetForecastIndex()]
+    ? `high ${Math.round(_wxVerdict.forecast[targetForecastIndex()].hi)}\u00b0F`
+    : 'forecast';
+  const _crowdTop = crowdLbl === 'Quiet' ? 'Light crowds' : crowdLbl === 'Avoid' ? 'Packed' : crowdLbl === 'Busy' ? 'Busy' : 'Moderate crowds';
+  const _crowdSub = crowdLbl === 'Quiet' ? 'great choice' : crowdLbl === 'Avoid' ? 'avoid if you can' : crowdLbl === 'Busy' ? 'plan ahead' : 'plan ahead';
 
   // ── Runner-up mini strip — always-on teaser inside the verdict card ─────────
   const runnerStripHtml = runningItems.length > 0 ? (() => {
@@ -1455,20 +1451,15 @@ function renderVerdict(resorts) {
         : 'crowd-mod-chip';
       return `<button type="button" class="vcard-mini-runner" data-mini-runner-id="${esc(item.resort.id)}">
         <span class="vmr-name">${esc(item.resort.name)}</span>
-        ${_rDrive ? `<span class="vmr-drive">${esc(_rDrive)} away</span>` : ''}
-        <span class="vmr-crowd-mini ${_crowdCls}">${esc(cf.label)}</span>
+        <span class="vmr-drive">${_rDrive ? `${esc(_rDrive)} \u2022 ` : ''}${esc(cf.label)}</span>
       </button>`;
     }).join('');
     return `<div class="vcard-runners-strip">
       <div class="vcard-runners-header">
-        <span class="vcard-runners-label">Also consider</span>
+        <span class="vcard-runners-label">ALSO CONSIDER</span>
       </div>
       <div class="vcard-runners-mini">
         ${miniCards}
-        <button type="button" class="vcard-runners-see-all" id="verdictSeeAllRunners">
-          <span class="vcard-runners-see-all-arrow">↓</span>
-          <span>See all</span>
-        </button>
       </div>
     </div>`;
   })() : '';
@@ -1476,16 +1467,30 @@ function renderVerdict(resorts) {
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--tier-${tier}${_vcardHeroLightCls}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
-        <div class="vb-verdict-badge ${verdictBadgeCls}">${esc(verdictBadgeText)}</div>
-        <div class="vcard-eyebrow-dash">${_eyebrow}</div>
+        <div class="vcard-top-pill">${_topPill}</div>
         ${zipNudgeHtml}
         <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
-        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading"></div>
-        <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
-        <div class="vcard-stat-row">
-          ${driveText ? `<span class="vcard-stat-item">${esc(driveText)} drive</span><span class="vcard-stat-sep">·</span>` : ''}<span class="vcard-stat-item">${esc(snowPillText)}</span>
-          <span class="vcard-stat-sep">·</span>${crowdPill}
+        ${_recLine ? `<div class="vcard-rec-line">${_recLine}</div>` : ''}
+        ${_bodyCopy ? `<p class="vcard-bodycopy">${_bodyCopy}</p>` : ''}
+        <div class="vcard-stats3" role="list" aria-label="Top pick stats">
+          <div class="vcard-stat3" role="listitem">
+            <span class="vcard-stat3-ico" aria-hidden="true">🚗</span>
+            <span class="vcard-stat3-top">${_driveTop}</span>
+            <span class="vcard-stat3-sub">drive</span>
+          </div>
+          <div class="vcard-stat3" role="listitem">
+            <span class="vcard-stat3-ico" aria-hidden="true">❄</span>
+            <span class="vcard-stat3-top">${_wxTop}</span>
+            <span class="vcard-stat3-sub">${esc(_wxSub)}</span>
+          </div>
+          <div class="vcard-stat3" role="listitem">
+            <span class="vcard-stat3-ico" aria-hidden="true">👥</span>
+            <span class="vcard-stat3-top">${esc(_crowdTop)}</span>
+            <span class="vcard-stat3-sub">${esc(_crowdSub)}</span>
+          </div>
         </div>
+        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
+        <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
       </div>
       <div class="vcard-body vcard-body-dash">
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
@@ -1493,6 +1498,7 @@ function renderVerdict(resorts) {
           ${primaryBtn}
           ${secondaryBtn}
         </div>
+        <div class="vcard-divider" role="separator" aria-hidden="true"></div>
         ${guidanceInsetHtml}
         ${lodgingModuleHtml}
         ${runnerStripHtml}
@@ -1517,6 +1523,11 @@ function renderVerdict(resorts) {
 
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_name_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
+  $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
+    const run = document.getElementById('hnRunnerUpSection');
+    if (run && !run.hidden) run.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    trackFilterEvent('engagement', 'compare_nearby_options');
+  });
 
   // Mini runner-up cards — open detail panel on click
   els.verdictCard.querySelectorAll('.vcard-mini-runner[data-mini-runner-id]').forEach(btn => {
@@ -1527,12 +1538,7 @@ function renderVerdict(resorts) {
       renderDetail({ scroll: true });
     });
   });
-  // "See all" scrolls down to the full runner-up section
-  document.getElementById('verdictSeeAllRunners')?.addEventListener('click', () => {
-    const run = document.getElementById('hnRunnerUpSection');
-    if (run && !run.hidden) run.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    trackFilterEvent('engagement', 'see_all_runners');
-  });
+  // Runner-up strip is inside the verdict card; secondary action scrolls to runner-ups below.
   $('verdictRefineGuidanceBtn')?.addEventListener('click', () => {
     const panel = els.plannerSection;
     if (!panel) return;
