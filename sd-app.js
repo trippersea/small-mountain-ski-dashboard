@@ -1227,6 +1227,63 @@ function scrollToResultsAfterLocationSet() {
   } catch (e) {}
 }
 
+// ─── Compare page session writer ─────────────────────────────────────────────
+// Serializes the current verdict + runners into localStorage so compare/index.html
+// can read and render them without re-running the scoring engine.
+function saveCompareSession(v, runningItems) {
+  if (!v || !state.origin) return;
+  const { tier, headline, detail, resort, driveText, drive, tomorrowIn, stormTotal, breakdown } = v;
+  const wxVerdict = state.weatherCache[resort.id]?.data;
+  const crowdV    = crowdForecast(resort, wxVerdict);
+
+  const session = {
+    ts:           Date.now(),
+    origin:       { ...state.origin },
+    passFilter:   state.passFilter,
+    howFar:       state.howFar,
+    skiDayPreset: state.skiDayPreset,
+    topPick: {
+      id:         resort.id,
+      name:       resort.name,
+      state:      resort.state,
+      passGroup:  resort.passGroup || 'Independent',
+      price:      resort.price || null,
+      tier,
+      headline,
+      detail,
+      driveText:  driveText || '—',
+      driveMins:  drive,
+      tomorrowIn,
+      stormTotal,
+      score:      breakdown ? Math.round(breakdown.score) : null,
+      crowdLabel: crowdV.label,
+      wxForecast: wxVerdict?.forecast || [],
+    },
+    runners: (runningItems || []).map(item => {
+      const rWx    = state.weatherCache[item.resort.id]?.data;
+      const rCrowd = crowdForecast(item.resort, rWx);
+      const rStorm = (rWx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
+      const rTomIn = rWx?.forecast?.[0]?.snow || 0;
+      return {
+        id:         item.resort.id,
+        name:       item.resort.name,
+        state:      item.resort.state,
+        passGroup:  item.resort.passGroup || 'Independent',
+        price:      item.resort.price || null,
+        driveText:  getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null,
+        driveMins:  getDriveMins(item.resort.id),
+        score:      item.breakdown ? Math.round(item.breakdown.score) : null,
+        crowdLabel: rCrowd.label,
+        stormTotal: Math.round(rStorm * 10) / 10,
+        tomorrowIn: Math.round(rTomIn * 10) / 10,
+        wxForecast: rWx?.forecast || [],
+      };
+    }),
+  };
+
+  try { localStorage.setItem('wtsn-compare', JSON.stringify(session)); } catch (e) {}
+}
+
 // ─── Verdict engine ───────────────────────────────────────────────────────────
 function computeVerdict(resorts) {
   const verdictPool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
@@ -1466,6 +1523,7 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn } = v;
   const runningItems = collectRunnerUpItems(resorts, resort.id, 3);
+  saveCompareSession(v, runningItems);
   trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
 
@@ -1543,9 +1601,8 @@ function renderVerdict(resorts) {
     : 'vb-verdict-badge--skip';
 
   const _fitWord = fitLabel(scoreNum);
-  // Match hero mock: primary = full conditions, secondary = compare nearby options.
   const primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
-  const secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictSeeAllRunnersBtn">Compare nearby options</button>`;
+  const secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictSeeAllRunnersBtn">Compare Mountains &rarr;</button>`;
 
   const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
   const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock' : '';
@@ -1647,9 +1704,9 @@ function renderVerdict(resorts) {
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_name_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
-    const run = document.getElementById('hnRunnerUpSection');
-    if (run && !run.hidden) run.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    trackFilterEvent('engagement', 'compare_nearby_options');
+    saveCompareSession(v, runningItems); // ensure freshest data on click
+    trackFilterEvent('engagement', 'compare_mountains_click');
+    window.location.href = '/compare/';
   });
 
   // Mini runner-up cards — open detail panel on click
