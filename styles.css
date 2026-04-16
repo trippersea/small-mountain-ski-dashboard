@@ -79,6 +79,29 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); }
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(10px);
 }
+
+/* ── Dark nav when hero-v2 hero is present ─────────────────────────────────── */
+body:has(#searchSection.hero-v2) .top-nav {
+  background: rgba(8, 16, 28, 0.82);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+body:has(#searchSection.hero-v2) .top-nav a,
+body:has(#searchSection.hero-v2) .top-nav .nav-primary {
+  color: rgba(240, 246, 252, 0.78);
+}
+body:has(#searchSection.hero-v2) .top-nav a:hover,
+body:has(#searchSection.hero-v2) .top-nav .nav-primary:hover {
+  color: #f0f6fc;
+  background: rgba(255, 255, 255, 0.08);
+}
+body:has(#searchSection.hero-v2) .nav-brand-name,
+body:has(#searchSection.hero-v2) .nav-brand-name .nav-brand-next {
+  color: #f0f6fc;
+}
+body:has(#searchSection.hero-v2) .nav-brand-tag { color: rgba(200, 220, 240, 0.52); }
+body:has(#searchSection.hero-v2) .nav-link-sep { background: rgba(255,255,255,0.12); }
 .top-nav-inner {
   max-width: 1100px;
   margin: 0 auto;
@@ -6653,12 +6676,13 @@ button.vcard-detail-btn:hover,
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
 }
 .hn-hero-verdict-dock .vcard--dash {
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(8, 16, 28, 0.58);
-  box-shadow: 0 18px 50px rgba(0,0,0,0.45);
-  backdrop-filter: blur(10px);
+  background: rgba(8, 16, 28, 0.72);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 .hn-hero-verdict-dock .vcard-hero-dash {
   background: transparent !important;
@@ -6780,9 +6804,41 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard-runners-label {
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(200,220,240,0.52);
+  margin-bottom: 10px;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 .hn-hero-verdict-dock .vcard-mini-runner {
   position: relative;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 12px;
+  padding: 12px 14px 28px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  text-align: left;
+  width: 100%;
+}
+.hn-hero-verdict-dock .vcard-mini-runner:hover {
+  background: rgba(43,109,233,0.18);
+  border-color: rgba(147,197,253,0.32);
+}
+.hn-hero-verdict-dock .vmr-name {
+  display: block;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 750;
+  color: rgba(240,246,252,0.92);
+  margin-bottom: 4px;
+}
+.hn-hero-verdict-dock .vmr-drive {
+  display: block;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(200,220,240,0.62);
 }
 .hn-hero-verdict-dock .vcard-mini-runner::after {
   content: "";
@@ -6797,6 +6853,19 @@ button.vcard-detail-btn:hover,
 }
 @media (max-width: 960px) {
   .hn-hero-verdict-dock .vcard-stats3 { grid-template-columns: 1fr; }
+}
+
+/* ── Runners strip inside hero dock ──────────────────────────────────────── */
+.hn-hero-verdict-dock .vcard-runners-strip {
+  padding: 14px 18px 16px;
+}
+.hn-hero-verdict-dock .vcard-runners-header {
+  margin-bottom: 10px;
+}
+.hn-hero-verdict-dock .vcard-runners-mini {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
 /* ===== Homepage Hero V2 Replacement ===== */
@@ -6860,8 +6929,16 @@ button.vcard-detail-btn:hover,
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(1200px 800px at 20% 20%, rgba(11, 27, 43, 0.35), rgba(11, 27, 43, 0.82));
+  background: linear-gradient(
+    to right,
+    rgba(8, 18, 32, 0.97) 0%,
+    rgba(8, 18, 32, 0.93) 32%,
+    rgba(8, 18, 32, 0.62) 52%,
+    rgba(8, 18, 32, 0.18) 72%,
+    rgba(8, 18, 32, 0.04) 100%
+  );
   pointer-events: none;
+  z-index: 0;
 }
 #searchSection.hero-v2 .hero-v2__grid {
   position: relative;
@@ -6877,8 +6954,10 @@ button.vcard-detail-btn:hover,
   flex-direction: column;
   justify-content: center;
   padding: clamp(40px, 6vw, 88px) clamp(28px, 4.6vw, 60px);
-  background: rgba(8, 18, 32, 0.72);
-  backdrop-filter: blur(10px);
+  background: transparent;
+  backdrop-filter: none;
+  position: relative;
+  z-index: 1;
 }
 #searchSection.hero-v2 .hero-v2__eyebrow {
   font-family: Inter, system-ui, sans-serif;
@@ -6923,13 +7002,14 @@ button.vcard-detail-btn:hover,
 }
 #searchSection.hero-v2 .hero-v2__location {
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  grid-template-columns: 44px 1fr 48px;
   align-items: center;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  min-height: 50px;
+  min-height: 52px;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  overflow: hidden;
 }
 #searchSection.hero-v2 .hero-v2__location:hover {
   border-color: rgba(147, 197, 253, 0.45);
@@ -6939,12 +7019,27 @@ button.vcard-detail-btn:hover,
   box-shadow: 0 0 0 3px rgba(123, 179, 240, 0.2);
   background: rgba(255, 255, 255, 0.12);
 }
-#searchSection.hero-v2 .hero-v2__location-ico,
-#searchSection.hero-v2 .hero-v2__location-suf {
+#searchSection.hero-v2 .hero-v2__location-ico {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: rgba(200, 220, 240, 0.62);
+}
+#searchSection.hero-v2 .hero-v2__location-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 100%;
+  border: none;
+  background: #2b6de9;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s;
+  flex-shrink: 0;
+}
+#searchSection.hero-v2 .hero-v2__location-submit:hover {
+  background: #1a5dd8;
 }
 #searchSection.hero-v2 .hero-v2__location-input {
   width: 100%;
@@ -7189,6 +7284,8 @@ button.vcard-detail-btn:hover,
   align-items: center;
   justify-content: center;
   padding: clamp(18px, 3.5vw, 36px);
+  position: relative;
+  z-index: 1;
 }
 #searchSection.hero-v2 .hero-v2__card {
   width: 100%;

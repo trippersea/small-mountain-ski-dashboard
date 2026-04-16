@@ -517,9 +517,9 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.2 7-12a7 7 0 10-14 0c0 6.8 7 12 7 12z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
               </span>
               <input id="originInput" class="hero-v2__location-input" type="text" value="Boston, MA" placeholder="ZIP code or city, state" autocomplete="off" inputmode="text" />
-              <span class="hero-v2__location-suf" aria-hidden="true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </span>
+              <button type="button" class="hero-v2__location-submit" id="setLocationInline" aria-label="Find mountain" tabindex="-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
             </div>
           </div>
 
@@ -6012,6 +6012,12 @@
     var detectBtn      = document.getElementById('detectLocation');
     if (emptyLocateBtn && detectBtn) {
       emptyLocateBtn.addEventListener('click', function() { detectBtn.click(); });
+    }
+    // Inline location submit arrow triggers same action as Find My Mountain
+    var inlineSubmit = document.getElementById('setLocationInline');
+    var mainSetBtn   = document.getElementById('setLocation');
+    if (inlineSubmit && mainSetBtn) {
+      inlineSubmit.addEventListener('click', function() { mainSetBtn.click(); });
     }
   });
   </script>
