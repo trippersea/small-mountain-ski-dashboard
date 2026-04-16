@@ -642,22 +642,6 @@
           <select id="heroSnowSelect" class="hn-vis-hidden" aria-label="Snow preference"><option value="1">Any Snow</option><option value="5">3&quot;+ Matters</option><option value="10">6&quot;+ Chaser</option><option value="15">Powder Day</option></select>
           <label class="remember-location-label visually-hidden" id="rememberLocationLabel"><input type="checkbox" id="rememberLocation" />Remember this location<span class="location-privacy-tip" id="locationPrivacyTip" aria-label="Privacy info" tabindex="0">Info<span class="location-privacy-tooltip">Saved only in your browser &mdash; never sent to our servers.</span></span></label>
           <div id="locationStatus" class="hn-editorial-status" role="status"></div>
-
-          <div class="hn-editorial-ai">
-            <button type="button" class="hn-editorial-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">Describe your ideal day</button>
-            <div id="aiChatPanel" class="hero-ai-panel hn-editorial-ai-panel" hidden>
-              <div class="hero-ai-examples">
-                <button type="button" class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
-                <button type="button" class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
-                <button type="button" class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">Hidden gem, low crowds</button>
-              </div>
-              <div class="hero-ai-input-row">
-                <input id="aiChatInput" type="text" class="ai-chat-input hero-ai-input" placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"' aria-label="Describe your ideal ski day" />
-                <button type="button" id="aiChatBtn" class="btn btn-ai">Ask AI</button>
-              </div>
-              <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
-            </div>
-          </div>
           </div>
         </div>
 
@@ -701,6 +685,23 @@
       <button type="button" class="hn-refine-prompt-btn" id="hnRefinePromptBtn">
         Refine results &darr;
       </button>
+    </div>
+
+    <!-- AI module moved below fold to match hero mockup (IDs preserved for JS wiring) -->
+    <div class="hn-editorial-ai hn-editorial-ai--belowfold">
+      <button type="button" class="hn-editorial-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">Describe your ideal day</button>
+      <div id="aiChatPanel" class="hero-ai-panel hn-editorial-ai-panel" hidden>
+        <div class="hero-ai-examples">
+          <button type="button" class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
+          <button type="button" class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
+          <button type="button" class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">Hidden gem, low crowds</button>
+        </div>
+        <div class="hero-ai-input-row">
+          <input id="aiChatInput" type="text" class="ai-chat-input hero-ai-input" placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"' aria-label="Describe your ideal ski day" />
+          <button type="button" id="aiChatBtn" class="btn btn-ai">Ask AI</button>
+        </div>
+        <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
+      </div>
     </div>
 
     <!-- ═══ BOOKING STRIP ══════════════════════════════════════════════════ -->

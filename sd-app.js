@@ -1433,7 +1433,7 @@ function renderVerdict(resorts) {
   const _recLine = esc(headline || '');
   const _bodyCopy = esc([detail, ...subPoints].filter(Boolean).join(' '));
   const _driveTop = driveText ? esc(driveText) : '—';
-  const _wxTop = esc(snowPillText);
+  const _wxTop = esc(snowPillText === 'Dry forecast' ? 'Dry forecast' : snowPillText);
   const _wxSub = _wxVerdict?.forecast?.[targetForecastIndex()]
     ? `high ${Math.round(_wxVerdict.forecast[targetForecastIndex()].hi)}\u00b0F`
     : 'forecast';
@@ -1474,17 +1474,17 @@ function renderVerdict(resorts) {
         ${_bodyCopy ? `<p class="vcard-bodycopy">${_bodyCopy}</p>` : ''}
         <div class="vcard-stats3" role="list" aria-label="Top pick stats">
           <div class="vcard-stat3" role="listitem">
-            <span class="vcard-stat3-ico" aria-hidden="true">🚗</span>
+            <span class="vcard-stat3-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 16l1-5 3-3h10l3 3 1 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 16v2M17 16v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="7" cy="16" r="1.6" fill="currentColor"/><circle cx="17" cy="16" r="1.6" fill="currentColor"/></svg></span>
             <span class="vcard-stat3-top">${_driveTop}</span>
             <span class="vcard-stat3-sub">drive</span>
           </div>
           <div class="vcard-stat3" role="listitem">
-            <span class="vcard-stat3-ico" aria-hidden="true">❄</span>
+            <span class="vcard-stat3-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M4 7l16 10M20 7L4 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 5l2 2M17 19l-2-2M17 5l-2 2M7 19l2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
             <span class="vcard-stat3-top">${_wxTop}</span>
             <span class="vcard-stat3-sub">${esc(_wxSub)}</span>
           </div>
           <div class="vcard-stat3" role="listitem">
-            <span class="vcard-stat3-ico" aria-hidden="true">👥</span>
+            <span class="vcard-stat3-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 10-8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
             <span class="vcard-stat3-top">${esc(_crowdTop)}</span>
             <span class="vcard-stat3-sub">${esc(_crowdSub)}</span>
           </div>

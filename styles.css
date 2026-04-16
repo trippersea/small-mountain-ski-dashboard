@@ -6383,6 +6383,10 @@ button.vcard-detail-btn:hover,
 .hn-editorial-ai {
   margin-top: 0.35rem;
 }
+.hn-editorial-ai--belowfold {
+  margin: 14px 0 18px;
+  max-width: 980px;
+}
 .hn-editorial-ai-tog {
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 14px;
@@ -6708,23 +6712,25 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard-stats3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 14px;
+  gap: 16px;
+  margin: 4px 0 14px;
 }
 .hn-hero-verdict-dock .vcard-stat3 {
   display: grid;
   grid-template-columns: 18px 1fr;
-  gap: 6px 8px;
+  gap: 4px 10px;
   align-items: start;
-  padding: 10px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 .hn-hero-verdict-dock .vcard-stat3-ico {
   grid-row: 1 / span 2;
   color: rgba(147,197,253,0.95);
   margin-top: 2px;
+}
+.hn-hero-verdict-dock .vcard-stat3-ico svg {
+  display: block;
 }
 .hn-hero-verdict-dock .vcard-stat3-top {
   font-family: 'Inter', system-ui, sans-serif;
@@ -6774,6 +6780,20 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard-runners-label {
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+.hn-hero-verdict-dock .vcard-mini-runner {
+  position: relative;
+}
+.hn-hero-verdict-dock .vcard-mini-runner::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 22px;
+  height: 14px;
+  opacity: 0.35;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='14' viewBox='0 0 22 14'%3E%3Cpath d='M1 13h20M4 13l4-6 3 4 4-7 4 9' stroke='%23b7d6ff' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  pointer-events: none;
 }
 @media (max-width: 960px) {
   .hn-hero-verdict-dock .vcard-stats3 { grid-template-columns: 1fr; }
