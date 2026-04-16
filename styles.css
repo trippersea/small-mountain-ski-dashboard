@@ -6800,6 +6800,51 @@ button.vcard-detail-btn:hover,
 }
 
 /* ===== Homepage Hero V2 Replacement ===== */
+
+/* ── Verdict slot: reset absolute positioning from old split-panel layout ── */
+#searchSection.hero-v2 .hn-hero-verdict-dock {
+  width: 100%;
+  max-width: min(520px, 100%);
+}
+#searchSection.hero-v2 #verdictSection {
+  position: static !important;
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  pointer-events: auto;
+  margin: 0;
+}
+#searchSection.hero-v2 #verdictCard {
+  width: 100%;
+}
+
+/* ── Empty state: dark-themed to sit on the hero photo background ─────────── */
+#searchSection.hero-v2 .hn-hero-verdict-empty {
+  background: rgba(8, 16, 28, 0.64) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.45) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(240,246,252,0.95) !important;
+}
+#searchSection.hero-v2 .hn-hero-verdict-empty-title {
+  color: #f0f6fc !important;
+}
+#searchSection.hero-v2 .hn-hero-verdict-empty-sub {
+  color: rgba(200,220,240,0.72) !important;
+}
+#searchSection.hero-v2 .hn-verdict-empty-chip {
+  background: rgba(43,109,233,0.22) !important;
+  border-color: rgba(147,197,253,0.3) !important;
+  color: rgba(200,220,240,0.88) !important;
+}
+#searchSection.hero-v2 .hn-verdict-empty-or {
+  color: rgba(200,220,240,0.5) !important;
+}
 #searchSection.hero-v2 {
   position: relative;
   overflow: hidden;

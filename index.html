@@ -613,61 +613,36 @@
         </div>
 
         <div class="hero-v2__right" aria-label="Top pick">
-          <div class="hero-v2__card">
-            <div class="hero-v2__top-pill">TOP PICK • FROM BOSTON</div>
-            <div class="hero-v2__card-name">Wachusett</div>
-            <div class="hero-v2__card-rec">Closest solid option for tomorrow.</div>
-            <p class="hero-v2__card-body">
-              No fresh snow means most mountains will ski similarly tomorrow. Wachusett gets you on snow fastest with light crowds and no pass required.
-            </p>
+          <div class="hn-hero-verdict-dock">
 
-            <div class="hero-v2__stats">
-              <div class="hero-v2__stat">
-                <div class="hero-v2__stat-top">1h 48m</div>
-                <div class="hero-v2__stat-sub">drive</div>
+            <!-- Empty state: visible until location resolves -->
+            <div id="heroVerdictEmpty" class="hn-hero-verdict-empty">
+              <div class="hn-verdict-empty-inner">
+                <div class="hn-verdict-empty-icon" aria-hidden="true">⛷</div>
+                <p class="hn-hero-verdict-empty-title">Your top pick appears here</p>
+                <p class="hn-hero-verdict-empty-sub">We score 250+ mountains on live snow, your exact drive time, crowd outlook, and pass — then surface the one worth the trip.</p>
+                <button type="button" class="hn-verdict-empty-locate-btn" id="verdictEmptyLocateBtn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+                  Use my location
+                </button>
+                <p class="hn-verdict-empty-or">or type a ZIP or city above ↑</p>
               </div>
-              <div class="hero-v2__stat">
-                <div class="hero-v2__stat-top">Dry forecast</div>
-                <div class="hero-v2__stat-sub">high 38°F</div>
-              </div>
-              <div class="hero-v2__stat">
-                <div class="hero-v2__stat-top">Light crowds</div>
-                <div class="hero-v2__stat-sub">great choice</div>
-              </div>
-            </div>
-
-            <div class="hero-v2__card-actions">
-              <button type="button" class="hero-v2__card-cta">See full conditions <span aria-hidden="true">→</span></button>
-              <button type="button" class="hero-v2__card-link">Compare nearby options</button>
-            </div>
-
-            <div class="hero-v2__divider" role="separator" aria-hidden="true"></div>
-
-            <div class="hero-v2__runnerups">
-              <div class="hero-v2__runnerups-label">ALSO CONSIDER</div>
-              <div class="hero-v2__runnerups-grid">
-                <div class="hero-v2__mini">
-                  <div class="hero-v2__mini-name">Gunstock</div>
-                  <div class="hero-v2__mini-sub">1h 56m • Quiet</div>
-                </div>
-                <div class="hero-v2__mini">
-                  <div class="hero-v2__mini-name">Pats Peak</div>
-                  <div class="hero-v2__mini-sub">2h 01m • Quiet</div>
-                </div>
-                <div class="hero-v2__mini">
-                  <div class="hero-v2__mini-name">Ragged Mountain</div>
-                  <div class="hero-v2__mini-sub">2h 16m • Quiet</div>
-                </div>
+              <div class="hn-verdict-empty-chips">
+                <span class="hn-verdict-empty-chip">❄ Live snow forecast</span>
+                <span class="hn-verdict-empty-chip">🚗 Real drive times</span>
+                <span class="hn-verdict-empty-chip">👥 Crowd outlook</span>
+                <span class="hn-verdict-empty-chip">🎫 Pass coverage</span>
               </div>
             </div>
+
+            <!-- Live verdict: renderVerdict() writes here -->
+            <section id="verdictSection" class="verdict-section hn-verdict-pre-location" aria-label="Top mountain pick">
+              <div id="verdictCard" class="hn-verdict-card-root"></div>
+            </section>
+
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- Legacy verdict container kept for JS compatibility, not rendered in hero -->
-    <section id="verdictSection" class="hn-vis-hidden" aria-hidden="true">
-      <div id="verdictCard"></div>
     </section>
 
     <!-- ═══ RESULTS & DISCOVERY (unified region) ═══════════════════════════ -->
