@@ -242,6 +242,8 @@ function wireHeroSentenceDay() {
     state.skiDayPreset = sel.value;
     state.targetDate = dayValToDate(sel.value);
     updateHeroFilterSegmentsCustom();
+    syncHeroDefaultsRow();
+    syncHeroPills();
     pushUrlDebounced();
     render();
   });
@@ -249,6 +251,83 @@ function wireHeroSentenceDay() {
 
 /** Legacy hook; kept for syncPlannerControls callers */
 function updateHeroFilterSegmentsCustom() {}
+
+// ─── Hero defaults row (Day + Priority as secondary defaults) ────────────────
+const HERO_DAY_LABELS = { weekday: 'Weekday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
+const HERO_PRIORITY_LABELS = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow', 15: 'Powder day' };
+
+function heroPriorityLabelFromSnowWeight(v) {
+  const n = Number(v);
+  if (Number.isFinite(n) && HERO_PRIORITY_LABELS[n]) return HERO_PRIORITY_LABELS[n];
+  // Fall back to the select's visible label if present (keeps compatibility with any future options).
+  const sel = document.getElementById('heroSnowSelect');
+  const opt = sel && sel.options ? [...sel.options].find(o => String(o.value) === String(v)) : null;
+  return (opt && opt.textContent) ? opt.textContent.trim() : String(v ?? '');
+}
+
+function syncHeroDefaultsRow() {
+  const dayChip = document.getElementById('heroDefaultDayChip');
+  const prChip  = document.getElementById('heroDefaultPriorityChip');
+  if (!dayChip || !prChip) return;
+
+  const dayVal = state.skiDayPreset || smartDefaultWhenVal();
+  const dayLbl = HERO_DAY_LABELS[dayVal] || String(dayVal);
+  dayChip.textContent = `Ski day: ${dayLbl}`;
+
+  const snowVal = (state.weights && state.weights.snow != null) ? state.weights.snow : 1;
+  const prLbl = heroPriorityLabelFromSnowWeight(snowVal);
+  prChip.textContent = `Priority: ${prLbl}`;
+}
+
+function setHeroDefaultsEditorOpen(open, opts = {}) {
+  const editor = document.getElementById('heroDefaultsEditor');
+  const change = document.getElementById('heroDefaultsChange');
+  if (!editor || !change) return;
+
+  editor.hidden = !open;
+  change.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+  if (open && opts.focus === 'day') {
+    editor.querySelector('.hn-hero-pills[data-pill-target="heroSentenceDay"] .hn-hero-pill.active')?.focus();
+  } else if (open && opts.focus === 'priority') {
+    editor.querySelector('.hn-hero-pills[data-pill-target="heroSnowSelect"] .hn-hero-pill.active')?.focus();
+  }
+}
+
+function wireHeroDefaultsRow() {
+  const change = document.getElementById('heroDefaultsChange');
+  const dayChip = document.getElementById('heroDefaultDayChip');
+  const prChip  = document.getElementById('heroDefaultPriorityChip');
+  const editor  = document.getElementById('heroDefaultsEditor');
+  if (!change || !dayChip || !prChip || !editor) return;
+
+  function toggle() {
+    setHeroDefaultsEditorOpen(editor.hidden, {});
+  }
+
+  change.addEventListener('click', e => {
+    e.preventDefault();
+    toggle();
+  });
+  dayChip.addEventListener('click', e => {
+    e.preventDefault();
+    setHeroDefaultsEditorOpen(true, { focus: 'day' });
+  });
+  prChip.addEventListener('click', e => {
+    e.preventDefault();
+    setHeroDefaultsEditorOpen(true, { focus: 'priority' });
+  });
+
+  // Close on Escape and outside click (keeps hero feeling uncluttered).
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') setHeroDefaultsEditorOpen(false);
+  });
+  document.addEventListener('click', e => {
+    if (editor.hidden) return;
+    const root = e.target && e.target.closest ? e.target.closest('.hn-hero-defaults') : null;
+    if (!root) setHeroDefaultsEditorOpen(false);
+  });
+}
 
 // ─── Element cache ────────────────────────────────────────────────────────────
 const els = {
@@ -964,6 +1043,7 @@ function syncPlannerControls() {
   updateHeroFilterSegmentsCustom();
   syncWeekendLodgingStrip(computeVerdictStaged(filteredResorts()));
   syncHeroPills();
+  syncHeroDefaultsRow();
 }
 
 function updateStateFromPlannerPriorityButton(key, btn) {
@@ -2671,6 +2751,7 @@ function syncHeroPills() {
 // ─── Event wiring ─────────────────────────────────────────────────────────────
 function wireEvents() {
   wireHeroPills();
+  wireHeroDefaultsRow();
   // Weekend lodging strip affiliate tracking
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('a.hn-booking-btn');

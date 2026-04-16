@@ -566,21 +566,37 @@
                   <button type="button" class="hn-hero-pill" data-value="2">Any distance</button>
                 </div>
               </div>
-              <div class="hn-hero-pill-group">
-                <span class="hn-hero-pill-label">Day</span>
-                <div class="hn-hero-pills" data-pill-target="heroSentenceDay">
-                  <button type="button" class="hn-hero-pill active" data-value="weekday">Weekday</button>
-                  <button type="button" class="hn-hero-pill" data-value="friday">Friday</button>
-                  <button type="button" class="hn-hero-pill" data-value="saturday">Saturday</button>
-                  <button type="button" class="hn-hero-pill" data-value="sunday">Sunday</button>
-                </div>
+            </div>
+
+            <!-- Defaults row: Day + Priority are active defaults (not optional) -->
+            <div class="hn-hero-defaults" aria-label="Defaults for this search">
+              <div class="hn-hero-defaults-head">
+                <div class="hn-hero-defaults-label">Defaults for this search</div>
+                <button type="button" class="hn-hero-defaults-change" id="heroDefaultsChange" aria-expanded="false" aria-controls="heroDefaultsEditor">Change</button>
               </div>
-              <div class="hn-hero-pill-group">
-                <span class="hn-hero-pill-label">Priority</span>
-                <div class="hn-hero-pills" data-pill-target="heroSnowSelect">
-                  <button type="button" class="hn-hero-pill active" data-value="1">Best fit</button>
-                  <button type="button" class="hn-hero-pill" data-value="10">Fresh snow</button>
-                  <button type="button" class="hn-hero-pill" data-value="5">Quiet slopes</button>
+              <div class="hn-hero-defaults-chips">
+                <button type="button" class="hn-hero-default-chip" id="heroDefaultDayChip" aria-controls="heroDefaultsEditor">Ski day: —</button>
+                <button type="button" class="hn-hero-default-chip" id="heroDefaultPriorityChip" aria-controls="heroDefaultsEditor">Priority: —</button>
+              </div>
+
+              <!-- Editor (collapsed by default): keeps existing hero pill wiring -->
+              <div id="heroDefaultsEditor" class="hn-hero-defaults-editor" hidden>
+                <div class="hn-hero-pill-group hn-hero-pill-group--secondary">
+                  <span class="hn-hero-pill-label hn-hero-pill-label--secondary">Ski day</span>
+                  <div class="hn-hero-pills" data-pill-target="heroSentenceDay">
+                    <button type="button" class="hn-hero-pill active" data-value="weekday">Weekday</button>
+                    <button type="button" class="hn-hero-pill" data-value="friday">Friday</button>
+                    <button type="button" class="hn-hero-pill" data-value="saturday">Saturday</button>
+                    <button type="button" class="hn-hero-pill" data-value="sunday">Sunday</button>
+                  </div>
+                </div>
+                <div class="hn-hero-pill-group hn-hero-pill-group--secondary">
+                  <span class="hn-hero-pill-label hn-hero-pill-label--secondary">Priority</span>
+                  <div class="hn-hero-pills" data-pill-target="heroSnowSelect">
+                    <button type="button" class="hn-hero-pill active" data-value="1">Best fit</button>
+                    <button type="button" class="hn-hero-pill" data-value="10">Fresh snow</button>
+                    <button type="button" class="hn-hero-pill" data-value="5">Quiet slopes</button>
+                  </div>
                 </div>
               </div>
             </div>
