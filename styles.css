@@ -1042,26 +1042,26 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   font-size: clamp(1.5rem, 2.6vw, 2rem);
   font-weight: 800;
   line-height: 1.08;
-  margin: 0 0 6px;
+  margin: 0 0 10px;
 }
 .hn-hero-verdict-dock .vcard-verdict-line {
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+  font-size: clamp(1.08rem, 1.85vw, 1.22rem);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.28;
   color: #f8fafc;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 .hn-hero-verdict-dock .vcard-story-one {
   font-family: 'Newsreader', ui-serif, Georgia, serif;
-  font-size: clamp(0.97rem, 1.5vw, 1.02rem);
+  font-size: clamp(0.9rem, 1.35vw, 0.98rem);
   font-weight: 500;
-  line-height: 1.45;
-  color: rgba(248, 250, 252, 0.94);
-  margin: 0 0 16px;
-  max-width: 36rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: 1.48;
+  color: rgba(248, 250, 252, 0.88);
+  margin: 0 0 18px;
+  max-width: 34rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 .hn-hero-verdict-dock .vcard-utility-row {
   display: flex;
@@ -1069,23 +1069,23 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   align-items: baseline;
   gap: 10px 14px;
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: clamp(0.84rem, 1.4vw, 0.9rem);
+  font-size: clamp(0.8rem, 1.25vw, 0.86rem);
   font-weight: 600;
-  color: rgba(226, 232, 240, 0.88);
-  margin: 0 0 12px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(200, 214, 228, 0.78);
+  margin: 0 0 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .hn-hero-verdict-dock .vcard-utility-vibe {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 750;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: rgba(248, 250, 252, 0.92);
-  padding: 3px 9px;
+  color: rgba(248, 250, 252, 0.88);
+  padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.28);
 }
 .hn-hero-verdict-dock .vcard-utility-sep {
   display: inline-block;
@@ -1097,9 +1097,10 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   margin: 0 2px;
 }
 .hn-hero-verdict-dock .vcard-freshness--quiet {
-  font-size: clamp(0.76rem, 1.2vw, 0.8rem);
-  color: rgba(200, 220, 240, 0.48);
-  margin-top: 4px;
+  font-size: clamp(0.72rem, 1.1vw, 0.78rem);
+  color: rgba(186, 204, 220, 0.42);
+  margin-top: 6px;
+  letter-spacing: 0.01em;
 }
 
 .mob-card-conditions.story-text {
@@ -1129,26 +1130,31 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .hn-hero-verdict-dock button.vcard-mini-runner {
   color: #e8eef5;
   -webkit-text-fill-color: #e8eef5;
-  gap: 6px;
+  gap: 8px;
   padding: 14px 14px 16px;
   min-width: 148px;
   max-width: 200px;
+  min-height: 128px;
+  align-items: flex-start;
+  border-radius: 12px;
 }
 .hn-hero-verdict-dock .vcard-mini-runner .vmr-name {
-  font-size: clamp(1rem, 1.8vw, 1.08rem);
-  font-weight: 700;
-  margin-bottom: 2px;
+  font-size: clamp(1.02rem, 1.7vw, 1.1rem);
+  font-weight: 750;
+  margin-bottom: 4px;
   white-space: normal;
+  line-height: 1.2;
 }
 .hn-hero-verdict-dock .vcard-mini-runner .vmr-reason {
-  font-family: 'Newsreader', ui-serif, Georgia, serif;
-  font-size: clamp(0.9rem, 1.5vw, 0.95rem);
-  font-weight: 500;
-  line-height: 1.35;
-  color: rgba(248, 250, 252, 0.9);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: clamp(0.82rem, 1.25vw, 0.88rem);
+  font-weight: 550;
+  line-height: 1.32;
+  color: rgba(226, 232, 240, 0.88);
   margin: 0;
+  flex: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1156,12 +1162,13 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 10px;
+  gap: 6px 8px;
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: clamp(0.8rem, 1.3vw, 0.86rem);
+  font-size: clamp(0.78rem, 1.2vw, 0.84rem);
   font-weight: 600;
-  color: rgba(210, 224, 238, 0.88);
-  margin-top: 4px;
+  color: rgba(200, 214, 228, 0.82);
+  margin-top: auto;
+  padding-top: 6px;
 }
 .hn-hero-verdict-dock .vcard-mini-runner .vmr-utility-sep {
   width: 3px;
@@ -6601,9 +6608,9 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard--dash {
   border-radius: 18px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(8, 16, 28, 0.72);
-  box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 16, 28, 0.68);
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.42);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -6611,7 +6618,7 @@ button.vcard-detail-btn:hover,
   background: transparent !important;
 }
 .hn-hero-verdict-dock .vcard-hero-dash--dock {
-  padding: 18px 18px 12px;
+  padding: 22px 20px 18px;
 }
 .hn-hero-verdict-dock .vb-verdict-badge {
   display: none;
@@ -6695,36 +6702,47 @@ button.vcard-detail-btn:hover,
 }
 .hn-hero-verdict-dock .vcard-actions-dash {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 18px 0 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 .hn-hero-verdict-dock .vcard-book-btn {
-  min-height: 44px;
-  padding: 0 16px;
+  min-height: 42px;
+  padding: 0 18px;
   border-radius: 12px;
   background: #2b6de9;
-  box-shadow: 0 10px 22px rgba(43,109,233,0.25);
+  box-shadow: 0 8px 20px rgba(43,109,233,0.22);
+  font-weight: 700;
+  font-size: 13px;
 }
 .hn-hero-verdict-dock .vcard-detail-btn {
-  background: rgba(43, 109, 233, 0.18);
-  border: 1px solid rgba(43, 109, 233, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   padding: 9px 16px;
-  color: #93c5fd;
+  color: rgba(226, 232, 240, 0.9);
   font-size: 13px;
   font-weight: 650;
   border-radius: 10px;
   text-decoration: none;
   transition: background 0.14s, border-color 0.14s, color 0.14s;
+  min-height: 42px;
 }
 .hn-hero-verdict-dock .vcard-detail-btn:hover {
-  background: rgba(43, 109, 233, 0.28);
-  border-color: rgba(43, 109, 233, 0.65);
-  color: #bfdbfe;
+  background: rgba(43, 109, 233, 0.2);
+  border-color: rgba(147, 197, 253, 0.35);
+  color: #e0f2fe;
+}
+.hn-hero-verdict-dock .vcard-guidance-compact.vcard-guidance--soft {
+  margin-top: 16px;
+  margin-bottom: 4px;
 }
 .hn-hero-verdict-dock .vcard-divider {
   margin: 14px 0 0;
   height: 1px;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.08);
 }
 .hn-hero-verdict-dock .vcard-runners-label {
   letter-spacing: 0.1em;
@@ -6755,15 +6773,38 @@ button.vcard-detail-btn:hover,
 
 /* ── Runners strip inside hero dock ──────────────────────────────────────── */
 .hn-hero-verdict-dock .vcard-runners-strip {
-  padding: 14px 18px 16px;
+  margin-top: 8px;
+  padding: 18px 0 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 .hn-hero-verdict-dock .vcard-runners-header {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .hn-hero-verdict-dock .vcard-runners-mini {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
+  align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .hn-hero-verdict-dock .vcard-actions-dash {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hn-hero-verdict-dock .vcard-book-btn,
+  .hn-hero-verdict-dock .vcard-detail-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .hn-hero-verdict-dock .vcard-runners-mini {
+    grid-template-columns: 1fr;
+  }
+  .hn-hero-verdict-dock button.vcard-mini-runner {
+    max-width: none;
+    min-height: 0;
+  }
 }
 
 /* ===== Homepage Hero V2 Replacement ===== */
@@ -7249,9 +7290,9 @@ button.vcard-detail-btn:hover,
 
 #searchSection.hero-v2 .hero-v2__right {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: clamp(18px, 3.5vw, 36px);
+  padding: clamp(22px, 4vw, 40px) clamp(18px, 3.5vw, 36px) clamp(28px, 5vw, 48px);
   position: relative;
   z-index: 1;
 }
@@ -7497,15 +7538,15 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard-hero-dash--dock {
   max-height: none !important;
   min-height: 0 !important;
-  padding: 1.4rem 1.35rem 1.2rem !important;
+  padding: 1.45rem 1.35rem 1.35rem !important;
   color: #f0f6fc !important;
-  border-bottom: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-body-dash,
 .hn-hero-verdict-dock .vcard-body-dash {
   background: rgba(8, 16, 28, 0.88);
-  border-top: 1px solid rgba(255,255,255,.1);
-  padding: 14px 1.35rem 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px 1.35rem 18px;
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-name-dash,
 .hn-hero-verdict-dock .vcard-name-dash {

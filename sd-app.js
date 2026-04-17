@@ -72,11 +72,14 @@ function buildNarrativeMountainPayload(resort, wx) {
       humidity: 50,
       daysSinceSnow: 0,
       altitude: 0,
+      summitFt: 0,
+      verticalFt: 0,
       wasWarmYesterday: false,
       rainedYesterday: false,
     };
   }
   const altFt = resort.summitElevation || resort.baseElevation || 0;
+  const vertFt = resort.vertical != null ? Number(resort.vertical) : 0;
   if (!wx) {
     return {
       name: resort.name,
@@ -89,6 +92,8 @@ function buildNarrativeMountainPayload(resort, wx) {
       humidity: 50,
       daysSinceSnow: 0,
       altitude: altFt,
+      summitFt: altFt,
+      verticalFt: vertFt,
       wasWarmYesterday: false,
       rainedYesterday: false,
     };
@@ -126,6 +131,8 @@ function buildNarrativeMountainPayload(resort, wx) {
     ? Math.round(Number(humRaw))
     : 50;
 
+  const verticalFt = resort.vertical != null ? Number(resort.vertical) : 0;
+
   return {
     name: resort.name,
     temperature: mid,
@@ -137,6 +144,8 @@ function buildNarrativeMountainPayload(resort, wx) {
     daysSinceSnow,
     forecast: forecastStr,
     altitude: altFt,
+    summitFt: altFt,
+    verticalFt,
     wasWarmYesterday: false,
     rainedYesterday: false,
   };
@@ -185,22 +194,14 @@ function driveUtilitySegment(resortId) {
   return `${formatDriveMins(mins, isDriveEstimated(resortId))} drive`;
 }
 
-/**
- * One human reason per runner: best score or closest drive in the batch, else narrative.
- */
+/** Short skimmable reason lines for Also in the running (no long narrative wraps). */
 function runnerReasonLine(batch, item, idx) {
-  const wx = state.weatherCache[item.resort.id]?.data;
-  const narr = wx
-    ? getMountainNarrative(buildNarrativeMountainPayload(item.resort, wx))
-    : null;
-  const fallback = narr ? cardStoryOneLine(narr.story) : 'Worth a look';
-
   const scored = batch.filter(x => x.breakdown && Number.isFinite(x.breakdown.score));
   if (scored.length >= 2) {
     const max = Math.max(...scored.map(x => x.breakdown.score));
     const winners = scored.filter(x => x.breakdown.score === max);
     if (winners.length === 1 && item.breakdown && item.breakdown.score === max) {
-      return 'Best snow of this group';
+      return 'Best snow here';
     }
   }
 
@@ -209,12 +210,11 @@ function runnerReasonLine(batch, item, idx) {
     const minD = Math.min(...drives);
     const closest = batch.filter(x => getDriveMins(x.resort.id) === minD);
     const myD = getDriveMins(item.resort.id);
-    if (closest.length === 1 && myD === minD) return 'Closest of these picks';
+    if (closest.length === 1 && myD === minD) return 'Closest option';
   }
 
-  if (idx === 0) return 'Solid alternate to consider';
-
-  return fallback;
+  const rotate = ['Solid backup', 'Another good pick', 'Worth a look'];
+  return rotate[idx % rotate.length];
 }
 
 // ─── localStorage helpers ─────────────────────────────────────────────────────
@@ -337,9 +337,15 @@ function getSponsor(resortId) {
 
     /* ── Compact guidance row ───────────────────────────────────────────────── */
     .vcard-guidance-compact { display: flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 12px; background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25); border-radius: 8px; font-size: 12px; color: rgba(240,246,252,.8); line-height: 1.4; flex-wrap: wrap; }
+    .vcard-guidance-compact.vcard-guidance--soft { margin-top: 14px; padding: 10px 14px; background: rgba(43,109,233,.12); border: 1px solid rgba(147,197,253,.22); border-radius: 10px; gap: 10px; }
+    .vcard-guidance-compact-text { font-size: 12px; font-weight: 600; color: rgba(226,232,240,.92); }
     .vcard-guidance-compact-icon { font-size: 13px; flex-shrink: 0; }
+    .vcard-guidance-compact.vcard-guidance--soft .vcard-guidance-compact-btn { background: rgba(255,255,255,.08); border: 1px solid rgba(147,197,253,.35); border-radius: 8px; padding: 6px 11px; font-size: 11px; font-weight: 700; color: #e0f2fe; cursor: pointer; text-decoration: none; transition: background .12s, border-color .12s; }
+    .vcard-guidance-compact.vcard-guidance--soft .vcard-guidance-compact-btn:hover { background: rgba(43,109,233,.35); border-color: rgba(147,197,253,.55); color: #fff; }
     .vcard-guidance-compact-btn { background: none; border: none; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: #fca5a5; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color .12s; }
     .vcard-guidance-compact-btn:hover { color: #f87171; }
+    .hn-hero-verdict-dock .vcard-lodging-slim { margin-top: 12px; background: rgba(43,109,233,.1) !important; border: 1px solid rgba(147,197,253,.22) !important; border-radius: 10px; }
+    .hn-hero-verdict-dock .vcard-lodging-slim-link { color: #bfdbfe !important; }
 
     /* ── Lodging slim row ───────────────────────────────────────────────────── */
     .vcard-lodging-slim { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); border-radius: 8px; }
@@ -1777,14 +1783,14 @@ function renderVerdict(resorts) {
     || tier === 'marginal'
     || (breakdown && scoreNum < 48 && tier !== 'great');
   const _widenSuggestion = state.howFar === 0
-    ? 'try <strong>Weekend</strong> distance or ease your snow filter'
+    ? 'Widen to weekend distance or ease snow filter'
     : state.howFar === 1
-    ? 'try <strong>Any distance</strong> or ease your snow filter'
-    : 'try adjusting your snow or pass filter';
+    ? 'Try any distance or ease snow filter'
+    : 'Ease snow or pass filter';
   const guidanceInsetHtml = showVerdictGuidance
-    ? `<div class="vcard-guidance-compact" role="note">
-        <span class="vcard-guidance-compact-icon">⚠</span>
-        <span>Conditions are rough. <button type="button" class="vcard-guidance-compact-btn" id="verdictRefineGuidanceBtn">${_widenSuggestion} &darr;</button></span>
+    ? `<div class="vcard-guidance-compact vcard-guidance--soft" role="note">
+        <span class="vcard-guidance-compact-text">Tough setup today.</span>
+        <button type="button" class="vcard-guidance-compact-btn" id="verdictRefineGuidanceBtn">${esc(_widenSuggestion)}</button>
       </div>`
     : '';
   const _lodgingUrl = bookingUrl(resort);
@@ -1816,10 +1822,10 @@ function renderVerdict(resorts) {
     return `data-bd="${btoa(bd)}"`;
   })() : '';
 
-  const verdictBadgeText = tier === 'great' ? 'Go — great conditions'
-    : tier === 'good'    ? 'Go — good conditions'
-    : tier === 'marginal'? 'Worth checking — fair conditions'
-    : 'Skip — rough conditions';
+  const verdictBadgeText = tier === 'great' ? 'Go: great conditions'
+    : tier === 'good'    ? 'Go: good conditions'
+    : tier === 'marginal'? 'Worth checking: fair conditions'
+    : 'Skip: rough conditions';
 
   const verdictBadgeCls = tier === 'great' ? 'vb-verdict-badge--go'
     : tier === 'good'   ? 'vb-verdict-badge--go'
@@ -1910,7 +1916,6 @@ function renderVerdict(resorts) {
           ${primaryBtn}
           ${secondaryBtn}
         </div>
-        <div class="vcard-divider" role="separator" aria-hidden="true"></div>
         ${guidanceInsetHtml}
         ${lodgingModuleHtml}
         ${runnerStripHtml}
