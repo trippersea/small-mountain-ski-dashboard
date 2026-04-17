@@ -194,13 +194,16 @@ function driveUtilitySegment(resortId) {
   return `${formatDriveMins(mins, isDriveEstimated(resortId))} drive`;
 }
 
-/** Short skimmable reason lines for Also in the running (no long narrative wraps). */
+/** Short skimmable reason lines for Also in the running. */
 function runnerReasonLine(batch, item, idx) {
   const scored = batch.filter(x => x.breakdown && Number.isFinite(x.breakdown.score));
   if (scored.length >= 2) {
     const max = Math.max(...scored.map(x => x.breakdown.score));
     const winners = scored.filter(x => x.breakdown.score === max);
     if (winners.length === 1 && item.breakdown && item.breakdown.score === max) {
+      const minD = Math.min(...batch.map(x => getDriveMins(x.resort.id)).filter(x => x != null));
+      const myD = getDriveMins(item.resort.id);
+      if (myD != null && minD != null && myD >= minD + 20) return 'Better snow, longer drive';
       return 'Best snow here';
     }
   }
@@ -210,10 +213,10 @@ function runnerReasonLine(batch, item, idx) {
     const minD = Math.min(...drives);
     const closest = batch.filter(x => getDriveMins(x.resort.id) === minD);
     const myD = getDriveMins(item.resort.id);
-    if (closest.length === 1 && myD === minD) return 'Closest option';
+    if (closest.length === 1 && myD === minD) return 'Closest quick option';
   }
 
-  const rotate = ['Solid backup', 'Another good pick', 'Worth a look'];
+  const rotate = ['Solid backup', 'Good fallback today', 'Worth a look'];
   return rotate[idx % rotate.length];
 }
 
@@ -293,9 +296,15 @@ function getSponsor(resortId) {
     .table-lodging-link { font-size:12px; font-weight:400; color:#9ca3af; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
 
-    /* ── Also in the running (mini strip) ───────────────────────────────────── */
+    /* ── Also in the running (legacy strip + unified zone) ──────────────────── */
     .vcard-runners-strip { margin: 10px -22px -18px; padding: 14px 22px 16px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 0 0 12px 12px; }
-    /* Hero dock: no negative margins (they hug the divider and clip bottom padding) */
+    .hn-hero-verdict-dock .vcard-runners-zone {
+      margin: 28px 0 8px !important;
+      padding: 0 !important;
+      border: none !important;
+      background: transparent !important;
+      border-radius: 0 !important;
+    }
     .hn-hero-verdict-dock .vcard-runners-strip {
       margin: 20px 0 0 !important;
       padding: 26px 1.35rem 24px !important;
@@ -318,6 +327,7 @@ function getSponsor(resortId) {
     .vmr-reason { font-size: 12px; color: rgba(248,250,252,.9); margin: 0; line-height: 1.35; }
     .hn-hero-verdict-dock .vcard--hero-light .vmr-reason { color: #334155; }
     .vmr-utility { font-size: 11px; font-weight: 600; color: rgba(210,224,238,.88); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .vmr-meta { font-size: 11px; font-weight: 600; color: rgba(200,214,228,.72); line-height: 1.35; margin-top: auto; padding-top: 8px; letter-spacing: .01em; }
     .vmr-crowd-mini { font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 999px; display: inline-flex; align-items: center; gap: 3px; width: fit-content; margin-top: 2px; }
     .vmr-crowd-mini.crowd-quiet-chip { background: rgba(34,179,138,.2); color: #6ee7b7; }
     .vmr-crowd-mini.crowd-busy-chip  { background: rgba(248,113,113,.15); color: #fca5a5; }
@@ -352,7 +362,7 @@ function getSponsor(resortId) {
     .vcard-guidance-compact.vcard-guidance--soft .vcard-guidance-compact-btn:hover { background: rgba(43,109,233,.35); border-color: rgba(147,197,253,.55); color: #fff; }
     .vcard-guidance-compact-btn { background: none; border: none; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: #fca5a5; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color .12s; }
     .vcard-guidance-compact-btn:hover { color: #f87171; }
-    .hn-hero-verdict-dock .vcard-lodging-slim { margin-top: 12px; background: rgba(43,109,233,.1) !important; border: 1px solid rgba(147,197,253,.22) !important; border-radius: 10px; }
+    .hn-hero-verdict-dock .vcard-lodging-slim { margin-top: 16px; padding: 10px 14px; background: rgba(255,255,255,.04) !important; border: 1px solid rgba(255,255,255,.08) !important; border-radius: 10px; }
     .hn-hero-verdict-dock .vcard-lodging-slim-link { color: #bfdbfe !important; }
 
     /* ── Lodging slim row ───────────────────────────────────────────────────── */
@@ -1791,15 +1801,16 @@ function renderVerdict(resorts) {
     || tier === 'marginal'
     || (breakdown && scoreNum < 48 && tier !== 'great');
   const _widenSuggestion = state.howFar === 0
-    ? 'Widen to weekend distance or ease snow filter'
+    ? 'Widen distance or ease snow filter'
     : state.howFar === 1
-    ? 'Try any distance or ease snow filter'
+    ? 'Try any distance or ease snow'
     : 'Ease snow or pass filter';
   const guidanceInsetHtml = showVerdictGuidance
-    ? `<div class="vcard-guidance-compact vcard-guidance--soft" role="note">
-        <span class="vcard-guidance-compact-text">Tough setup today.</span>
-        <button type="button" class="vcard-guidance-compact-btn" id="verdictRefineGuidanceBtn">${esc(_widenSuggestion)}</button>
-      </div>`
+    ? `<p class="vcard-refine-hint" role="note">
+        <span class="vcard-refine-hint-ico" aria-hidden="true"></span>
+        <span class="vcard-refine-hint-text">Conditions look tight.</span>
+        <button type="button" class="vcard-refine-hint-link" id="verdictRefineGuidanceBtn">${esc(_widenSuggestion)}</button>
+      </p>`
     : '';
   const _lodgingUrl = bookingUrl(resort);
   const lodgingModuleHtml = state.howFar === 1 && !splitHero
@@ -1886,21 +1897,19 @@ function renderVerdict(resorts) {
       return `<button type="button" class="vcard-mini-runner${_rGold}" data-mini-runner-id="${esc(item.resort.id)}">
         <span class="vmr-name">${esc(item.resort.name)}</span>
         <p class="vmr-reason">${_rReason}</p>
-        <div class="vmr-utility" role="group" aria-label="Drive and crowds"><span>${_rDriveU}</span><span class="vmr-utility-sep" aria-hidden="true"></span><span>${_rCrowdU}</span></div>
+        <div class="vmr-meta" aria-label="Drive and crowds">${_rDriveU} · ${_rCrowdU}</div>
       </button>`;
     }).join('');
-    return `<div class="vcard-runners-strip">
-      <div class="vcard-runners-header">
-        <span class="vcard-runners-label">Also in the running</span>
-      </div>
-      <div class="vcard-runners-mini">
+    return `<div class="vcard-runners-zone">
+      <div class="vcard-runners-heading">Also in the running</div>
+      <div class="vcard-runners-row">
         ${miniCards}
       </div>
     </div>`;
   })() : '';
 
   els.verdictCard.innerHTML = `
-    <div class="vcard vcard--dash vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
+    <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
         <div class="vcard-top-pill vcard-eyebrow">${_eyebrow}</div>
         ${zipNudgeHtml}

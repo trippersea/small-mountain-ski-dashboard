@@ -1076,6 +1076,9 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+.hn-hero-verdict-dock .vcard--rail .vcard-utility-row {
+  border-top-color: rgba(255, 255, 255, 0.05);
+}
 .hn-hero-verdict-dock .vcard-utility-vibe {
   font-size: 0.72rem;
   font-weight: 750;
@@ -1131,12 +1134,15 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   color: #e8eef5;
   -webkit-text-fill-color: #e8eef5;
   gap: 8px;
-  padding: 14px 14px 16px;
+  padding: 16px 15px 17px;
   min-width: 148px;
   max-width: 200px;
-  min-height: 128px;
+  min-height: 120px;
   align-items: flex-start;
   border-radius: 12px;
+}
+.hn-hero-verdict-dock .vcard--rail button.vcard-mini-runner {
+  border-radius: 10px;
 }
 .hn-hero-verdict-dock .vcard-mini-runner .vmr-name {
   font-size: clamp(1.02rem, 1.7vw, 1.1rem);
@@ -1169,6 +1175,16 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   color: rgba(200, 214, 228, 0.82);
   margin-top: auto;
   padding-top: 6px;
+}
+.hn-hero-verdict-dock .vcard-mini-runner .vmr-meta {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: clamp(0.76rem, 1.15vw, 0.82rem);
+  font-weight: 600;
+  color: rgba(186, 200, 218, 0.68);
+  margin-top: auto;
+  padding-top: 10px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
 }
 .hn-hero-verdict-dock .vcard-mini-runner .vmr-utility-sep {
   width: 3px;
@@ -6605,7 +6621,22 @@ button.vcard-detail-btn:hover,
   margin: 0;
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
 }
-.hn-hero-verdict-dock .vcard--dash {
+/* One recommendation panel: soft shell, inner zones by spacing (not nested cards) */
+.hn-hero-verdict-dock .vcard--dash.vcard--rail {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(
+    168deg,
+    rgba(12, 22, 40, 0.58) 0%,
+    rgba(8, 15, 28, 0.72) 42%,
+    rgba(6, 11, 20, 0.9) 100%
+  );
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.hn-hero-verdict-dock .vcard--dash:not(.vcard--rail) {
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -6638,6 +6669,10 @@ button.vcard-detail-btn:hover,
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 12px;
+}
+.hn-hero-verdict-dock .vcard--rail .vcard-top-pill.vcard-eyebrow {
+  border-color: rgba(147, 197, 253, 0.22);
+  background: rgba(43, 109, 233, 0.14);
 }
 .hn-hero-verdict-dock .vcard-name-dash {
   font-family: 'Newsreader', ui-serif, Georgia, serif;
@@ -6709,6 +6744,12 @@ button.vcard-detail-btn:hover,
   padding: 18px 0 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
+.hn-hero-verdict-dock .vcard--rail .vcard-actions-dash {
+  border-top: none;
+  padding: 26px 0 10px;
+  margin: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
 .hn-hero-verdict-dock .vcard-book-btn {
   min-height: 42px;
   padding: 0 18px;
@@ -6717,6 +6758,10 @@ button.vcard-detail-btn:hover,
   box-shadow: 0 8px 20px rgba(43,109,233,0.22);
   font-weight: 700;
   font-size: 13px;
+}
+.hn-hero-verdict-dock .vcard--rail .vcard-book-btn {
+  border-radius: 11px;
+  box-shadow: 0 10px 26px rgba(43, 109, 233, 0.2);
 }
 .hn-hero-verdict-dock .vcard-detail-btn {
   background: rgba(255, 255, 255, 0.06);
@@ -6735,9 +6780,62 @@ button.vcard-detail-btn:hover,
   border-color: rgba(147, 197, 253, 0.35);
   color: #e0f2fe;
 }
+.hn-hero-verdict-dock .vcard--rail .vcard-detail-btn {
+  border-radius: 9px;
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.04);
+}
+.hn-hero-verdict-dock .vcard--rail .vcard-detail-btn:hover {
+  background: rgba(43, 109, 233, 0.18);
+  border-color: rgba(147, 197, 253, 0.28);
+}
 .hn-hero-verdict-dock .vcard-guidance-compact.vcard-guidance--soft {
   margin-top: 16px;
   margin-bottom: 4px;
+}
+/* Quiet inline hint when filters are tight — no alert slab */
+.hn-hero-verdict-dock .vcard-refine-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.35rem 0.55rem;
+  margin: 22px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(186, 200, 218, 0.78);
+}
+.hn-hero-verdict-dock .vcard-refine-hint-ico {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  opacity: 0.55;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 16v-4M12 8h.01M22 12a10 10 0 11-20 0 10 10 0 0120 0z' stroke='%2393c5fd' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+.hn-hero-verdict-dock .vcard-refine-hint-text {
+  font-weight: 600;
+  color: rgba(200, 214, 230, 0.82);
+}
+.hn-hero-verdict-dock .vcard-refine-hint-link {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 650;
+  color: #93c5fd;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.12s ease;
+}
+.hn-hero-verdict-dock .vcard-refine-hint-link:hover {
+  color: #bfdbfe;
 }
 .hn-hero-verdict-dock .vcard-divider {
   margin: 14px 0 0;
@@ -6755,23 +6853,32 @@ button.vcard-detail-btn:hover,
 }
 .hn-hero-verdict-dock .vcard-mini-runner {
   position: relative;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
   text-align: left;
   width: 100%;
 }
+.hn-hero-verdict-dock .vcard--rail .vcard-mini-runner {
+  border-radius: 10px;
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.035);
+}
 .hn-hero-verdict-dock .vcard-mini-runner:hover {
   background: rgba(43,109,233,0.18);
   border-color: rgba(147,197,253,0.32);
+}
+.hn-hero-verdict-dock .vcard--rail .vcard-mini-runner:hover {
+  background: rgba(43, 109, 233, 0.12);
+  border-color: rgba(147, 197, 253, 0.22);
 }
 @media (max-width: 960px) {
   .hn-hero-verdict-dock .vcard-stats3 { grid-template-columns: 1fr; }
 }
 
-/* ── Runners strip inside hero dock (spacing mirrored in sd-app inject for load order) ─ */
+/* ── Nearby options: zone + row (no heavy strip box) ─ */
 .hn-hero-verdict-dock .vcard-runners-strip {
   margin: 20px 0 0;
   padding: 26px 1.35rem 24px;
@@ -6786,6 +6893,27 @@ button.vcard-detail-btn:hover,
   gap: 10px;
   align-items: stretch;
 }
+.hn-hero-verdict-dock .vcard-runners-zone {
+  margin: 32px 0 10px;
+  padding: 0;
+  border: none;
+  background: none;
+}
+.hn-hero-verdict-dock .vcard-runners-heading {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(186, 200, 218, 0.52);
+  margin: 0 0 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.hn-hero-verdict-dock .vcard-runners-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
 
 @media (max-width: 640px) {
   .hn-hero-verdict-dock .vcard-actions-dash {
@@ -6798,7 +6926,8 @@ button.vcard-detail-btn:hover,
     text-align: center;
     justify-content: center;
   }
-  .hn-hero-verdict-dock .vcard-runners-mini {
+  .hn-hero-verdict-dock .vcard-runners-mini,
+  .hn-hero-verdict-dock .vcard-runners-row {
     grid-template-columns: 1fr;
   }
   .hn-hero-verdict-dock button.vcard-mini-runner {
@@ -6832,9 +6961,9 @@ button.vcard-detail-btn:hover,
 /* ── Empty state: dark-themed to sit on the hero photo background ─────────── */
 #searchSection.hero-v2 .hn-hero-verdict-empty {
   background: rgba(8, 16, 28, 0.64) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 18px 60px rgba(0,0,0,0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 22px 56px rgba(0,0,0,0.36) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: rgba(240,246,252,0.95) !important;
@@ -7007,8 +7136,8 @@ button.vcard-detail-btn:hover,
   grid-template-columns: 44px 1fr 48px;
   align-items: center;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.11);
   min-height: 52px;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
   overflow: hidden;
@@ -7526,9 +7655,9 @@ button.vcard-detail-btn:hover,
   color: #334155;
   font-weight: 600;
 }
-.hn-hero-verdict-dock .vcard--dash.vcard--hero-light,
-.hn-hero-verdict-dock .vcard--dash {
-  border-radius: 16px;
+.hn-hero-verdict-dock .vcard--dash.vcard--hero-light:not(.vcard--rail),
+.hn-hero-verdict-dock .vcard--dash:not(.vcard--rail) {
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   overflow: hidden;
   background: transparent;
@@ -7542,11 +7671,20 @@ button.vcard-detail-btn:hover,
   color: #f0f6fc !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+.hn-hero-verdict-dock .vcard--rail .vcard-hero-dash--dock {
+  border-bottom: none;
+  padding: 1.55rem 1.35rem 1.5rem !important;
+}
 .hn-hero-verdict-dock .vcard--hero-light .vcard-body-dash,
 .hn-hero-verdict-dock .vcard-body-dash {
   background: rgba(8, 16, 28, 0.88);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding: 20px 1.35rem 18px;
+}
+.hn-hero-verdict-dock .vcard--rail .vcard-body-dash {
+  background: transparent;
+  border-top: none;
+  padding: 8px 1.35rem 22px;
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-name-dash,
 .hn-hero-verdict-dock .vcard-name-dash {
