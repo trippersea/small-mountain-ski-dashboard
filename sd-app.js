@@ -272,15 +272,15 @@ function getSponsor(resortId) {
     .vcard-lodging-slim-tag { font-size: 10px; color: rgba(240,246,252,.35); white-space: nowrap; flex-shrink: 0; }
 
     /* ── Verdict context line: "Based on: city · trip · pass · day" ─────────── */
-    .vcard-context-line { font-size: 10px; color: rgba(240,246,252,.42); margin: 2px 0 6px; letter-spacing: .01em; line-height: 1.45; }
+    .vcard-context-line { font-size: 10px; color: rgba(240,246,252,.58); margin: 2px 0 6px; letter-spacing: .01em; line-height: 1.45; }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-context-line { color: #8fa3b3; }
 
     /* ── Forecast freshness: "Saturday forecast · updated 2h ago" ──────────── */
-    .vcard-freshness { font-size: 10px; color: rgba(240,246,252,.36); margin-top: 6px; letter-spacing: .01em; }
+    .vcard-freshness { font-size: 10px; color: rgba(240,246,252,.52); margin-top: 6px; letter-spacing: .01em; }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-freshness { color: #9fb3c0; }
 
     /* ── Why this pick ──────────────────────────────────────────────────────── */
-    .vcard-why-pick { font-size: 11px; color: rgba(240,246,252,.6); font-style: italic; margin: 10px 0 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.09); line-height: 1.5; }
+    .vcard-why-pick { font-size: 11px; color: rgba(240,246,252,.86); font-style: italic; margin: 10px 0 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.12); line-height: 1.5; }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-why-pick { color: #5a7080; border-top-color: rgba(15,23,42,.09); }
 
     /* ── Mini runner tier badge ─────────────────────────────────────────────── */

@@ -1004,6 +1004,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 }
 
 /* Friend-style recommendation — slightly larger & warmer than stat rows */
+/* Default to inheriting color so dark hero / glass cards are not forced to --text-primary (navy). */
 .story-text,
 .vcard-story-lede {
   font-family: 'Newsreader', ui-serif, Georgia, serif;
@@ -1011,14 +1012,17 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   font-weight: 500;
   line-height: 1.52;
   letter-spacing: 0.01em;
-  color: var(--text-primary);
+  color: inherit;
   margin: 0 0 14px;
   max-width: 42rem;
 }
 #searchSection.hero-v2 .hn-hero-verdict-dock .story-text,
-#searchSection.hero-v2 .hn-hero-verdict-dock .vcard-story-lede {
-  color: rgba(248, 250, 252, 0.97);
-  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35);
+#searchSection.hero-v2 .hn-hero-verdict-dock .vcard-story-lede,
+.hn-hero-verdict-dock .vcard-hero-dash .story-text,
+.hn-hero-verdict-dock .vcard-hero-dash .vcard-story-lede {
+  color: #f1f5f9;
+  -webkit-text-fill-color: #f1f5f9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 14px rgba(0, 0, 0, 0.35);
   font-size: clamp(1.08rem, 2.2vw, 1.28rem);
   font-weight: 550;
 }
@@ -1047,6 +1051,17 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 }
 
 /* Mini “Also consider”: story stays readable without stretching cards */
+.hn-hero-verdict-dock button.vcard-mini-runner {
+  color: #e8eef5;
+  -webkit-text-fill-color: #e8eef5;
+}
+.hn-hero-verdict-dock .vcard-mini-runner .vibe-tag--mini {
+  margin-bottom: 4px;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  background: linear-gradient(180deg, #0f172a 0%, #020617 100%) !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
 .vcard-mini-runner .vibe-tag--mini {
   margin-bottom: 4px;
 }
@@ -1056,6 +1071,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   font-weight: 500;
   line-height: 1.4;
   color: rgba(240, 246, 252, 0.88);
+  -webkit-text-fill-color: rgba(240, 246, 252, 0.88);
   margin-top: 2px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -1064,8 +1080,14 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+.hn-hero-verdict-dock .vcard-mini-runner .vmr-cond.story-text {
+  color: rgba(248, 250, 252, 0.96) !important;
+  -webkit-text-fill-color: rgba(248, 250, 252, 0.96) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
 .hn-hero-verdict-dock .vcard--hero-light .vmr-cond.story-text {
   color: #475569;
+  -webkit-text-fill-color: #475569;
 }
 
 /* “Pure Gold” / perfect day — warm golden halo + refined border */
