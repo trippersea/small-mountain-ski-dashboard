@@ -55,6 +55,13 @@
   --rs-border: var(--border);
   --rs-accent-soft: rgba(43, 109, 233, 0.1);
   --rs-accent-line: rgba(43, 109, 233, 0.22);
+  /* Narrative / “perfect day” */
+  --narrative-badge-bg: linear-gradient(180deg, #1a2332 0%, #0c1016 100%);
+  --narrative-badge-border: rgba(255, 255, 255, 0.14);
+  --narrative-badge-text: #f8fafc;
+  --bluebird-halo: rgba(251, 191, 36, 0.45);
+  --bluebird-ring: rgba(245, 158, 11, 0.55);
+  --bluebird-inner: rgba(253, 230, 138, 0.12);
 }
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; overflow-x: clip; }
@@ -950,7 +957,160 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .row-sub { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; }
 .row-name--report { color: var(--text); text-decoration: none; font-weight: 700; font-size: 14px; }
 .row-name--report:hover { text-decoration: underline; text-decoration-color: rgba(43, 109, 233,.35); }
-.compare-weekend { color: var(--text); font-weight: 500; max-width: 28ch; }
+.compare-weekend {
+  color: var(--text);
+  font-weight: 500;
+  max-width: min(36ch, 100%);
+  vertical-align: top;
+  line-height: 1.45;
+}
+.compare-weekend .vibe-tag--mini {
+  display: inline-flex;
+  margin-bottom: 6px;
+}
+
+/* ═══ Mountain narrative — vibe badge, story copy, “bluebird / perfect day” ═══ */
+.vibe-tag {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--narrative-badge-text);
+  background: var(--narrative-badge-bg);
+  border: 1px solid var(--narrative-badge-border);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin: 0 0 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.vibe-tag--mini {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  padding: 3px 8px;
+  margin: 0 0 6px;
+}
+
+/* Hero top-pick card (dark glass): badge reads as premium, not pastel */
+#searchSection.hero-v2 .hn-hero-verdict-dock .vibe-tag {
+  background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Friend-style recommendation — slightly larger & warmer than stat rows */
+.story-text,
+.vcard-story-lede {
+  font-family: 'Newsreader', ui-serif, Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.52;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+  margin: 0 0 14px;
+  max-width: 42rem;
+}
+#searchSection.hero-v2 .hn-hero-verdict-dock .story-text,
+#searchSection.hero-v2 .hn-hero-verdict-dock .vcard-story-lede {
+  color: rgba(248, 250, 252, 0.97);
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35);
+  font-size: clamp(1.08rem, 2.2vw, 1.28rem);
+  font-weight: 550;
+}
+
+.mob-card-conditions.story-text {
+  font-family: 'Newsreader', ui-serif, Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 6px 0 8px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+@media (max-width: 520px) {
+  .mob-card-conditions.story-text {
+    font-size: 1rem;
+    line-height: 1.48;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Mini “Also consider”: story stays readable without stretching cards */
+.vcard-mini-runner .vibe-tag--mini {
+  margin-bottom: 4px;
+}
+.vcard-mini-runner .vmr-cond.story-text {
+  font-family: 'Newsreader', ui-serif, Georgia, serif;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(240, 246, 252, 0.88);
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.hn-hero-verdict-dock .vcard--hero-light .vmr-cond.story-text {
+  color: #475569;
+}
+
+/* “Pure Gold” / perfect day — warm golden halo + refined border */
+.vcard--dash.bluebird-glow {
+  border-color: rgba(245, 158, 11, 0.42) !important;
+  box-shadow:
+    0 0 0 1px var(--bluebird-ring),
+    0 0 28px var(--bluebird-halo),
+    0 0 48px rgba(251, 191, 36, 0.15),
+    inset 0 1px 0 var(--bluebird-inner) !important;
+}
+.vcard-mini-runner.bluebird-glow {
+  border-color: rgba(245, 158, 11, 0.55) !important;
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.5), 0 4px 20px rgba(245, 158, 11, 0.12);
+}
+tr.bluebird-glow td {
+  box-shadow: inset 4px 0 0 0 rgba(217, 119, 6, 0.95) !important;
+  background: linear-gradient(90deg, rgba(254, 243, 199, 0.22) 0%, transparent 48%);
+}
+tr.bluebird-glow:hover td {
+  background: linear-gradient(90deg, rgba(254, 243, 199, 0.35) 0%, #f1f5f9 52%);
+}
+.mob-card.bluebird-glow {
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.35),
+    0 6px 28px rgba(245, 158, 11, 0.14),
+    0 2px 8px rgba(15, 23, 42, 0.06) !important;
+}
+
+.vcard-stats3--pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.compare-weekend .story-text {
+  display: block;
+  font-family: 'Newsreader', ui-serif, Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.45;
+  margin-top: 2px;
+  color: var(--text-body);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .compare-drive { font-variant-numeric: tabular-nums; }
 .compare-drive--near { color: #15803d; font-weight: 600; }
 .compare-drive--mid  { color: #b45309; font-weight: 600; }

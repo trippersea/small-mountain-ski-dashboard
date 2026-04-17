@@ -2,11 +2,145 @@
 // SD-APP.JS — State, networking, UI rendering, events, and initialization
 // Depends on: sd-data.js, sd-scoring.js, sd-filters.js (loaded before this)
 // ═══════════════════════════════════════════════════════════════════════════
+//
+// import { getMountainNarrative } from './narrative-engine.js';
+// ↑ narrative-engine is loaded by narrative-bridge.js (before this script); the
+//   implementation is invoked via window.__wtsn_narrative_engine — see getMountainNarrative().
 
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
 // Phase-1 weather set (the "near" batch) so the verdict can be stable.
 let weatherPhase1Ids     = [];
+
+function getMountainNarrative(mountain) {
+  const eng = typeof window !== 'undefined' && window.__wtsn_narrative_engine;
+  if (typeof eng === 'function') return eng(mountain);
+  return {
+    vibe: 'Standard Issue',
+    story: mountain?.name ? `A pretty normal day at ${mountain.name}.` : 'Loading conditions…',
+  };
+}
+
+function wmoCodeToForecastPhrase(code) {
+  if (code == null || code === '') return 'Cloudy';
+  const c = Number(code);
+  if (c === 0) return 'Clear skies';
+  if (c === 1) return 'Mainly clear';
+  if (c === 2) return 'Partly cloudy';
+  if (c === 3) return 'Overcast';
+  if (c >= 45 && c <= 48) return 'Fog and cloudy skies';
+  if (c >= 51 && c <= 67) return 'Rain';
+  if (c >= 71 && c <= 77) return 'Snow';
+  if (c >= 80 && c <= 82) return 'Rain showers';
+  if (c >= 85 && c <= 86) return 'Snow showers';
+  if (c >= 95) return 'Thunderstorm';
+  return 'Cloudy';
+}
+
+/**
+ * Days since last day in 7-day history with ≥0.5" snow (0 = snow recently).
+ * narrative-engine uses this for Corduroy / Chalky / Chunder-style branches.
+ */
+function daysSinceMeasurableSnow(hist) {
+  if (!hist?.days?.length) return 0;
+  let since = 0;
+  for (let i = hist.days.length - 1; i >= 0; i--) {
+    if ((hist.days[i].snow || 0) >= 0.5) return since;
+    since++;
+  }
+  return since;
+}
+
+/**
+ * Maps Open-Meteo `wx` (see fetchWeather) → narrative-engine `mountain` shape:
+ *   temperature, lowTemp, highTemp, windSpeed, newSnow, humidity, daysSinceSnow,
+ *   forecast (string for keyword checks), altitude, name, wasWarmYesterday, rainedYesterday
+ *
+ * Open-Meteo cache shape: { temp, code, wind, humidity?, forecast: [{ day, code, hi, lo, snow, wind }] }
+ * Engine expects narrative keywords in `forecast` (clear/sun/cloud/rain/snow/showers/overcast).
+ */
+function buildNarrativeMountainPayload(resort, wx) {
+  if (!resort) {
+    return {
+      name: 'the mountain',
+      temperature: 32,
+      lowTemp: 27,
+      highTemp: 37,
+      forecast: '',
+      newSnow: 0,
+      windSpeed: 0,
+      humidity: 50,
+      daysSinceSnow: 0,
+      altitude: 0,
+      wasWarmYesterday: false,
+      rainedYesterday: false,
+    };
+  }
+  const altFt = resort.summitElevation || resort.baseElevation || 0;
+  if (!wx) {
+    return {
+      name: resort.name,
+      temperature: 32,
+      lowTemp: 27,
+      highTemp: 37,
+      forecast: '',
+      newSnow: 0,
+      windSpeed: 0,
+      humidity: 50,
+      daysSinceSnow: 0,
+      altitude: altFt,
+      wasWarmYesterday: false,
+      rainedYesterday: false,
+    };
+  }
+  const fi = targetForecastIndex();
+  const fc = wx.forecast?.[fi] || wx.forecast?.[0];
+  const rows = wx.forecast || [];
+  const stormTotal = rows.reduce((s, f) => s + (Number(f.snow) || 0), 0);
+
+  let hi = fc?.hi != null ? Number(fc.hi) : Number(wx.temp);
+  let lo = fc?.lo != null ? Number(fc.lo) : hi;
+  if (!Number.isFinite(hi)) hi = Number(wx.temp) || 32;
+  if (!Number.isFinite(lo)) lo = hi;
+
+  const baseEl = resort.baseElevation;
+  const sumEl = resort.summitElevation;
+  if (typeof summitTempF === 'function' && baseEl != null && sumEl != null && sumEl > baseEl) {
+    hi = Math.round(summitTempF(hi, baseEl, sumEl));
+    lo = Math.round(summitTempF(lo, baseEl, sumEl));
+  }
+
+  const mid = Math.round((hi + lo) / 2);
+  const fcWind = fc?.wind != null ? Number(fc.wind) : NaN;
+  const curWind = wx.wind != null ? Number(wx.wind) : 0;
+  const windSpeed = Math.round(Math.max(Number.isFinite(fcWind) ? fcWind : 0, curWind));
+
+  const wxCode = fc?.code != null ? fc.code : wx.code;
+  const forecastStr = wmoCodeToForecastPhrase(wxCode);
+
+  const hist = historyCache.get(resort.id);
+  const daysSinceSnow = daysSinceMeasurableSnow(hist);
+
+  const humRaw = wx.humidity;
+  const humidity = humRaw != null && Number.isFinite(Number(humRaw))
+    ? Math.round(Number(humRaw))
+    : 50;
+
+  return {
+    name: resort.name,
+    temperature: mid,
+    lowTemp: lo,
+    highTemp: hi,
+    windSpeed,
+    newSnow: stormTotal,
+    humidity,
+    daysSinceSnow,
+    forecast: forecastStr,
+    altitude: altFt,
+    wasWarmYesterday: false,
+    rainedYesterday: false,
+  };
+}
 
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function loadSavedWeights() {
@@ -161,7 +295,7 @@ function getSponsor(resortId) {
     .hn-hero-verdict-dock .vcard--hero-light .vmr-tier--skip { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
 
     /* ── Mini runner condition line ─────────────────────────────────────────── */
-    .vmr-cond { font-size: 9px; color: rgba(240,246,252,.38); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vmr-cond { font-size: 9px; color: rgba(240,246,252,.38); margin-top: 3px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     .hn-hero-verdict-dock .vcard--hero-light .vmr-cond { color: #8fa3b3; }
   `;
   document.head.appendChild(style);
@@ -801,7 +935,7 @@ async function fetchWeather(resort) {
   if (cached && Date.now() - cached.ts < WX_TTL) return cached.data;
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}` +
-      `&current=temperature_2m,weathercode,windspeed_10m` +
+      `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m` +
       `&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum,windspeed_10m_max` +
       `&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4` +
       `&timezone=America%2FNew_York&models=best_match`;
@@ -813,6 +947,9 @@ async function fetchWeather(resort) {
       temp: Math.round(data.current.temperature_2m),
       code: data.current.weathercode,
       wind: Math.round(data.current.windspeed_10m),
+      humidity: data.current.relativehumidity_2m != null
+        ? Math.round(data.current.relativehumidity_2m)
+        : undefined,
       forecast: data.daily.time.slice(1, 4).map((date, i) => ({
         day:  new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
         code: data.daily.weathercode[i + 1],
@@ -1589,21 +1726,10 @@ function renderVerdict(resorts) {
         <span class="vcard-lodging-slim-tag">weekend &middot; affiliate</span>
       </div>`
     : '';
-  const snowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
-    ? `${stormTotal.toFixed(0)}" forecast`
-    : (typeof tomorrowIn === 'number' && tomorrowIn >= 0.5)
-    ? `${tomorrowIn.toFixed(0)}" forecast`
-    : 'Dry forecast';
-
   const _wxVerdict = state.weatherCache[resort.id]?.data;
+  const _narrative = getMountainNarrative(buildNarrativeMountainPayload(resort, _wxVerdict));
+  const _pureGoldCls = _narrative.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
   const crowdLbl = crowdForecast(resort, _wxVerdict).label;
-  const crowdPill = crowdLbl === 'Quiet'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Crowd forecast: Light</span>'
-    : crowdLbl === 'Avoid'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Crowd forecast: Packed — avoid</span>'
-    : crowdLbl === 'Busy'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Crowd forecast: Busy</span>'
-    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Crowd forecast: Moderate</span>';
 
   const zipNudgeHtml = !state.origin
     ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — once we know where you're leaving from, this swaps to a real mountain with drive time.</p>`
@@ -1683,10 +1809,6 @@ function renderVerdict(resorts) {
   const _recLine = esc(headline || '');
   const _bodyCopy = esc([detail, ...subPoints].filter(Boolean).join(' '));
   const _driveTop = driveText ? esc(driveText) : '—';
-  const _wxTop = esc(snowPillText === 'Dry forecast' ? 'Dry forecast' : snowPillText);
-  const _wxSub = _wxVerdict?.forecast?.[targetForecastIndex()]
-    ? `high ${Math.round(_wxVerdict.forecast[targetForecastIndex()].hi)}\u00b0F`
-    : 'forecast';
   const _crowdTop = crowdLbl === 'Quiet' ? 'Light crowds' : crowdLbl === 'Avoid' ? 'Packed' : crowdLbl === 'Busy' ? 'Busy' : 'Moderate crowds';
   const _crowdSub = crowdLbl === 'Quiet' ? 'great choice' : crowdLbl === 'Avoid' ? 'avoid if you can' : crowdLbl === 'Busy' ? 'plan ahead' : 'plan ahead';
 
@@ -1725,21 +1847,22 @@ function renderVerdict(resorts) {
         ? `<span class="vmr-tier ${_rTierCls}">${esc(_rTierLabel)}</span>` : '';
 
       // One-line condition summary
-      const _rCondLine = _rRain ? 'Rain likely'
-        : _rStorm >= 0.5 ? `${_rStorm.toFixed(0)}" forecast`
-        : _rHiF != null ? `High ${Math.round(_rHiF)}\u00b0F \u00b7 dry`
-        : 'Dry forecast';
+      const _rNarr = _rWx
+        ? getMountainNarrative(buildNarrativeMountainPayload(item.resort, _rWx))
+        : { vibe: 'Standard Issue', story: 'Loading…' };
+      const _rGold = _rNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
 
       const _crowdCls = cf.label === 'Quiet' ? 'crowd-quiet-chip'
         : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip'
         : 'crowd-mod-chip';
-      return `<button type="button" class="vcard-mini-runner" data-mini-runner-id="${esc(item.resort.id)}">
+      return `<button type="button" class="vcard-mini-runner${_rGold}" data-mini-runner-id="${esc(item.resort.id)}">
         <span class="vmr-name-row">
           <span class="vmr-name">${esc(item.resort.name)}</span>
           ${_rTierHtml}
         </span>
         <span class="vmr-drive">${_rDrive ? `${esc(_rDrive)} \u2022 ` : ''}${esc(cf.label)}</span>
-        <span class="vmr-cond">${esc(_rCondLine)}</span>
+        <div class="vibe-tag vibe-tag--mini">${esc(_rNarr.vibe)}</div>
+        <span class="vmr-cond story-text">${esc(_rNarr.story)}</span>
       </button>`;
     }).join('');
     return `<div class="vcard-runners-strip">
@@ -1753,7 +1876,7 @@ function renderVerdict(resorts) {
   })() : '';
 
   els.verdictCard.innerHTML = `
-    <div class="vcard vcard--dash vcard--tier-${tier}${_vcardHeroLightCls}">
+    <div class="vcard vcard--dash vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
         <div class="vcard-top-pill">${_topPill}</div>
         ${zipNudgeHtml}
@@ -1761,16 +1884,13 @@ function renderVerdict(resorts) {
         ${_contextLine ? `<div class="vcard-context-line">${esc(_contextLine)}</div>` : ''}
         ${_recLine ? `<div class="vcard-rec-line">${_recLine}</div>` : ''}
         ${_bodyCopy ? `<p class="vcard-bodycopy">${_bodyCopy}</p>` : ''}
-        <div class="vcard-stats3" role="list" aria-label="Top pick stats">
+        <div class="vibe-tag">${esc(_narrative.vibe)}</div>
+        <p class="vcard-story-lede story-text">${esc(_narrative.story)}</p>
+        <div class="vcard-stats3 vcard-stats3--pair" role="list" aria-label="Top pick stats">
           <div class="vcard-stat3" role="listitem">
             <span class="vcard-stat3-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 16l1-5 3-3h10l3 3 1 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 16v2M17 16v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="7" cy="16" r="1.6" fill="currentColor"/><circle cx="17" cy="16" r="1.6" fill="currentColor"/></svg></span>
             <span class="vcard-stat3-top">${_driveTop}</span>
             <span class="vcard-stat3-sub">drive</span>
-          </div>
-          <div class="vcard-stat3" role="listitem">
-            <span class="vcard-stat3-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M4 7l16 10M20 7L4 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 5l2 2M17 19l-2-2M17 5l-2 2M7 19l2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-            <span class="vcard-stat3-top">${_wxTop}</span>
-            <span class="vcard-stat3-sub">${esc(_wxSub)}</span>
           </div>
           <div class="vcard-stat3" role="listitem">
             <span class="vcard-stat3-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 10-8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
@@ -2323,17 +2443,21 @@ function renderCompareTable(resorts) {
     const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
 
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
-    const weekendLine = vd?.rainLikely
-      ? 'Rain likely — not worth the drive'
-      : (stormTotal !== null && stormTotal >= 6)
-      ? `${stormTotal.toFixed(0)}" incoming`
-      : (hist?.total != null && hist.total >= 6)
-      ? `Good base, dry forecast`
-      : (stormTotal !== null && stormTotal >= 1)
-      ? `${stormTotal.toFixed(0)}" coming — mostly groomers`
-      : (stormTotal !== null)
-      ? `Dry forecast — expect firm`
-      : 'Loading forecast…';
+    const _tabNarr = wx
+      ? getMountainNarrative(buildNarrativeMountainPayload(resort, wx))
+      : { vibe: 'Standard Issue', story: vd?.rainLikely
+        ? 'Rain likely — not worth the drive'
+        : (stormTotal !== null && stormTotal >= 6)
+        ? `${stormTotal.toFixed(0)}" incoming`
+        : (hist?.total != null && hist.total >= 6)
+        ? 'Good base, dry forecast'
+        : (stormTotal !== null && stormTotal >= 1)
+        ? `${stormTotal.toFixed(0)}" coming — mostly groomers`
+        : (stormTotal !== null)
+        ? 'Dry forecast — expect firm'
+        : 'Loading forecast…' };
+    const weekendLine = _tabNarr.story;
+    const _tabGoldCls = _tabNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
 
     const crowdWord = crowd === 'Quiet' ? 'Quiet'
                     : crowd === 'Busy'  ? 'Busy'
@@ -2355,7 +2479,7 @@ function renderCompareTable(resorts) {
 
     const _sp = getSponsor(resort.id);
     return `
-      <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}" data-id="${resort.id}">
+      <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}${_tabGoldCls}" data-id="${resort.id}">
         <td class="compare-rank-cell"><span class="compare-rank" aria-hidden="true">${idx + 1}</span></td>
         <td class="compare-select-cell"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td>
@@ -2367,7 +2491,7 @@ function renderCompareTable(resorts) {
             <div class="row-sub">${esc(resort.state)}</div>
           </div>
         </td>
-        <td class="compare-weekend">${esc(weekendLine)}</td>
+        <td class="compare-weekend"><div class="vibe-tag vibe-tag--mini">${esc(_tabNarr.vibe)}</div><span class="story-text">${esc(weekendLine)}</span></td>
         <td class="compare-drive ${driveCls}">${esc(formatDrive(resort.id))}</td>
         <td>${esc(resort.passGroup)}</td>
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
@@ -2778,17 +2902,21 @@ function renderMobileCards(decorated, emptyOpts) {
     const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
 
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
-    const weekendLine = vd?.rainLikely
-      ? 'Rain likely — not worth the drive'
-      : (stormTotal !== null && stormTotal >= 6)
-      ? `${stormTotal.toFixed(0)}" incoming`
-      : (hist?.total != null && hist.total >= 6)
-      ? `Good base, dry forecast`
-      : (stormTotal !== null && stormTotal >= 1)
-      ? `${stormTotal.toFixed(0)}" coming — mostly groomers`
-      : (stormTotal !== null)
-      ? `Dry forecast — expect firm`
-      : 'Loading forecast…';
+    const _mobNarr = wx
+      ? getMountainNarrative(buildNarrativeMountainPayload(resort, wx))
+      : { vibe: 'Standard Issue', story: vd?.rainLikely
+        ? 'Rain likely — not worth the drive'
+        : (stormTotal !== null && stormTotal >= 6)
+        ? `${stormTotal.toFixed(0)}" incoming`
+        : (hist?.total != null && hist.total >= 6)
+        ? 'Good base, dry forecast'
+        : (stormTotal !== null && stormTotal >= 1)
+        ? `${stormTotal.toFixed(0)}" coming — mostly groomers`
+        : (stormTotal !== null)
+        ? 'Dry forecast — expect firm'
+        : 'Loading forecast…' };
+    const weekendLine = _mobNarr.story;
+    const _mobGoldCls = _mobNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
 
     const crowdWord = crowd === 'Quiet' ? 'Quiet' : crowd === 'Busy' ? 'Busy' : crowd === 'Avoid' ? 'Avoid' : 'Moderate';
     const _mobSp = getSponsor(resort.id);
@@ -2799,13 +2927,14 @@ function renderMobileCards(decorated, emptyOpts) {
           <a class="mob-partner-cta" href="${esc(_mobSp.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation();trackSponsorClick('${esc(resort.name)}','mobile_card','${esc(resort.id)}','')">${esc(_mobSp.tagline || 'Visit partner')} →</a>
         </div>`
       : '';
-    return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
+    return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}${_mobGoldCls}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
       <div class="mob-card-top">
         <div class="mob-card-name">${esc(resort.name)}</div>
         <span class="mob-chip mob-chip--pass" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
       </div>
       ${_mobPartnerBanner}
-      <p class="mob-card-conditions">${esc(weekendLine)}</p>
+      <div class="vibe-tag vibe-tag--mini">${esc(_mobNarr.vibe)}</div>
+      <p class="mob-card-conditions story-text">${esc(weekendLine)}</p>
       <p class="mob-card-drive ${driveCls}">${drive !== '—' ? `${esc(drive)} in the car` : 'Add your start location for drive time'}</p>
       <div class="mob-card-meta">
         <span class="mob-meta-state">${esc(resort.state)}</span>
