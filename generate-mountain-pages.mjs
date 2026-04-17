@@ -854,8 +854,6 @@ function generateMountainPage(resort, allResorts) {
         </span>
       </a>
       <div class="nav-divider"></div>
-      <a href="/ski/${stateSlug}/" class="nav-primary">${stateName} Mountains</a>
-      <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
