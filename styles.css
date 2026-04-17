@@ -6559,6 +6559,67 @@ button.vcard-detail-btn:hover,
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: rgba(240,246,252,0.95) !important;
+  gap: 0;
+}
+#searchSection.hero-v2 .hn-verdict-empty-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  text-align: left;
+  width: 100%;
+}
+#searchSection.hero-v2 .hn-verdict-empty-list {
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 1rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  color: rgba(200, 220, 240, 0.88) !important;
+}
+#searchSection.hero-v2 .hn-verdict-empty-list li {
+  margin: 0;
+  padding: 0 0 0 0.85rem;
+  position: relative;
+}
+#searchSection.hero-v2 .hn-verdict-empty-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(147, 197, 253, 0.55);
+}
+#searchSection.hero-v2 .hn-verdict-empty-locate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin-top: 0.15rem;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(147, 197, 253, 0.35);
+  background: rgba(43, 109, 233, 0.28);
+  color: #f0f6fc;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+#searchSection.hero-v2 .hn-verdict-empty-locate-btn:hover {
+  background: rgba(43, 109, 233, 0.4);
+  border-color: rgba(147, 197, 253, 0.5);
 }
 #searchSection.hero-v2 .hn-hero-verdict-empty-title {
   color: #f0f6fc !important;
@@ -6566,13 +6627,15 @@ button.vcard-detail-btn:hover,
 #searchSection.hero-v2 .hn-hero-verdict-empty-sub {
   color: rgba(200,220,240,0.72) !important;
 }
-#searchSection.hero-v2 .hn-verdict-empty-chip {
-  background: rgba(43,109,233,0.22) !important;
-  border-color: rgba(147,197,253,0.3) !important;
-  color: rgba(200,220,240,0.88) !important;
-}
 #searchSection.hero-v2 .hn-verdict-empty-or {
   color: rgba(200,220,240,0.5) !important;
+  margin-top: 0.65rem !important;
+  margin-bottom: 0 !important;
+}
+@media (max-width: 420px) {
+  #searchSection.hero-v2 .hn-verdict-empty-list {
+    grid-template-columns: 1fr;
+  }
 }
 #searchSection.hero-v2 {
   position: relative;
