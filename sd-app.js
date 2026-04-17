@@ -16,8 +16,8 @@ function getMountainNarrative(mountain) {
   const eng = typeof window !== 'undefined' && window.__wtsn_narrative_engine;
   if (typeof eng === 'function') return eng(mountain);
   return {
-    vibe: 'Standard Issue',
-    story: mountain?.name ? `A pretty normal day at ${mountain.name}.` : 'Loading conditions…',
+    vibe: 'Fair Enough',
+    story: mountain?.name ? `Pretty normal at ${mountain.name}.` : 'Loading conditions…',
   };
 }
 
@@ -39,7 +39,7 @@ function wmoCodeToForecastPhrase(code) {
 
 /**
  * Days since last day in 7-day history with ≥0.5" snow (0 = snow recently).
- * narrative-engine uses this for Corduroy / Chalky / Chunder-style branches.
+ * narrative-engine uses this for groomer vs rough-snow branches (e.g. Rough Going).
  */
 function daysSinceMeasurableSnow(hist) {
   if (!hist?.days?.length) return 0;
@@ -142,6 +142,81 @@ function buildNarrativeMountainPayload(resort, wx) {
   };
 }
 
+/** One supporting line for the card (word cap; keeps short multi-clause copy intact). */
+function cardStoryOneLine(story) {
+  if (!story || typeof story !== 'string') return '';
+  const s = story.replace(/\s+/g, ' ').trim();
+  const words = s.split(/\s+/);
+  if (words.length <= 22) return s;
+  return `${words.slice(0, 22).join(' ')}…`;
+}
+
+/** Short headline under the mountain name (UI layer, not the narrative engine). */
+function topPickVerdictPhrase(tier, scoreNum) {
+  const s = Number(scoreNum);
+  if (tier === 'great') {
+    if (s >= 88) return 'This is why you go skiing';
+    if (s >= 80) return 'Very good ski day';
+    return 'Go get your laps';
+  }
+  if (tier === 'good') {
+    if (s >= 72) return 'Could be fun with the right timing';
+    return 'Decent if you keep expectations in check';
+  }
+  if (tier === 'marginal') {
+    if (s >= 58) return 'Better later in the day';
+    return 'Decent if you keep expectations in check';
+  }
+  if (s >= 40) return 'Fine for a few laps, not much more';
+  if (s >= 34) return 'Probably not worth the drive';
+  return 'Probably skip this weekend';
+}
+
+function crowdUtilityShort(label) {
+  if (label === 'Quiet') return 'Light crowds';
+  if (label === 'Avoid') return 'Packed';
+  if (label === 'Busy') return 'Busy crowds';
+  return 'Moderate crowds';
+}
+
+function driveUtilitySegment(resortId) {
+  const mins = getDriveMins(resortId);
+  if (mins == null) return 'Add a start point for drive time';
+  return `${formatDriveMins(mins, isDriveEstimated(resortId))} drive`;
+}
+
+/**
+ * One human reason per runner: best score or closest drive in the batch, else narrative.
+ */
+function runnerReasonLine(batch, item, idx) {
+  const wx = state.weatherCache[item.resort.id]?.data;
+  const narr = wx
+    ? getMountainNarrative(buildNarrativeMountainPayload(item.resort, wx))
+    : null;
+  const fallback = narr ? cardStoryOneLine(narr.story) : 'Worth a look';
+
+  const scored = batch.filter(x => x.breakdown && Number.isFinite(x.breakdown.score));
+  if (scored.length >= 2) {
+    const max = Math.max(...scored.map(x => x.breakdown.score));
+    const winners = scored.filter(x => x.breakdown.score === max);
+    if (winners.length === 1 && item.breakdown && item.breakdown.score === max) {
+      return 'Best snow of this group';
+    }
+  }
+
+  const drives = batch.map(x => getDriveMins(x.resort.id)).filter(x => x != null);
+  if (drives.length >= 2) {
+    const minD = Math.min(...drives);
+    const closest = batch.filter(x => getDriveMins(x.resort.id) === minD);
+    const myD = getDriveMins(item.resort.id);
+    if (closest.length === 1 && myD === minD) return 'Closest of these picks';
+  }
+
+  if (idx === 0) return 'Solid alternate to consider';
+
+  return fallback;
+}
+
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function loadSavedWeights() {
   try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
@@ -218,22 +293,23 @@ function getSponsor(resortId) {
     .table-lodging-link { font-size:12px; font-weight:400; color:#9ca3af; text-decoration:none; white-space:nowrap; }
     .table-lodging-link:hover { text-decoration:underline; }
 
-    /* ── Runner-up mini strip inside verdict card ───────────────────────────── */
-    .vcard-runners-strip { margin: 10px -22px -18px; padding: 11px 22px 14px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 0 0 12px 12px; }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 11px 1.35rem 14px; border-top: 1px solid rgba(15,23,42,.08); background: #e8eef5; border-radius: 0 0 10px 10px; }
+    /* ── Also in the running (mini strip) ───────────────────────────────────── */
+    .vcard-runners-strip { margin: 10px -22px -18px; padding: 14px 22px 16px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 0 0 12px 12px; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 14px 1.35rem 16px; border-top: 1px solid rgba(15,23,42,.08); background: #e8eef5; border-radius: 0 0 10px 10px; }
     .vcard-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .vcard-runners-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,246,252,.5); }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: #7a92a8; }
-    .vcard-runners-mini { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 1px; justify-content: center; }
+    .vcard-runners-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,246,252,.58); }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: #64748b; }
+    .vcard-runners-mini { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 1px; justify-content: center; }
     .vcard-runners-mini::-webkit-scrollbar { display: none; }
-    .vcard-mini-runner { display: flex; flex-direction: column; gap: 3px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-align: left; min-width: 130px; max-width: 160px; flex-shrink: 0; transition: background .15s, border-color .15s; }
+    .vcard-mini-runner { display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.15); border-radius: 10px; padding: 12px 12px 14px; cursor: pointer; text-align: left; min-width: 148px; max-width: 200px; flex-shrink: 0; transition: background .15s, border-color .15s; }
     .vcard-mini-runner:hover { background: rgba(255,255,255,.17); border-color: rgba(255,255,255,.28); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner { background: #fff; border-color: #dde3ea; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-mini-runner:hover { background: #eef4ff; border-color: #93c5fd; }
-    .vmr-name { font-size: 11px; font-weight: 700; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vmr-name { font-size: 13px; font-weight: 700; color: #f0f6fc; }
     .hn-hero-verdict-dock .vcard--hero-light .vmr-name { color: #1a2030; }
-    .vmr-drive { font-size: 10px; color: rgba(240,246,252,.55); margin-top: 1px; }
-    .hn-hero-verdict-dock .vcard--hero-light .vmr-drive { color: #7a92a8; }
+    .vmr-reason { font-size: 12px; color: rgba(248,250,252,.9); margin: 0; line-height: 1.35; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-reason { color: #334155; }
+    .vmr-utility { font-size: 11px; font-weight: 600; color: rgba(210,224,238,.88); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .vmr-crowd-mini { font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 999px; display: inline-flex; align-items: center; gap: 3px; width: fit-content; margin-top: 2px; }
     .vmr-crowd-mini.crowd-quiet-chip { background: rgba(34,179,138,.2); color: #6ee7b7; }
     .vmr-crowd-mini.crowd-busy-chip  { background: rgba(248,113,113,.15); color: #fca5a5; }
@@ -1692,17 +1768,9 @@ function renderVerdict(resorts) {
   document.getElementById('hnConditionsGuidance')?.remove();
 
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
-  const _fromCity = _cityEw || 'your town';
-  const _topPill  = esc(`TOP PICK • FROM ${_fromCity}`);
+  const _fromCity = _cityEw || 'your location';
+  const _eyebrow  = esc(`Top Pick • From ${_fromCity}`);
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
-
-  const tierConfig = {
-    great:    { label: 'Great conditions', pillClass: 'vcard-dash-pill--cond-great', dot: '#22c55e' },
-    good:     { label: 'Good conditions',  pillClass: 'vcard-dash-pill--cond-good', dot: '#38bdf8' },
-    marginal: { label: 'Fair conditions',    pillClass: 'vcard-dash-pill--cond-warn', dot: '#f59e0b' },
-    bad:      { label: 'Rough conditions',   pillClass: 'vcard-dash-pill--cond-bad', dot: '#f87171' },
-  };
-  const tc = tierConfig[tier] || tierConfig.good;
 
   const scoreNum = breakdown ? Math.round(breakdown.score) : 0;
   const showVerdictGuidance = tier === 'bad'
@@ -1716,7 +1784,7 @@ function renderVerdict(resorts) {
   const guidanceInsetHtml = showVerdictGuidance
     ? `<div class="vcard-guidance-compact" role="note">
         <span class="vcard-guidance-compact-icon">⚠</span>
-        <span>Conditions are rough &mdash; <button type="button" class="vcard-guidance-compact-btn" id="verdictRefineGuidanceBtn">${_widenSuggestion} &darr;</button></span>
+        <span>Conditions are rough. <button type="button" class="vcard-guidance-compact-btn" id="verdictRefineGuidanceBtn">${_widenSuggestion} &darr;</button></span>
       </div>`
     : '';
   const _lodgingUrl = bookingUrl(resort);
@@ -1732,7 +1800,7 @@ function renderVerdict(resorts) {
   const crowdLbl = crowdForecast(resort, _wxVerdict).label;
 
   const zipNudgeHtml = !state.origin
-    ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong> — once we know where you're leaving from, this swaps to a real mountain with drive time.</p>`
+    ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong>. Once we know where you are leaving from, this swaps to a real mountain with drive time.</p>`
     : '';
 
   const verdictBdAttr = breakdown?.components ? (() => {
@@ -1768,14 +1836,6 @@ function renderVerdict(resorts) {
   const _verdictPhotoStyle = resortPhotoStyle(resort, 'linear-gradient(180deg,rgba(8,16,28,.18) 0%,rgba(8,16,28,.62) 50%,rgba(8,16,28,.94) 100%)');
   const _heroDashStyleAttr = _verdictPhotoStyle ? ` style="${_verdictPhotoStyle}"` : '';
 
-  // ── Context line: what settings produced this result ─────────────────────────
-  const _passLabel = state.passFilter === 'All' ? 'Any pass' : `${state.passFilter} pass`;
-  const _tripLabel = state.howFar === 0 ? 'Day trip' : state.howFar === 1 ? 'Weekend' : 'Any distance';
-  const _dayLabel  = HERO_DAY_LABELS[state.skiDayPreset || smartDefaultWhenVal()] || 'Weekend';
-  const _contextLine = state.origin
-    ? `Based on: ${_fromCity} \u00b7 ${_tripLabel} \u00b7 ${_passLabel} \u00b7 ${_dayLabel}`
-    : '';
-
   // ── Forecast freshness: day being shown + how recently data was fetched ───────
   const _cacheTs   = state.weatherCache[resort.id]?.ts;
   const _agoStr    = _cacheTs ? (() => {
@@ -1789,85 +1849,35 @@ function renderVerdict(resorts) {
     return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   })();
   const _freshnessHtml = _agoStr
-    ? `<div class="vcard-freshness">Showing ${esc(_forecastDayStr)} forecast \u00b7 updated ${esc(_agoStr)}</div>`
+    ? `<div class="vcard-freshness vcard-freshness--quiet">Showing ${esc(_forecastDayStr)} forecast \u00b7 updated ${esc(_agoStr)}</div>`
     : '';
 
-  // ── Why this pick: one-liner explaining why this mountain ranked first ────────
-  const _verdictPool  = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id) && state.weatherCache[r.id]?.data) : resorts.filter(r => state.weatherCache[r.id]?.data);
-  const _poolCount    = _verdictPool.length;
-  const _whyPickText  = tier === 'great'
-    ? (stormTotal >= 6
-        ? `Highest storm snow of ${_poolCount} mountains in range \u2014 ${stormTotal.toFixed(0)}" over 3 days.`
-        : `Best snow-to-drive ratio of ${_poolCount} mountains in your range.`)
-    : tier === 'good'
-    ? `Top-ranked of ${_poolCount} mountains in range \u2014 best match for your settings.`
-    : tier === 'marginal'
-    ? `Best available of ${_poolCount} in range \u2014 conditions are thin across the board right now.`
-    : `Best of limited options across ${_poolCount} mountains \u2014 conditions are rough everywhere this weekend.`;
-  const _whyPickHtml = `<p class="vcard-why-pick">${esc(_whyPickText)}</p>`;
-
-  const _recLine = esc(headline || '');
-  const _bodyCopy = esc([detail, ...subPoints].filter(Boolean).join(' '));
-  const _driveTop = driveText ? esc(driveText) : '—';
-  const _crowdTop = crowdLbl === 'Quiet' ? 'Light crowds' : crowdLbl === 'Avoid' ? 'Packed' : crowdLbl === 'Busy' ? 'Busy' : 'Moderate crowds';
-  const _crowdSub = crowdLbl === 'Quiet' ? 'great choice' : crowdLbl === 'Avoid' ? 'avoid if you can' : crowdLbl === 'Busy' ? 'plan ahead' : 'plan ahead';
+  const _verdictPhrase = topPickVerdictPhrase(tier, scoreNum);
+  const _storyOneLine  = cardStoryOneLine(_narrative.story);
+  const _utilityCrowd  = crowdUtilityShort(crowdLbl);
+  const _utilityDrive  = driveUtilitySegment(resort.id);
 
   // ── Runner-up mini strip — always-on teaser inside the verdict card ─────────
   const runnerStripHtml = runningItems.length > 0 ? (() => {
-    const miniCards = runningItems.map(item => {
-      const _rDrive    = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
-      const _rWx       = state.weatherCache[item.resort.id]?.data;
-      const cf         = crowdForecast(item.resort, _rWx);
-      const _rFi       = targetForecastIndex();
-      const _rForecast = _rWx?.forecast || [];
-      const _rTomSnow  = _rForecast[_rFi]?.snow || 0;
-      const _rStorm    = _rForecast.reduce((s, f) => s + (f.snow || 0), 0);
-      const _rBaseLo   = _rForecast[_rFi]?.lo ?? 30;
-      const _rSummitLo = (typeof summitTempF === 'function')
-        ? summitTempF(_rBaseLo, item.resort.baseElevation, item.resort.summitElevation)
-        : _rBaseLo;
-      const _rRain     = _rSummitLo > 34;
-      const _rHiF      = _rForecast[_rFi]?.hi;
-
-      // Tier badge
-      const _rMiniTier = !_rWx ? null
-        : _rRain ? 'bad'
-        : (_rStorm >= 6 || _rTomSnow >= 4) ? 'great'
-        : _rStorm >= 2  ? 'good'
-        : _rStorm >= 0.5 ? 'marginal'
-        : 'bad';
-      const _rTierLabel = (_rMiniTier === 'great' || _rMiniTier === 'good') ? 'Go'
-        : _rMiniTier === 'marginal' ? 'Fair'
-        : _rMiniTier === 'bad'      ? 'Skip'
-        : null;
-      const _rTierCls = (_rMiniTier === 'great' || _rMiniTier === 'good') ? 'vmr-tier--go'
-        : _rMiniTier === 'marginal' ? 'vmr-tier--fair'
-        : 'vmr-tier--skip';
-      const _rTierHtml = _rTierLabel
-        ? `<span class="vmr-tier ${_rTierCls}">${esc(_rTierLabel)}</span>` : '';
-
-      // One-line condition summary
+    const miniCards = runningItems.map((item, rIdx) => {
+      const _rWx = state.weatherCache[item.resort.id]?.data;
+      const cf   = crowdForecast(item.resort, _rWx);
       const _rNarr = _rWx
         ? getMountainNarrative(buildNarrativeMountainPayload(item.resort, _rWx))
-        : { vibe: 'Standard Issue', story: 'Loading…' };
+        : { vibe: 'Fair Enough', story: 'Loading…' };
       const _rGold = _rNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
-
-      const _crowdCls = cf.label === 'Quiet' ? 'crowd-quiet-chip'
-        : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip'
-        : 'crowd-mod-chip';
+      const _rReason = esc(runnerReasonLine(runningItems, item, rIdx));
+      const _rCrowdU = esc(crowdUtilityShort(cf.label));
+      const _rDriveU = esc(driveUtilitySegment(item.resort.id));
       return `<button type="button" class="vcard-mini-runner${_rGold}" data-mini-runner-id="${esc(item.resort.id)}">
-        <span class="vmr-name-row">
-          <span class="vmr-name">${esc(item.resort.name)}</span>
-          ${_rTierHtml}
-        </span>
-        <span class="vmr-drive">${_rDrive ? `${esc(_rDrive)} \u2022 ` : ''}${esc(cf.label)}</span>
-        <div class="vibe-tag vibe-tag--mini">${esc(_rNarr.vibe)}</div>
-        <span class="vmr-cond story-text">${esc(_rNarr.story)}</span>
+        <span class="vmr-name">${esc(item.resort.name)}</span>
+        <p class="vmr-reason">${_rReason}</p>
+        <div class="vmr-utility" role="group" aria-label="Drive and crowds"><span>${_rDriveU}</span><span class="vmr-utility-sep" aria-hidden="true"></span><span>${_rCrowdU}</span></div>
       </button>`;
     }).join('');
     return `<div class="vcard-runners-strip">
       <div class="vcard-runners-header">
-        <span class="vcard-runners-label">ALSO CONSIDER</span>
+        <span class="vcard-runners-label">Also in the running</span>
       </div>
       <div class="vcard-runners-mini">
         ${miniCards}
@@ -1876,34 +1886,25 @@ function renderVerdict(resorts) {
   })() : '';
 
   els.verdictCard.innerHTML = `
-    <div class="vcard vcard--dash vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
+    <div class="vcard vcard--dash vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
-        <div class="vcard-top-pill">${_topPill}</div>
+        <div class="vcard-top-pill vcard-eyebrow">${_eyebrow}</div>
         ${zipNudgeHtml}
-        <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
-        ${_contextLine ? `<div class="vcard-context-line">${esc(_contextLine)}</div>` : ''}
-        ${_recLine ? `<div class="vcard-rec-line">${_recLine}</div>` : ''}
-        ${_bodyCopy ? `<p class="vcard-bodycopy">${_bodyCopy}</p>` : ''}
-        <div class="vibe-tag">${esc(_narrative.vibe)}</div>
-        <p class="vcard-story-lede story-text">${esc(_narrative.story)}</p>
-        <div class="vcard-stats3 vcard-stats3--pair" role="list" aria-label="Top pick stats">
-          <div class="vcard-stat3" role="listitem">
-            <span class="vcard-stat3-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 16l1-5 3-3h10l3 3 1 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 16v2M17 16v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="7" cy="16" r="1.6" fill="currentColor"/><circle cx="17" cy="16" r="1.6" fill="currentColor"/></svg></span>
-            <span class="vcard-stat3-top">${_driveTop}</span>
-            <span class="vcard-stat3-sub">drive</span>
-          </div>
-          <div class="vcard-stat3" role="listitem">
-            <span class="vcard-stat3-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 10-8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-            <span class="vcard-stat3-top">${esc(_crowdTop)}</span>
-            <span class="vcard-stat3-sub">${esc(_crowdSub)}</span>
-          </div>
+        <button type="button" class="vcard-name-dash vcard-name-dash--pick" id="verdictPickBtn">${esc(resort.name)}</button>
+        <p class="vcard-verdict-line">${esc(_verdictPhrase)}</p>
+        <p class="vcard-story-one">${esc(_storyOneLine)}</p>
+        <div class="vcard-utility-row" role="group" aria-label="Vibe, drive, and crowds">
+          <span class="vcard-utility-vibe">${esc(_narrative.vibe)}</span>
+          <span class="vcard-utility-sep" aria-hidden="true"></span>
+          <span>${esc(_utilityDrive)}</span>
+          <span class="vcard-utility-sep" aria-hidden="true"></span>
+          <span>${esc(_utilityCrowd)}</span>
         </div>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         ${_freshnessHtml}
       </div>
       <div class="vcard-body vcard-body-dash">
-        ${_whyPickHtml}
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
         <div class="vcard-actions vcard-actions-dash">
           ${primaryBtn}
@@ -2000,8 +2001,8 @@ function renderVerdict(resorts) {
         const sub = _hnSection.querySelector('.hn-results-sub');
         if (sub) {
           const stormNote = stormTotal > 0
-            ? 'A storm is in the forecast — check back mid-week, conditions may improve.'
-            : 'No storm systems in the next 3 days. Check back mid-week — forecasts shift fast.';
+            ? 'A storm is in the forecast. Check back mid-week, conditions may improve.'
+            : 'No storm systems in the next 3 days. Check back mid-week; forecasts shift fast.';
           sub.textContent = stormNote;
           sub.classList.add('hn-results-sub--expanded');
         }
@@ -2011,7 +2012,7 @@ function renderVerdict(resorts) {
           : 'Other options';
         const sub = _hnSection.querySelector('.hn-results-sub');
         if (sub) {
-          sub.textContent = 'Conditions are marginal across the board — refine your preferences for a better match.';
+          sub.textContent = 'Conditions are marginal across the board. Refine your preferences for a better match.';
           sub.classList.add('hn-results-sub--expanded');
         }
       } else {
@@ -2445,16 +2446,16 @@ function renderCompareTable(resorts) {
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
     const _tabNarr = wx
       ? getMountainNarrative(buildNarrativeMountainPayload(resort, wx))
-      : { vibe: 'Standard Issue', story: vd?.rainLikely
-        ? 'Rain likely — not worth the drive'
+      : { vibe: 'Fair Enough', story: vd?.rainLikely
+        ? 'Rain likely, not worth the drive'
         : (stormTotal !== null && stormTotal >= 6)
         ? `${stormTotal.toFixed(0)}" incoming`
         : (hist?.total != null && hist.total >= 6)
         ? 'Good base, dry forecast'
         : (stormTotal !== null && stormTotal >= 1)
-        ? `${stormTotal.toFixed(0)}" coming — mostly groomers`
+        ? `${stormTotal.toFixed(0)}" coming, mostly groomers`
         : (stormTotal !== null)
-        ? 'Dry forecast — expect firm'
+        ? 'Dry forecast, expect firm'
         : 'Loading forecast…' };
     const weekendLine = _tabNarr.story;
     const _tabGoldCls = _tabNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
@@ -2904,16 +2905,16 @@ function renderMobileCards(decorated, emptyOpts) {
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
     const _mobNarr = wx
       ? getMountainNarrative(buildNarrativeMountainPayload(resort, wx))
-      : { vibe: 'Standard Issue', story: vd?.rainLikely
-        ? 'Rain likely — not worth the drive'
+      : { vibe: 'Fair Enough', story: vd?.rainLikely
+        ? 'Rain likely, not worth the drive'
         : (stormTotal !== null && stormTotal >= 6)
         ? `${stormTotal.toFixed(0)}" incoming`
         : (hist?.total != null && hist.total >= 6)
         ? 'Good base, dry forecast'
         : (stormTotal !== null && stormTotal >= 1)
-        ? `${stormTotal.toFixed(0)}" coming — mostly groomers`
+        ? `${stormTotal.toFixed(0)}" coming, mostly groomers`
         : (stormTotal !== null)
-        ? 'Dry forecast — expect firm'
+        ? 'Dry forecast, expect firm'
         : 'Loading forecast…' };
     const weekendLine = _mobNarr.story;
     const _mobGoldCls = _mobNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
