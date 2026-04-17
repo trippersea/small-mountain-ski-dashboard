@@ -6771,14 +6771,14 @@ button.vcard-detail-btn:hover,
   .hn-hero-verdict-dock .vcard-stats3 { grid-template-columns: 1fr; }
 }
 
-/* ── Runners strip inside hero dock ──────────────────────────────────────── */
+/* ── Runners strip inside hero dock (spacing mirrored in sd-app inject for load order) ─ */
 .hn-hero-verdict-dock .vcard-runners-strip {
-  margin-top: 8px;
-  padding: 18px 0 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  margin: 20px 0 0;
+  padding: 26px 1.35rem 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .hn-hero-verdict-dock .vcard-runners-header {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .hn-hero-verdict-dock .vcard-runners-mini {
   display: grid;

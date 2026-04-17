@@ -295,7 +295,15 @@ function getSponsor(resortId) {
 
     /* ── Also in the running (mini strip) ───────────────────────────────────── */
     .vcard-runners-strip { margin: 10px -22px -18px; padding: 14px 22px 16px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 0 0 12px 12px; }
+    /* Hero dock: no negative margins (they hug the divider and clip bottom padding) */
+    .hn-hero-verdict-dock .vcard-runners-strip {
+      margin: 20px 0 0 !important;
+      padding: 26px 1.35rem 24px !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0 0 16px 16px;
+    }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-strip { margin: 10px -1.35rem -16px; padding: 14px 1.35rem 16px; border-top: 1px solid rgba(15,23,42,.08); background: #e8eef5; border-radius: 0 0 10px 10px; }
+    .hn-hero-verdict-dock .vcard-runners-header { margin-bottom: 14px !important; }
     .vcard-runners-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .vcard-runners-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,246,252,.58); }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-runners-label { color: #64748b; }
