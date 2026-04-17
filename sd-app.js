@@ -136,6 +136,33 @@ function getSponsor(resortId) {
     .vcard-lodging-slim-link { font-size: 12px; font-weight: 600; color: #93c5fd; text-decoration: none; flex: 1; transition: color .12s; }
     .vcard-lodging-slim-link:hover { color: #bfdbfe; text-decoration: underline; }
     .vcard-lodging-slim-tag { font-size: 10px; color: rgba(240,246,252,.35); white-space: nowrap; flex-shrink: 0; }
+
+    /* ── Verdict context line: "Based on: city · trip · pass · day" ─────────── */
+    .vcard-context-line { font-size: 10px; color: rgba(240,246,252,.42); margin: 2px 0 6px; letter-spacing: .01em; line-height: 1.45; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-context-line { color: #8fa3b3; }
+
+    /* ── Forecast freshness: "Saturday forecast · updated 2h ago" ──────────── */
+    .vcard-freshness { font-size: 10px; color: rgba(240,246,252,.36); margin-top: 6px; letter-spacing: .01em; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-freshness { color: #9fb3c0; }
+
+    /* ── Why this pick ──────────────────────────────────────────────────────── */
+    .vcard-why-pick { font-size: 11px; color: rgba(240,246,252,.6); font-style: italic; margin: 10px 0 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.09); line-height: 1.5; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-why-pick { color: #5a7080; border-top-color: rgba(15,23,42,.09); }
+
+    /* ── Mini runner tier badge ─────────────────────────────────────────────── */
+    .vmr-name-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+    .vmr-name-row .vmr-name { flex: 1; min-width: 0; }
+    .vmr-tier { font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; letter-spacing: .04em; text-transform: uppercase; }
+    .vmr-tier--go   { background: rgba(34,197,94,.2);  color: #4ade80; border: 1px solid rgba(74,222,128,.3); }
+    .vmr-tier--fair { background: rgba(245,158,11,.18); color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
+    .vmr-tier--skip { background: rgba(248,113,113,.15); color: #fca5a5; border: 1px solid rgba(248,113,113,.25); }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-tier--go   { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-tier--fair { background: #fef9c3; color: #92400e; border-color: #fde68a; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-tier--skip { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+
+    /* ── Mini runner condition line ─────────────────────────────────────────── */
+    .vmr-cond { font-size: 9px; color: rgba(240,246,252,.38); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hn-hero-verdict-dock .vcard--hero-light .vmr-cond { color: #8fa3b3; }
   `;
   document.head.appendChild(style);
 })();
@@ -1544,10 +1571,15 @@ function renderVerdict(resorts) {
   const showVerdictGuidance = tier === 'bad'
     || tier === 'marginal'
     || (breakdown && scoreNum < 48 && tier !== 'great');
+  const _widenSuggestion = state.howFar === 0
+    ? 'try <strong>Weekend</strong> distance or ease your snow filter'
+    : state.howFar === 1
+    ? 'try <strong>Any distance</strong> or ease your snow filter'
+    : 'try adjusting your snow or pass filter';
   const guidanceInsetHtml = showVerdictGuidance
     ? `<div class="vcard-guidance-compact" role="note">
         <span class="vcard-guidance-compact-icon">⚠</span>
-        <span>Conditions are rough &mdash; <button type="button" class="vcard-guidance-compact-btn" id="verdictRefineGuidanceBtn">widen your search &darr;</button></span>
+        <span>Conditions are rough &mdash; <button type="button" class="vcard-guidance-compact-btn" id="verdictRefineGuidanceBtn">${_widenSuggestion} &darr;</button></span>
       </div>`
     : '';
   const _lodgingUrl = bookingUrl(resort);
@@ -1610,6 +1642,44 @@ function renderVerdict(resorts) {
   const _verdictPhotoStyle = resortPhotoStyle(resort, 'linear-gradient(180deg,rgba(8,16,28,.18) 0%,rgba(8,16,28,.62) 50%,rgba(8,16,28,.94) 100%)');
   const _heroDashStyleAttr = _verdictPhotoStyle ? ` style="${_verdictPhotoStyle}"` : '';
 
+  // ── Context line: what settings produced this result ─────────────────────────
+  const _passLabel = state.passFilter === 'All' ? 'Any pass' : `${state.passFilter} pass`;
+  const _tripLabel = state.howFar === 0 ? 'Day trip' : state.howFar === 1 ? 'Weekend' : 'Any distance';
+  const _dayLabel  = HERO_DAY_LABELS[state.skiDayPreset || smartDefaultWhenVal()] || 'Weekend';
+  const _contextLine = state.origin
+    ? `Based on: ${_fromCity} \u00b7 ${_tripLabel} \u00b7 ${_passLabel} \u00b7 ${_dayLabel}`
+    : '';
+
+  // ── Forecast freshness: day being shown + how recently data was fetched ───────
+  const _cacheTs   = state.weatherCache[resort.id]?.ts;
+  const _agoStr    = _cacheTs ? (() => {
+    const mins = Math.round((Date.now() - _cacheTs) / 60000);
+    if (mins < 2)  return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    return `${Math.round(mins / 60)}h ago`;
+  })() : null;
+  const _forecastDayStr = (() => {
+    const d = dayValToDate(state.skiDayPreset || smartDefaultWhenVal());
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  })();
+  const _freshnessHtml = _agoStr
+    ? `<div class="vcard-freshness">Showing ${esc(_forecastDayStr)} forecast \u00b7 updated ${esc(_agoStr)}</div>`
+    : '';
+
+  // ── Why this pick: one-liner explaining why this mountain ranked first ────────
+  const _verdictPool  = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id) && state.weatherCache[r.id]?.data) : resorts.filter(r => state.weatherCache[r.id]?.data);
+  const _poolCount    = _verdictPool.length;
+  const _whyPickText  = tier === 'great'
+    ? (stormTotal >= 6
+        ? `Highest storm snow of ${_poolCount} mountains in range \u2014 ${stormTotal.toFixed(0)}" over 3 days.`
+        : `Best snow-to-drive ratio of ${_poolCount} mountains in your range.`)
+    : tier === 'good'
+    ? `Top-ranked of ${_poolCount} mountains in range \u2014 best match for your settings.`
+    : tier === 'marginal'
+    ? `Best available of ${_poolCount} in range \u2014 conditions are thin across the board right now.`
+    : `Best of limited options across ${_poolCount} mountains \u2014 conditions are rough everywhere this weekend.`;
+  const _whyPickHtml = `<p class="vcard-why-pick">${esc(_whyPickText)}</p>`;
+
   const _recLine = esc(headline || '');
   const _bodyCopy = esc([detail, ...subPoints].filter(Boolean).join(' '));
   const _driveTop = driveText ? esc(driveText) : '—';
@@ -1623,15 +1693,53 @@ function renderVerdict(resorts) {
   // ── Runner-up mini strip — always-on teaser inside the verdict card ─────────
   const runnerStripHtml = runningItems.length > 0 ? (() => {
     const miniCards = runningItems.map(item => {
-      const _rDrive = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
-      const _rWx    = state.weatherCache[item.resort.id]?.data;
-      const cf      = crowdForecast(item.resort, _rWx);
+      const _rDrive    = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
+      const _rWx       = state.weatherCache[item.resort.id]?.data;
+      const cf         = crowdForecast(item.resort, _rWx);
+      const _rFi       = targetForecastIndex();
+      const _rForecast = _rWx?.forecast || [];
+      const _rTomSnow  = _rForecast[_rFi]?.snow || 0;
+      const _rStorm    = _rForecast.reduce((s, f) => s + (f.snow || 0), 0);
+      const _rBaseLo   = _rForecast[_rFi]?.lo ?? 30;
+      const _rSummitLo = (typeof summitTempF === 'function')
+        ? summitTempF(_rBaseLo, item.resort.baseElevation, item.resort.summitElevation)
+        : _rBaseLo;
+      const _rRain     = _rSummitLo > 34;
+      const _rHiF      = _rForecast[_rFi]?.hi;
+
+      // Tier badge
+      const _rMiniTier = !_rWx ? null
+        : _rRain ? 'bad'
+        : (_rStorm >= 6 || _rTomSnow >= 4) ? 'great'
+        : _rStorm >= 2  ? 'good'
+        : _rStorm >= 0.5 ? 'marginal'
+        : 'bad';
+      const _rTierLabel = (_rMiniTier === 'great' || _rMiniTier === 'good') ? 'Go'
+        : _rMiniTier === 'marginal' ? 'Fair'
+        : _rMiniTier === 'bad'      ? 'Skip'
+        : null;
+      const _rTierCls = (_rMiniTier === 'great' || _rMiniTier === 'good') ? 'vmr-tier--go'
+        : _rMiniTier === 'marginal' ? 'vmr-tier--fair'
+        : 'vmr-tier--skip';
+      const _rTierHtml = _rTierLabel
+        ? `<span class="vmr-tier ${_rTierCls}">${esc(_rTierLabel)}</span>` : '';
+
+      // One-line condition summary
+      const _rCondLine = _rRain ? 'Rain likely'
+        : _rStorm >= 0.5 ? `${_rStorm.toFixed(0)}" forecast`
+        : _rHiF != null ? `High ${Math.round(_rHiF)}\u00b0F \u00b7 dry`
+        : 'Dry forecast';
+
       const _crowdCls = cf.label === 'Quiet' ? 'crowd-quiet-chip'
         : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip'
         : 'crowd-mod-chip';
       return `<button type="button" class="vcard-mini-runner" data-mini-runner-id="${esc(item.resort.id)}">
-        <span class="vmr-name">${esc(item.resort.name)}</span>
+        <span class="vmr-name-row">
+          <span class="vmr-name">${esc(item.resort.name)}</span>
+          ${_rTierHtml}
+        </span>
         <span class="vmr-drive">${_rDrive ? `${esc(_rDrive)} \u2022 ` : ''}${esc(cf.label)}</span>
+        <span class="vmr-cond">${esc(_rCondLine)}</span>
       </button>`;
     }).join('');
     return `<div class="vcard-runners-strip">
@@ -1650,6 +1758,7 @@ function renderVerdict(resorts) {
         <div class="vcard-top-pill">${_topPill}</div>
         ${zipNudgeHtml}
         <button type="button" class="vcard-name-dash" id="verdictPickBtn">${esc(resort.name)}</button>
+        ${_contextLine ? `<div class="vcard-context-line">${esc(_contextLine)}</div>` : ''}
         ${_recLine ? `<div class="vcard-rec-line">${_recLine}</div>` : ''}
         ${_bodyCopy ? `<p class="vcard-bodycopy">${_bodyCopy}</p>` : ''}
         <div class="vcard-stats3" role="list" aria-label="Top pick stats">
@@ -1671,8 +1780,10 @@ function renderVerdict(resorts) {
         </div>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
+        ${_freshnessHtml}
       </div>
       <div class="vcard-body vcard-body-dash">
+        ${_whyPickHtml}
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
         <div class="vcard-actions vcard-actions-dash">
           ${primaryBtn}
