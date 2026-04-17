@@ -193,7 +193,7 @@ body:has(#searchSection.hero-v2) .nav-link-sep { background: rgba(255,255,255,0.
 .container {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 28px 0 88px;
+  padding: 0 0 88px;
   display: grid;
   gap: 18px;
 }
@@ -2284,11 +2284,9 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 
 /* ===== 2026 hero + decision-flow overrides ===== */
 .top-nav-inner { max-width: 1100px; padding: 10px 24px; }
-.container { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 8px 0 40px; gap: 18px; }
-/* Full-bleed split hero is first in .container — remove top padding so it meets the nav flush */
-.container:has(> #searchSection.hn-hero-split:first-child) {
-  padding-top: 0;
-}
+/* padding-top:0 — full-bleed hero handles its own top spacing via min-height;
+   padding-bottom tightened from 64px to 40px */
+.container { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 0 0 40px; gap: 18px; }
 .card { border-radius: 22px; }
 .hero-search-centered { padding: 40px 20px 34px !important; }
 .hero-search-shell { width: 100%; display:flex; justify-content:center; }
