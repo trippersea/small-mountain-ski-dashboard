@@ -1873,6 +1873,15 @@ function renderVerdict(resorts) {
     ? `<div class="vcard-freshness vcard-freshness--quiet">Showing ${esc(_forecastDayStr)} forecast \u00b7 updated ${esc(_agoStr)}</div>`
     : '';
 
+  const _whyPickLabels = (typeof buildWhyThisPickReasons === 'function')
+    ? buildWhyThisPickReasons(resorts, tier)
+    : ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
+  const _whyPickChips = _whyPickLabels.map(t => `<span class="vcard-why-chip">${esc(t)}</span>`).join('');
+  const _whyPickHtml = `<div class="vcard-why-pick" role="group" aria-labelledby="verdictWhyPickHeading">
+    <div class="vcard-why-pick-heading" id="verdictWhyPickHeading">Why this pick</div>
+    <div class="vcard-why-pick-chips">${_whyPickChips}</div>
+  </div>`;
+
   const _verdictPhrase = topPickVerdictPhrase(tier, scoreNum);
   const _storyOneLine  = cardStoryOneLine(_narrative.story);
   const _utilityCrowd  = crowdUtilityShort(crowdLbl);
@@ -1922,6 +1931,7 @@ function renderVerdict(resorts) {
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         ${_freshnessHtml}
+        ${_whyPickHtml}
       </div>
       <div class="vcard-body vcard-body-dash">
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
