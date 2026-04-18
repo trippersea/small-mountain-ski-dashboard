@@ -216,7 +216,7 @@
             Compare your mountain options
           </h1>
           <p style="font-size:1.05rem;color:#fff;font-weight:600;margin:0 auto 32px;line-height:1.6;">
-            Start on the homepage. Enter your location, set your pass and trip type, and we'll build a personalized comparison for you here.
+            Run a search on the homepage first. We stash your trip so this page can show your top pick, nearby options, and full table.
           </p>
           <a href="/" class="compare-page-btn compare-page-btn--primary">Find my mountain →</a>
         </div>
