@@ -170,14 +170,14 @@ function buildSchemas(resort, stateName) {
     '@context': 'https://schema.org',
     '@type': 'SportsActivityLocation',
     name: resort.name,
-    description: `${resort.name} ski resort in ${stateName} — ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails, ${resort.acres} acres. ${passLabel(resort.passGroup)} mountain.`,
+    description: `${resort.name} ski resort in ${stateName}: ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails, ${resort.acres} acres. ${passLabel(resort.passGroup)} mountain.`,
     url: canonUrl,
     address: { '@type': 'PostalAddress', addressRegion: resort.state, addressCountry: 'US' },
     geo: { '@type': 'GeoCoordinates', latitude: resort.lat, longitude: resort.lon },
     priceRange: `$${resort.price} day ticket`,
     openingHoursSpecification: {
       '@type': 'OpeningHoursSpecification',
-      description: 'Seasonal winter operation — verify current hours with the resort.',
+      description: 'Seasonal winter operation. Verify current hours with the resort.',
     },
     sameAs: resort.website ? [resort.website] : [],
   };
@@ -199,11 +199,24 @@ function buildSchemas(resort, stateName) {
 function terrainBar(label, pct, color) {
   const w = Math.round(pct * 100);
   return `
-    <div class="bar-row">
-      <span class="bar-label">${label}</span>
-      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
-      <span class="bar-pct">${w}%</span>
+    <div class="sr-bar-row">
+      <span class="sr-bar-label">${label}</span>
+      <div class="sr-bar-track"><div class="sr-bar-fill" style="width:${w}%;background:${color}"></div></div>
+      <span class="sr-bar-pct">${w}%</span>
     </div>`;
+}
+
+function mountainHighlights(resort) {
+  const h = [];
+  const tb = resort.terrainBreakdown || {};
+  if (resort.night) h.push("Night skiing");
+  if (resort.terrainPark) h.push("Terrain park");
+  if (resort.snowmaking > 500) h.push("Strong snowmaking backup");
+  if (tb.intermediate >= 0.38) h.push("Strong intermediate mileage");
+  if (tb.advanced >= 0.35) h.push("Notable advanced terrain");
+  if (tb.beginner >= 0.35) h.push("Beginner-friendly");
+  if (resort.trails < 50 && resort.vertical < 2200) h.push("Good day-trip size");
+  return [...new Set(h)].slice(0, 4);
 }
 
 // ─── NEW: Nearby card with avg snowfall delta ─────────────────────────────────
@@ -212,24 +225,26 @@ function nearbyCard(r, baseResort) {
   let deltaHtml = '';
   if (Math.abs(delta) >= 10) {
     if (delta > 0) {
-      deltaHtml = `<div class="nearby-delta nearby-delta--more">❄ ${r.avgSnowfall}" avg snow (+${delta}")</div>`;
+      deltaHtml = `<div class="sr-nc-delta sr-nc-delta--more">❄ ${r.avgSnowfall}" avg snow (+${delta}")</div>`;
     } else {
-      deltaHtml = `<div class="nearby-delta nearby-delta--less">❄ ${r.avgSnowfall}" avg snow (${delta}")</div>`;
+      deltaHtml = `<div class="sr-nc-delta sr-nc-delta--less">❄ ${r.avgSnowfall}" avg snow (${delta}")</div>`;
     }
   } else {
-    deltaHtml = `<div class="nearby-delta nearby-delta--same">❄ ${r.avgSnowfall}" avg snow</div>`;
+    deltaHtml = `<div class="sr-nc-delta sr-nc-delta--same">❄ ${r.avgSnowfall}" avg snow</div>`;
   }
 
-  // Crowd hint based on trails count (simple proxy)
-  const crowdHint = r.trails < 40 ? '<div class="nearby-crowd">👤 Fewer crowds</div>' : '';
+  const crowdHint =
+    r.trails < 40
+      ? '<div class="sr-nc-diff">Compact trail network, often quicker to learn in a day</div>'
+      : "";
 
   return `
-    <a href="/ski-report/${r.id}/" class="nearby-card">
-      <div class="nearby-name">${esc(r.name)}</div>
-      <div class="nearby-meta">${esc(r.state)} · ${r.vertical.toLocaleString()} ft · ${esc(passLabel(r.passGroup))}</div>
+    <a href="/ski-report/${r.id}/" class="sr-nearby-card">
+      <div class="sr-nc-name">${esc(r.name)}</div>
+      <div class="sr-nc-meta">${esc(r.state)} · ${r.vertical.toLocaleString()} ft · ${esc(passLabel(r.passGroup))}</div>
       ${deltaHtml}
       ${crowdHint}
-      <div class="nearby-arrow">Compare →</div>
+      <div class="sr-nc-arrow">Open ski report →</div>
     </a>`;
 }
 
@@ -291,14 +306,14 @@ function matcherScript(resort) {
     if (skill === "advanced") {
       if (passMatches) {
         type = "yes";
-        verdict = "Great match — " + name + " is built for advanced skiers on your pass.";
+        verdict = "Great match. " + name + " is built for advanced skiers on your pass.";
         reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when conditions are right.";
         ctaText = "Compare " + name + " with nearby mountains";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
         type = "maybe";
         verdict = "Great terrain, but window tickets run $" + price + "+.";
-        reason = "The mountain suits your skill level well. Just budget accordingly — window rates add up fast for a multi-day trip.";
+        reason = "The mountain suits your skill level well. Budget accordingly: window rates add up fast for a multi-day trip.";
         ctaText = "Find the best value mountain for your level";
         ctaUrl = valueInStateUrl();
       } else {
@@ -371,20 +386,34 @@ function generateMountainPage(resort, allResorts) {
   const year       = new Date().getFullYear();
   const month      = new Date().toLocaleString('en-US', { month: 'long' });
 
-  const pageTitle  = `${resort.name} Ski Report ${year} — Live Snow Score & Personalized Conditions | WhereToSkiNext.com`;
-  const metaDesc   = `Personalized ski score for ${resort.name} — your drive time, ${passLabel(resort.passGroup)} access, live snow forecast & crowd outlook. ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails.`;
+  const pageTitle  = `${resort.name} Ski Report ${year} | Live Snow, Conditions & Forecast | WhereToSkiNext.com`;
+  const metaDesc   = `Live snow forecast, mountain facts, and pass context for ${resort.name} in ${stateName}. ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails. Compare nearby options on WhereToSkiNext.com.`;
 
   const passColor  = { Epic: '#1a56db', Ikon: '#0e9f6e', Indy: '#c27803', Independent: '#6b7280' }[resort.passGroup] || '#6b7280';
 
   // Nearby cards with snow delta
   const nearbyCards = nearby.map(r => nearbyCard(r, resort)).join('');
 
+  const highlightItems = mountainHighlights(resort);
+  const highlightsBlock =
+    highlightItems.length > 0
+      ? `
+    <section class="sr-highlights" aria-label="Mountain highlights">
+      <p class="sr-section-eyebrow">Why skiers choose ${esc(resort.name)}</p>
+      <ul class="sr-highlight-chips">
+        ${highlightItems.map((t) => `<li>${esc(t)}</li>`).join("")}
+      </ul>
+    </section>`
+      : "";
+
   // Terrain description for editorial
   const terrainDesc = tb.advanced >= 0.35
-    ? `${resort.name} skews toward experienced skiers — ${Math.round(tb.advanced*100)}% of the mountain is advanced terrain.`
+    ? `${resort.name} skews toward experienced skiers. About ${Math.round(tb.advanced * 100)}% of the mountain is advanced terrain.`
     : tb.beginner >= 0.35
-    ? `${resort.name} is welcoming to all levels with ${Math.round(tb.beginner*100)}% beginner terrain.`
-    : `${resort.name} is well-suited to intermediate skiers, with ${Math.round(tb.intermediate*100)}% of trails in that range.`;
+    ? `${resort.name} is welcoming to all levels with ${Math.round(tb.beginner * 100)}% beginner terrain.`
+    : `${resort.name} is well-suited to intermediate skiers, with ${Math.round(tb.intermediate * 100)}% of trails in that range.`;
+
+  const heroTagline = `${resort.name} is a ${passLabel(resort.passGroup)} ski area in ${stateName}: ${resort.trails} trails, ${resort.vertical.toLocaleString()} ft vertical, ${resort.acres.toLocaleString()} acres.`;
 
   // Build sponsor hero block if this resort is a featured partner
   const _fp = FEATURED_PARTNERS[resort.id];
@@ -417,7 +446,7 @@ function generateMountainPage(resort, allResorts) {
   <link rel="canonical" href="${canonUrl}" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
+  <meta property="og:title" content="${esc(resort.name)} Ski Conditions | WhereToSkiNext.com" />
   <meta property="og:description" content="${esc(metaDesc)}" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
@@ -426,421 +455,27 @@ function generateMountainPage(resort, allResorts) {
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions — WhereToSkiNext.com" />
+  <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions | WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
   <meta name="twitter:image" content="https://www.wheretoskinext.com/og-image.png" />
 
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
+  <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
+  <link rel="stylesheet" href="/ski-report/ski-report-page.css" />
 
   <script type="application/ld+json">
   ${JSON.stringify(schemas, null, 2)}
   </script>
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
-      background: #f8f9fa;
-      color: #111827;
-      margin: 0;
-      line-height: 1.6;
-      min-height: 100vh;
-    }
-
-    /* Nav: .top-nav, .nav-primary, .nav-find-cta from /styles.css */
-
-    /* ── Page layout ── */
-    .page { max-width: 960px; margin: 0 auto; padding: 24px 20px 80px; }
-
-    /* ── Breadcrumb ── */
-    .breadcrumb {
-      font-size: 13px; color: #667a96; margin-bottom: 16px;
-      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-    }
-    .breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb-sep { color: #b0bec5; }
-
-    /* ══════════════════════════════════════════════
-       HERO — dark navy, snow data above fold
-    ══════════════════════════════════════════════ */
-    .resort-hero {
-      background: linear-gradient(135deg, #0f1f35 0%, #1b3356 60%, #1e4080 100%);
-      border-radius: 16px;
-      padding: 28px 28px 24px;
-      margin-bottom: 14px;
-      position: relative;
-      overflow: hidden;
-    }
-    .resort-hero::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(circle at 75% 50%, rgba(43,109,233,.2) 0%, transparent 65%);
-      pointer-events: none;
-    }
-
-    /* Pass badge + live pill row */
-    .hero-meta-row {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-    .pass-eyebrow {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
-      letter-spacing: .1em; text-transform: uppercase;
-      color: ${passColor}; background: rgba(255,255,255,.08);
-      border: 1px solid ${passColor}60;
-      border-radius: 999px; padding: 4px 12px;
-    }
-    .live-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: 11px; font-weight: 600; color: #6ee7b7;
-      background: rgba(22,163,74,.2); border: 1px solid rgba(22,163,74,.35);
-      border-radius: 999px; padding: 4px 10px;
-    }
-    .live-dot {
-      width: 6px; height: 6px; border-radius: 50%; background: #34d399;
-      animation: livePulse 1.8s ease-in-out infinite;
-    }
-    @keyframes livePulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50%      { opacity:.45; transform:scale(.8); }
-    }
-    .freshness {
-      font-size: 11px; color: rgba(255,255,255,.38); margin-left: auto;
-    }
-
-    .resort-name {
-      font-size: clamp(26px, 5vw, 42px); font-weight: 800;
-      letter-spacing: -.03em; line-height: 1.08;
-      color: #fff; margin: 0 0 6px;
-    }
-    .resort-location { font-size: 15px; color: rgba(255,255,255,.5); margin: 0 0 20px; }
-
-    /* Snow spotlight block */
-    .snow-spotlight {
-      display: flex; align-items: flex-start; gap: 18px; flex-wrap: wrap;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 12px; padding: 16px 20px;
-      margin-bottom: 18px;
-    }
-    .snow-main { display: flex; flex-direction: column; min-width: 80px; }
-    .snow-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.4); margin-bottom: 2px; }
-    .snow-big { font-size: 40px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -.03em; }
-    .snow-big-unit { font-size: 16px; font-weight: 500; color: rgba(255,255,255,.55); }
-    .snow-loading { font-size: 13px; color: rgba(255,255,255,.4); font-style: italic; }
-    .snow-divider { width: 1px; background: rgba(255,255,255,.12); align-self: stretch; flex-shrink: 0; }
-    .snow-details { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
-    .snow-detail { display: flex; flex-direction: column; gap: 2px; }
-    .snow-detail-val { font-size: 18px; font-weight: 700; color: #fff; }
-    .snow-detail-label { font-size: 10px; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .06em; }
-
-    /* Hero CTA row */
-    .hero-cta-row {
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-      margin-bottom: 2px;
-    }
-    .btn-hero {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: #2563eb; color: #fff;
-      font-size: 14px; font-weight: 600;
-      padding: 11px 20px; border-radius: 10px;
-      text-decoration: none; white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(37,99,235,.35);
-      transition: background .12s, transform .1s;
-    }
-    .btn-hero:hover { background: #1d4ed8; transform: translateY(-1px); }
-    .btn-hero-ghost {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: rgba(255,255,255,.1); color: rgba(255,255,255,.82);
-      font-size: 14px; font-weight: 600;
-      padding: 11px 18px; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.18);
-      text-decoration: none; white-space: nowrap;
-      transition: background .12s;
-    }
-    .btn-hero-ghost:hover { background: rgba(255,255,255,.18); }
-    .hero-trust {
-      font-size: 11px; color: rgba(255,255,255,.35);
-      margin-top: 10px;
-      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-    }
-    .hero-trust-sep { color: rgba(255,255,255,.18); }
-
-    /* ── Stat grid — 2-col mobile, auto on desktop ── */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px; margin-bottom: 14px;
-    }
-    @media (min-width: 500px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (min-width: 760px) { .stats-grid { grid-template-columns: repeat(6, 1fr); } }
-
-    .stat-card {
-      background: #fff; border: 1px solid #d6e1f0;
-      border-radius: 14px; padding: 14px 12px;
-      box-shadow: 0 2px 8px rgba(30,60,100,.05);
-    }
-    .stat-label { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #667a96; margin-bottom: 4px; }
-    .stat-value { font-size: 20px; font-weight: 800; color: #1b2a3a; line-height: 1.2; }
-    .stat-unit  { font-size: 12px; font-weight: 500; color: #667a96; }
-
-    /* ── Detail panels ── */
-    .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-    .panel {
-      background: #fff; border: 1px solid #d6e1f0;
-      border-radius: 16px; padding: 20px 22px;
-      box-shadow: 0 2px 8px rgba(30,60,100,.05);
-    }
-    .panel h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #667a96; margin: 0 0 14px; }
-    .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f0f6fd; font-size: 14px; }
-    .detail-row:last-child { border-bottom: none; }
-    .detail-key { color: #667a96; }
-    .detail-val { font-weight: 700; color: #1b2a3a; text-align: right; }
-
-    /* ── Terrain bars ── */
-    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
-    .bar-row:last-child { margin-bottom: 0; }
-    .bar-label { width: 90px; color: #667a96; flex-shrink: 0; }
-    .bar-track  { flex: 1; height: 8px; background: #edf4ff; border-radius: 99px; overflow: hidden; }
-    .bar-fill   { height: 100%; border-radius: 99px; transition: width .4s; }
-    .bar-pct    { width: 36px; text-align: right; font-weight: 700; color: #1b2a3a; }
-
-    /* ── Pass badge ── */
-    .pass-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: ${passColor}18; color: ${passColor};
-      border: 1px solid ${passColor}40; border-radius: 999px;
-      padding: 4px 12px; font-size: 13px; font-weight: 700;
-    }
-
-    /* ── Editorial ── */
-    .editorial {
-      background: #fff; border: 1px solid #d6e1f0;
-      border-radius: 16px; padding: 24px 26px; margin-bottom: 14px;
-      box-shadow: 0 2px 8px rgba(30,60,100,.05);
-    }
-    .editorial h2 { font-size: 18px; font-weight: 800; margin: 0 0 14px; }
-    .editorial p  { font-size: 15px; color: #2e3f54; line-height: 1.72; margin: 0 0 12px; }
-    .editorial p:last-child { margin-bottom: 0; }
-
-    /* ── Mid-page CTA banner (after editorial) ── */
-    .mid-cta {
-      background: linear-gradient(135deg, #0f1f35 0%, #1b3356 100%);
-      border-radius: 16px; padding: 24px 28px; margin-bottom: 14px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 16px;
-    }
-    .mid-cta-title { font-size: 17px; font-weight: 800; color: #fff; margin: 0 0 4px; }
-    .mid-cta-sub   { font-size: 13px; color: rgba(255,255,255,.5); margin: 0 0 8px; }
-    .mid-cta-trust { font-size: 11px; color: rgba(255,255,255,.32); }
-    .btn-cta {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: #2563eb; color: #fff;
-      font-size: 14px; font-weight: 600;
-      padding: 12px 22px; border-radius: 10px;
-      text-decoration: none; white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(37,99,235,.35);
-      transition: background .12s;
-    }
-    .btn-cta:hover { background: #1d4ed8; }
-
-    /* ══════════════════════════════════════════════
-       SKIER MATCHER WIDGET
-    ══════════════════════════════════════════════ */
-    .matcher {
-      background: #edf4ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 16px; padding: 22px 24px; margin-bottom: 14px;
-    }
-    .matcher-title { font-size: 17px; font-weight: 800; color: #1b2a3a; margin: 0 0 4px; }
-    .matcher-sub   { font-size: 13px; color: #667a96; margin: 0 0 18px; }
-    .matcher-q     { margin-bottom: 16px; }
-    .matcher-q-label { font-size: 13px; font-weight: 700; color: #1b2a3a; margin-bottom: 8px; }
-    .matcher-opts  { display: flex; flex-wrap: wrap; gap: 8px; }
-    .mo {
-      padding: 8px 16px; border-radius: 999px;
-      font-size: 13px; font-weight: 600; font-family: inherit;
-      border: 2px solid #d6e1f0;
-      background: #fff; color: #1b2a3a;
-      cursor: pointer; transition: all .13s;
-    }
-    .mo:hover, .mo.selected {
-      border-color: #2563eb;
-      background: #2563eb; color: #fff;
-    }
-    .matcher-result {
-      margin-top: 18px; padding: 18px 20px;
-      border-radius: 12px; display: none;
-      animation: fadeUp .25s ease;
-    }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-    .matcher-result--yes   { background: #dcfce7; border: 1px solid #bbf7d0; }
-    .matcher-result--maybe { background: #fef3c7; border: 1px solid #fde68a; }
-    .matcher-result--no    { background: #fee2e2; border: 1px solid #fecaca; }
-    #mVerdict { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
-    .matcher-result--yes   #mVerdict { color: #15803d; }
-    .matcher-result--maybe #mVerdict { color: #92400e; }
-    .matcher-result--no    #mVerdict { color: #b91c1c; }
-    #mReason { font-size: 13px; color: #334155; line-height: 1.55; margin-bottom: 14px; }
-    .btn-matcher {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #2563eb; color: #fff;
-      font-size: 13px; font-weight: 600;
-      padding: 9px 16px; border-radius: 8px;
-      text-decoration: none;
-      transition: background .12s;
-    }
-    .btn-matcher:hover { background: #1d4ed8; }
-
-    /* ══════════════════════════════════════════════
-       NEARBY SECTION — elevated with snow deltas
-    ══════════════════════════════════════════════ */
-    .nearby-section { margin-bottom: 14px; }
-    .nearby-header {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 12px;
-    }
-    .nearby-header h2 { font-size: 18px; font-weight: 800; margin: 0; }
-    .nearby-header a  { font-size: 13px; font-weight: 600; color: #2563eb; text-decoration: none; }
-    .nearby-header a:hover { text-decoration: underline; }
-
-    .nearby-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    @media (min-width: 580px) { .nearby-grid { grid-template-columns: repeat(4, 1fr); } }
-
-    .nearby-card {
-      background: #fff; border: 1px solid #d6e1f0; border-radius: 12px;
-      padding: 14px 16px; text-decoration: none; color: #1b2a3a;
-      display: flex; flex-direction: column; gap: 4px;
-      transition: border-color .12s, box-shadow .12s, transform .12s;
-    }
-    .nearby-card:hover {
-      border-color: #2563eb;
-      box-shadow: 0 4px 16px rgba(37,99,235,.1);
-      transform: translateY(-2px);
-    }
-    .nearby-name { font-size: 14px; font-weight: 700; }
-    .nearby-meta { font-size: 12px; color: #667a96; }
-    .nearby-delta {
-      font-size: 11px; font-weight: 700;
-      padding: 3px 8px; border-radius: 999px;
-      display: inline-flex; align-items: center; gap: 3px;
-      margin-top: 2px; width: fit-content;
-    }
-    .nearby-delta--more { background: #dcfce7; color: #15803d; }
-    .nearby-delta--less { background: #f1f5f9; color: #64748b; }
-    .nearby-delta--same { background: #edf4ff; color: #1d4ed8; }
-    .nearby-crowd { font-size: 11px; color: #667a96; }
-    .nearby-arrow { font-size: 12px; font-weight: 700; color: #2563eb; margin-top: auto; padding-top: 6px; }
-
-    /* ── State link ── */
-    .state-link-row { margin-bottom: 14px; font-size: 14px; color: #667a96; }
-    .state-link-row a { color: #2563eb; font-weight: 600; text-decoration: none; }
-    .state-link-row a:hover { text-decoration: underline; }
-
-    /* Footer: .site-footer from /styles.css */
-
-    /* ── Featured Partner hero card ── */
-    .hero-sponsor-card {
-      margin-top: 16px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 14px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
-    }
-    .hero-sponsor-copy {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-      flex: 1 1 420px;
-    }
-    .hero-sponsor-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(34,179,138,.14);
-      border: 1px solid rgba(110,231,183,.32);
-      color: #6ee7b7;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      border-radius: 999px;
-      padding: 6px 10px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .hero-sponsor-text-wrap {
-      min-width: 0;
-    }
-    .hero-sponsor-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #ffffff;
-      line-height: 1.2;
-      margin-bottom: 2px;
-    }
-    .hero-sponsor-text {
-      font-size: 13px;
-      color: rgba(255,255,255,.68);
-      line-height: 1.45;
-    }
-    .hero-sponsor-btn {
-      background: #2563eb;
-      color: #fff !important;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 10px 18px;
-      border-radius: 999px;
-      text-decoration: none;
-      white-space: nowrap;
-      transition: background .12s, transform .1s;
-      flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(37,99,235,.28);
-    }
-    .hero-sponsor-btn:hover {
-      background: #1d4ed8;
-      transform: translateY(-1px);
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 600px) {
-      .panels { grid-template-columns: 1fr; }
-      .mid-cta { flex-direction: column; }
-      .snow-spotlight { flex-direction: column; gap: 12px; }
-      .snow-divider { display: none; }
-      .hero-sponsor-card {
-        align-items: stretch;
-      }
-      .hero-sponsor-copy {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      .hero-sponsor-btn {
-        width: 100%;
-        justify-content: center;
-        text-align: center;
-      }
-    }
-  </style>
 </head>
-<body>
-  <!-- GTM noscript -->
+<body class="pass-page-body ski-report-page" style="--sr-pass: ${passColor}">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
@@ -849,7 +484,7 @@ function generateMountainPage(resort, allResorts) {
       <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
         <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
         <span class="nav-brand">
-          <span class="nav-brand-name">WhereToSkiNext.com</span>
+          <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
           <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
         </span>
       </a>
@@ -857,254 +492,238 @@ function generateMountainPage(resort, allResorts) {
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-      <a href="${esc(compareExploreUrl)}" class="nav-find-cta">Find My Mountain →</a>
+      <a href="https://www.wheretoskinext.com/#searchSection" class="nav-find-cta">Find my mountain &rarr;</a>
     </div>
   </nav>
 
-  <main class="page">
+  <main class="pp-shell sr-page">
 
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="/">WhereToSkiNext.com</a>
-      <span class="breadcrumb-sep">›</span>
-      <a href="/ski/${stateSlug}/">Ski Mountains in ${esc(stateName)}</a>
-      <span class="breadcrumb-sep">›</span>
+    <nav class="sr-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span class="sr-breadcrumb-sep">/</span>
+      <a href="/ski/${stateSlug}/">${esc(stateName)} ski mountains</a>
+      <span class="sr-breadcrumb-sep">/</span>
       <span>${esc(resort.name)}</span>
     </nav>
 
-    <!-- ══ HERO — snow data above the fold ══ -->
-    <header class="resort-hero">
-      <div class="hero-meta-row">
-        <span class="pass-eyebrow">${esc(passLabel(resort.passGroup))}</span>
-        <span class="live-pill"><span class="live-dot"></span>Live Forecast</span>
-        <span class="freshness">Updated ${month} ${year}</span>
-      </div>
-
-      <h1 class="resort-name">${esc(resort.name)}</h1>
-      <p class="resort-location">${esc(stateName)} · ${resort.baseElevation.toLocaleString()}–${resort.summitElevation.toLocaleString()} ft elevation</p>
-
-      <!-- Snow spotlight — populated by JS fetch, falls back to avg snowfall -->
-      <div class="snow-spotlight" id="snowSpotlight">
-        <div class="snow-main">
-          <span class="snow-label">Forecast Snow (72h)</span>
-          <div id="forecastSnow">
-            <span class="snow-loading">Loading…</span>
+    <header class="sr-hero">
+      <div class="sr-hero-inner">
+        <div class="sr-hero-grid">
+          <div class="sr-hero-primary">
+            <div class="sr-eyebrow-row">
+              <span class="sr-pass-pill">${esc(passLabel(resort.passGroup))}</span>
+              <span class="sr-live-pill"><span class="sr-live-dot" aria-hidden="true"></span>Live forecast</span>
+              <span class="sr-freshness">Updated ${month} ${year}</span>
+            </div>
+            <h1 class="sr-title">${esc(resort.name)} <span class="sr-title-state">${esc(resort.state)}</span></h1>
+            <p class="sr-tagline">${esc(heroTagline)}</p>
+            <p class="sr-location-line">Base to summit ${resort.baseElevation.toLocaleString()}–${resort.summitElevation.toLocaleString()} ft · ${resort.vertical.toLocaleString()} ft vertical</p>
+            <div class="sr-hero-cta">
+              <a href="${esc(liveScoreUrl)}" class="sr-btn sr-btn--primary">See if this is your best pick</a>
+              ${resort.website ? `<a href="${esc(resort.website)}" class="sr-btn sr-btn--ghost" target="_blank" rel="noopener noreferrer">Official ${esc(resort.name)} site</a>` : ``}
+            </div>
+            <p class="sr-hero-trust">Live forecast plus mountain facts in one place. Use the main tool to compare snow, drive time, pass fit, and crowds. No account needed.</p>
+            ${SPONSOR_HERO_PLACEHOLDER}
+          </div>
+          <div class="sr-conditions-card">
+            <p class="sr-conditions-label">Current snapshot</p>
+            <div class="sr-snow-row">
+              <div class="sr-snow-main">
+                <div class="sr-snow-label">Forecast snow (72h)</div>
+                <div class="sr-snow-value" id="forecastSnow"><span class="sr-skeleton" aria-hidden="true"></span><span class="visually-hidden">Forecast loading</span></div>
+              </div>
+            </div>
+            <div class="sr-stat-micro">
+              <div class="sr-stat-micro-item">
+                <span class="sr-stat-micro-val sr-data-placeholder" id="forecastTemp">…</span>
+                <span class="sr-stat-micro-label">Temp tomorrow</span>
+              </div>
+              <div class="sr-stat-micro-item">
+                <span class="sr-stat-micro-val">${resort.avgSnowfall}"</span>
+                <span class="sr-stat-micro-label">Avg annual snow</span>
+              </div>
+              <div class="sr-stat-micro-item">
+                <span class="sr-stat-micro-val">${resort.trails}</span>
+                <span class="sr-stat-micro-label">Trails</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="snow-divider"></div>
-        <div class="snow-details">
-          <div class="snow-detail">
-            <span class="snow-detail-val" id="forecastTemp">—</span>
-            <span class="snow-detail-label">Temp Tomorrow</span>
-          </div>
-          <div class="snow-detail">
-            <span class="snow-detail-val">${resort.avgSnowfall}"</span>
-            <span class="snow-detail-label">Avg Annual Snow</span>
-          </div>
-          <div class="snow-detail">
-            <span class="snow-detail-val">${resort.trails}</span>
-            <span class="snow-detail-label">Total Trails</span>
-          </div>
-        </div>
       </div>
-
-      <div class="hero-cta-row">
-        <a href="${esc(liveScoreUrl)}" class="btn-hero">
-          ⛷ See Live Ski Score
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </a>
-        ${resort.website ? `<a href="${esc(resort.website)}" class="btn-hero-ghost" target="_blank" rel="noopener noreferrer">Visit ${esc(resort.name)} →</a>` : ``}
-      </div>
-      <div class="hero-trust">
-        <span>No account needed</span>
-        <span class="hero-trust-sep">·</span>
-        <span>Free forever</span>
-        <span class="hero-trust-sep">·</span>
-        <span>250+ mountains ranked in real time</span>
-      </div>
-      ${SPONSOR_HERO_PLACEHOLDER}
     </header>
 
-    <!-- Key Stats — 2-col mobile grid -->
-    <div class="stats-grid" aria-label="Mountain statistics">
-      <div class="stat-card">
+    ${highlightsBlock}
+
+    <article class="sr-snapshot">
+      <h2>${esc(resort.name)} at a glance</h2>
+      <p>
+        ${esc(resort.name)} sits in ${esc(stateName)} with ${resort.vertical.toLocaleString()} ft of vertical drop, ${resort.trails} trails, and ${resort.acres.toLocaleString()} skiable acres.
+        ${terrainDesc}${resort.night ? " Night skiing available." : ""}${resort.terrainPark ? " Terrain park on site." : ""}
+      </p>
+      <p>
+        The mountain averages ${resort.avgSnowfall}" of snowfall per season${resort.snowmaking > 0 ? ` with ${resort.snowmaking.toLocaleString()} GPM of snowmaking capacity` : ""}.
+        Lift tickets start around $${resort.price}; day-of pricing varies. ${esc(resort.name)} is a <strong>${esc(passLabel(resort.passGroup))}</strong> mountain.
+      </p>
+      <p>
+        Snow conditions update often. Check back before you go. A fresh forecast can change everything.
+      </p>
+    </article>
+
+    ${(resort.passGroup === "Epic" || resort.passGroup === "Ikon") && passComparisonPage(resort.state)
+      ? `
+    <div class="sr-pass-callout">
+      <div>
+        <div class="sr-pass-callout-kicker">Pass guide</div>
+        <h3>Comparing ${esc(resort.passGroup)} Pass mountains in the ${passComparisonLabel(resort.state)}?</h3>
+        <p>See every ${esc(resort.passGroup)} and Ikon mountain in this region side by side.</p>
+      </div>
+      <a href="/${passComparisonPage(resort.state)}/" class="pp-btn pp-btn--primary">View pass comparison &rarr;</a>
+    </div>`
+      : ""}
+
+    <div class="sr-stats-grid" aria-label="Mountain statistics">
+      <div class="sr-stat-card">
         <div class="stat-label">Vertical Drop</div>
         <div class="stat-value">${resort.vertical.toLocaleString()}<span class="stat-unit"> ft</span></div>
       </div>
-      <div class="stat-card">
+      <div class="sr-stat-card">
         <div class="stat-label">Trails</div>
         <div class="stat-value">${resort.trails}<span class="stat-unit"> runs</span></div>
       </div>
-      <div class="stat-card">
+      <div class="sr-stat-card">
         <div class="stat-label">Skiable Acres</div>
         <div class="stat-value">${resort.acres.toLocaleString()}<span class="stat-unit"> ac</span></div>
       </div>
-      <div class="stat-card">
+      <div class="sr-stat-card">
         <div class="stat-label">Avg Annual Snow</div>
         <div class="stat-value">${resort.avgSnowfall}<span class="stat-unit">"</span></div>
       </div>
-      <div class="stat-card">
+      <div class="sr-stat-card">
         <div class="stat-label">Day Ticket*</div>
         <div class="stat-value">$${resort.price}</div>
       </div>
-      <div class="stat-card">
+      <div class="sr-stat-card">
         <div class="stat-label">Lifts</div>
         <div class="stat-value">${resort.lifts}</div>
       </div>
     </div>
 
-    <!-- Detail panels -->
-    <div class="panels">
-      <div class="panel">
-        <h3>Mountain Details</h3>
-        <div class="detail-row">
-          <span class="detail-key">Pass</span>
-          <span class="detail-val"><span class="pass-badge">${esc(passLabel(resort.passGroup))}</span></span>
+    <div class="sr-panels">
+      <div class="sr-panel">
+        <h3>Mountain details</h3>
+        <div class="sr-detail-row">
+          <span class="sr-detail-key">Pass</span>
+          <span class="sr-detail-val"><span class="sr-pass-badge">${esc(passLabel(resort.passGroup))}</span></span>
         </div>
-        <div class="detail-row">
-          <span class="detail-key">Base / Summit</span>
-          <span class="detail-val">${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</span>
+        <div class="sr-detail-row">
+          <span class="sr-detail-key">Base / Summit</span>
+          <span class="sr-detail-val">${resort.baseElevation.toLocaleString()} / ${resort.summitElevation.toLocaleString()} ft</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-key">Longest Run</span>
-          <span class="detail-val">${resort.longestRun} mi</span>
+        <div class="sr-detail-row">
+          <span class="sr-detail-key">Longest Run</span>
+          <span class="sr-detail-val">${resort.longestRun} mi</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-key">Night Skiing</span>
-          <span class="detail-val">${resort.night ? '✓ Yes' : 'No'}</span>
+        <div class="sr-detail-row">
+          <span class="sr-detail-key">Night Skiing</span>
+          <span class="sr-detail-val">${resort.night ? "Yes" : "No"}</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-key">Terrain Park</span>
-          <span class="detail-val">${resort.terrainPark ? '✓ Yes' : 'No'}</span>
+        <div class="sr-detail-row">
+          <span class="sr-detail-key">Terrain Park</span>
+          <span class="sr-detail-val">${resort.terrainPark ? "Yes" : "No"}</span>
         </div>
-        ${resort.website ? `
-        <div class="detail-row">
-          <span class="detail-key">Resort Website</span>
-          <span class="detail-val"><a href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer" style="color:#2b6de9;font-weight:700;text-decoration:none">Visit →</a></span>
-        </div>` : ''}
+        ${resort.website
+          ? `
+        <div class="sr-detail-row">
+          <span class="sr-detail-key">Resort website</span>
+          <span class="sr-detail-val"><a href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit official site</a></span>
+        </div>`
+          : ""}
       </div>
 
-      <div class="panel">
-        <h3>Terrain Breakdown</h3>
-        ${terrainBar('Beginner', tb.beginner, '#22b38a')}
-        ${terrainBar('Intermediate', tb.intermediate, '#2b6de9')}
-        ${terrainBar('Advanced', tb.advanced, '#ef4444')}
-        <div style="margin-top:16px;padding-top:14px;border-top:1px solid #edf4ff">
-          <div class="detail-row" style="padding:4px 0">
-            <span class="detail-key">Snowmaking</span>
-            <span class="detail-val">${resort.snowmaking.toLocaleString()} GPM</span>
+      <div class="sr-panel">
+        <h3>Terrain breakdown</h3>
+        ${terrainBar("Beginner", tb.beginner, "#22b38a")}
+        ${terrainBar("Intermediate", tb.intermediate, "#2b6de9")}
+        ${terrainBar("Advanced", tb.advanced, "#ef4444")}
+        <div class="sr-panel-extra">
+          <div class="sr-detail-row">
+            <span class="sr-detail-key">Snowmaking</span>
+            <span class="sr-detail-val">${resort.snowmaking.toLocaleString()} GPM</span>
           </div>
-          <div class="detail-row" style="padding:4px 0">
-            <span class="detail-key">State</span>
-            <span class="detail-val">${esc(stateName)}</span>
+          <div class="sr-detail-row">
+            <span class="sr-detail-key">State</span>
+            <span class="sr-detail-val">${esc(stateName)}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Editorial — At a Glance -->
-    <div class="editorial">
-      <h2>${esc(resort.name)} — At a Glance</h2>
-      <p>
-        ${esc(resort.name)} sits in ${esc(stateName)} with ${resort.vertical.toLocaleString()} ft of vertical drop, ${resort.trails} trails, and ${resort.acres.toLocaleString()} skiable acres.
-        ${terrainDesc}${resort.night ? ' Night skiing available.' : ''}${resort.terrainPark ? ' Terrain park on site.' : ''}
-      </p>
-      <p>
-        The mountain averages ${resort.avgSnowfall}" of snowfall per season${resort.snowmaking > 0 ? ` backed by ${resort.snowmaking.toLocaleString()} GPM of snowmaking` : ''}.
-        Lift tickets start around $${resort.price} — day-of pricing varies. ${esc(resort.name)} is a <strong>${esc(passLabel(resort.passGroup))}</strong> mountain.
-      </p>
-      <p>
-        Snow conditions update daily. Check back before you go — a fresh forecast can change everything.
-      </p>
-    </div>
-
-
-    <!-- Pass comparison callout — only shown for Epic and Ikon mountains -->
-    ${(resort.passGroup === 'Epic' || resort.passGroup === 'Ikon') && passComparisonPage(resort.state) ? `
-    <div style="margin-top:16px;padding:14px 18px;background:#f0f6ff;border:1px solid #bfdbfe;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#185fa5;margin-bottom:3px">Pass Guide</div>
-        <div style="font-size:14px;font-weight:600;color:#111827">Comparing ${esc(resort.passGroup)} Pass mountains in the ${passComparisonLabel(resort.state)}?</div>
-        <div style="font-size:13px;color:#6b7280;margin-top:2px">See every ${esc(resort.passGroup)} and Ikon mountain ranked side by side.</div>
-      </div>
-      <a href="/${passComparisonPage(resort.state)}/" style="background:#2563eb;color:#fff;font-size:13px;font-weight:600;padding:9px 18px;border-radius:999px;text-decoration:none;white-space:nowrap;flex-shrink:0">View Pass Comparison &rarr;</a>
-    </div>` : ''}
-
-    <!-- ══ MID-PAGE CTA — appears AFTER editorial, not before ══ -->
-    <div class="mid-cta">
-      <div>
-        <div class="mid-cta-title">Not sure ${esc(resort.name)} is your best bet?</div>
-        <div class="mid-cta-sub">250+ mountains ranked in real time — snow, drive time, pass, and crowds.</div>
-        <div class="mid-cta-trust">No account needed · Free forever · Updated daily</div>
-      </div>
-      <a href="${esc(compareExploreUrl)}" class="btn-cta">Find My Best Mountain →</a>
-    </div>
-
-    <!-- ══ SKIER MATCHER WIDGET ══ -->
-    <div class="matcher">
-      <div class="matcher-title">Is ${esc(resort.name)} right for you?</div>
-      <div class="matcher-sub">Answer 2 quick questions for an instant verdict.</div>
+    <section class="sr-matcher" aria-labelledby="matcher-h">
+      <h2 class="sr-matcher-title" id="matcher-h">Is ${esc(resort.name)} right for you?</h2>
+      <p class="sr-matcher-sub">Tap your level and pass. We will give a straight answer and a next step in the main ranking tool.</p>
 
       <div class="matcher-q">
-        <div class="matcher-q-label">Your skill level:</div>
+        <div class="matcher-q-label">Your skill level</div>
         <div class="matcher-opts">
-          <button class="mo" data-g="skill" data-v="beginner">Beginner</button>
-          <button class="mo" data-g="skill" data-v="intermediate">Intermediate</button>
-          <button class="mo" data-g="skill" data-v="advanced">Advanced / Expert</button>
+          <button type="button" class="mo" data-g="skill" data-v="beginner">Beginner</button>
+          <button type="button" class="mo" data-g="skill" data-v="intermediate">Intermediate</button>
+          <button type="button" class="mo" data-g="skill" data-v="advanced">Advanced / Expert</button>
         </div>
       </div>
       <div class="matcher-q">
-        <div class="matcher-q-label">Your pass:</div>
+        <div class="matcher-q-label">Your pass</div>
         <div class="matcher-opts">
-          <button class="mo" data-g="pass" data-v="epic">Epic Pass</button>
-          <button class="mo" data-g="pass" data-v="ikon">Ikon Pass</button>
-          <button class="mo" data-g="pass" data-v="indy">Indy Pass</button>
-          <button class="mo" data-g="pass" data-v="independent">Independent</button>
-          <button class="mo" data-g="pass" data-v="none">No Pass / Window</button>
+          <button type="button" class="mo" data-g="pass" data-v="epic">Epic Pass</button>
+          <button type="button" class="mo" data-g="pass" data-v="ikon">Ikon Pass</button>
+          <button type="button" class="mo" data-g="pass" data-v="indy">Indy Pass</button>
+          <button type="button" class="mo" data-g="pass" data-v="independent">Independent</button>
+          <button type="button" class="mo" data-g="pass" data-v="none">No pass / window</button>
         </div>
       </div>
 
-      <div id="matcherResult" class="matcher-result">
+      <div id="matcherResult" class="matcher-result" style="display:none">
         <div id="mVerdict"></div>
         <div id="mReason"></div>
         <a id="mCTA" href="${esc(compareExploreUrl)}" class="btn-matcher"></a>
       </div>
-    </div>
+    </section>
 
-    <!-- ══ ALSO CONSIDERING — nearby with snow deltas ══ -->
-    ${nearby.length ? `
-    <section class="nearby-section">
-      <div class="nearby-header">
-        <h2>Also Considering?</h2>
-        <a href="/ski/${stateSlug}/">See all ${esc(stateName)} mountains →</a>
+    <section class="pp-cta-band" aria-labelledby="sr-product-cta">
+      <div>
+        <h2 id="sr-product-cta">Compare this mountain with the full list</h2>
+        <p>Snow, drive time, pass, and crowds scored together. See if another resort in ${esc(stateName)} or beyond is a better fit today.</p>
       </div>
-      <div class="nearby-grid">
+      <a href="https://www.wheretoskinext.com/#searchSection" class="pp-btn pp-btn--primary">Find my best mountain &rarr;</a>
+    </section>
+
+    ${nearby.length
+      ? `
+    <section class="sr-nearby-section" aria-label="Nearby mountains">
+      <div class="sr-nearby-head">
+        <h2>Also considering</h2>
+        <a href="/ski/${stateSlug}/">Browse all ${esc(stateName)} mountains</a>
+      </div>
+      <div class="sr-nearby-grid">
         ${nearbyCards}
       </div>
-    </section>` : ''}
+    </section>`
+      : ""}
 
-    <!-- State page link -->
-    <div class="state-link-row">
-      → See all <a href="/ski/${stateSlug}/">${esc(stateName)} ski mountains</a> ranked by snow, vertical, and value.
-    </div>
+    <p class="sr-state-link">
+      See all <a href="/ski/${stateSlug}/">${esc(stateName)} ski mountains</a> ranked by snow, vertical, and value in our state hub.
+    </p>
 
-    <p style="font-size:12px;color:#94a3b8;margin-top:20px">
+    <p class="sr-disclaimer">
       *Day ticket prices are approximate and vary by date, demand, age, and promotions. Always confirm pricing directly with ${esc(resort.name)} before purchasing.
     </p>
 
   </main>
 
   <footer class="site-footer">
-    <p>© ${year} WhereToSkiNext.com · <a href="https://www.wheretoskinext.com">wheretoskinext.com</a> · Data updated seasonally</p>
-    <p style="margin-top:6px"><a href="/">Find the best mountain to ski next →</a></p>
+    <p>© ${year} WhereToSkiNext.com · <a href="/#searchSection">Find my mountain</a> · <a href="/about/">About</a> · <a href="/partners/">Partners</a></p>
   </footer>
 
-  <!-- ══ Live snow fetch from OpenMeteo ══
-       Fetches 72h forecast snowfall + tomorrow's temp.
-       Populates the hero snow spotlight above the fold.
-       Fails silently — static avg data is always shown as fallback. -->
+  <!-- Live snow fetch from OpenMeteo: 72h snowfall + tomorrow temp for hero snapshot -->
   <script>
   (function() {
     var lat = ${resort.lat};
@@ -1124,7 +743,7 @@ function generateMountainPage(resort, allResorts) {
         var daily = data.daily;
         if (!daily) return;
 
-        // Sum snowfall over next 3 days (indices 1,2,3 — skip today)
+        // Sum snowfall over next 3 days (indices 1,2,3; skip today)
         var snow72 = 0;
         for (var i = 1; i <= 3; i++) {
           snow72 += (daily.snowfall_sum[i] || 0);
@@ -1143,12 +762,12 @@ function generateMountainPage(resort, allResorts) {
         var tempEl = document.getElementById('forecastTemp');
         if (tempEl && tempF !== null) {
           tempEl.textContent = Math.round(tempF) + '°F';
+          tempEl.classList.remove('sr-data-placeholder');
         }
       })
       .catch(function() {
-        // Fail silently — avg snowfall is still shown
         var fsEl = document.getElementById('forecastSnow');
-        if (fsEl) fsEl.innerHTML = '<span class="snow-loading">Forecast unavailable</span>';
+        if (fsEl) fsEl.innerHTML = '<span class="sr-forecast-fallback">Forecast unavailable</span>';
       });
   })();
   </script>
