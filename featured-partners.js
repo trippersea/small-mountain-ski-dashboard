@@ -23,7 +23,7 @@
   // Active states: massachusetts, vermont, new-hampshire, connecticut
   const STATE_ADS = {
     'new-york': {
-      headline: 'Ski gear rental — pick up at the mountain',
+      headline: 'Ski gear rental: pick up at the mountain',
       tagline:  'Helmets, boots, skis. Book ahead, skip the rental line.',
       ctaText:  'Book gear →',
       ctaUrl:   'https://www.indyskipass.com/',

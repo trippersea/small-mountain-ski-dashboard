@@ -9,8 +9,8 @@
 // HOW TO USE:
 //   Run after any change to featured-partners.js, or any resort data update.
 //   node generate-state-pages.mjs
-// Links site-wide /styles.css + shared .top-nav (see styles.css)
-//   Commit and push — Vercel auto-deploys.
+// Links /styles.css, /ski-pass-comparison/pass-comparison-page.css, /ski/state-page.css (dark system + state layout).
+//   Commit and push; Vercel auto-deploys.
 //
 // WHAT IT DOES:
 //   1. Loads all resort data from sd-data.js + resorts-national.js
@@ -144,16 +144,7 @@ function passCompLabel(state) {
 
 
 
-// ─── Sponsor ad CSS + HTML ────────────────────────────────────────────────────
-const AD_CSS = `
-    /* ── State page sponsor ad ── */
-    .state-sponsor-ad { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:14px 18px; margin:0 0 18px; border:1px solid #bfdbfe; border-radius:12px; background:#edf4ff; }
-    .state-sponsor-copy { display:flex; flex-direction:column; gap:3px; }
-    .state-sponsor-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#185FA5; }
-    .state-sponsor-headline { font-size:14px; font-weight:700; color:#0C447C; }
-    .state-sponsor-tagline { font-size:12px; color:#185FA5; }
-    .state-sponsor-btn { background:#2563eb; color:#fff !important; font-size:13px; font-weight:700; padding:9px 20px; border-radius:999px; text-decoration:none; white-space:nowrap; transition:background .12s; flex-shrink:0; }
-    .state-sponsor-btn:hover { background:#1d4ed8; }`;
+// ─── Sponsor ad HTML (styling: /ski/state-page.css) ───────────────────────────
 
 function buildAdHtml(ad) {
   return `
@@ -168,41 +159,107 @@ function buildAdHtml(ad) {
   </div>`;
 }
 
-// ─── Featured partner row CSS + HTML ─────────────────────────────────────────
-const FEATURED_CSS = `
-    /* ── Featured partner row ── */
-    tr.featured-partner-row td { background:#edf4ff; border-bottom:1px solid #bfdbfe; }
-    tr.featured-partner-row td:first-child { border-left:3px solid #2563eb; }
-    .featured-badge { display:inline-block; background:#2563eb; color:#fff; font-size:10px; font-weight:700; letter-spacing:.04em; padding:2px 7px; border-radius:999px; margin-left:7px; vertical-align:middle; }
-    .featured-booking-link { display:inline-block; background:#2563eb; color:#fff !important; font-size:12px; font-weight:700; padding:5px 12px; border-radius:999px; text-decoration:none; white-space:nowrap; transition:background .12s; }
-    .featured-booking-link:hover { background:#1d4ed8; }`;
+// ─── Featured partner row (styling: /ski/state-page.css) ──────────────────────
 
 function buildFeaturedRow(resort, sponsor) {
   return `
-        <tr class="featured-partner-row" data-featured-id="${resort.id}">
-          <td><a href="/ski-report/${resort.id}/" style="font-weight:700;color:#111827;text-decoration:none">${esc(resort.name)}</a><span class="featured-badge">Featured</span>${sponsor.tagline ? `<div style="font-size:11px;color:#64748b;margin-top:3px">${esc(sponsor.tagline)}</div>` : ''}</td>
+        <tr class="sp-featured-row" data-featured-id="${resort.id}">
+          <td><a href="/ski-report/${resort.id}/">${esc(resort.name)}</a><span class="sp-featured-badge">Featured</span>${sponsor.tagline ? `<div class="sp-featured-tagline">${esc(sponsor.tagline)}</div>` : ''}</td>
           <td>${resort.vertical.toLocaleString()} ft</td>
           <td>${resort.trails}</td>
           <td>${resort.avgSnowfall}"</td>
           <td>$${resort.price}</td>
           <td>${esc(passLabel(resort.passGroup))}</td>
           <td>${resort.night ? 'Yes' : 'No'}</td>
-          <td><a href="${esc(sponsor.bookingUrl)}" class="featured-booking-link" target="_blank" rel="noopener noreferrer">Book →</a></td>
+          <td><a href="${esc(sponsor.bookingUrl)}" class="sp-featured-book" target="_blank" rel="noopener noreferrer">Book &rarr;</a></td>
         </tr>`;
 }
 
+// ─── State editorial blurbs (SEO + scanability; fallback is generic) ─────────
+const STATE_GUIDE_BLURBS = {
+  NH: 'New Hampshire packs strong New England variety across Epic, Ikon, Indy, and independent areas. Cannon, Wildcat, Waterville, Bretton Woods, and Loon are standouts. The state works well for weekend trips and day missions from Boston and southern New England.',
+  VT: 'Vermont is dense with classic Northeast skiing, from big-name resorts to smaller Indy favorites. Expect a strong mix of vertical, snow quality, and pass overlap across the spine of the Greens.',
+  ME: 'Maine blends coastal proximity with interior snow and serious vertical at a few flagship resorts. Good pick when you want Northeast trips with a different rhythm than southern New England.',
+  MA: 'Massachusetts keeps day-trip skiing within reach of Boston and the I-95 corridor. Expect smaller verticals on average, with a few larger hubs anchoring the state.',
+  CT: 'Connecticut offers compact ski areas that punch above their size for quick turns. Useful when you want close-to-home laps without a long haul.',
+  RI: 'Rhode Island keeps skiing minimal but real: think short drives and small hills when you need snow time without a road trip.',
+  NY: 'New York spans true big-mountain destinations and smaller community hills from the Adirondacks to the Catskills. Pass overlap is common, so compare coverage before you commit.',
+  NJ: 'New Jersey skiing is about convenience and quick sessions. Use the table to spot vertical, snow, and ticket value before you head out.',
+  PA: 'Pennsylvania mixes Poconos favorites with western PA options. Crowds and conditions swing by region, so the full list helps you line up the right trip.',
+  CO: 'Colorado sets the bar for variety: destination resorts, big vertical, and strong pass networks. Use this list to compare snow history and ticket pressure, then lean on live rankings for trip week specifics.',
+  UT: 'Utah pairs dry snow with a deep bench of resorts along the Wasatch and beyond. Great state to compare pass coverage and drive-time tradeoffs before you lock a trip.',
+  CA: 'California runs from Sierra power to smaller coastal and Southern California spots. Snow and access vary wildly by region, so the statewide view keeps comparisons honest.',
+  WY: 'Wyoming includes some of the biggest skiing in the country alongside quieter gems. Vertical and exposure can be serious, so match the mountain to your comfort level.',
+  MT: 'Montana mixes legendary big-mountain skiing with smaller community favorites. Snow quality and travel time often drive the decision more than trail count alone.',
+  ID: 'Idaho rewards skiers who like steeps, snow, and fewer crowds than some neighboring states. Compare pass coverage and night options before you choose a home base.',
+  WA: 'Washington delivers PNW snow with a wide spread of sizes and access patterns. Pay attention to elevation and typical snow when you compare areas side by side.',
+  OR: 'Oregon blends volcanoes, Cascade snow, and a strong Indy scene depending on where you look. The table helps you line up vertical, passes, and night skiing in one pass.',
+  MI: 'Michigan spreads skiing across the Upper Peninsula and Lower Peninsula with a strong Midwest pass mix. Vertical is modest at many areas, but snowmaking and consistency matter.',
+  MN: 'Minnesota skiing is about cold-weather reliability and family-friendly pacing. Compare ticket value and night skiing when you plan weeknight laps.',
+  WI: 'Wisconsin mixes small and mid-size areas that shine for quick trips. Use the list to spot pass fit and night options without guesswork.',
+  AZ: 'Arizona offers high-elevation snow in the northern part of the state with a different rhythm than Rocky Mountain mega-resorts. Great when you want desert proximity with real turns.',
+  NV: 'Nevada skiing often means Lake Tahoe access and high Sierra conditions. Compare passes and ticket pressure alongside snow history before you book.',
+  NM: 'New Mexico serves dry snow and big-sky days with a smaller resort count. Vertical and exposure can surprise first-time visitors in a good way.',
+  AK: 'Alaska delivers serious terrain and snow when you are ready to travel for it. Use the table to anchor facts, then lean on live forecasts when you plan logistics.',
+};
+
+function stateGuideBlurb(stateAbbr, stateName, count, topNames) {
+  if (STATE_GUIDE_BLURBS[stateAbbr]) return STATE_GUIDE_BLURBS[stateAbbr];
+  return `${count} ski areas across ${stateName}, from local hills to larger destinations. Notable names include ${topNames}. Skim vertical, snow history, ticket price, and pass access in the table, then open live rankings for forecast snow, drive time, and crowd context in one place.`;
+}
+
+function buildQuickChips(stateAbbr, resorts) {
+  if (!resorts.length) return [];
+  const byVert = [...resorts].sort((a, b) => b.vertical - a.vertical)[0];
+  const indyCount = resorts.filter(r => r.passGroup === 'Indy').length;
+  const nightCount = resorts.filter(r => r.night).length;
+  const chips = [];
+  chips.push(`Biggest vertical: ${byVert.name} (${byVert.vertical.toLocaleString()} ft)`);
+  if (indyCount > 0) {
+    chips.push(`${indyCount} Indy Pass ${indyCount === 1 ? 'mountain' : 'mountains'}`);
+  }
+  if (nightCount > 0) {
+    chips.push(`Night skiing at ${nightCount} ${nightCount === 1 ? 'area' : 'areas'}`);
+  }
+  const regional = {
+    NH: 'Strong weekend variety from Boston and southern New England',
+    VT: 'Tight map of classic Northeast resorts',
+    ME: 'Great when you want northern New England trips',
+    CO: 'Destination-level depth and pass overlap',
+    UT: 'Wasatch access and dry-snow upside',
+    CA: 'Regional variety from Sierra to smaller spots',
+  };
+  if (regional[stateAbbr]) chips.push(regional[stateAbbr]);
+  return chips.slice(0, 5);
+}
+
 // ─── Generate one state page ───────────────────────────────────────────────────
-function generateStatePage(stateAbbr, resorts) {
+function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   const stateName  = stateFullName(stateAbbr);
   const stateSlug  = slugifyState(stateAbbr);
-  const appUrl     = `https://www.wheretoskinext.com/?st=${stateAbbr}#compareSection`;
+  const rankingsUrl = `https://www.wheretoskinext.com/?st=${stateAbbr}#compareSection`;
+  const finderUrl   = `https://www.wheretoskinext.com/?st=${stateAbbr}#searchSection`;
   const canonUrl   = `https://www.wheretoskinext.com/ski/${stateSlug}/`;
   const count      = resorts.length;
   const sorted     = [...resorts].sort((a, b) => b.avgSnowfall - a.avgSnowfall);
   const topNames   = sorted.slice(0, 3).map(r => r.name).join(', ');
   const year       = new Date().getFullYear();
 
+  const epicCount  = resorts.filter(r => r.passGroup === 'Epic').length;
+  const ikonCount  = resorts.filter(r => r.passGroup === 'Ikon').length;
+  const indyCount  = resorts.filter(r => r.passGroup === 'Indy').length;
+  const nightCount = resorts.filter(r => r.night).length;
+  const avgSnow    = Math.round(resorts.reduce((s, r) => s + r.avgSnowfall, 0) / count);
+
   const jsonLdArray = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext', item: 'https://www.wheretoskinext.com/' },
+        { '@type': 'ListItem', position: 2, name: `Ski mountains in ${stateName}`, item: canonUrl },
+      ],
+    },
     {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -235,31 +292,26 @@ function generateStatePage(stateAbbr, resorts) {
       <td>$${r.price}</td>
       <td>${esc(passLabel(r.passGroup))}</td>
       <td>${r.night ? 'Yes' : 'No'}</td>
-      <td><a href="https://www.wheretoskinext.com/?resort=${r.id}" class="view-link">Live data →</a></td>
+      <td><a href="https://www.wheretoskinext.com/?resort=${r.id}" class="sp-live-link">Open live data &rarr;</a></td>
     </tr>`).join('');
 
-  // All states in the nav footer — derived dynamically, current state excluded
-  const allStateAbbrs = ['CT','MA','ME','NH','VT','NY','NJ','PA','RI','CO','UT','WA','OR','CA','ID','MT','WY'];
-  const otherStates = allStateAbbrs
-    .filter(s => s !== stateAbbr)
-    .map(s => `<a href="/ski/${slugifyState(s)}/" class="state-link">${stateFullName(s)}</a>`)
-    .join('');
+  const compPage = passCompPage(stateAbbr);
+  const compLabel = passCompLabel(stateAbbr);
+  const passCallout = compPage && (epicCount + ikonCount > 0) ? `
+        <div class="sp-pass-guide">
+          <div>
+            <div class="sp-pass-guide-kicker">Pass guide</div>
+            <h2>Epic Pass vs Ikon Pass: ${compLabel}</h2>
+            <p>${epicCount} Epic Pass and ${ikonCount} Ikon Pass ${ikonCount !== 1 ? 'mountains' : 'mountain'} in ${stateName}. Compare coverage and side-by-side value before you buy.</p>
+          </div>
+          <a href="/${compPage}/" class="pp-btn pp-btn--primary">Compare passes &rarr;</a>
+        </div>` : '';
 
-
-    // ── Pass comparison callout (only if state has a comparison page) ────────
-    const compPage = passCompPage(stateAbbr);
-    const compLabel = passCompLabel(stateAbbr);
-    const epicCount = resorts.filter(r => r.passGroup === 'Epic').length;
-    const ikonCount = resorts.filter(r => r.passGroup === 'Ikon').length;
-    const passCallout = compPage && (epicCount + ikonCount > 0) ? `
-    <div style="margin:32px 0;padding:20px 24px;background:#f0f6ff;border:1px solid #bfdbfe;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#185fa5;margin-bottom:4px">Pass Guide</div>
-        <div style="font-size:16px;font-weight:800;color:#111827;margin-bottom:4px">Epic Pass vs Ikon Pass: ${compLabel}</div>
-        <div style="font-size:13px;color:#3b5a8f">This state has ${epicCount} Epic Pass and ${ikonCount} Ikon Pass mountain${ikonCount !== 1 ? 's' : ''}. See how every covered resort compares side by side.</div>
-      </div>
-      <a href="/${compPage}/" style="background:#2563eb;color:#fff;font-size:14px;font-weight:700;padding:11px 22px;border-radius:999px;text-decoration:none;white-space:nowrap;flex-shrink:0">Compare Passes &rarr;</a>
-    </div>` : '';
+  const editorial = stateGuideBlurb(stateAbbr, stateName, count, topNames);
+  const quickChips = buildQuickChips(stateAbbr, resorts);
+  const quickChipsHtml = quickChips.length
+    ? `<section class="sp-quick" aria-label="State snapshot">${quickChips.map(c => `<span class="sp-quick-chip">${esc(c)}</span>`).join('')}</section>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -269,62 +321,30 @@ function generateStatePage(stateAbbr, resorts) {
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MCCDNQGB');</script>
   <!-- End Google Tag Manager -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Best Ski Mountains in ${stateName} (${year}) — WhereToSkiNext</title>
+  <title>Best Ski Mountains in ${stateName} (${year}) | WhereToSkiNext</title>
   <meta name="description" content="${count} ski mountains in ${stateName} ranked by snow, vertical, trails, and price. Live forecasts and drive times at WhereToSkiNext.com." />
   <link rel="canonical" href="${canonUrl}" />
-  <meta property="og:title" content="Best Ski Mountains in ${stateName} — WhereToSkiNext.com" />
+  <meta property="og:title" content="Best Ski Mountains in ${stateName} | WhereToSkiNext.com" />
   <meta property="og:description" content="${count} mountains in ${stateName}. Top picks: ${topNames}. Stop guessing. Start skiing." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
   <meta property="og:image" content="https://www.wheretoskinext.com/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
+  <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
+  <link rel="stylesheet" href="/ski/state-page.css" />
   <script type="application/ld+json">
   ${JSON.stringify(jsonLdArray, null, 2)}
   </script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body { font-family: 'Inter', 'DM Sans', system-ui, sans-serif; background: #f8fafc; color: #111827; margin: 0; line-height: 1.5; }
-    a { color: #2563eb; }
-
-    /* Nav: .top-nav, .nav-primary, .nav-find-cta from /styles.css */
-
-    /* ── Page layout ── */
-    .container { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
-    h1 { font-size: clamp(24px, 4vw, 38px); font-weight: 800; line-height: 1.1; margin: 0 0 12px; }
-    .subhead { font-size: 18px; color: #475569; margin: 0 0 28px; line-height: 1.55; }
-    .cta-banner { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 24px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    .cta-banner h2 { font-size: 18px; font-weight: 800; color: #1e40af; margin: 0 0 4px; }
-    .cta-banner p  { margin: 0; font-size: 14px; color: #1d4ed8; }
-    .cta-btn { display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #fff; border-radius: 999px; padding: 11px 22px; font-weight: 700; font-size: 15px; text-decoration: none; white-space: nowrap; transition: background .12s; }
-    .cta-btn:hover { background: #1d4ed8; color: #fff; }
-    .stats { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
-    .stat-chip { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 16px; font-size: 14px; font-weight: 600; }
-    .stat-chip strong { display: block; font-size: 22px; font-weight: 800; color: #111827; }
-    .table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid #e2e8f0; background: #fff; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th { background: #f1f5f9; text-align: left; padding: 12px 14px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #64748b; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
-    td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #f8fafc; }
-    .view-link { color: #2563eb; font-weight: 700; text-decoration: none; white-space: nowrap; }
-    .view-link:hover { text-decoration: underline; }
-    .nearby-links { margin-top: 40px; }
-    .nearby-links h2 { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
-    .state-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-    .state-link { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 14px; font-size: 14px; font-weight: 600; text-decoration: none; color: #111827; transition: border-color .12s; }
-    .state-link:hover { border-color: #2563eb; color: #2563eb; }
-
-    /* Footer: .site-footer from /styles.css */
-    @media (max-width: 600px) { .cta-banner { flex-direction: column; } }
-  </style>
 </head>
-<body>
+<body class="pass-page-body state-page">
   <!-- GTM noscript -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
@@ -333,7 +353,7 @@ function generateStatePage(stateAbbr, resorts) {
       <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
         <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
         <span class="nav-brand">
-          <span class="nav-brand-name">WhereToSkiNext.com</span>
+          <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
           <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
         </span>
       </a>
@@ -341,38 +361,55 @@ function generateStatePage(stateAbbr, resorts) {
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-      <a href="${esc(appUrl)}" class="nav-find-cta">Find My Mountain →</a>
+      <a href="${esc(finderUrl)}" class="nav-find-cta">Find my mountain &rarr;</a>
     </div>
   </nav>
 
-  <div class="container">
+  <main class="pp-shell sp-page">
 
-    <h1>Best Ski Mountains in ${stateName}</h1>
-    <p class="subhead">
-      ${count} ski mountain${count !== 1 ? 's' : ''} in ${stateName} — ranked by snow history, vertical drop, and value.
-      Get live forecasts and personalized drive-time rankings in the app.
-    </p>
+    <nav class="sp-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span class="sp-breadcrumb-sep">/</span>
+      <span>${esc(stateName)} ski mountains</span>
+    </nav>
 
-    <div class="cta-banner">
-      <div>
-        <h2>See live snow forecasts for ${stateName} mountains</h2>
-        <p>Real-time rankings updated daily with forecast snow, drive times, crowd outlook, and pass access.</p>
+    <header class="sp-hero">
+      <div class="sp-hero-inner">
+        <div class="sp-hero-grid">
+          <div>
+            <p class="sp-eyebrow">State ski guide</p>
+            <h1 class="sp-title">Best Ski Mountains in ${stateName}</h1>
+            <p class="sp-lede">A ranked list of ${count} ski ${count !== 1 ? 'areas' : 'area'} with snow history, vertical, trails, and ticket context. Use this page as your ${stateName} guide, then open the app when you want live forecast, drive time, pass access, and crowd signals in one ranking.</p>
+            <div class="sp-hero-cta">
+              <a href="${esc(rankingsUrl)}" class="sp-btn sp-btn--primary">Open live rankings</a>
+              <a href="${esc(finderUrl)}" class="sp-btn sp-btn--ghost">Find my mountain</a>
+            </div>
+            <p class="sp-hero-trust">Live forecast, drive time, pass access, and crowds in one ranking. Compare the best mountains in ${stateName}, then find your best fit when you are ready.</p>
+          </div>
+          <div class="sp-hero-aside">
+            <div class="sp-metric-grid">
+              <div class="sp-metric"><strong>${count}</strong><span>Mountains</span></div>
+              <div class="sp-metric"><strong>${epicCount}</strong><span>Epic Pass</span></div>
+              <div class="sp-metric"><strong>${ikonCount}</strong><span>Ikon Pass</span></div>
+              <div class="sp-metric"><strong>${indyCount}</strong><span>Indy Pass</span></div>
+              <div class="sp-metric"><strong>${nightCount}</strong><span>Night skiing</span></div>
+              <div class="sp-metric"><strong>${avgSnow}"</strong><span>Avg annual snow</span></div>
+            </div>
+            ${passCallout}
+          </div>
+        </div>
       </div>
-      <a href="${esc(appUrl)}" class="cta-btn">Open Live Rankings →</a>
-    </div>
+    </header>
 
-    <div class="stats">
-      <div class="stat-chip"><strong>${count}</strong> Mountains</div>
-      <div class="stat-chip"><strong>${resorts.filter(r => r.passGroup === 'Epic').length}</strong> Epic Pass</div>
-      <div class="stat-chip"><strong>${resorts.filter(r => r.passGroup === 'Ikon').length}</strong> Ikon Pass</div>
-      <div class="stat-chip"><strong>${resorts.filter(r => r.passGroup === 'Indy').length}</strong> Indy Pass</div>
-      <div class="stat-chip"><strong>${resorts.filter(r => r.night).length}</strong> Night Skiing</div>
-      <div class="stat-chip"><strong>${Math.round(resorts.reduce((s, r) => s + r.avgSnowfall, 0) / count)}"</strong> Avg Annual Snow</div>
-    </div>
+    <section class="sp-summary">
+      <h2>How ${esc(stateName)} stacks up</h2>
+      <p>${esc(editorial)}</p>
+    </section>
 
-    ${passCallout}
-    <div class="table-wrap">
-      <table>
+    ${quickChipsHtml}
+
+    <div class="sp-table-wrap">
+      <table class="sp-table">
         <thead>
           <tr>
             <th>Mountain</th>
@@ -390,20 +427,20 @@ function generateStatePage(stateAbbr, resorts) {
         </tbody>
       </table>
     </div>
-    <p style="font-size:12px;color:#94a3b8;margin-top:8px">*Ticket prices vary by date, demand, and age. Verify with the mountain before purchasing.</p>
+    <p class="sp-disclaimer">*Ticket prices vary by date, demand, and age. Verify with the mountain before purchasing.</p>
 
-    <div class="nearby-links">
+    <section class="sp-explore">
       <h2>Explore other states</h2>
-      <div class="state-grid">${otherStates}</div>
-      <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0;">
-        <a href="/ski-pass-comparison/" style="font-size:14px;font-weight:700;color:#2563eb;text-decoration:none;">Compare Epic Pass vs Ikon Pass by region &rarr;</a>
+      <div class="sp-state-grid">${otherStatesHtml}</div>
+      <div class="sp-explore-foot">
+        <a href="/ski-pass-comparison/">Compare Epic Pass vs Ikon Pass by region &rarr;</a>
       </div>
-    </div>
+    </section>
 
-  </div>
+  </main>
 
   <footer class="site-footer">
-    <p>&copy; ${year} WhereToSkiNext.com &mdash; <a href="/">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
+    <p>&copy; ${year} WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
   </footer>
 
 </body>
@@ -425,20 +462,27 @@ async function main() {
 
   let generated = 0;
 
-  for (const [stateAbbr, stateResorts] of Object.entries(byState)) {
-    if (!stateResorts.length) continue;
+  const stateKeys = Object.keys(byState)
+    .filter(abbr => byState[abbr].length)
+    .sort((a, b) => stateFullName(a).localeCompare(stateFullName(b)));
+
+  for (const stateAbbr of stateKeys) {
+    const stateResorts = byState[stateAbbr];
+    const otherStatesHtml = stateKeys
+      .filter(s => s !== stateAbbr)
+      .map(s => `<a href="/ski/${slugifyState(s)}/" class="sp-state-chip"><span class="sp-state-chip__abbr">${esc(s)}</span><span class="sp-state-chip__name">${esc(stateFullName(s))}</span></a>`)
+      .join('\n      ');
 
     const stateSlug = slugifyState(stateAbbr);
     const dir       = path.join(__dirname, 'ski', stateSlug);
     fs.mkdirSync(dir, { recursive: true });
 
-    let html = generateStatePage(stateAbbr, stateResorts);
+    let html = generateStatePage(stateAbbr, stateResorts, otherStatesHtml);
 
     // ── Inject sponsor ad if configured for this state ────────────────────────
     const ad = STATE_ADS[stateSlug];
     if (ad) {
-      html = html.replace('</style>', AD_CSS + '\n  </style>');
-      html = html.replace('<table', buildAdHtml(ad) + '\n  <table');
+      html = html.replace('<table class="sp-table">', `${buildAdHtml(ad)}\n    <table class="sp-table">`);
       console.log(`  ✓ Sponsor ad injected: ${stateSlug}`);
     }
 
@@ -448,7 +492,6 @@ async function main() {
       .map(r => ({ resort: r, sponsor: FEATURED_PARTNERS[r.id] }));
 
     if (featuredForState.length) {
-      html = html.replace('</style>', FEATURED_CSS + '\n  </style>');
       const rows = featuredForState
         .map(({ resort, sponsor }) => buildFeaturedRow(resort, sponsor))
         .join('');
