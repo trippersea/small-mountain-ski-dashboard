@@ -138,7 +138,7 @@ export function getMountainNarrative(mountain) {
 
     if (humidity > 90 && temp > 32 && isCloudy) {
         return {
-            vibe: "Low Vis",
+            vibe: "Low Visibility",
             story: small
                 ? "Damp and flat light. Stick to the widest groomers where you can read the surface."
                 : "Damp and flat light. Trees are easier to read than wide open terrain.",

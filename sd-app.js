@@ -603,18 +603,14 @@ function syncHeroV2UI() {
     btn.classList.toggle('is-active', btn.dataset.trip === String(state.howFar ?? 0));
   });
 
-  // Defaults chips
-  const dayLblEl = document.getElementById('heroV2DayLabel');
-  const prLblEl  = document.getElementById('heroV2PriorityLabel');
-  if (dayLblEl) {
+  // Compact summary: "Friday • Best fit"
+  const summaryEl = document.getElementById('heroV2SummaryLabel');
+  if (summaryEl) {
     const v = state.skiDayPreset || smartDefaultWhenVal();
     const lab = (HERO_DAY_LABELS[v] || String(v));
-    dayLblEl.textContent = `Ski day: ${lab}`;
-  }
-  if (prLblEl) {
     const snowVal = (state.weights && state.weights.snow != null) ? state.weights.snow : 1;
     const prLab = (HERO_PRIORITY_LABELS[Number(snowVal)] || heroPriorityLabelFromSnowWeight(snowVal));
-    prLblEl.textContent = `Priority: ${prLab}`;
+    summaryEl.textContent = `${lab} \u2022 ${prLab}`;
   }
 
   // Editor active pills
@@ -629,9 +625,12 @@ function syncHeroV2UI() {
 function setHeroV2EditorOpen(open) {
   const editor = document.getElementById('heroV2DefaultsEditor');
   const change = document.getElementById('heroV2DefaultsChange');
-  if (!editor || !change) return;
+  const summary = document.getElementById('heroV2SummaryChip');
+  if (!editor) return;
   editor.hidden = !open;
-  change.setAttribute('aria-expanded', open ? 'true' : 'false');
+  const exp = open ? 'true' : 'false';
+  change?.setAttribute('aria-expanded', exp);
+  summary?.setAttribute('aria-expanded', exp);
 }
 
 function wireHeroV2() {
@@ -670,13 +669,11 @@ function wireHeroV2() {
   });
 
   const change = document.getElementById('heroV2DefaultsChange');
-  const dayChip = document.getElementById('heroV2DayChip');
-  const prChip  = document.getElementById('heroV2PriorityChip');
+  const summaryChip = document.getElementById('heroV2SummaryChip');
   const editor  = document.getElementById('heroV2DefaultsEditor');
   if (change && editor) {
     change.addEventListener('click', () => setHeroV2EditorOpen(editor.hidden));
-    dayChip?.addEventListener('click', () => setHeroV2EditorOpen(true));
-    prChip?.addEventListener('click', () => setHeroV2EditorOpen(true));
+    summaryChip?.addEventListener('click', () => setHeroV2EditorOpen(!!editor.hidden));
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') setHeroV2EditorOpen(false); });
   }
 
@@ -1806,10 +1803,9 @@ function renderVerdict(resorts) {
     ? 'Try any distance or ease snow'
     : 'Ease snow or pass filter';
   const guidanceInsetHtml = showVerdictGuidance
-    ? `<p class="vcard-refine-hint" role="note">
+    ? `<p class="vcard-refine-hint vcard-refine-hint--option2" role="note">
         <span class="vcard-refine-hint-ico" aria-hidden="true"></span>
-        <span class="vcard-refine-hint-text">Conditions look tight.</span>
-        <button type="button" class="vcard-refine-hint-link" id="verdictRefineGuidanceBtn">${esc(_widenSuggestion)}</button>
+        <span class="vcard-refine-hint-inline"><span class="vcard-refine-hint-line">Conditions look tight. </span><button type="button" class="vcard-refine-hint-link" id="verdictRefineGuidanceBtn">${esc(_widenSuggestion)}</button></span>
       </p>`
     : '';
   const _lodgingUrl = bookingUrl(resort);
@@ -1852,8 +1848,8 @@ function renderVerdict(resorts) {
     : 'vb-verdict-badge--skip';
 
   const _fitWord = fitLabel(scoreNum);
-  const primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions &rarr;</button>`;
-  const secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictSeeAllRunnersBtn">Compare Mountains &rarr;</button>`;
+  const primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions</button>`;
+  const secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictSeeAllRunnersBtn">Compare Mountains</button>`;
 
   const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
   const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock' : '';
@@ -1901,7 +1897,7 @@ function renderVerdict(resorts) {
       </button>`;
     }).join('');
     return `<div class="vcard-runners-zone">
-      <div class="vcard-runners-heading">Also in the running</div>
+      <div class="vcard-runners-heading">Also in the Running</div>
       <div class="vcard-runners-row">
         ${miniCards}
       </div>

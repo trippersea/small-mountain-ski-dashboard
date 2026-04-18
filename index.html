@@ -515,46 +515,42 @@
               <span class="hero-v2__location-ico" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.2 7-12a7 7 0 10-14 0c0 6.8 7 12 7 12z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
               </span>
-              <input id="originInput" class="hero-v2__location-input" type="text" value="Boston, MA" placeholder="ZIP code or city, state" autocomplete="off" inputmode="text" />
+              <input id="originInput" class="hero-v2__location-input" type="text" value="Boston, MA" placeholder="Your location" autocomplete="off" inputmode="text" />
               <button type="button" class="hero-v2__location-submit" id="setLocationInline" aria-label="Find mountain" tabindex="-1">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
           </div>
 
-          <div class="hero-v2__pill-row" aria-label="Pass">
-            <div class="hero-v2__pill-label">Pass</div>
-            <div class="hero-v2__pills" id="heroV2PassPills">
-              <button type="button" class="hero-v2__pill is-active" data-pass="All">Any</button>
-              <button type="button" class="hero-v2__pill" data-pass="Epic">Epic</button>
-              <button type="button" class="hero-v2__pill" data-pass="Ikon">Ikon</button>
-              <button type="button" class="hero-v2__pill" data-pass="Indy">Indy</button>
-            </div>
-          </div>
-
-          <div class="hero-v2__pill-row" aria-label="Trip">
-            <div class="hero-v2__pill-label">Trip</div>
-            <div class="hero-v2__pills" id="heroV2TripPills">
-              <button type="button" class="hero-v2__pill is-active" data-trip="0">Day trip</button>
-              <button type="button" class="hero-v2__pill" data-trip="1">Weekend</button>
-              <button type="button" class="hero-v2__pill" data-trip="2">Any distance</button>
-            </div>
-          </div>
-
-          <div class="hero-v2__defaults" aria-label="Your search settings">
-            <div class="hero-v2__defaults-head">
-              <div class="hero-v2__defaults-label">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="display:inline-block;vertical-align:-.1em;margin-right:4px;opacity:.7"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="2"/></svg>Your search settings
+          <div class="hero-v2__ski-day">
+            <div class="hero-v2__ski-day-title" id="heroSkiDayHeading">Your ski day</div>
+            <div class="hero-v2__ski-day-inner" aria-labelledby="heroSkiDayHeading">
+              <div class="hero-v2__pill-row" aria-label="Pass">
+                <div class="hero-v2__pill-label">Pass</div>
+                <div class="hero-v2__pills" id="heroV2PassPills">
+                  <button type="button" class="hero-v2__pill is-active" data-pass="All">Any</button>
+                  <button type="button" class="hero-v2__pill" data-pass="Epic">Epic</button>
+                  <button type="button" class="hero-v2__pill" data-pass="Ikon">Ikon</button>
+                  <button type="button" class="hero-v2__pill" data-pass="Indy">Indy</button>
+                </div>
               </div>
-              <button type="button" class="hero-v2__change" id="heroV2DefaultsChange" aria-expanded="false" aria-controls="heroV2DefaultsEditor">Edit ✏</button>
+              <div class="hero-v2__pill-row" aria-label="Trip distance">
+                <div class="hero-v2__pill-label">Trip</div>
+                <div class="hero-v2__pills" id="heroV2TripPills">
+                  <button type="button" class="hero-v2__pill is-active" data-trip="0">Day trip</button>
+                  <button type="button" class="hero-v2__pill" data-trip="1">Weekend</button>
+                  <button type="button" class="hero-v2__pill" data-trip="2">Any distance</button>
+                </div>
+              </div>
             </div>
-            <div class="hero-v2__defaults-row">
-              <button type="button" class="hero-v2__chip" id="heroV2DayChip" aria-controls="heroV2DefaultsEditor">
-                <span id="heroV2DayLabel">Ski day: Friday</span>
+          </div>
+
+          <div class="hero-v2__defaults" aria-label="Ski day and ranking preferences">
+            <div class="hero-v2__defaults-summary-row">
+              <button type="button" class="hero-v2__summary-chip" id="heroV2SummaryChip" aria-expanded="false" aria-controls="heroV2DefaultsEditor">
+                <span id="heroV2SummaryLabel">Friday • Best fit</span>
               </button>
-              <button type="button" class="hero-v2__chip" id="heroV2PriorityChip" aria-controls="heroV2DefaultsEditor">
-                <span id="heroV2PriorityLabel">Priority: Best fit</span>
-              </button>
+              <button type="button" class="hero-v2__change" id="heroV2DefaultsChange" aria-expanded="false" aria-controls="heroV2DefaultsEditor">Edit</button>
             </div>
 
             <div id="heroV2DefaultsEditor" class="hero-v2__defaults-editor" hidden>
@@ -579,18 +575,19 @@
           </div>
 
           <div class="hero-v2__cta-row">
-            <button type="button" id="setLocation" class="hero-v2__cta">Find my mountain <span aria-hidden="true">→</span></button>
+            <button type="button" id="setLocation" class="hero-v2__cta">Find My Mountain</button>
             <div class="hero-v2__trust" role="note" aria-label="Trust and methodology notes">
-              <div class="hero-v2__trust-top">
-                <span class="hero-v2__trust-ico" aria-hidden="true">🛡</span>
-                <span>Live forecast • Real drive times • Crowd model</span>
-              </div>
+              <div class="hero-v2__trust-line">Live forecast • Real drive times • Crowd model</div>
               <div class="hero-v2__trust-sub">Rankings not sponsored</div>
             </div>
           </div>
 
-          <!-- Describe your ideal day — sits under the CTA -->
-          <div class="hn-editorial-ai hn-editorial-ai--hero">
+          <div class="hero-v2__aux">
+            <button type="button" id="detectLocation" class="hero-v2__link">Use current location</button>
+            <div id="locationStatus" class="hero-v2__status" role="status"></div>
+          </div>
+
+          <div class="hn-editorial-ai hn-editorial-ai--hero hn-editorial-ai--belowfold">
             <button type="button" class="hn-editorial-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">Describe your ideal day</button>
             <div id="aiChatPanel" class="hero-ai-panel hn-editorial-ai-panel" hidden>
               <div class="hero-ai-examples">
@@ -604,11 +601,6 @@
               </div>
               <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
             </div>
-          </div>
-
-          <div class="hero-v2__aux">
-            <button type="button" id="detectLocation" class="hero-v2__link">Use current location</button>
-            <div id="locationStatus" class="hero-v2__status" role="status"></div>
           </div>
 
           <!-- Hidden selects preserved for state compatibility -->
@@ -635,7 +627,7 @@
             <div id="heroVerdictEmpty" class="hn-hero-verdict-empty">
               <div class="hn-verdict-empty-inner">
                 <p class="hn-hero-verdict-empty-title">Your top pick appears here</p>
-                <p class="hn-hero-verdict-empty-sub">We score 250+ mountains on live snow, your exact drive time, crowd outlook, and pass — then surface the one worth the trip.</p>
+                <p class="hn-hero-verdict-empty-sub">We score 250+ mountains on live snow, your exact drive time, crowd outlook, and pass. Then we surface the one worth the trip.</p>
                 <ul class="hn-verdict-empty-list" aria-label="What we factor in">
                   <li>Live snow forecast</li>
                   <li>Real drive times</li>

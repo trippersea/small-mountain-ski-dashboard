@@ -1080,12 +1080,12 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   border-top-color: rgba(255, 255, 255, 0.05);
 }
 .hn-hero-verdict-dock .vcard-utility-vibe {
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: rgba(248, 250, 252, 0.88);
-  padding: 4px 10px;
+  font-size: clamp(0.78rem, 1.25vw, 0.84rem);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: rgba(248, 250, 252, 0.9);
+  padding: 5px 11px;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.42);
   border: 1px solid rgba(148, 163, 184, 0.28);
@@ -6837,6 +6837,19 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard-refine-hint-link:hover {
   color: #bfdbfe;
 }
+.hn-hero-verdict-dock .vcard-refine-hint--option2 {
+  align-items: flex-start;
+  gap: 0.45rem 0.65rem;
+}
+.hn-hero-verdict-dock .vcard-refine-hint-inline {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.45;
+}
+.hn-hero-verdict-dock .vcard-refine-hint-line {
+  font-weight: 600;
+  color: rgba(200, 214, 230, 0.82);
+}
 .hn-hero-verdict-dock .vcard-divider {
   margin: 14px 0 0;
   height: 1px;
@@ -7054,7 +7067,7 @@ button.vcard-detail-btn:hover,
   border-radius: 0 !important;
   box-shadow: none !important;
   background: #0b1b2b url("/hero-bg.jpg") right 38% / cover no-repeat !important;
-  min-height: min(640px, 92vh);
+  min-height: min(560px, 88vh);
 }
 #searchSection.hero-v2::before {
   content: "";
@@ -7078,13 +7091,13 @@ button.vcard-detail-btn:hover,
   grid-template-columns: 0.92fr 1.08fr;
   max-width: 1480px;
   margin: 0 auto;
-  min-height: min(640px, 92vh);
+  min-height: min(560px, 88vh);
 }
 #searchSection.hero-v2 .hero-v2__left {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(40px, 6vw, 88px) clamp(28px, 4.6vw, 60px);
+  padding: clamp(32px, 5vw, 72px) clamp(28px, 4.6vw, 56px);
   background: transparent;
   backdrop-filter: none;
   position: relative;
@@ -7092,15 +7105,15 @@ button.vcard-detail-btn:hover,
 }
 #searchSection.hero-v2 .hero-v2__eyebrow {
   font-family: Inter, system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(147, 197, 253, 0.75);
-  margin: 0 0 18px;
+  color: rgba(147, 197, 253, 0.58);
+  margin: 0 0 12px;
 }
 #searchSection.hero-v2 .hero-v2__headline {
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   font-family: Inter, system-ui, sans-serif;
   font-size: clamp(2.3rem, 4.6vw, 3.4rem);
   line-height: 1.05;
@@ -7112,33 +7125,53 @@ button.vcard-detail-btn:hover,
   color: var(--accent);
 }
 #searchSection.hero-v2 .hero-v2__support {
-  margin: 0 0 22px;
+  margin: 0 0 14px;
   font-family: Inter, system-ui, sans-serif;
-  font-size: 15px;
-  line-height: 1.55;
-  font-weight: 520;
-  color: rgba(240, 246, 252, 0.72);
-  max-width: 52ch;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: rgba(220, 232, 245, 0.62);
+  max-width: 48ch;
+}
+
+/* One grouped preferences block: title + Pass/Trip (not two separate sections) */
+#searchSection.hero-v2 .hero-v2__ski-day {
+  margin-top: 2px;
+}
+#searchSection.hero-v2 .hero-v2__ski-day-title {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: rgba(200, 220, 240, 0.42);
+  margin: 0 0 6px;
+}
+#searchSection.hero-v2 .hero-v2__ski-day-inner .hero-v2__pill-row {
+  margin-top: 6px;
+}
+#searchSection.hero-v2 .hero-v2__ski-day-inner .hero-v2__pill-row:first-child {
+  margin-top: 0;
 }
 
 #searchSection.hero-v2 .hero-v2__label {
   display: block;
   font-family: Inter, system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(200, 220, 240, 0.62);
-  margin-bottom: 8px;
+  color: rgba(200, 220, 240, 0.45);
+  margin-bottom: 6px;
 }
 #searchSection.hero-v2 .hero-v2__location {
   display: grid;
   grid-template-columns: 44px 1fr 48px;
   align-items: center;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  min-height: 52px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 48px;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
   overflow: hidden;
 }
@@ -7154,7 +7187,7 @@ button.vcard-detail-btn:hover,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(200, 220, 240, 0.62);
+  color: rgba(200, 220, 240, 0.48);
 }
 #searchSection.hero-v2 .hero-v2__location-submit {
   display: inline-flex;
@@ -7189,10 +7222,17 @@ button.vcard-detail-btn:hover,
 
 #searchSection.hero-v2 .hero-v2__pill-row {
   display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 10px;
+  grid-template-columns: 48px 1fr;
+  gap: 8px;
   align-items: center;
   margin-top: 16px;
+}
+#searchSection.hero-v2 .hero-v2__ski-day .hero-v2__pill-label {
+  font-weight: 550;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 9px;
+  color: rgba(200, 220, 240, 0.32);
 }
 #searchSection.hero-v2 .hero-v2__pill-label {
   font-family: Inter, system-ui, sans-serif;
@@ -7204,99 +7244,93 @@ button.vcard-detail-btn:hover,
 }
 #searchSection.hero-v2 .hero-v2__pills {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 #searchSection.hero-v2 .hero-v2__pill {
-  min-height: 40px;
-  padding: 8px 14px;
+  min-height: 34px;
+  padding: 6px 11px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(200, 220, 240, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(210, 224, 238, 0.72);
   font-family: Inter, system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 650;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
 }
 #searchSection.hero-v2 .hero-v2__pill.is-active {
-  background: rgba(43, 109, 233, 0.34);
-  border-color: rgba(147, 197, 253, 0.55);
-  color: #e6f1ff;
+  background: rgba(43, 109, 233, 0.28);
+  border-color: rgba(147, 197, 253, 0.42);
+  color: #eaf2ff;
 }
 #searchSection.hero-v2 .hero-v2__pill:hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(147, 197, 253, 0.32);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(147, 197, 253, 0.22);
 }
 
 #searchSection.hero-v2 .hero-v2__defaults {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  margin-top: 8px;
+  padding-top: 0;
+  border-top: none;
 }
-#searchSection.hero-v2 .hero-v2__defaults-head {
+#searchSection.hero-v2 .hero-v2__defaults-summary-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 8px 12px;
+  flex-wrap: wrap;
 }
-#searchSection.hero-v2 .hero-v2__defaults-label {
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: rgba(200, 220, 240, 0.65);
-  display: flex;
+#searchSection.hero-v2 .hero-v2__summary-chip {
+  display: inline-flex;
   align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: min(100%, 200px);
+  padding: 7px 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.028);
+  color: rgba(230, 240, 250, 0.82);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 580;
+  line-height: 1.35;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+#searchSection.hero-v2 .hero-v2__summary-chip:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(147, 197, 253, 0.2);
 }
 #searchSection.hero-v2 .hero-v2__change {
   font-family: Inter, system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  color: rgba(147, 197, 253, 0.85);
-  background: rgba(147, 197, 253, 0.08);
-  border: 1px solid rgba(147, 197, 253, 0.2);
+  color: rgba(147, 197, 253, 0.78);
+  background: none;
+  border: none;
   border-radius: 6px;
-  padding: 4px 9px;
+  padding: 6px 4px;
   cursor: pointer;
-  transition: background .13s, border-color .13s;
+  flex-shrink: 0;
+  transition: color 0.12s ease, text-decoration-color 0.12s ease;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(147, 197, 253, 0.35);
 }
 #searchSection.hero-v2 .hero-v2__change:hover {
-  background: rgba(147, 197, 253, 0.15);
-  border-color: rgba(147, 197, 253, 0.38);
-}
-#searchSection.hero-v2 .hero-v2__defaults-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-#searchSection.hero-v2 .hero-v2__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(240, 246, 252, 0.86);
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-#searchSection.hero-v2 .hero-v2__chip-ico {
-  opacity: 0.85;
+  color: #bfdbfe;
+  text-decoration-color: rgba(191, 219, 254, 0.55);
 }
 #searchSection.hero-v2 .hero-v2__defaults-editor {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.05);
+  margin-top: 10px;
+  padding: 10px 11px;
+  border-radius: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.035);
 }
 #searchSection.hero-v2 .hero-v2__mini-row {
   display: grid;
@@ -7340,56 +7374,45 @@ button.vcard-detail-btn:hover,
 
 #searchSection.hero-v2 .hero-v2__cta-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 12px;
 }
 #searchSection.hero-v2 .hero-v2__cta {
-  min-height: 52px;
-  padding: 0 22px;
-  border-radius: 12px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 11px;
   border: none;
   cursor: pointer;
   background: #2b6de9;
   color: #fff;
   font-family: Inter, system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.11em;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  box-shadow: 0 10px 26px rgba(43, 109, 233, 0.28);
+  box-shadow: 0 8px 22px rgba(43, 109, 233, 0.22);
+  width: 100%;
+  max-width: 100%;
 }
 #searchSection.hero-v2 .hero-v2__trust {
-  max-width: 340px;
-  color: rgba(200, 220, 240, 0.72);
+  max-width: none;
+  color: rgba(200, 220, 240, 0.52);
   font-family: Inter, system-ui, sans-serif;
 }
-#searchSection.hero-v2 .hero-v2__trust-top {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 650;
-  line-height: 1.35;
-}
-#searchSection.hero-v2 .hero-v2__trust-ico {
-  display: inline-flex;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  align-items: center;
-  justify-content: center;
-  color: rgba(147, 197, 253, 0.92);
+#searchSection.hero-v2 .hero-v2__trust-line {
+  font-size: 10.5px;
+  font-weight: 550;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: rgba(200, 220, 240, 0.4);
 }
 #searchSection.hero-v2 .hero-v2__trust-sub {
-  margin-top: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(200, 220, 240, 0.52);
+  margin-top: 2px;
+  font-size: 9.5px;
+  font-weight: 550;
+  color: rgba(200, 220, 240, 0.32);
 }
 
 #searchSection.hero-v2 .hero-v2__aux {
@@ -7402,19 +7425,19 @@ button.vcard-detail-btn:hover,
 #searchSection.hero-v2 .hero-v2__link {
   background: none;
   border: none;
-  padding: 6px 0;
+  padding: 4px 0;
   cursor: pointer;
   font-family: Inter, system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 650;
-  color: rgba(147, 197, 253, 0.92);
-  border-bottom: 1px solid rgba(147, 197, 253, 0.28);
+  font-size: 12.5px;
+  font-weight: 580;
+  color: rgba(147, 197, 253, 0.72);
+  border-bottom: 1px solid rgba(147, 197, 253, 0.2);
 }
 #searchSection.hero-v2 .hero-v2__status {
   font-family: Inter, system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 520;
-  color: rgba(147, 197, 253, 0.75);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(180, 205, 228, 0.55);
 }
 
 #searchSection.hero-v2 .hero-v2__right {
@@ -7579,6 +7602,19 @@ button.vcard-detail-btn:hover,
   #searchSection.hero-v2 .hero-v2__right { justify-content: flex-start; }
   #searchSection.hero-v2 .hero-v2__stats { grid-template-columns: 1fr; }
   #searchSection.hero-v2 .hero-v2__runnerups-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  #searchSection.hero-v2 .hero-v2__defaults-summary-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  #searchSection.hero-v2 .hero-v2__summary-chip {
+    width: 100%;
+    min-width: 0;
+  }
+  #searchSection.hero-v2 .hero-v2__change {
+    align-self: flex-end;
+  }
 }
 .hn-hero-verdict-dock--pulse {
   animation: hnVerdictDockIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
@@ -8065,15 +8101,19 @@ button.vcard-detail-btn:hover,
    AI MODULE — hero variant (inside search card, under Find My Mountain)
    ═══════════════════════════════════════════════════════════════════════════ */
 .hn-editorial-ai--hero {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+.hn-editorial-ai--hero.hn-editorial-ai--belowfold {
+  margin-top: 16px;
 }
 .hn-editorial-ai--hero .hn-editorial-ai-tog {
-  font-size: 13px;
-  color: rgba(240, 246, 252, 0.65);
-  text-decoration-color: rgba(240, 246, 252, 0.3);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(200, 220, 240, 0.55);
+  text-decoration-color: rgba(200, 220, 240, 0.25);
 }
 .hn-editorial-ai--hero .hn-editorial-ai-tog:hover {
-  color: rgba(240, 246, 252, 0.9);
+  color: rgba(240, 246, 252, 0.82);
 }
