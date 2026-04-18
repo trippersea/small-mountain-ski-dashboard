@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Epic vs Ikon vs Indy Pass: Which Ski Pass Fits You?</title>
-  <meta name="description" content="Epic vs Ikon vs Indy Pass: compare prices, resorts, and skier fit. Find the right pass for your trips, budget, and style. Learn More and pick smarter." />
+  <title>Epic vs Ikon vs Indy Pass: Which Ski Pass Is Best for You?</title>
+  <meta name="description" content="Epic vs Ikon vs Indy Pass: compare prices, resorts, and skier fit. Find the right pass for your trips, budget, and style. Quick picks, comparison table, and regional guides." />
   <link rel="canonical" href="https://www.wheretoskinext.com/ski-pass-comparison/" />
-  <meta property="og:title" content="Epic vs Ikon vs Indy Pass: Which Ski Pass Fits You?" />
-  <meta property="og:description" content="A decision-first ski pass comparison: quick picks, fast table, and mountain lookup answers so you can choose Epic vs Ikon vs Indy in minutes." />
+  <meta property="og:title" content="Epic vs Ikon vs Indy Pass: Which Ski Pass Is Best for You?" />
+  <meta property="og:description" content="Decision-first ski pass comparison: quick picks, fast scan rows, head-to-head table, and regional guides so you can choose Epic vs Ikon vs Indy without the essay." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.wheretoskinext.com/ski-pass-comparison/" />
   <meta property="og:image" content="https://www.wheretoskinext.com/og-image.png" />
-  <meta property="og:image:alt" content="WhereToSkiNext.com — ski trip planner" />
+  <meta property="og:image:alt" content="WhereToSkiNext.com ski trip planner" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
-  <link rel="preload" href="/styles.css" as="style" />
+  <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
   <link rel="stylesheet" href="/styles.css" />
-  <!-- Google Tag Manager -->
+  <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -62,7 +62,7 @@
         "name": "How do I decide between the Epic Pass, Ikon Pass, and Indy Pass?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Start with your home mountain and the 1–3 trips you actually plan to take. If your must-have resorts are Epic-owned/partnered, Epic is the simplest answer; if your list leans Ikon, choose Ikon. If you ski a lot of independent mountains or want a low-cost add-on, Indy can be the best value. If you’re still torn, compare your most important region (Northeast, Rockies, California, etc.) and confirm current access rules on official pass sites."
+          "text": "Start with your home mountain and the one to three trips you actually plan to take. If your must-have resorts are Epic-owned or partnered, Epic is the simplest answer; if your list leans Ikon, choose Ikon. If you ski a lot of independent mountains or want a low-cost add-on, Indy can be the best value. If you are still torn, compare your most important region (Northeast, Rockies, California, etc.) and confirm current access rules on official pass sites."
         }
       },
       {
@@ -70,167 +70,14 @@
         "name": "When should I buy a ski pass to get the best price?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "For most seasons, the lowest prices are during spring “early bird” sales, then prices rise in stages. If you know you’ll ski, buying early usually saves money. Check each pass’s official site for exact dates, pricing tiers, and refund/cancellation options."
+          "text": "For most seasons, the lowest prices are during spring early bird sales, then prices rise in stages. If you know you will ski, buying early usually saves money. Check each pass official site for exact dates, pricing tiers, and refund or cancellation options."
         }
       }
     ]
   }
   </script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --epic-color: #0057b8; --epic-bg: #e8f1fb;
-      --ikon-color: #c0392b; --ikon-bg: #fdecea;
-      --indy-color: #2e7d32; --indy-bg: #e8f5e9;
-      --text-primary: #1a1a2e; --text-secondary: #555; --text-light: #888;
-      --border: #e5e7eb; --bg-page: #f8f9fa; --bg-card: #ffffff; --radius: 10px;
-    }
-    body { font-family: 'Inter', 'DM Sans', system-ui, sans-serif; background: var(--bg-page); color: var(--text-primary); font-size: 16px; line-height: 1.6; }
-
-    /* Nav: .top-nav, .nav-primary, .nav-find-cta from /styles.css */
-
-    .breadcrumb { max-width: 900px; margin: 18px auto 0; padding: 0 24px; font-size: 0.8rem; color: var(--text-light); }
-    .breadcrumb a { color: var(--text-light); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
-
-    /* Hero */
-    .hero { max-width: 900px; margin: 0 auto; padding: 40px 24px 0; }
-    .hero-label { font-size: 0.72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 10px; }
-    .hero h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; line-height: 1.12; letter-spacing: -.02em; margin-bottom: 16px; }
-    .hero-sub { font-size: 1.05rem; color: var(--text-secondary); max-width: 680px; margin-bottom: 32px; line-height: 1.7; }
-
-    /* Decision-first modules (local to this page) */
-    .page-cta-row { max-width: 900px; margin: 0 auto 30px; padding: 0 24px; }
-    .page-cta { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg-card); }
-    .page-cta strong { font-weight: 800; }
-    .page-cta a { white-space: nowrap; }
-
-    .quick-answer { max-width: 900px; margin: 0 auto 18px; padding: 0 24px; }
-    .qa-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-    .qa-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 18px; }
-    .qa-label { font-size: 0.72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
-    .qa-title { font-size: 1.05rem; font-weight: 900; margin-bottom: 6px; line-height: 1.2; }
-    .qa-title.epic { color: var(--epic-color); }
-    .qa-title.ikon { color: var(--ikon-color); }
-    .qa-title.indy { color: var(--indy-color); }
-    .qa-body { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
-    .qa-body a { color: inherit; }
-
-    .decision { max-width: 900px; margin: 0 auto 0; padding: 0 24px; }
-    .decision-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
-    .decision-row { display: grid; grid-template-columns: 180px 1fr 1fr 1fr; gap: 12px; align-items: start; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 14px; }
-    .decision-row strong { font-size: 0.9rem; }
-    .decision-pick { font-weight: 800; font-size: 0.92rem; }
-    .decision-pick small { display: block; font-weight: 600; color: var(--text-secondary); margin-top: 2px; line-height: 1.45; }
-    .decision-pick.epic { color: var(--epic-color); }
-    .decision-pick.ikon { color: var(--ikon-color); }
-    .decision-pick.indy { color: var(--indy-color); }
-
-    .lookup { max-width: 900px; margin: 0 auto 0; padding: 0 24px; }
-    .lookup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-    .lookup-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 16px; }
-    .lookup-q { font-size: 0.95rem; font-weight: 900; margin-bottom: 6px; line-height: 1.25; }
-    .lookup-a { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
-    .lookup-a a { color: #2563eb; text-decoration: none; font-weight: 700; }
-    .lookup-a a:hover { text-decoration: underline; }
-
-    .related { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 18px; margin: 22px 0 0; }
-    .related h3 { font-size: 1.05rem; font-weight: 900; margin-bottom: 8px; }
-    .related-links { display: flex; flex-wrap: wrap; gap: 10px; }
-    .related a { font-size: 0.88rem; font-weight: 800; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); text-decoration: none; color: var(--text-primary); background: #fff; }
-    .related a:hover { border-color: #2563eb; color: #2563eb; }
-
-    /* Pass cards */
-    .pass-overview { max-width: 900px; margin: 0 auto 28px; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-    .pass-card { border-radius: 12px; padding: 22px; border: 1.5px solid transparent; }
-    .pass-card.epic { background: var(--epic-bg); border-color: #bfd4f5; }
-    .pass-card.ikon { background: var(--ikon-bg); border-color: #f5c0bc; }
-    .pass-card.indy { background: var(--indy-bg); border-color: #a5d6a7; }
-    .pass-card .pc-label { font-size: 0.7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
-    .pass-card.epic .pc-label { color: var(--epic-color); }
-    .pass-card.ikon .pc-label { color: var(--ikon-color); }
-    .pass-card.indy .pc-label { color: var(--indy-color); }
-    .pass-card h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
-    .pass-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
-    .pass-stat-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-    .pass-stat { font-size: 0.78rem; background: rgba(255,255,255,.7); border-radius: 6px; padding: 4px 9px; font-weight: 600; }
-    .pc-highlights { font-size: 0.8rem; color: var(--text-secondary); padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
-    .pc-highlights li::before { content: ""; }
-    .pass-card.epic .pc-highlights li::before { color: var(--epic-color); }
-    .pass-card.ikon .pc-highlights li::before { color: var(--ikon-color); }
-    .pass-card.indy .pc-highlights li::before { color: var(--indy-color); }
-
-    /* Indy section */
-    .indy-section { max-width: 900px; margin: 0 auto 8px; padding: 0 24px; }
-    .indy-callout { background: var(--indy-bg); border: 1.5px solid #a5d6a7; border-radius: 12px; padding: 22px 24px; }
-    .indy-callout h2 { font-size: 1.15rem; font-weight: 800; color: var(--indy-color); margin-bottom: 10px; }
-    .indy-callout p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 10px; }
-    .indy-callout p:last-child { margin-bottom: 0; }
-    .indy-highlight-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 14px 0; }
-    .indy-region { background: rgba(255,255,255,.7); border-radius: 8px; padding: 10px 14px; }
-    .indy-region-name { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--indy-color); margin-bottom: 4px; }
-    .indy-region-resorts { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
-
-    /* Content */
-    .content { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
-    .section-header { margin: 48px 0 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
-    .section-header h2 { font-size: 1.3rem; font-weight: 800; }
-
-    /* Region cards */
-    .region-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 8px; }
-    .region-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; text-decoration: none; color: inherit; display: block; transition: box-shadow .15s, transform .15s; }
-    .region-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
-    .region-card .rc-region { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-light); margin-bottom: 6px; }
-    .region-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 8px; line-height: 1.25; }
-    .region-card .rc-scores { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-    .rc-pill { font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 50px; }
-    .rc-pill.epic { background: var(--epic-bg); color: var(--epic-color); }
-    .rc-pill.ikon { background: var(--ikon-bg); color: var(--ikon-color); }
-    .rc-pill.indy { background: var(--indy-bg); color: var(--indy-color); }
-    .region-card .rc-verdict { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
-    .region-card .rc-cta { display: inline-block; margin-top: 12px; font-size: 0.8rem; font-weight: 700; color: #2563eb; }
-
-    /* Table */
-    .compare-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); margin: 24px 0; }
-    .compare-tbl { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--bg-card); }
-    .compare-tbl th { padding: 11px 14px; text-align: left; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-light); border-bottom: 1px solid var(--border); white-space: nowrap; }
-    .compare-tbl td { padding: 11px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
-    .compare-tbl tr:last-child td { border-bottom: none; }
-    .compare-tbl tr:hover td { background: #fafafa; }
-    .compare-tbl td:first-child { font-weight: 600; color: var(--text-primary); width: 160px; }
-    .epic-cell { color: var(--epic-color); }
-    .ikon-cell { color: var(--ikon-color); }
-    .indy-cell { color: var(--indy-color); }
-
-    /* FAQ */
-    .faq-list { margin: 0; }
-    .faq-item { border-bottom: 1px solid var(--border); padding: 20px 0; }
-    .faq-item:last-child { border-bottom: none; }
-    .faq-q { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 8px; line-height: 1.35; }
-    .faq-a { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; margin: 0; }
-
-    .cta-block { background: #111827; border-radius: 14px; padding: 36px 32px; text-align: center; margin: 48px 0 0; color: #fff; }
-    .cta-block h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; }
-    .cta-block p { font-size: .95rem; color: rgba(255,255,255,.7); margin-bottom: 22px; }
-    .cta-btn { display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-weight: 700; font-size: .95rem; transition: background .15s; }
-    .cta-btn:hover { background: #1d4ed8; }
-
-    /* Footer: .site-footer from /styles.css */
-
-    /* City + pass quick-links */
-    .city-pass-strip { max-width: 900px; margin: 0 auto 32px; padding: 0 24px; }
-    .city-pass-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-light); margin-bottom: 10px; }
-    .city-pass-links { display: flex; flex-wrap: wrap; gap: 8px; }
-    .city-pass-link { font-size: .82rem; font-weight: 600; padding: 5px 13px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); text-decoration: none; transition: border-color .12s, color .12s; }
-    .city-pass-link:hover { border-color: #2563eb; color: #2563eb; }
-
-    @media (max-width: 900px) { .decision-row { grid-template-columns: 1fr; } }
-    @media (max-width: 800px) { .qa-grid { grid-template-columns: 1fr; } .lookup-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 700px) { .pass-overview { grid-template-columns: 1fr; } .page-cta { flex-direction: column; align-items: flex-start; } }
-    @media (max-width: 500px) { .indy-highlight-grid { grid-template-columns: 1fr 1fr; } }
-  </style>
 </head>
-<body>
+<body class="pass-page-body">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <nav class="top-nav" role="navigation" aria-label="Main navigation">
@@ -238,7 +85,7 @@
     <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
       <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
       <span class="nav-brand">
-        <span class="nav-brand-name">WhereToSkiNext.com</span>
+        <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
         <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
       </span>
     </a>
@@ -246,372 +93,357 @@
     <a href="/about/" class="nav-primary">About</a>
     <span class="nav-link-sep" aria-hidden="true"></span>
     <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-    <a href="/#searchSection" class="nav-find-cta">Find My Mountain &rarr;</a>
   </div>
 </nav>
 
-<div class="breadcrumb">
-  <a href="https://www.wheretoskinext.com/">Home</a> &rsaquo; Ski Pass Comparison
-</div>
+<main class="pp-shell">
 
-<div class="hero">
-  <div class="hero-label">Ski Pass Guide &middot; 2026 Season</div>
-  <h1>Epic vs Ikon vs Indy Pass: Which Ski Pass Is Best for You?</h1>
-  <p class="hero-sub">
-    Compare price, resort lineup, region, and skier fit &mdash; then choose the pass that matches how and where you actually ski. This ski pass comparison is built for fast decisions.
-  </p>
-</div>
-
-<!-- Quick answer -->
-<section class="quick-answer" aria-label="Quick answer">
-  <div class="qa-grid">
-    <div class="qa-card">
-      <div class="qa-label">Quick answer</div>
-      <div class="qa-title epic">Best for destination skiers: Epic</div>
-      <p class="qa-body">Pick Epic if your “must ski” list is big-name destination resorts and you want one pass that’s straightforward for trips.</p>
-    </div>
-    <div class="qa-card">
-      <div class="qa-label">Quick answer</div>
-      <div class="qa-title ikon">Best for big Western variety: Ikon</div>
-      <p class="qa-body">Pick Ikon if you care most about variety across the West and you’re willing to navigate base vs full access and rules.</p>
-    </div>
-    <div class="qa-card">
-      <div class="qa-label">Quick answer</div>
-      <div class="qa-title indy">Best for value + independent mountains: Indy</div>
-      <p class="qa-body">Pick Indy if you ski independent hills, want value, and hate paying day-ticket prices. Many skiers use it as an add-on.</p>
-    </div>
-  </div>
-</section>
-
-<!-- Primary CTA (decision-first) -->
-<div class="page-cta-row">
-  <div class="page-cta">
-    <div><strong>See which pass fits your home mountain and trip style</strong></div>
-    <a href="https://www.wheretoskinext.com/#searchSection" class="cta-btn">Find My Mountain &rarr;</a>
-  </div>
-</div>
-
-<!-- Fast-decision comparison (before narrative) -->
-<section class="decision" aria-label="Fast-decision comparison">
-  <div class="section-header" style="margin-top:10px"><h2>Fast decision: Epic vs Ikon vs Indy</h2></div>
-  <p style="font-size:.92rem;color:var(--text-secondary);margin-bottom:10px">
-    If you just want the answer, start here. If you’re comparing specific regions, jump to
-    <a href="/epic-vs-ikon-northeast/" style="color:#2563eb;font-weight:800;text-decoration:none">Epic vs Ikon Northeast</a>,
-    <a href="/epic-vs-ikon-rockies/" style="color:#2563eb;font-weight:800;text-decoration:none">Epic vs Ikon Rockies</a>, or
-    <a href="/epic-vs-ikon-california/" style="color:#2563eb;font-weight:800;text-decoration:none">Epic vs Ikon California</a>.
-  </p>
-  <div class="decision-grid">
-    <div class="decision-row">
-      <strong>Best for destination trips</strong>
-      <div class="decision-pick epic">Epic<small>Big-name resorts and simple “buy one pass for trips” framing.</small></div>
-      <div class="decision-pick ikon">Ikon<small>Also strong for destinations, especially if your trip list leans Alterra partners.</small></div>
-      <div class="decision-pick indy">Indy<small>Not designed as a destination-first pass; best as a value add-on.</small></div>
-    </div>
-    <div class="decision-row">
-      <strong>Best for western variety</strong>
-      <div class="decision-pick epic">Epic<small>Strong in specific hubs (e.g., Colorado/Tahoe), less “choose-anywhere” variety.</small></div>
-      <div class="decision-pick ikon">Ikon<small>Often the widest menu of Western options for trip-planners.</small></div>
-      <div class="decision-pick indy">Indy<small>Great for independent trips if you like smaller mountains and quieter days.</small></div>
-    </div>
-    <div class="decision-row">
-      <strong>Best for Northeast skiers</strong>
-      <div class="decision-pick epic">Epic<small>Strong where Vail owns/operates; great if your home base fits that map.</small></div>
-      <div class="decision-pick ikon">Ikon<small>Strong Vermont coverage; a common choice for VT-focused skiers.</small></div>
-      <div class="decision-pick indy">Indy<small>Huge independent coverage; often the best value for frequent local days.</small></div>
-    </div>
-    <div class="decision-row">
-      <strong>Best for independent mountain skiers</strong>
-      <div class="decision-pick epic">Epic<small>Not the point of Epic.</small></div>
-      <div class="decision-pick ikon">Ikon<small>Not the point of Ikon.</small></div>
-      <div class="decision-pick indy">Indy<small>The whole point: independent mountains and value days.</small></div>
-    </div>
-    <div class="decision-row">
-      <strong>Cheapest option</strong>
-      <div class="decision-pick epic">Epic<small>Cheaper tiers exist, but destination coverage depends on the version.</small></div>
-      <div class="decision-pick ikon">Ikon<small>Cheaper tiers exist (Base), with access limits/blackouts.</small></div>
-      <div class="decision-pick indy">Indy<small>Typically the lowest-priced “real pass” for adults.</small></div>
-    </div>
-    <div class="decision-row">
-      <strong>Best add-on pass</strong>
-      <div class="decision-pick epic">Epic<small>Usually not purchased as an add-on.</small></div>
-      <div class="decision-pick ikon">Ikon<small>Usually not purchased as an add-on.</small></div>
-      <div class="decision-pick indy">Indy<small>Pairs well with Epic or Ikon for local weekdays + independent trips.</small></div>
-    </div>
-    <div class="decision-row">
-      <strong>Best if you care about major-name resorts</strong>
-      <div class="decision-pick epic">Epic<small>High concentration of famous destination brands.</small></div>
-      <div class="decision-pick ikon">Ikon<small>Also stacked with top-tier destinations, often with broader partner spread.</small></div>
-      <div class="decision-pick indy">Indy<small>More about independent quality than major-name logos.</small></div>
-    </div>
-    <div class="decision-row">
-      <strong>Best if you hate crowds</strong>
-      <div class="decision-pick epic">Epic<small>Can be crowded at major destinations; strategy matters more than the logo.</small></div>
-      <div class="decision-pick ikon">Ikon<small>Same story: the best days are about timing and mountain choice.</small></div>
-      <div class="decision-pick indy">Indy<small>Often the quietest skiing (and best value) at independent mountains.</small></div>
-    </div>
-  </div>
-</section>
-
-<!-- Mountain lookup answers (visible, scannable) -->
-<section class="lookup" aria-label="Mountain lookup answers">
-  <div class="section-header"><h2>Mountain lookup answers</h2></div>
-  <p style="font-size:.92rem;color:var(--text-secondary);margin-bottom:10px">
-    Fast answers for the most common “is this mountain on Epic or Ikon?” searches. Access can change by season; confirm the current official lists before buying.
-  </p>
-  <div class="lookup-grid">
-    <div class="lookup-item">
-      <div class="lookup-q">Is Breckenridge on Epic or Ikon?</div>
-      <p class="lookup-a">Breckenridge is associated with <strong>Epic</strong> (Vail Resorts). See: <a href="/is-breckenridge-on-epic-or-ikon/">Is Breckenridge on Epic or Ikon?</a></p>
-    </div>
-    <div class="lookup-item">
-      <div class="lookup-q">Is Vail on Epic or Ikon?</div>
-      <p class="lookup-a">Vail is associated with <strong>Epic</strong> (Vail Resorts). See: <a href="/is-vail-on-epic-or-ikon/">Is Vail on Epic or Ikon?</a></p>
-    </div>
-    <div class="lookup-item">
-      <div class="lookup-q">What mountains are on the Epic Pass?</div>
-      <p class="lookup-a">Epic includes many Vail Resorts destinations and partners. Representative examples include Vail, Breckenridge, Beaver Creek, Park City, and Whistler Blackcomb (availability can vary by season and pass version). See: <a href="/what-mountains-are-on-the-epic-pass/">what mountains are on the Epic Pass</a></p>
-    </div>
-    <div class="lookup-item">
-      <div class="lookup-q">Epic vs Ikon: what is the biggest difference?</div>
-      <p class="lookup-a">Epic is primarily a Vail-owned network with simple destination framing; Ikon is a broader partner mix where “where you ski” and pass version/rules can matter more. See: <a href="/epic-vs-ikon/">Epic vs Ikon</a></p>
-    </div>
-    <div class="lookup-item">
-      <div class="lookup-q">Is Indy Pass worth it?</div>
-      <p class="lookup-a">It’s often worth it if you’ll ski <strong>2–4+ days</strong> at Indy mountains or you want a low-cost way to avoid day-ticket pricing at independents. It’s usually best as an add-on to Epic or Ikon.</p>
-    </div>
-  </div>
-</section>
-
-<div class="content">
-
-  <div class="section-header" style="margin-top:22px"><h2>Head-to-head comparison table</h2></div>
-
-  <div class="compare-wrap">
-    <table class="compare-tbl">
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th class="epic-cell">Epic Pass</th>
-          <th class="ikon-cell">Ikon Pass</th>
-          <th class="indy-cell">Indy Pass</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Operator</td><td>Vail Resorts</td><td>Alterra Mountain Company</td><td>Indy Pass / Powder Alliance</td></tr>
-        <tr><td>Approx. price</td><td>$700–$1,000</td><td>$700–$1,000</td><td>~$349</td></tr>
-        <tr><td>Total resorts</td><td>40+</td><td>50+</td><td>100+</td></tr>
-        <tr><td>Best in Colorado</td><td>Vail, Breckenridge, Beaver Creek, Telluride</td><td>Steamboat, Aspen (4 mtns), Copper, A-Basin, Eldora</td><td>Loveland, Purgatory, Sunlight</td></tr>
-        <tr><td>Best in Utah</td><td>Park City Mountain (7,300 acres)</td><td>Alta, Snowbird, Deer Valley, Solitude, Snowbasin</td><td>Brighton</td></tr>
-        <tr><td>Best in Vermont</td><td>Stowe, Okemo, Mount Snow</td><td>Killington, Stratton, Sugarbush, Pico</td><td>Jay Peak, Bolton Valley, Magic Mountain, Middlebury Snow Bowl, Saskadena Six</td></tr>
-        <tr><td>Best in NH</td><td>Attitash, Wildcat, Crotched, Sunapee</td><td>Loon Mountain</td><td>Cannon, Waterville Valley, Pats Peak, Ragged Mountain, Tenney, Whaleback</td></tr>
-        <tr><td>Best in Maine</td><td>None</td><td>Sunday River, Sugarloaf</td><td>Saddleback, Camden Snow Bowl, Black Mountain of Maine</td></tr>
-        <tr><td>Pacific Northwest</td><td>Stevens Pass (WA)</td><td>Crystal Mountain, Mt. Hood Meadows, Schweitzer</td><td>Mt. Bachelor, Timberline Lodge, Mt. Baker, White Pass, 49 Degrees North</td></tr>
-        <tr><td>Montana and Wyoming</td><td>None</td><td>Jackson Hole, Big Sky</td><td>Whitefish, Bridger Bowl, Red Lodge, Grand Targhee, Snow King</td></tr>
-        <tr><td>Best in California</td><td>Heavenly, Northstar, Kirkwood</td><td>Palisades Tahoe, Mammoth, 3 SoCal resorts</td><td>Mountain High, China Peak, Dodge Ridge, Homewood</td></tr>
-        <tr><td>Idaho</td><td>None</td><td>Schweitzer, Tamarack</td><td>Sun Valley, Bogus Basin, Brundage Mountain, Silver Mountain</td></tr>
-        <tr><td>International</td><td>Whistler Blackcomb, European resorts</td><td>Banff area, select international</td><td>Select Canadian and international partners</td></tr>
-        <tr><td>Restricted version</td><td>Epic Local Pass</td><td>Ikon Base Pass</td><td>Indy+ (add-on days)</td></tr>
-        <tr><td>Combine with other passes?</td><td>No</td><td>No</td><td>Yes, pairs with Epic or Ikon</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p style="font-size:.75rem;color:var(--text-light);margin-top:8px">Pass affiliations and prices are subject to change. Verify with the official <a href="https://www.epicpass.com" target="_blank" rel="noopener">Epic Pass</a>, <a href="https://www.ikonpass.com" target="_blank" rel="noopener">Ikon Pass</a>, and <a href="https://www.indyskipass.com" target="_blank" rel="noopener">Indy Pass</a> websites before purchasing.</p>
-
-  <div class="section-header"><h2>Best ski pass for different skier types</h2></div>
-  <p style="font-size:.92rem;color:var(--text-secondary);margin-bottom:12px">
-    This is the practical way to choose: match the pass to how you actually ski.
-  </p>
-  <div class="compare-wrap" style="margin-top:12px">
-    <table class="compare-tbl">
-      <thead>
-        <tr>
-          <th>Skier type</th>
-          <th>Best pick</th>
-          <th>Why</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1–2 destination trips + famous resorts</td>
-          <td class="epic-cell"><strong>Epic</strong></td>
-          <td>Often the cleanest “buy one pass for your trips” path if your must-ski list is Epic-heavy.</td>
-        </tr>
-        <tr>
-          <td>Trip-planner who wants Western variety</td>
-          <td class="ikon-cell"><strong>Ikon</strong></td>
-          <td>Common choice when you want more Western options and your short-list leans Ikon partners.</td>
-        </tr>
-        <tr>
-          <td>Local skier at independent mountains</td>
-          <td class="indy-cell"><strong>Indy</strong></td>
-          <td>Value-focused, often quieter skiing, and it can pay for itself in a handful of days.</td>
-        </tr>
-        <tr>
-          <td>Epic or Ikon holder who also skis local hills</td>
-          <td class="indy-cell"><strong>Indy (add-on)</strong></td>
-          <td>One of the best add-on plays: independent days without full-price day tickets.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="section-header"><h2>Best by region</h2></div>
-  <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:20px">
-    These guides are built for long-tail decisions without bloating this page. Each one compares Epic vs Ikon in that region and helps you pick quickly.
-    If you ski mostly in the East, start with <a href="/best-ski-pass-for-the-northeast/" style="color:#2563eb;font-weight:800;text-decoration:none">best ski pass for the Northeast</a>.
-  </p>
-
-  <div class="region-grid">
-    <a href="https://www.wheretoskinext.com/epic-vs-ikon-northeast/" class="region-card">
-      <div class="rc-region">Northeast</div>
-      <h3>Epic vs Ikon: Northeast</h3>
-      <div class="rc-scores">
-        <span class="rc-pill epic">Epic: 9 mountains</span>
-        <span class="rc-pill ikon">Ikon: 11 mountains</span>
-        <span class="rc-pill indy">Indy: 30+</span>
+  <section class="pp-hero" aria-labelledby="pass-hero-heading">
+    <div class="pp-hero__inner">
+      <p class="pp-breadcrumb"><a href="/">Home</a> / Ski pass comparison</p>
+      <div>
+        <p class="pp-eyebrow">Ski Pass Guide &middot; 2026 Season</p>
+        <h1 id="pass-hero-heading" class="pp-headline">Epic vs Ikon vs Indy Pass: Which Ski Pass Is Best for You?</h1>
+        <p class="pp-lede">Price, resort lineup, region, and how you actually ski. Pick the pass that fits your trips, not a generic ranking.</p>
+        <div class="pp-hero__actions">
+          <a href="https://www.wheretoskinext.com/#searchSection" class="pp-btn pp-btn--primary">Find my mountain</a>
+        </div>
       </div>
-      <p class="rc-verdict">VT, NH, ME, NY, PA, MA and more. Ikon wins Vermont; Epic wins New Hampshire. Indy is strong for independent mountains.</p>
-      <span class="rc-cta">Epic vs Ikon Northeast &rarr;</span>
-    </a>
+      <aside class="pp-hero__panel" aria-label="Why this page">
+        <h3>On this page</h3>
+        <ul>
+          <li>Quick picks for Epic, Ikon, and Indy at a glance.</li>
+          <li>Fast scan rows, then a full head-to-head table.</li>
+          <li>Regional guides when you want depth without the fluff.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
 
-    <a href="https://www.wheretoskinext.com/epic-vs-ikon-rockies/" class="region-card">
-      <div class="rc-region">Rockies</div>
-      <h3>Epic vs Ikon: Rockies</h3>
-      <div class="rc-scores">
-        <span class="rc-pill epic">Epic: 7 mountains</span>
-        <span class="rc-pill ikon">Ikon: 17 mountains</span>
-        <span class="rc-pill indy">Indy: 15+</span>
+  <section class="pp-section" id="quick-picks" aria-labelledby="quick-picks-heading">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Start here</p>
+      <h2 id="quick-picks-heading">Quick picks</h2>
+      <p>Three shortcuts if you do not want to read the whole page yet.</p>
+    </div>
+    <div class="pp-quick-grid">
+      <article class="pp-quick-card pp-quick-card--epic">
+        <div class="pp-quick-card__label">Best for destination skiers</div>
+        <div class="pp-quick-card__name">Epic</div>
+        <p>Your must-ski list is big-name destination resorts and you want one pass that stays simple for trips.</p>
+      </article>
+      <article class="pp-quick-card pp-quick-card--ikon">
+        <div class="pp-quick-card__label">Best for Western variety</div>
+        <div class="pp-quick-card__name">Ikon</div>
+        <p>You care most about variety out West and you are fine sorting base vs full access and blackout rules.</p>
+      </article>
+      <article class="pp-quick-card pp-quick-card--indy">
+        <div class="pp-quick-card__label">Best for value and independent mountains</div>
+        <div class="pp-quick-card__name">Indy</div>
+        <p>You ski independent hills, want value, and hate full-price day tickets. Often bought as an add-on.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="pp-section" id="fast-decision" aria-labelledby="fast-heading">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Fast scan</p>
+      <h2 id="fast-heading">Fast decision: Epic vs Ikon vs Indy</h2>
+    </div>
+    <p class="pp-fast-intro">Want region-specific depth? Try <a href="/epic-vs-ikon-northeast/">Northeast</a>, <a href="/epic-vs-ikon-rockies/">Rockies</a>, or <a href="/epic-vs-ikon-california/">California</a>.</p>
+    <div class="pp-fast-stack">
+      <div class="pp-fast-row">
+        <div class="pp-fast-row__cat">Best for destination trips</div>
+        <div class="pp-fast-cell pp-fast-cell--epic"><strong>Epic</strong> Big-name resorts and a simple buy-one-pass-for-trips story.</div>
+        <div class="pp-fast-cell pp-fast-cell--ikon"><strong>Ikon</strong> Strong for destinations when your list leans Alterra partners.</div>
+        <div class="pp-fast-cell pp-fast-cell--indy"><strong>Indy</strong> Not built as destination-first. Better as a value add-on.</div>
       </div>
-      <p class="rc-verdict">CO, UT, WY, MT and NM. Ikon often wins on variety; Epic holds major-name anchors. Indy adds value at independents.</p>
-      <span class="rc-cta">Epic vs Ikon Rockies &rarr;</span>
-    </a>
-
-    <a href="https://www.wheretoskinext.com/epic-vs-ikon-california/" class="region-card">
-      <div class="rc-region">California</div>
-      <h3>Epic vs Ikon: California</h3>
-      <div class="rc-scores">
-        <span class="rc-pill epic">Epic: 4 mountains</span>
-        <span class="rc-pill ikon">Ikon: 6 mountains</span>
-        <span class="rc-pill indy">Indy: 5+</span>
+      <div class="pp-fast-row">
+        <div class="pp-fast-row__cat">Best for western variety</div>
+        <div class="pp-fast-cell pp-fast-cell--epic"><strong>Epic</strong> Strong in certain hubs (Colorado, Tahoe), less pick-anywhere variety.</div>
+        <div class="pp-fast-cell pp-fast-cell--ikon"><strong>Ikon</strong> Often the widest Western menu for trip planners.</div>
+        <div class="pp-fast-cell pp-fast-cell--indy"><strong>Indy</strong> Great for independent trips and quieter days.</div>
       </div>
-      <p class="rc-verdict">Tahoe, Mammoth, and SoCal. Epic is Tahoe-heavy; Ikon anchors with Mammoth and Palisades. Indy supports independents.</p>
-      <span class="rc-cta">Epic vs Ikon California &rarr;</span>
-    </a>
-
-    <a href="https://www.wheretoskinext.com/epic-vs-ikon-pacific-northwest/" class="region-card">
-      <div class="rc-region">Pacific Northwest</div>
-      <h3>Epic vs Ikon: Pacific Northwest</h3>
-      <div class="rc-scores">
-        <span class="rc-pill epic">Epic: 1 mountain</span>
-        <span class="rc-pill ikon">Ikon: 5 mountains</span>
-        <span class="rc-pill indy">Indy: 10+</span>
+      <div class="pp-fast-row">
+        <div class="pp-fast-row__cat">Best for Northeast skiers</div>
+        <div class="pp-fast-cell pp-fast-cell--epic"><strong>Epic</strong> Strong where Vail owns or operates; great if your home base fits.</div>
+        <div class="pp-fast-cell pp-fast-cell--ikon"><strong>Ikon</strong> Strong Vermont coverage; common for VT-focused skiers.</div>
+        <div class="pp-fast-cell pp-fast-cell--indy"><strong>Indy</strong> Huge independent coverage; often the best value for local days.</div>
       </div>
-      <p class="rc-verdict">WA, OR and ID. Ikon often wins on variety. Indy can be a strong value complement for independent PNW days.</p>
-      <span class="rc-cta">Epic vs Ikon Pacific Northwest &rarr;</span>
-    </a>
-
-    <a href="https://www.wheretoskinext.com/epic-vs-ikon-midwest/" class="region-card">
-      <div class="rc-region">Midwest</div>
-      <h3>Epic vs Ikon: Midwest</h3>
-      <div class="rc-scores">
-        <span class="rc-pill epic">Epic: 6 mountains</span>
-        <span class="rc-pill ikon">Ikon: 3 mountains</span>
-        <span class="rc-pill indy">Indy: 10+</span>
+      <div class="pp-fast-row">
+        <div class="pp-fast-row__cat">Best for independent mountain skiers</div>
+        <div class="pp-fast-cell pp-fast-cell--epic"><strong>Epic</strong> Not the point of Epic.</div>
+        <div class="pp-fast-cell pp-fast-cell--ikon"><strong>Ikon</strong> Not the point of Ikon.</div>
+        <div class="pp-fast-cell pp-fast-cell--indy"><strong>Indy</strong> The whole point: independents and value days.</div>
       </div>
-      <p class="rc-verdict">MI, MN, WI and OH. Epic is strong in MI; Indy often shines for value across independents.</p>
-      <span class="rc-cta">Epic vs Ikon Midwest &rarr;</span>
-    </a>
-  </div>
-
-  <div class="related" aria-label="Related comparisons">
-    <h3>Related comparisons</h3>
-    <div class="related-links">
-      <a href="/epic-vs-ikon-northeast/">Epic vs Ikon Northeast</a>
-      <a href="/epic-vs-ikon-rockies/">Epic vs Ikon Rockies</a>
-      <a href="/epic-vs-ikon-california/">Epic vs Ikon California</a>
-      <a href="/epic-vs-ikon-pacific-northwest/">Epic vs Ikon Pacific Northwest</a>
-      <a href="/epic-vs-ikon-midwest/">Epic vs Ikon Midwest</a>
+      <div class="pp-fast-row">
+        <div class="pp-fast-row__cat">Cheapest option</div>
+        <div class="pp-fast-cell pp-fast-cell--epic"><strong>Epic</strong> Cheaper tiers exist; coverage depends on the version.</div>
+        <div class="pp-fast-cell pp-fast-cell--ikon"><strong>Ikon</strong> Base tiers exist with limits or blackouts.</div>
+        <div class="pp-fast-cell pp-fast-cell--indy"><strong>Indy</strong> Usually the lowest-priced real pass for adults.</div>
+      </div>
+      <div class="pp-fast-row">
+        <div class="pp-fast-row__cat">Best add-on pass</div>
+        <div class="pp-fast-cell pp-fast-cell--epic"><strong>Epic</strong> Rarely bought as an add-on.</div>
+        <div class="pp-fast-cell pp-fast-cell--ikon"><strong>Ikon</strong> Rarely bought as an add-on.</div>
+        <div class="pp-fast-cell pp-fast-cell--indy"><strong>Indy</strong> Pairs with Epic or Ikon for local weekdays and indies.</div>
+      </div>
+      <div class="pp-fast-row">
+        <div class="pp-fast-row__cat">Best if you care about major-name resorts</div>
+        <div class="pp-fast-cell pp-fast-cell--epic"><strong>Epic</strong> Lots of famous destination brands.</div>
+        <div class="pp-fast-cell pp-fast-cell--ikon"><strong>Ikon</strong> Also stacked; often broader partner spread.</div>
+        <div class="pp-fast-cell pp-fast-cell--indy"><strong>Indy</strong> More about independent quality than big logos.</div>
+      </div>
+      <div class="pp-fast-row">
+        <div class="pp-fast-row__cat">Best if you hate crowds</div>
+        <div class="pp-fast-cell pp-fast-cell--epic"><strong>Epic</strong> Big destinations can pack; timing and mountain choice matter.</div>
+        <div class="pp-fast-cell pp-fast-cell--ikon"><strong>Ikon</strong> Same: best days are timing and which hill you pick.</div>
+        <div class="pp-fast-cell pp-fast-cell--indy"><strong>Indy</strong> Often the quietest skiing at independents.</div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Content planning: strengthen/build next long-tail pages
-    - /epic-vs-ikon/
-    - /what-mountains-are-on-the-epic-pass/
-    - /is-breckenridge-on-epic-or-ikon/
-    - /is-vail-on-epic-or-ikon/
-    - /best-ski-pass-for-the-northeast/
-  -->
-
-  <div class="section-header"><h2>Indy Pass deeper explanation</h2></div>
-  <div class="indy-callout">
-    <h2 style="margin-top:0">Indy Pass: the best value add-on (for the right skier)</h2>
-    <p>If you ski a lot of independent mountains, Indy is often the fastest way to save money. Think of it as the “local laps” pass: smaller-to-mid-size hills, fewer crowds, and a price that can pay for itself in a handful of days.</p>
-    <p>Indy usually isn’t the best standalone choice for big destination-brand trips. But as an add-on to Epic or Ikon, it can make your season cheaper and more flexible.</p>
-    <p style="font-size:.8rem;color:var(--text-light);margin-top:8px">Coverage and rules can change by season. Always verify the current Indy list and restrictions on the official Indy Pass website.</p>
-  </div>
-
-  <div class="section-header"><h2>Frequently asked questions</h2></div>
-  <div class="faq-list">
-
-    <div class="faq-item">
-      <h3 class="faq-q">What is the difference between the Epic Pass, Ikon Pass, and Indy Pass?</h3>
-      <p class="faq-a">The Epic Pass is operated by Vail Resorts and covers major destination resorts including Vail, Breckenridge, Stowe, and Park City. The Ikon Pass is operated by Alterra Mountain Company and covers resorts including Mammoth, Jackson Hole, Alta, Snowbird, and Killington. The Indy Pass covers 100+ smaller, independently owned ski areas not affiliated with either the Epic or Ikon networks. Epic and Ikon are priced between $700 and $1,000 per adult; the Indy Pass is significantly cheaper at roughly $349.</p>
+  <section class="pp-section" id="compare-table" aria-labelledby="h2h-heading">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Numbers</p>
+      <h2 id="h2h-heading">Head-to-head comparison</h2>
+      <p>Same categories you would argue about in a parking lot, in one table. Rules and prices change every season. Confirm before you buy.</p>
     </div>
-
-    <div class="faq-item">
-      <h3 class="faq-q">What ski resorts are on the Indy Pass?</h3>
-      <p class="faq-a">The Indy Pass covers over 100 independently owned ski areas across the US. In the Northeast, notable resorts include Jay Peak, Cannon Mountain, Waterville Valley, Bolton Valley, Magic Mountain, Saddleback, and Camden Snow Bowl. Nationally, the Indy Pass includes Sun Valley, Grand Targhee, Mt. Bachelor, Timberline Lodge, Whitefish Mountain, Bridger Bowl, Arizona Snowbowl, and Alyeska in Alaska. The full list is published on the official Indy Pass website and updates each season.</p>
+    <div class="pp-table-wrap">
+      <table class="pp-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th class="pp-col-epic">Epic Pass</th>
+            <th class="pp-col-ikon">Ikon Pass</th>
+            <th class="pp-col-indy">Indy Pass</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Operator</td><td>Vail Resorts</td><td>Alterra Mountain Company</td><td>Indy Pass / Powder Alliance</td></tr>
+          <tr><td>Approx. price</td><td>$700 to $1,000</td><td>$700 to $1,000</td><td>~$349</td></tr>
+          <tr><td>Total resorts</td><td>40+</td><td>50+</td><td>100+</td></tr>
+          <tr><td>Best in Colorado</td><td>Vail, Breckenridge, Beaver Creek, Telluride</td><td>Steamboat, Aspen (4 mtns), Copper, A-Basin, Eldora</td><td>Loveland, Purgatory, Sunlight</td></tr>
+          <tr><td>Best in Utah</td><td>Park City Mountain (7,300 acres)</td><td>Alta, Snowbird, Deer Valley, Solitude, Snowbasin</td><td>Brighton</td></tr>
+          <tr><td>Best in Vermont</td><td>Stowe, Okemo, Mount Snow</td><td>Killington, Stratton, Sugarbush, Pico</td><td>Jay Peak, Bolton Valley, Magic Mountain, Middlebury Snow Bowl, Saskadena Six</td></tr>
+          <tr><td>Best in NH</td><td>Attitash, Wildcat, Crotched, Sunapee</td><td>Loon Mountain</td><td>Cannon, Waterville Valley, Pats Peak, Ragged Mountain, Tenney, Whaleback</td></tr>
+          <tr><td>Best in Maine</td><td>None</td><td>Sunday River, Sugarloaf</td><td>Saddleback, Camden Snow Bowl, Black Mountain of Maine</td></tr>
+          <tr><td>Pacific Northwest</td><td>Stevens Pass (WA)</td><td>Crystal Mountain, Mt. Hood Meadows, Schweitzer</td><td>Mt. Bachelor, Timberline Lodge, Mt. Baker, White Pass, 49 Degrees North</td></tr>
+          <tr><td>Montana and Wyoming</td><td>None</td><td>Jackson Hole, Big Sky</td><td>Whitefish, Bridger Bowl, Red Lodge, Grand Targhee, Snow King</td></tr>
+          <tr><td>Best in California</td><td>Heavenly, Northstar, Kirkwood</td><td>Palisades Tahoe, Mammoth, 3 SoCal resorts</td><td>Mountain High, China Peak, Dodge Ridge, Homewood</td></tr>
+          <tr><td>Idaho</td><td>None</td><td>Schweitzer, Tamarack</td><td>Sun Valley, Bogus Basin, Brundage Mountain, Silver Mountain</td></tr>
+          <tr><td>International</td><td>Whistler Blackcomb, European resorts</td><td>Banff area, select international</td><td>Select Canadian and international partners</td></tr>
+          <tr><td>Restricted version</td><td>Epic Local Pass</td><td>Ikon Base Pass</td><td>Indy+ (add-on days)</td></tr>
+          <tr><td>Combine with other passes?</td><td>No</td><td>No</td><td>Yes, pairs with Epic or Ikon</td></tr>
+        </tbody>
+      </table>
     </div>
+    <p class="pp-table-note">Pass affiliations and prices change. Verify on the official <a href="https://www.epicpass.com" target="_blank" rel="noopener">Epic Pass</a>, <a href="https://www.ikonpass.com" target="_blank" rel="noopener">Ikon Pass</a>, and <a href="https://www.indyskipass.com" target="_blank" rel="noopener">Indy Pass</a> sites.</p>
 
-    <div class="faq-item">
-      <h3 class="faq-q">Can I combine the Indy Pass with an Epic or Ikon Pass?</h3>
-      <p class="faq-a">Yes. Many skiers buy both an Epic or Ikon Pass and an Indy Pass in the same season. The major passes cover large destination resorts while the Indy Pass covers smaller independent mountains not on either network. This combination is particularly useful for Northeast skiers who want access to major Vermont and New Hampshire resorts plus the region's best independent mountains, all on a single ski season budget.</p>
+    <div class="pp-section__head" style="margin-top:28px">
+      <p class="pp-eyebrow">Fit</p>
+      <h2 id="skier-types-heading">Best ski pass for different skier types</h2>
     </div>
-
-    <div class="faq-item">
-      <h3 class="faq-q">Which is cheaper, the Epic Pass or the Ikon Pass?</h3>
-      <p class="faq-a">Both passes are priced similarly, typically between $700 and $1,000 per adult for the full unrestricted version with early purchase pricing. Both offer lower-cost restricted versions: the Epic Local Pass and the Ikon Base Pass limit access to certain resorts or add blackout dates during peak periods. The Indy Pass is significantly cheaper than both at roughly $349. For current pricing, check the official Epic Pass, Ikon Pass, and Indy Pass websites directly before purchasing.</p>
+    <div class="pp-table-wrap">
+      <table class="pp-table">
+        <thead>
+          <tr>
+            <th>Skier type</th>
+            <th>Best pick</th>
+            <th>Why</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1 to 2 destination trips and famous resorts</td>
+            <td class="pp-col-epic"><strong>Epic</strong></td>
+            <td>Often the cleanest buy-one-pass path if your list is Epic-heavy.</td>
+          </tr>
+          <tr>
+            <td>Trip planner who wants Western variety</td>
+            <td class="pp-col-ikon"><strong>Ikon</strong></td>
+            <td>Common when you want more Western options and your short list leans Ikon.</td>
+          </tr>
+          <tr>
+            <td>Local skier at independent mountains</td>
+            <td class="pp-col-indy"><strong>Indy</strong></td>
+            <td>Value-focused, often quieter, can pay for itself in a handful of days.</td>
+          </tr>
+          <tr>
+            <td>Epic or Ikon holder who also skis local hills</td>
+            <td class="pp-col-indy"><strong>Indy (add-on)</strong></td>
+            <td>Strong add-on play: independent days without full-price day tickets.</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  </section>
 
-    <div class="faq-item">
-      <h3 class="faq-q">How do I decide between the Epic Pass, Ikon Pass, and Indy Pass?</h3>
-      <p class="faq-a">Start by listing the specific resorts you plan to ski next season. If your priority mountains are on Epic, choose Epic. If they are on Ikon, choose Ikon. If you primarily ski smaller independent mountains, the Indy Pass is likely the best value. Consider whether you travel to major western destination resorts in addition to local skiing. If you ski locally at an Indy Pass mountain and also travel once or twice to bigger resorts, combining the Indy Pass with a budget for a few day tickets may beat the cost of a full major pass.</p>
+  <section class="pp-section" id="regions" aria-labelledby="regions-heading">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Regional guides</p>
+      <h2 id="regions-heading">Best by region</h2>
+      <p>Deeper Epic vs Ikon breakdowns by area without bloating this page. East-heavy? Start with <a href="/best-ski-pass-for-the-northeast/">best ski pass for the Northeast</a>.</p>
     </div>
-
-    <div class="faq-item">
-      <h3 class="faq-q">When should I buy a ski pass to get the best price?</h3>
-      <p class="faq-a">All three passes offer the lowest prices during spring early bird sales, typically running from late March through early June before the following ski season. Prices increase in stages as the season approaches. Buying in the spring window can save between $100 and $300 per adult on Epic and Ikon passes. The Indy Pass also offers discounted early pricing. All three passes offer some form of cancellation or refund protection for an additional fee.</p>
+    <div class="pp-region-grid">
+      <a href="https://www.wheretoskinext.com/epic-vs-ikon-northeast/" class="pp-region-card">
+        <div class="pp-region-card__eyebrow">Northeast</div>
+        <h3>Epic vs Ikon: Northeast</h3>
+        <div class="pp-region-card__pills">
+          <span class="pp-pill pp-pill--epic">Epic: 9 mountains</span>
+          <span class="pp-pill pp-pill--ikon">Ikon: 11 mountains</span>
+          <span class="pp-pill pp-pill--indy">Indy: 30+</span>
+        </div>
+        <p>VT, NH, ME, NY, PA, MA and more. Ikon wins Vermont; Epic wins New Hampshire. Indy is strong for independents.</p>
+        <span class="pp-region-card__cta">Open Northeast guide &rarr;</span>
+      </a>
+      <a href="https://www.wheretoskinext.com/epic-vs-ikon-rockies/" class="pp-region-card">
+        <div class="pp-region-card__eyebrow">Rockies</div>
+        <h3>Epic vs Ikon: Rockies</h3>
+        <div class="pp-region-card__pills">
+          <span class="pp-pill pp-pill--epic">Epic: 7 mountains</span>
+          <span class="pp-pill pp-pill--ikon">Ikon: 17 mountains</span>
+          <span class="pp-pill pp-pill--indy">Indy: 15+</span>
+        </div>
+        <p>CO, UT, WY, MT, NM. Ikon often wins variety; Epic holds major anchors. Indy adds value at independents.</p>
+        <span class="pp-region-card__cta">Open Rockies guide &rarr;</span>
+      </a>
+      <a href="https://www.wheretoskinext.com/epic-vs-ikon-california/" class="pp-region-card">
+        <div class="pp-region-card__eyebrow">California</div>
+        <h3>Epic vs Ikon: California</h3>
+        <div class="pp-region-card__pills">
+          <span class="pp-pill pp-pill--epic">Epic: 4 mountains</span>
+          <span class="pp-pill pp-pill--ikon">Ikon: 6 mountains</span>
+          <span class="pp-pill pp-pill--indy">Indy: 5+</span>
+        </div>
+        <p>Tahoe, Mammoth, SoCal. Epic is Tahoe-heavy; Ikon anchors Mammoth and Palisades. Indy supports independents.</p>
+        <span class="pp-region-card__cta">Open California guide &rarr;</span>
+      </a>
+      <a href="https://www.wheretoskinext.com/epic-vs-ikon-pacific-northwest/" class="pp-region-card">
+        <div class="pp-region-card__eyebrow">Pacific Northwest</div>
+        <h3>Epic vs Ikon: Pacific Northwest</h3>
+        <div class="pp-region-card__pills">
+          <span class="pp-pill pp-pill--epic">Epic: 1 mountain</span>
+          <span class="pp-pill pp-pill--ikon">Ikon: 5 mountains</span>
+          <span class="pp-pill pp-pill--indy">Indy: 10+</span>
+        </div>
+        <p>WA, OR, ID. Ikon often wins variety. Indy can complement independent PNW days.</p>
+        <span class="pp-region-card__cta">Open Pacific Northwest guide &rarr;</span>
+      </a>
+      <a href="https://www.wheretoskinext.com/epic-vs-ikon-midwest/" class="pp-region-card">
+        <div class="pp-region-card__eyebrow">Midwest</div>
+        <h3>Epic vs Ikon: Midwest</h3>
+        <div class="pp-region-card__pills">
+          <span class="pp-pill pp-pill--epic">Epic: 6 mountains</span>
+          <span class="pp-pill pp-pill--ikon">Ikon: 3 mountains</span>
+          <span class="pp-pill pp-pill--indy">Indy: 10+</span>
+        </div>
+        <p>MI, MN, WI, OH. Epic is strong in MI; Indy often shines on value across independents.</p>
+        <span class="pp-region-card__cta">Open Midwest guide &rarr;</span>
+      </a>
     </div>
+    <p class="pp-related-inline">Also see: <a href="/epic-vs-ikon-northeast/">Northeast</a> <a href="/epic-vs-ikon-rockies/">Rockies</a> <a href="/epic-vs-ikon-california/">California</a> <a href="/epic-vs-ikon-pacific-northwest/">Pacific Northwest</a> <a href="/epic-vs-ikon-midwest/">Midwest</a></p>
+  </section>
 
-  </div>
+  <section class="pp-section pp-section--compact" id="lookup" aria-labelledby="lookup-heading">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Quick lookups</p>
+      <h2 id="lookup-heading">Mountain lookup answers</h2>
+      <p>Common search questions. Access changes by season; confirm official lists before you buy.</p>
+    </div>
+    <div class="pp-lookup-grid">
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">Is Breckenridge on Epic or Ikon?</div>
+        <p class="pp-lookup-a"><strong>Epic</strong> (Vail Resorts). <a href="/is-breckenridge-on-epic-or-ikon/">Full answer</a></p>
+      </div>
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">Is Vail on Epic or Ikon?</div>
+        <p class="pp-lookup-a"><strong>Epic</strong> (Vail Resorts). <a href="/is-vail-on-epic-or-ikon/">Full answer</a></p>
+      </div>
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">What mountains are on the Epic Pass?</div>
+        <p class="pp-lookup-a">Many Vail destinations and partners (examples: Vail, Breckenridge, Beaver Creek, Park City, Whistler; varies by season and pass version). <a href="/what-mountains-are-on-the-epic-pass/">More detail</a></p>
+      </div>
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">Epic vs Ikon: biggest difference?</div>
+        <p class="pp-lookup-a">Epic skews Vail-owned; Ikon is a broader partner mix where pass tier matters more. <a href="/epic-vs-ikon/">Epic vs Ikon</a></p>
+      </div>
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">Is Indy Pass worth it?</div>
+        <p class="pp-lookup-a">Often yes if you will ski 2 to 4+ days at Indy mountains or want cheap indies. Usually pairs with Epic or Ikon.</p>
+      </div>
+    </div>
+  </section>
 
-  <div class="cta-block">
-    <h3>Which mountain should you ski this weekend?</h3>
-    <p>Enter your location and pass — we score every mountain by live snow, real drive time, and crowd outlook and give you one clear answer.</p>
-    <a href="https://www.wheretoskinext.com/#searchSection" class="cta-btn">Find My Mountain &rarr;</a>
-    <p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:14px;margin-bottom:0;">Scores are independent — resort sponsors never influence rankings.</p>
-  </div>
+  <section class="pp-section pp-indy-band" id="indy" aria-labelledby="indy-heading">
+    <h2 id="indy-heading">Indy Pass: value add-on for the right skier</h2>
+    <p>If you ski a lot of independent mountains, Indy is often the fastest way to save money. Think local laps: smaller to mid-size hills, fewer crowds, a price that can pay for itself fast.</p>
+    <p>It usually is not the best standalone pick for big destination-brand trips. As an add-on to Epic or Ikon, it can make your season cheaper and more flexible.</p>
+    <p class="pp-table-note" style="margin-top:12px">Coverage and rules change by season. Verify the current Indy list on the official Indy Pass site.</p>
+  </section>
 
-</div>
+  <section class="pp-section" id="faq" aria-labelledby="faq-heading">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">FAQ</p>
+      <h2 id="faq-heading">Frequently asked questions</h2>
+    </div>
+    <div>
+      <div class="pp-faq-item">
+        <h3 class="pp-faq-q">What is the difference between the Epic Pass, Ikon Pass, and Indy Pass?</h3>
+        <p class="pp-faq-a">The Epic Pass is operated by Vail Resorts and covers major destination resorts including Vail, Breckenridge, Stowe, and Park City. The Ikon Pass is operated by Alterra Mountain Company and covers resorts including Mammoth, Jackson Hole, Alta, Snowbird, and Killington. The Indy Pass covers 100+ smaller, independently owned ski areas not affiliated with either the Epic or Ikon networks. Epic and Ikon are priced between $700 and $1,000 per adult; the Indy Pass is significantly cheaper at roughly $349.</p>
+      </div>
+      <div class="pp-faq-item">
+        <h3 class="pp-faq-q">What ski resorts are on the Indy Pass?</h3>
+        <p class="pp-faq-a">The Indy Pass covers over 100 independently owned ski areas across the US. In the Northeast, notable resorts include Jay Peak, Cannon Mountain, Waterville Valley, Bolton Valley, Magic Mountain, Saddleback, and Camden Snow Bowl. Nationally, the Indy Pass includes Sun Valley, Grand Targhee, Mt. Bachelor, Timberline Lodge, Whitefish Mountain, Bridger Bowl, Arizona Snowbowl, and Alyeska in Alaska. The full list is published on the official Indy Pass website and updates each season.</p>
+      </div>
+      <div class="pp-faq-item">
+        <h3 class="pp-faq-q">Can I combine the Indy Pass with an Epic or Ikon Pass?</h3>
+        <p class="pp-faq-a">Yes. Many skiers buy both an Epic or Ikon Pass and an Indy Pass in the same season. The major passes cover large destination resorts while the Indy Pass covers smaller independent mountains not on either network. This combination is particularly useful for Northeast skiers who want access to major Vermont and New Hampshire resorts plus the region's best independent mountains, all on a single ski season budget.</p>
+      </div>
+      <div class="pp-faq-item">
+        <h3 class="pp-faq-q">Which is cheaper, the Epic Pass or the Ikon Pass?</h3>
+        <p class="pp-faq-a">Both passes are priced similarly, typically between $700 and $1,000 per adult for the full unrestricted version with early purchase pricing. Both offer lower-cost restricted versions: the Epic Local Pass and the Ikon Base Pass limit access to certain resorts or add blackout dates during peak periods. The Indy Pass is significantly cheaper than both at roughly $349. For current pricing, check the official Epic Pass, Ikon Pass, and Indy Pass websites directly before purchasing.</p>
+      </div>
+      <div class="pp-faq-item">
+        <h3 class="pp-faq-q">How do I decide between the Epic Pass, Ikon Pass, and Indy Pass?</h3>
+        <p class="pp-faq-a">Start by listing the specific resorts you plan to ski next season. If your priority mountains are on Epic, choose Epic. If they are on Ikon, choose Ikon. If you primarily ski smaller independent mountains, the Indy Pass is likely the best value. Consider whether you travel to major western destination resorts in addition to local skiing. If you ski locally at an Indy Pass mountain and also travel once or twice to bigger resorts, combining the Indy Pass with a budget for a few day tickets may beat the cost of a full major pass.</p>
+      </div>
+      <div class="pp-faq-item">
+        <h3 class="pp-faq-q">When should I buy a ski pass to get the best price?</h3>
+        <p class="pp-faq-a">All three passes offer the lowest prices during spring early bird sales, typically running from late March through early June before the following ski season. Prices increase in stages as the season approaches. Buying in the spring window can save between $100 and $300 per adult on Epic and Ikon passes. The Indy Pass also offers discounted early pricing. All three passes offer some form of cancellation or refund protection for an additional fee.</p>
+      </div>
+    </div>
+  </section>
 
-<!-- City + pass quick-links (moved lower; keep existing links) -->
-<div class="city-pass-strip">
-  <div class="city-pass-label">Find your best mountain near you this weekend &rarr;</div>
-  <div class="city-pass-links">
-    <a href="https://www.wheretoskinext.com/ski-near/boston/" class="city-pass-link">Boston</a>
-    <a href="https://www.wheretoskinext.com/ski-near/nyc/" class="city-pass-link">New York</a>
-    <a href="https://www.wheretoskinext.com/ski-near/philadelphia/" class="city-pass-link">Philadelphia</a>
-    <a href="https://www.wheretoskinext.com/ski-near/washington-dc/" class="city-pass-link">Washington DC</a>
-    <a href="https://www.wheretoskinext.com/ski-near/denver/" class="city-pass-link">Denver</a>
-    <a href="https://www.wheretoskinext.com/ski-near/salt-lake-city/" class="city-pass-link">Salt Lake City</a>
-    <a href="https://www.wheretoskinext.com/ski-near/seattle/" class="city-pass-link">Seattle</a>
-    <a href="https://www.wheretoskinext.com/ski-near/portland/" class="city-pass-link">Portland</a>
-    <a href="https://www.wheretoskinext.com/ski-near/chicago/" class="city-pass-link">Chicago</a>
+  <section class="pp-cta-band" aria-labelledby="bottom-cta-heading">
+    <div>
+      <h2 id="bottom-cta-heading">Which mountain should you ski this weekend?</h2>
+      <p>Add your location and pass. We score live snow, real drive time, and crowd outlook and give you one clear pick.</p>
+      <p class="pp-cta-footnote">Scores stay independent. Sponsors never move you up the list.</p>
+    </div>
+    <a href="https://www.wheretoskinext.com/#searchSection" class="pp-btn pp-btn--primary">Find my mountain &rarr;</a>
+  </section>
+
+</main>
+
+<div class="pp-city-strip">
+  <div class="pp-city-strip__label">Ski areas near you this weekend</div>
+  <div class="pp-city-strip__links">
+    <a href="https://www.wheretoskinext.com/ski-near/boston/">Boston</a>
+    <a href="https://www.wheretoskinext.com/ski-near/nyc/">NYC</a>
+    <a href="https://www.wheretoskinext.com/ski-near/philadelphia/">Philadelphia</a>
+    <a href="https://www.wheretoskinext.com/ski-near/washington-dc/">Washington DC</a>
+    <a href="https://www.wheretoskinext.com/ski-near/denver/">Denver</a>
+    <a href="https://www.wheretoskinext.com/ski-near/salt-lake-city/">Salt Lake City</a>
+    <a href="https://www.wheretoskinext.com/ski-near/seattle/">Seattle</a>
+    <a href="https://www.wheretoskinext.com/ski-near/portland/">Portland</a>
+    <a href="https://www.wheretoskinext.com/ski-near/chicago/">Chicago</a>
   </div>
 </div>
 
 <footer class="site-footer">
-  <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="/#searchSection">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
+  <p>&copy; 2026 WhereToSkiNext.com · <a href="/#searchSection">Find my mountain</a> · <a href="/about/">About</a> · <a href="/privacy/">Privacy Policy</a> · <a href="/partners/">Partners</a> · <a href="/ski-pass-comparison/">Pass Guides</a></p>
+  <p class="site-footer-affiliate">Some links on this site are affiliate links. If you book lodging through them we may earn a small commission at no extra cost to you. This never influences mountain scores or rankings.</p>
 </footer>
 
 <script>
