@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compare Mountains Near Boston | WhereToSkiNext.com</title>
+  <meta name="description" content="Compare top ski mountains near Boston side by side, including drive time, forecast, crowds, and pass fit." />
+  <link rel="canonical" href="https://www.wheretoskinext.com/compare-mountains/" />
+  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/ski-decision-logo.png" />
+  <style>
+    :root {
+      --bg: #021739;
+      --panel: #08244b;
+      --panel-2: #0c2e5b;
+      --border: rgba(118, 157, 215, 0.35);
+      --text: #e8f1ff;
+      --muted: #a9bfdf;
+      --accent: #35a5ff;
+      --chip: #10386f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(2, 23, 57, 0.84) 0%, rgba(2, 22, 49, 0.95) 100%),
+        url('/hero-bg.jpg') center/cover fixed;
+    }
+    a { color: inherit; }
+    .shell { max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px; }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; }
+    .brand img { width: 32px; height: 32px; }
+    .nav-links { display: flex; gap: 14px; }
+    .nav-links a { text-decoration: none; color: var(--muted); font-weight: 600; }
+    .nav-links a:hover { color: #fff; }
+
+    .crumb { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    h1 { font-family: Georgia, 'Times New Roman', serif; margin: 0; font-size: clamp(2rem, 4vw, 3.2rem); }
+    h1 .accent { color: var(--accent); }
+    .sub { color: var(--muted); margin-top: 8px; font-size: 1.1rem; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 24px; }
+    .chip {
+      border: 1px solid var(--border);
+      background: rgba(9, 40, 81, 0.7);
+      color: #d9e7ff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1.35fr repeat(3, 1fr);
+      gap: 14px;
+    }
+    .card {
+      border: 1px solid var(--border);
+      background: linear-gradient(160deg, rgba(12, 46, 91, 0.9), rgba(8, 29, 59, 0.92));
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.26);
+    }
+    .card h2, .card h3 { margin: 0; }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #115aa3;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: .03em;
+    }
+    .time {
+      display: inline-block;
+      margin-top: 8px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: var(--chip);
+      color: #c8ddff;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .desc { color: var(--muted); line-height: 1.5; margin: 12px 0; min-height: 68px; }
+    .meta { display: grid; gap: 7px; color: #dce9ff; font-size: 14px; }
+    .btn {
+      display: inline-block;
+      margin-top: 14px;
+      border: 1px solid #2e74c2;
+      background: #0f4f99;
+      color: #eff5ff;
+      border-radius: 10px;
+      padding: 10px 13px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .btn:hover { background: #1760b2; }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .quick-links a {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(9, 40, 81, 0.75);
+      padding: 14px;
+      text-decoration: none;
+      color: #e9f3ff;
+      font-weight: 600;
+    }
+    .how {
+      margin-top: 24px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(7, 31, 62, 0.9);
+      padding: 20px;
+    }
+    .how h2 { margin: 0 0 8px; font-family: Georgia, 'Times New Roman', serif; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+    .step { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .step b { display: block; color: #fff; margin-bottom: 6px; }
+
+    @media (max-width: 980px) {
+      .cards { grid-template-columns: 1fr; }
+      .quick-links, .steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="/">
+        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext logo" />
+        <span>WhereToSkiNext.com</span>
+      </a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/ski-pass-comparison/">Pass Guides</a>
+      </div>
+    </nav>
+
+    <div class="crumb">Home / Compare Near Boston</div>
+    <h1>Compare Near <span class="accent">Boston</span></h1>
+    <p class="sub">Your top pick plus other solid options, side by side.</p>
+
+    <section class="chips" aria-label="Trip filters">
+      <span class="chip">🚗 Day trip</span>
+      <span class="chip">📅 Friday</span>
+      <span class="chip">🎯 Priority: Best fit</span>
+      <span class="chip">📍 From Boston, MA</span>
+    </section>
+
+    <section class="cards" aria-label="Compared mountains">
+      <article class="card">
+        <span class="tag">TOP PICK</span>
+        <h2>Wachusett</h2>
+        <p style="margin:8px 0 0;color:#89cbff;font-weight:600;">Closest solid option for tomorrow.</p>
+        <p class="desc">No fresh snow means most mountains will ski similarly tomorrow. Wachusett gets you on snow fastest with light crowds and no pass required.</p>
+        <div class="meta">
+          <span>🛣 1h 48m drive</span>
+          <span>🌤 Dry forecast, high 38°F</span>
+          <span>👥 Light crowds</span>
+        </div>
+        <a class="btn" href="/ski-report/wachusett-mountain-ski-area/">See full conditions →</a>
+      </article>
+
+      <article class="card">
+        <h3>2) Gunstock</h3>
+        <span class="time">1h 56m away</span>
+        <p class="desc">Great views and usually quiet midweek.</p>
+        <div class="meta"><span>Forecast: Dry, 37°F</span><span>Crowds: Quiet</span></div>
+        <a class="btn" href="/ski-report/gunstock/">View conditions →</a>
+      </article>
+
+      <article class="card">
+        <h3>3) Pats Peak</h3>
+        <span class="time">2h 01m away</span>
+        <p class="desc">Consistent grooming and quick laps.</p>
+        <div class="meta"><span>Forecast: Dry, 36°F</span><span>Crowds: Quiet</span></div>
+        <a class="btn" href="/ski-report/pats-peak/">View conditions →</a>
+      </article>
+
+      <article class="card">
+        <h3>4) Ragged Mountain</h3>
+        <span class="time">2h 16m away</span>
+        <p class="desc">Laid-back vibe and friendly local feel.</p>
+        <div class="meta"><span>Forecast: Dry, 35°F</span><span>Crowds: Quiet</span></div>
+        <a class="btn" href="/ski-report/ragged-mountain-resort/">View conditions →</a>
+      </article>
+    </section>
+
+    <section class="quick-links" aria-label="Quick actions">
+      <a href="/#compareSection">🏆 See full rankings</a>
+      <a href="/#stormSection">💎 Hidden gems nearby</a>
+      <a href="/#compareSection">❄ Powder alert</a>
+    </section>
+
+    <section class="how" aria-label="How this works">
+      <h2>How WhereToSkiNext works</h2>
+      <p class="sub" style="margin:0;">Enter your location, tell us your pass and drive limit, and we score US mountains in real time using live forecast, drive time, crowd outlook, and ticket price.</p>
+      <div class="steps">
+        <div class="step"><b>1) Tell us where you are starting</b>Enter a ZIP code or city and we calculate real drive times to every mountain in range.</div>
+        <div class="step"><b>2) Set pass, distance, and snow preference</b>Hold an Epic, Ikon, or Indy pass? Want a short drive? We use that to tune results.</div>
+        <div class="step"><b>3) Get one confident pick</b>See the best fit first, then compare nearby alternatives side by side with the same rules.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
