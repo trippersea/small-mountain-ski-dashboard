@@ -11,10 +11,12 @@
  */
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  const { applyCors } = require('./_security');
+  const cors = applyCors(req, res, { methods: ['GET', 'OPTIONS'], headers: ['Content-Type'] });
+
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
 
   const { slug } = req.query || {};
   if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
@@ -54,6 +56,7 @@ module.exports = async function handler(req, res) {
     const liftsHold  = typeof stats.hold === 'number' ? stats.hold : lifts.filter(l => l.status === 'hold').length;
     const liftsTotal = lifts.length || (stats.open + stats.hold + stats.scheduled + stats.closed) || null;
 
+    res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600');
     return res.status(200).json({
       liftsOpen,
       liftsHold,

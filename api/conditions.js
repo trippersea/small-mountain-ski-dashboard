@@ -77,12 +77,13 @@ function normName(s) {
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',  '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const { applyCors, applyApiBaselineSecurity } = require('./_security');
+  const cors = applyCors(req, res, { methods: ['POST', 'OPTIONS'], headers: ['Content-Type'] });
+  applyApiBaselineSecurity(res, { cacheControl: 'public, s-maxage=60, stale-while-revalidate=300' });
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
+  if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
 
   // ── ON/OFF toggle ─────────────────────────────────────────────────────────
   const apiKey = process.env.SNOCOUNTRY_API_KEY;

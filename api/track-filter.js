@@ -21,12 +21,14 @@ async function readJsonBody(req) {
   try { return raw ? JSON.parse(raw) : {}; } catch { return {}; }
 }
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+module.exports = async function handler(req, res) {
+  const { applyCors, applyApiBaselineSecurity } = require('./_security');
+  const cors = applyCors(req, res, { methods: ['POST', 'OPTIONS'], headers: ['Content-Type'] });
+  applyApiBaselineSecurity(res, { cacheControl: 'no-store' });
+
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).end();
+  if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
 
   const base = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
   const key = process.env.SUPABASE_ANON_KEY;
