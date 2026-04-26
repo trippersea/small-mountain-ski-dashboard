@@ -645,11 +645,6 @@ function wireHeroV2() {
   document.getElementById('heroV2PassPills')?.addEventListener('click', e => {
     const btn = e.target.closest('.hero-v2__pill[data-pass]');
     if (!btn || !passSel) return;
-    // #region agent log
-    __wtsnLog('sd-app.js:wireHeroV2:pass', 'hero-v2 pass pill', {
-      btnPass: btn.dataset.pass, selBefore: passSel.value, statePass: state.passFilter
-    }, 'pre', 'H1');
-    // #endregion agent log
     passSel.value = btn.dataset.pass;
     passSel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
@@ -658,11 +653,6 @@ function wireHeroV2() {
   document.getElementById('heroV2TripPills')?.addEventListener('click', e => {
     const btn = e.target.closest('.hero-v2__pill[data-trip]');
     if (!btn || !tripSel) return;
-    // #region agent log
-    __wtsnLog('sd-app.js:wireHeroV2:trip', 'hero-v2 trip pill', {
-      btnTrip: btn.dataset.trip, selBefore: tripSel.value, stateHowFar: state.howFar
-    }, 'pre', 'H1');
-    // #endregion agent log
     tripSel.value = btn.dataset.trip;
     tripSel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
@@ -680,11 +670,6 @@ function wireHeroV2() {
   document.getElementById('heroV2DayPills')?.addEventListener('click', e => {
     const btn = e.target.closest('.hero-v2__mini-pill[data-day]');
     if (!btn || !daySel) return;
-    // #region agent log
-    __wtsnLog('sd-app.js:wireHeroV2:day', 'hero-v2 day mini pill', {
-      btnDay: btn.dataset.day, selBefore: daySel.value, stateDay: state.skiDayPreset
-    }, 'pre', 'H1');
-    // #endregion agent log
     daySel.value = btn.dataset.day;
     daySel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
@@ -692,11 +677,6 @@ function wireHeroV2() {
   document.getElementById('heroV2PriorityPills')?.addEventListener('click', e => {
     const btn = e.target.closest('.hero-v2__mini-pill[data-priority]');
     if (!btn || !prSel) return;
-    // #region agent log
-    __wtsnLog('sd-app.js:wireHeroV2:priority', 'hero-v2 priority mini pill', {
-      btnPriority: btn.dataset.priority, selBefore: prSel.value, stateSnow: state.weights?.snow
-    }, 'pre', 'H1');
-    // #endregion agent log
     prSel.value = btn.dataset.priority;
     prSel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
@@ -3037,46 +3017,9 @@ function renderAllCards(resorts) {
 
 function render() {
   const _fr = filteredResorts();
-  // #region agent log
-  __wtsnLog('sd-app.js:render', 'render()', {
-    hasOrigin: !!state.origin,
-    originLabel: state.origin?.label || '',
-    passFilter: state.passFilter,
-    howFar: state.howFar,
-    skiDayPreset: state.skiDayPreset,
-    snowWeight: state.weights?.snow,
-    stateFilter: state.stateFilter,
-    nightOnly: !!state.nightOnly,
-    priceRange: state.priceRange,
-    tempBucket: state.tempBucket,
-    windBucket: state.windBucket,
-    verticalFilter: state.verticalFilter,
-    weightsValue: state.weights?.value,
-    weatherKeys: Object.keys(state.weatherCache || {}).length,
-    driveKeys: Object.keys(state.driveCache || {}).length,
-    filteredCount: _fr.length,
-    dom: {
-      resultCount: !!els.resultCount,
-      comparisonBody: !!els.comparisonBody,
-      mobileCardGrid: !!els.mobileCardGrid
-    }
-  }, 'pre', 'H3');
-  // #endregion agent log
   renderAllCards(_fr);
 }
 
-// #region agent log
-const __WTSN_DEBUG_ENDPOINT = 'http://127.0.0.1:7579/ingest/dc49ef5b-6ec4-43ba-8411-0c7c0a9a14ba';
-function __wtsnLog(location, message, data, runId, hypothesisId) {
-  try {
-    fetch(__WTSN_DEBUG_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'bf6556' },
-      body: JSON.stringify({ sessionId: 'bf6556', location, message, data, runId, hypothesisId, timestamp: Date.now() })
-    }).catch(() => {});
-  } catch (e) {}
-}
-// #endregion agent log
 const debouncedRender = debounce(render, 50);
 
 // ─── Resort view tracker ──────────────────────────────────────────────────────
@@ -3573,13 +3516,6 @@ function syncVerdictVisibility() {
 }
 
 function initialize() {
-  // #region agent log
-  __wtsnLog('sd-app.js:initialize', 'initialize() start', {
-    href: (typeof window !== 'undefined' && window.location) ? window.location.href : '',
-    hasHeroV2: !!document.getElementById('searchSection')?.classList.contains('hero-v2'),
-    originInputVal: document.getElementById('originInput')?.value || ''
-  }, 'pre', 'H4');
-  // #endregion agent log
   if (els.passFilter) els.passFilter.innerHTML = UNIQUE_PASSES.map(v => `<option value="${v}">${v === 'All' ? 'All' : v}</option>`).join('');
   if (els.heroPassSelect) {
     els.heroPassSelect.innerHTML = UNIQUE_PASSES.map(v => {
@@ -3727,25 +3663,8 @@ function initialize() {
     const originalText = els.setLocation.textContent;
     els.setLocation.textContent = 'Finding…';
     els.setLocation.disabled = true;
-    // #region agent log
-    __wtsnLog('sd-app.js:wireEvents:setLocation', 'setLocation click', {
-      originInput: els.originInput?.value || '',
-      stateOrigin: state.origin ? { label: state.origin.label, lat: state.origin.lat, lon: state.origin.lon } : null,
-      statePass: state.passFilter,
-      stateHowFar: state.howFar,
-      heroPassSelect: document.getElementById('heroPassSelect')?.value,
-      heroTripSelect: document.getElementById('heroSentenceTrip')?.value
-    }, 'pre', 'H2');
-    // #endregion agent log
     logCurrentFilters();
     await applyLocation();
-    // #region agent log
-    __wtsnLog('sd-app.js:wireEvents:setLocation', 'setLocation after applyLocation', {
-      stateOrigin: state.origin ? { label: state.origin.label, lat: state.origin.lat, lon: state.origin.lon } : null,
-      driveCacheKeys: Object.keys(state.driveCache || {}).length,
-      weatherCacheKeys: Object.keys(state.weatherCache || {}).length
-    }, 'pre', 'H2');
-    // #endregion agent log
     els.setLocation.textContent = originalText;
     els.setLocation.disabled = false;
   });
