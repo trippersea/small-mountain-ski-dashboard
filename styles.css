@@ -1265,10 +1265,11 @@ tr.bluebird-glow:hover td {
 
 .compare-weekend .story-text {
   display: block;
-  font-family: 'Newsreader', ui-serif, Georgia, serif;
-  font-size: 0.95rem;
-  font-weight: 500;
-  line-height: 1.45;
+  /* Match mountain name / table body: same stack as `body`, not editorial serif */
+  font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
   margin-top: 2px;
   color: var(--text-body);
   overflow-wrap: anywhere;
@@ -8079,9 +8080,11 @@ button.vcard-detail-btn:hover,
   color: rgba(248, 250, 252, 0.96);
 }
 #compareSection .compare-weekend .story-text {
+  font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
   color: #f8fafc;
   -webkit-text-fill-color: #f8fafc;
-  font-weight: 500;
 }
 #compareSection .compare-weekend .vibe-tag--mini {
   color: #f1f5f9;
