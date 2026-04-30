@@ -20,13 +20,16 @@ async function readJsonBody(req) {
 }
 
 module.exports = async function handler(req, res) {
-  const { applyCors, applyApiBaselineSecurity } = require('./_security');
+  const { applyCors, applyApiBaselineSecurity, rateLimit } = require('./_security');
   const cors = applyCors(req, res, { methods: ['POST', 'OPTIONS'], headers: ['Content-Type'] });
   applyApiBaselineSecurity(res, { cacheControl: 'no-store' });
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).end();
   if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
+
+  const rl = rateLimit(req, res, { prefix: 'track-rec', max: 90, windowMs: 60_000 });
+  if (!rl.ok) return res.status(429).json({ error: 'Too many requests' });
 
   const base = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
   const key = process.env.SUPABASE_ANON_KEY;
@@ -39,6 +42,7 @@ module.exports = async function handler(req, res) {
     pass_filter, trip_type, ski_day,
     priority, origin_label, session_id
   } = await readJsonBody(req);
+  const safe = v => String(v || '').slice(0, 200);
 
   try {
     const response = await fetch(
@@ -52,25 +56,27 @@ module.exports = async function handler(req, res) {
           'Prefer': 'return=minimal'
         },
         body: JSON.stringify({
-          top_resort_id:   top_resort_id   || '',
-          top_resort_name: top_resort_name || '',
-          pass_filter:     pass_filter     || '',
-          trip_type:       trip_type       || '',
-          ski_day:         ski_day         || '',
-          priority:        priority        || '',
-          origin_label:    origin_label    || '',
-          session_id:      session_id      || ''
-        })
+          top_resort_id:   safe(top_resort_id),
+          top_resort_name: safe(top_resort_name),
+          pass_filter:     safe(pass_filter),
+          trip_type:       safe(trip_type),
+          ski_day:         safe(ski_day),
+          priority:        safe(priority),
+          origin_label:    safe(origin_label),
+          session_id:      safe(session_id),
+        }),
       }
     );
 
     if (!response.ok) {
       const err = await response.text();
-      return res.status(500).json({ error: err });
+      console.error('[/api/track-recommendation] Supabase error:', response.status, err);
+      return res.status(500).json({ error: 'Tracking unavailable' });
     }
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('[/api/track-recommendation] Unexpected error:', err.message);
+    return res.status(500).json({ error: 'Tracking unavailable' });
   }
 }

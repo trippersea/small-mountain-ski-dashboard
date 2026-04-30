@@ -24,7 +24,8 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const API_KEY   = process.env.SNOCOUNTRY_API_KEY || 'SnoCountry.example';
-const BASE_URL  = 'http://feeds.snocountry.net';
+const BASE_URL_HTTPS = 'https://feeds.snocountry.net';
+const BASE_URL_HTTP  = 'http://feeds.snocountry.net';
 const REGIONS   = ['northeast', 'southeast', 'rockies', 'midwest', 'northwest', 'southwest'];
 
 // ── Load your resort data (mirrors how generate-mountain-pages.mjs loads it) ──
@@ -70,9 +71,15 @@ function loadYourResorts() {
 
 // ── Fetch resort list for one region ─────────────────────────────────────────
 async function fetchRegion(region) {
-  const url = `${BASE_URL}/getResortList.php?apiKey=${API_KEY}&regions=${region}&output=json`;
   try {
-    const res  = await fetch(url, { signal: AbortSignal.timeout(12000) });
+    const urlHttps = `${BASE_URL_HTTPS}/getResortList.php?apiKey=${API_KEY}&regions=${region}&output=json`;
+    const urlHttp  = `${BASE_URL_HTTP}/getResortList.php?apiKey=${API_KEY}&regions=${region}&output=json`;
+    let res;
+    try {
+      res = await fetch(urlHttps, { signal: AbortSignal.timeout(12000) });
+    } catch {
+      res = await fetch(urlHttp, { signal: AbortSignal.timeout(12000) });
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const raw  = await res.json();
     const items = Array.isArray(raw)

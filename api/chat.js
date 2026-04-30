@@ -11,7 +11,7 @@
  */
 
 module.exports = async function handler(req, res) {
-  const { applyCors, applyApiBaselineSecurity } = require('./_security');
+  const { applyCors, applyApiBaselineSecurity, rateLimit, readRawBody, safeJsonParse } = require('./_security');
   const cors = applyCors(req, res, { methods: ['POST', 'OPTIONS'], headers: ['Content-Type'] });
   applyApiBaselineSecurity(res, { cacheControl: 'no-store' });
 
@@ -19,11 +19,17 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
   if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
 
+  const rl = rateLimit(req, res, { prefix: 'chat', max: 12, windowMs: 60_000 });
+  if (!rl.ok) return res.status(429).json({ error: 'Too many requests' });
+
   // ── Parse body ─────────────────────────────────────────────────────────────
   let body = req.body;
   if (!body || typeof body === 'string') {
     try {
-      body = JSON.parse(typeof body === 'string' ? body : await rawBody(req));
+      const raw = typeof body === 'string' ? body : await readRawBody(req, { limitBytes: 80_000 });
+      const parsed = safeJsonParse(raw);
+      if (!parsed) return res.status(400).json({ error: 'Could not parse request body' });
+      body = parsed;
     } catch {
       return res.status(400).json({ error: 'Could not parse request body' });
     }
@@ -33,8 +39,14 @@ module.exports = async function handler(req, res) {
   if (!query || typeof query !== 'string' || !query.trim()) {
     return res.status(400).json({ error: 'Missing or empty query' });
   }
+  if (query.length > 600) {
+    return res.status(400).json({ error: 'Query too long' });
+  }
   if (!Array.isArray(resorts) || !resorts.length) {
     return res.status(400).json({ error: 'Missing resorts array' });
+  }
+  if (resorts.length > 60) {
+    return res.status(400).json({ error: 'Resorts array too large' });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -112,16 +124,8 @@ module.exports = async function handler(req, res) {
 
   } catch (err) {
     console.error('[/api/chat] Unexpected error:', err.message);
-    return res.status(502).json({ error: 'AI service unavailable — ' + err.message });
+    return res.status(502).json({ error: 'AI service unavailable' });
   }
 };
 
-// ── Helper: read raw request body as a string ──────────────────────────────
-function rawBody(req) {
-  return new Promise((resolve, reject) => {
-    let data = '';
-    req.on('data', chunk => { data += chunk; });
-    req.on('end',  () => resolve(data));
-    req.on('error', reject);
-  });
-}
+// (raw body helper moved to api/_security.js)

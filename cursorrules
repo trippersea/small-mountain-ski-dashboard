@@ -1,0 +1,236 @@
+# WhereToSkiNext.com — Cursor Rules
+# Last updated: April 2026
+# Operator: Solo non-coder founder. Treat all suggestions accordingly.
+
+---
+
+## IDENTITY & PHILOSOPHY
+
+This is WhereToSkiNext.com — a personalized ski trip planning tool that helps skiers find
+the right resort based on their priorities. The core value proposition is a personalized
+scoring engine that ranks resorts differently for every user, unlike generic "Top 10" lists.
+
+Product philosophy (never violate these):
+- Ship over endless iteration. A working feature beats a perfect one.
+- Personalized scores over generic rankings. The algorithm is the product.
+- Scoped, minimal changes only. No unrequested refactors, rewrites, or "improvements."
+- Every edit should be explainable to a non-coder in plain English.
+
+---
+
+## STACK — READ THIS FIRST BEFORE SUGGESTING ANYTHING
+
+- Vanilla HTML, CSS, and JavaScript only. No frameworks whatsoever.
+- Deployed on Vercel via GitHub Desktop (no CLI workflow).
+- Serverless functions live in /api/ and run as Vercel Edge/Node functions.
+- Static pages are pre-generated via Node scripts (generate-mountain-pages.mjs,
+  generate-state-pages.mjs) — they are not server-rendered at request time.
+- No build step, no bundler, no npm for the frontend. Scripts are loaded via <script> tags.
+- Node.js is only used for the static generation scripts and /api/ serverless functions.
+
+NEVER suggest:
+- React, Vue, Svelte, Angular, or any frontend framework
+- Webpack, Vite, Parcel, or any bundler
+- TypeScript (unless explicitly asked)
+- npm packages for the frontend
+- Replacing <script> tag imports with ES module bundling
+- Rewriting existing working logic "for cleanliness"
+
+---
+
+## KEY FILES — WHAT EACH ONE DOES
+
+### Core Application
+- sd-app.js         — Main application logic, UI rendering, questionnaire flow,
+                       Top Pick card rendering, "Also in the Running" card rendering.
+                       This is the largest and most sensitive file. Edit carefully.
+
+- sd-scoring.js     — Personalization scoring algorithm. Takes user-selected weights
+                       and scores each resort. The normalizedWeights() function is
+                       CRITICAL — it must always return dynamic weights derived from
+                       user input, never hardcoded fixed values. A previous bug where
+                       it returned fixed weights regardless of input was a major failure.
+                       Never touch normalizedWeights() without explicit instruction.
+
+- sd-data.js        — Resort data loader. Uses vm.runInNewContext() to parse resort
+                       data files because JSON.parse() silently fails on JS object
+                       literal syntax. Do NOT change this parsing approach.
+
+- resorts-national.js — Raw resort dataset. Contains all resort entries with stats,
+                         pricing, coordinates, terrain data, etc. Data quality here
+                         directly affects recommendation quality.
+
+- featured-partners.js — Sponsor/partner integration. Controls Featured Partner
+                          placements. The business model depends on this file being
+                          clean and reliable.
+
+### Static Page Generation
+- generate-mountain-pages.mjs — Generates all 256 individual resort pages.
+                                  Run with Node.js when resort data changes.
+- generate-state-pages.mjs    — Generates all 34 state landing pages.
+
+### Serverless Functions (/api/)
+- /api/subscribe.js — Beehiiv email subscription handler. Reads
+                       BEEHIIV_API_KEY and BEEHIIV_PUBLICATION_ID from
+                       Vercel environment variables. Never hardcode these.
+
+---
+
+## SCORING SYSTEM — NEVER BREAK THIS
+
+The scoring system is the entire product. Two components must always stay in sync:
+
+1. sd-scoring.js computes a normalized score (0–100) for each resort based on
+   user-selected priority weights across dimensions like snow quality, terrain variety,
+   value, family-friendliness, après ski, drive distance, etc.
+
+2. sd-app.js uses those scores to:
+   - Designate the highest-scoring resort as the TOP PICK
+   - Designate the next 2–3 as "ALSO IN THE RUNNING"
+   - Render verdict labels (e.g., "Best Overall Value", "Top Snow Resort")
+
+A critical past bug: the scoring label system in sd-app.js was disconnected from the
+actual numeric scores in sd-scoring.js, producing contradictory results (e.g., a resort
+labeled "Best Value" with a low value score). This has been fixed. Any future edit to
+scoring labels must reference actual computed score values, never hardcoded logic.
+
+Rules:
+- Never add a new scoring dimension without wiring it into BOTH sd-scoring.js AND sd-app.js
+- Never change how normalizedWeights() aggregates user input without explicit instruction
+- Always check: does the Top Pick label match what the score actually says?
+
+---
+
+## DATA INTEGRITY RULES
+
+- Resort coordinates must be accurate. Past bugs included resorts placed in wrong states.
+- Pricing data should reflect actual lift ticket prices, not placeholder values.
+- Summit elevation, vertical drop, trail counts, and snowfall averages are factual fields —
+  do not generate or estimate these. Flag missing data instead.
+- When editing resorts-national.js, always preserve the existing object structure exactly.
+  Adding a new field to one resort means adding it (even if null) to all resorts for
+  consistency.
+
+---
+
+## SEO ARCHITECTURE — DO NOT BREAK
+
+The site has a deliberate SEO content structure built for organic discovery:
+
+Pages that exist and must stay intact:
+- 256 individual resort pages (e.g., /resorts/killington-vermont.html)
+- 34 state landing pages (e.g., /states/vermont.html)
+- City landing pages (e.g., /from/boston.html, /from/new-york.html)
+- Ski pass comparison hub (/passes/) + 5 regional comparison pages
+- robots.txt at root
+- sitemap.xml (must stay current — regenerate if new pages are added)
+
+Canonical tag rules:
+- Every page must have <link rel="canonical"> pointing to its own non-www URL
+- The canonical domain is wheretoskinext.com (no www)
+- Never create a page without a canonical tag
+
+Navigation must be consistent across all page types. If you change the nav on one
+template, flag that it needs to propagate to all templates.
+
+---
+
+## ANALYTICS & TRACKING
+
+- Google Tag Manager container: GTM-MCCDNQGB
+  (loaded via GTM snippet in <head> and <body> on all pages)
+- GA4 Measurement ID: G-VK2Q3TTFEW
+  (fired through GTM, not directly)
+
+Rules:
+- Never remove or modify the GTM snippet
+- Never add a raw GA4 gtag.js script — all tracking goes through GTM
+- If adding a new user interaction worth tracking (button click, filter selection,
+  result view), add a dataLayer.push() event — do not call gtag() directly
+
+---
+
+## BUSINESS MODEL — CONTEXT FOR FEATURE DECISIONS
+
+The monetization strategy is Featured Partner sponsorships ($500/month flat fee,
+four placements per resort). Outreach to mountain GMs is ongoing with a planned
+June 2026 ask. Secondary revenue comes from affiliate links (Booking.com, ski.com).
+
+Implications for feature work:
+- featured-partners.js controls sponsor placements — treat it as revenue-critical code
+- Affiliate deep-links on resort pages must be preserved when pages are regenerated
+- Never remove or de-prioritize Featured Partner card placements in the UI
+- The email list (via Beehiiv) is being built now for future newsletter sponsorship value
+
+---
+
+## API KEYS & SECRETS
+
+All secrets live in Vercel Environment Variables. Never in source code.
+
+Current environment variables in use:
+- BEEHIIV_API_KEY
+- BEEHIIV_PUBLICATION_ID
+
+If a feature requires a new third-party API, always:
+1. Add the key to Vercel Environment Variables
+2. Call the API from /api/ (serverless), never from frontend JS
+3. Reference it as process.env.VARIABLE_NAME in the serverless function
+
+---
+
+## CHANGE MANAGEMENT RULES
+
+These rules exist because this codebase is maintained by a non-coder via AI tooling.
+Safety is more important than elegance.
+
+1. SCOPE LOCK — Only change what was explicitly asked. If you notice something else
+   that could be improved, mention it in a comment at the end of your response.
+   Do not fix it silently.
+
+2. NO SILENT REFACTORS — Never rename variables, reorganize file structure, or
+   change function signatures unless that was the explicit request.
+
+3. EXPLAIN THE DIFF — For any change to sd-scoring.js or sd-app.js, include a
+   plain-English explanation of exactly what changed and why, as if explaining to
+   someone who doesn't code.
+
+4. FLAG BLAST RADIUS — If a change to one file requires changes in another file
+   to stay consistent, call this out explicitly before proceeding. Do not make the
+   secondary change silently.
+
+5. STATIC PAGE REGENERATION — If you edit resort data in resorts-national.js or
+   change the page templates, remind the operator to re-run the generation scripts:
+     node generate-mountain-pages.mjs
+     node generate-state-pages.mjs
+   and to redeploy via GitHub Desktop.
+
+6. TEST THE CRITICAL PATH — After any change to the scoring or UI flow, the operator
+   should manually test: load homepage → complete questionnaire → verify Top Pick
+   card shows a resort with a label that matches its actual highest score dimension.
+
+---
+
+## KNOWN PAST BUGS (never reintroduce these)
+
+- normalizedWeights() returning hardcoded fixed weights instead of user-input-derived
+  weights, making the personalization engine non-functional.
+- JSON.parse() failing silently on JS object literal syntax in data files. Fixed by
+  switching to vm.runInNewContext(). Do not revert this.
+- Two disconnected scoring systems in sd-scoring.js and sd-app.js producing
+  contradictory verdict labels. Fixed by unifying score references.
+- Resort coordinates placed in wrong states. Always verify lat/lng when adding
+  or editing resort entries.
+- www vs non-www canonical mismatch causing duplicate indexing issues in GSC.
+  All canonicals point to non-www. Vercel redirects www → non-www.
+
+---
+
+## TONE & OUTPUT FORMAT FOR THIS OPERATOR
+
+- Lead with what the change does in plain English, then show the code
+- When showing diffs, use clear before/after blocks rather than unified diff syntax
+- If there are multiple valid approaches, present the tradeoffs briefly, then recommend one
+- Never use jargon without explaining it
+- If a requested change would break something else, say so immediately and clearly
+  before showing any code

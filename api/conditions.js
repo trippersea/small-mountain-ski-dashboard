@@ -17,7 +17,8 @@
  * Returns: { conditions: [...], source, usingDemoKey, fetchedAt } | { disabled, error }
  */
 
-const BASE_URL = 'http://feeds.snocountry.net';
+const BASE_URL_HTTPS = 'https://feeds.snocountry.net';
+const BASE_URL_HTTP  = 'http://feeds.snocountry.net';
 
 // ── ID map: slug → SnoCountry numeric ID ─────────────────────────────────────
 // Run get-snocountry-ids.mjs to populate this with all 256 resorts.
@@ -77,13 +78,16 @@ function normName(s) {
 }
 
 module.exports = async function handler(req, res) {
-  const { applyCors, applyApiBaselineSecurity } = require('./_security');
+  const { applyCors, applyApiBaselineSecurity, rateLimit, readRawBody, safeJsonParse } = require('./_security');
   const cors = applyCors(req, res, { methods: ['POST', 'OPTIONS'], headers: ['Content-Type'] });
   applyApiBaselineSecurity(res, { cacheControl: 'public, s-maxage=60, stale-while-revalidate=300' });
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
   if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
+
+  const rl = rateLimit(req, res, { prefix: 'conditions', max: 45, windowMs: 60_000 });
+  if (!rl.ok) return res.status(429).json({ error: 'Too many requests' });
 
   // ── ON/OFF toggle ─────────────────────────────────────────────────────────
   const apiKey = process.env.SNOCOUNTRY_API_KEY;
@@ -100,21 +104,35 @@ module.exports = async function handler(req, res) {
   // ── Parse body ─────────────────────────────────────────────────────────────
   let body;
   try {
-    const raw = await rawBody(req);
-    body = raw ? JSON.parse(raw) : (req.body || {});
+    const raw = await readRawBody(req, { limitBytes: 40_000 });
+    const parsed = safeJsonParse(raw);
+    if (!parsed) return res.status(400).json({ error: 'Could not parse request body' });
+    body = parsed;
   } catch {
     return res.status(400).json({ error: 'Could not parse request body' });
   }
 
   const { resortSlug, snocountryId, state, region, action } = body || {};
 
-  // ── Helper: call SnoCountry and parse ─────────────────────────────────────
-  async function callSnoCountry(url) {
-    const response = await fetch(url, {
-      headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(8000),
-    });
+  // ── Helper: call SnoCountry and parse (HTTPS first, HTTP fallback) ─────────
+  async function callSnoCountry(qs) {
+    const urlHttps = `${BASE_URL_HTTPS}/getSnowReport.php?${qs}`;
+    const urlHttp  = `${BASE_URL_HTTP}/getSnowReport.php?${qs}`;
+
+    let response;
+    try {
+      response = await fetch(urlHttps, {
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch {
+      response = await fetch(urlHttp, {
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      });
+    }
     if (!response.ok) throw new Error(`SnoCountry returned ${response.status}`);
+
     const raw = await response.json();
     const items = Array.isArray(raw)
       ? raw
@@ -130,8 +148,8 @@ module.exports = async function handler(req, res) {
 
     if (snocountryId) {
       // Direct numeric ID — always try this first
-      const url = `${BASE_URL}/getSnowReport.php?apiKey=${apiKey}&ids=${snocountryId}`;
-      items = await callSnoCountry(url);
+      const qs = `apiKey=${encodeURIComponent(apiKey)}&ids=${encodeURIComponent(snocountryId)}`;
+      items = await callSnoCountry(qs);
 
     } else if (resortSlug) {
       const id    = ID_MAP[resortSlug];
@@ -139,14 +157,14 @@ module.exports = async function handler(req, res) {
 
       if (id) {
         // Try ID lookup first
-        const url = `${BASE_URL}/getSnowReport.php?apiKey=${apiKey}&ids=${id}`;
-        items = await callSnoCountry(url);
+        const qs = `apiKey=${encodeURIComponent(apiKey)}&ids=${encodeURIComponent(id)}`;
+        items = await callSnoCountry(qs);
       }
 
       // Fallback: if ID returned nothing (demo key limitation) try state query + name filter
       if (items.length === 0 && state) {
-        const url = `${BASE_URL}/getSnowReport.php?apiKey=${apiKey}&states=${state.toLowerCase()}`;
-        const all = await callSnoCountry(url);
+        const qs = `apiKey=${encodeURIComponent(apiKey)}&states=${encodeURIComponent(state.toLowerCase())}`;
+        const all = await callSnoCountry(qs);
         // Match by normalised name
         const slugNorm = normName(resortSlug.replace(/-/g, ' '));
         const match = all.find(r => normName(r.resortName || '') === slugNorm)
@@ -158,12 +176,12 @@ module.exports = async function handler(req, res) {
       }
 
     } else if (state) {
-      const url = `${BASE_URL}/getSnowReport.php?apiKey=${apiKey}&states=${state}`;
-      items = await callSnoCountry(url);
+      const qs = `apiKey=${encodeURIComponent(apiKey)}&states=${encodeURIComponent(state)}`;
+      items = await callSnoCountry(qs);
 
     } else if (region) {
-      const url = `${BASE_URL}/getSnowReport.php?apiKey=${apiKey}&regions=${region}`;
-      items = await callSnoCountry(url);
+      const qs = `apiKey=${encodeURIComponent(apiKey)}&regions=${encodeURIComponent(region)}`;
+      items = await callSnoCountry(qs);
 
     } else {
       return res.status(400).json({
@@ -187,7 +205,7 @@ module.exports = async function handler(req, res) {
 
   } catch (err) {
     console.error('[/api/conditions] Error:', err.message);
-    return res.status(502).json({ error: 'SnoCountry unavailable — ' + err.message });
+    return res.status(502).json({ error: 'SnoCountry unavailable' });
   }
 };
 
@@ -234,12 +252,4 @@ function normalizeResort(r) {
   };
 }
 
-// ── Helper: read raw request body ─────────────────────────────────────────────
-function rawBody(req) {
-  return new Promise((resolve, reject) => {
-    let data = '';
-    req.on('data',  chunk => { data += chunk; });
-    req.on('end',   () => resolve(data));
-    req.on('error', reject);
-  });
-}
+// (raw body helper moved to api/_security.js)

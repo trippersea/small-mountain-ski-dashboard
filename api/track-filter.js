@@ -22,13 +22,16 @@ async function readJsonBody(req) {
 }
 
 module.exports = async function handler(req, res) {
-  const { applyCors, applyApiBaselineSecurity } = require('./_security');
+  const { applyCors, applyApiBaselineSecurity, rateLimit } = require('./_security');
   const cors = applyCors(req, res, { methods: ['POST', 'OPTIONS'], headers: ['Content-Type'] });
   applyApiBaselineSecurity(res, { cacheControl: 'no-store' });
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).end();
   if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
+
+  const rl = rateLimit(req, res, { prefix: 'track-filter', max: 180, windowMs: 60_000 });
+  if (!rl.ok) return res.status(429).json({ error: 'Too many requests' });
 
   const base = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
   const key = process.env.SUPABASE_ANON_KEY;
@@ -37,18 +40,19 @@ module.exports = async function handler(req, res) {
   }
 
   const body = await readJsonBody(req);
+  const safe = v => String(v || '').slice(0, 200);
 
   // Support both single row and batch array
   const rows = Array.isArray(body.batch) && body.batch.length > 0
     ? body.batch.map(f => ({
-        filter_type:  f.filter_type  || '',
-        filter_value: f.filter_value || '',
-        session_id:   f.session_id   || ''
+        filter_type:  safe(f.filter_type),
+        filter_value: safe(f.filter_value),
+        session_id:   safe(f.session_id),
       }))
     : [{
-        filter_type:  body.filter_type  || '',
-        filter_value: body.filter_value || '',
-        session_id:   body.session_id   || ''
+        filter_type:  safe(body.filter_type),
+        filter_value: safe(body.filter_value),
+        session_id:   safe(body.session_id),
       }];
 
   // Skip rows that are completely empty (safety guard)
@@ -72,11 +76,13 @@ module.exports = async function handler(req, res) {
 
     if (!response.ok) {
       const err = await response.text();
-      return res.status(500).json({ error: err });
+      console.error('[/api/track-filter] Supabase error:', response.status, err);
+      return res.status(500).json({ error: 'Tracking unavailable' });
     }
 
     return res.status(200).json({ success: true, inserted: validRows.length });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('[/api/track-filter] Unexpected error:', err.message);
+    return res.status(500).json({ error: 'Tracking unavailable' });
   }
 }

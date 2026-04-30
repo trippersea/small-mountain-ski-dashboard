@@ -11,12 +11,15 @@
  */
 
 module.exports = async function handler(req, res) {
-  const { applyCors } = require('./_security');
+  const { applyCors, rateLimit } = require('./_security');
   const cors = applyCors(req, res, { methods: ['GET', 'OPTIONS'], headers: ['Content-Type'] });
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
+
+  const rl = rateLimit(req, res, { prefix: 'liftie', max: 90, windowMs: 60_000 });
+  if (!rl.ok) return res.status(429).json({ error: 'Too many requests' });
 
   const { slug } = req.query || {};
   if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
@@ -68,6 +71,6 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     const isTimeout = err.name === 'AbortError';
     console.warn('[/api/liftie]', slug, isTimeout ? 'timeout' : err.message);
-    return res.status(200).json({ error: isTimeout ? 'timeout' : err.message });
+    return res.status(200).json({ error: isTimeout ? 'timeout' : 'unavailable' });
   }
 };

@@ -3,7 +3,7 @@
  */
 
 module.exports = async function handler(req, res) {
-  const { applyCors, applyApiBaselineSecurity } = require('./_security');
+  const { applyCors, applyApiBaselineSecurity, rateLimit, readRawBody, safeJsonParse } = require('./_security');
   const cors = applyCors(req, res, { methods: ['POST', 'OPTIONS'], headers: ['Content-Type'] });
   applyApiBaselineSecurity(res, { cacheControl: 'no-store' });
 
@@ -11,14 +11,19 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (req.headers.origin && !cors.allowed) return res.status(403).json({ error: 'Origin not allowed' });
 
+  const rl = rateLimit(req, res, { prefix: 'recommend', max: 10, windowMs: 60_000 });
+  if (!rl.ok) return res.status(429).json({ error: 'Too many requests' });
+
   // ── Parse body — always read raw stream ─────────────────────────────────
   // Vercel sometimes delivers req.body as {} even for JSON POST requests,
   // which causes downstream destructuring to silently miss all fields.
   // Always parse from the raw body to be safe.
   let body;
   try {
-    const raw = await rawBody(req);
-    body = raw ? JSON.parse(raw) : (req.body || {});
+    const raw = await readRawBody(req, { limitBytes: 120_000 });
+    const parsed = safeJsonParse(raw);
+    if (!parsed) return res.status(400).json({ error: 'Could not parse request body' });
+    body = parsed;
   } catch (e) {
     return res.status(400).json({ error: 'Could not parse request body' });
   }
@@ -27,6 +32,9 @@ module.exports = async function handler(req, res) {
 
   // ── Route: AI verdict write-up (Option B) ─────────────────────────────────
   if (_writeup && writeupPrompt) {
+    if (typeof writeupPrompt !== 'string' || writeupPrompt.length > 4000) {
+      return res.status(400).json({ error: 'Invalid prompt' });
+    }
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
     try {
@@ -49,12 +57,15 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ writeup });
     } catch (err) {
       console.error('[/api/recommend] writeup error:', err.message);
-      return res.status(502).json({ error: err.message });
+      return res.status(502).json({ error: 'AI service unavailable' });
     }
   }
 
   if (!Array.isArray(resorts) || resorts.length < 2) {
     return res.status(400).json({ error: 'Need at least 2 resorts' });
+  }
+  if (resorts.length > 80) {
+    return res.status(400).json({ error: 'Too many resorts' });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -100,7 +111,7 @@ module.exports = async function handler(req, res) {
     if (!response.ok) {
       const errText = await response.text();
       console.error('[/api/recommend] Anthropic error:', response.status, errText);
-      return res.status(502).json({ error: 'Anthropic API error: ' + response.status + ' — ' + errText });
+      return res.status(502).json({ error: 'Anthropic API error: ' + response.status });
     }
 
     const data = await response.json();
@@ -109,16 +120,8 @@ module.exports = async function handler(req, res) {
 
   } catch (err) {
     console.error('[/api/recommend] Unexpected error:', err.message);
-    return res.status(502).json({ error: 'AI service unavailable — ' + err.message });
+    return res.status(502).json({ error: 'AI service unavailable' });
   }
 };
 
-// ── Helper: read raw request body as string ────────────────────────────────
-function rawBody(req) {
-  return new Promise((resolve, reject) => {
-    let data = '';
-    req.on('data', chunk => { data += chunk; });
-    req.on('end', () => resolve(data));
-    req.on('error', reject);
-  });
-}
+// (raw body helper moved to api/_security.js)
