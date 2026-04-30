@@ -8036,6 +8036,10 @@ button.vcard-detail-btn:hover,
 }
 #compareSection .compare-table-scroll.table-wrap {
   border-top: 1px solid rgba(142, 178, 226, 0.12);
+  /* Grow with content — inner vertical scrollbar removed; page scrolls instead */
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
 }
 
 /* ── Table head ─────────────────────────────────────────────────────────── */
@@ -8068,6 +8072,21 @@ button.vcard-detail-btn:hover,
 #compareSection .comparison-table tbody td {
   color: rgba(240, 246, 252, 0.72);
   border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ── This weekend column — narrative + vibe (readable on dark blue) ───── */
+#compareSection .compare-weekend {
+  color: rgba(248, 250, 252, 0.96);
+}
+#compareSection .compare-weekend .story-text {
+  color: #f8fafc;
+  -webkit-text-fill-color: #f8fafc;
+  font-weight: 500;
+}
+#compareSection .compare-weekend .vibe-tag--mini {
+  color: #f1f5f9;
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(148, 163, 184, 0.35);
 }
 
 /* ── Mountain name + state ──────────────────────────────────────────────── */
