@@ -962,7 +962,7 @@ async function fetchHistory(resort) {
   try {
     const { start, end } = historyDateRange();
     const url = `https://archive-api.open-meteo.com/v1/archive?` +
-      `latitude=${resort.lat}&longitude=${resort.lon}` +
+      `latitude=${resort.lat}&longitude=${resort.lon}&elevation=${resort.summitElevation || resort.baseElevation}` +
       `&start_date=${start}&end_date=${end}` +
       `&daily=snowfall_sum&timezone=America%2FNew_York`;
     const res  = await fetchWithTimeout(url, {}, 10000);
@@ -1011,7 +1011,7 @@ async function fetchWeather(resort) {
   const cached = state.weatherCache[resort.id];
   if (cached && Date.now() - cached.ts < WX_TTL) return cached.data;
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}` +
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&elevation=${resort.summitElevation || resort.baseElevation}` +
       `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m` +
       `&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum,windspeed_10m_max` +
       `&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4` +
