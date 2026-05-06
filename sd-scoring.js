@@ -238,14 +238,14 @@ function skiabilityIndex(wx = null, forecastIndex = null) {
 function recentSnowIndex(resort) {
   const hist = historyCache.get(resort.id);
   if (hist && Number.isFinite(hist.total)) return Math.min(1, hist.total / 16);
-  return Math.min(1, safeNum(resort.avgSnowfall, 0) / SCORING.SNOW_AVG_MAX);
+  return Math.min(1, safeNum(resort.avgSnowfall, 0) / W.SCORING.SNOW_AVG_MAX);
 }
 
 // ─── Mountain size index ──────────────────────────────────────────────────────
 function mountainSizeIndex(resort) {
-  const v = Math.min(1, resort.vertical   / SCORING.VERTICAL_CEILING);
-  const a = Math.min(1, resort.acres      / SCORING.ACRES_CEILING);
-  const l = Math.min(1, resort.longestRun / SCORING.LONGEST_RUN_CEILING);
+  const v = Math.min(1, resort.vertical   / W.SCORING.VERTICAL_CEILING);
+  const a = Math.min(1, resort.acres      / W.SCORING.ACRES_CEILING);
+  const l = Math.min(1, resort.longestRun / W.SCORING.LONGEST_RUN_CEILING);
   return v * 0.50 + a * 0.35 + l * 0.15;
 }
 
@@ -273,7 +273,7 @@ function mountainFitIndex(resort) {
 // ─── Drive score index ────────────────────────────────────────────────────────
 function driveScoreIndex(driveMins) {
   const drive = safeNum(driveMins, null);
-  if (drive === null) return SCORING.DRIVE_DEFAULT;
+  if (drive === null) return W.SCORING.DRIVE_DEFAULT;
   if (drive <= 60)  return 0.85;
   if (drive <= 120) return 0.80 - ((drive - 60)  / 60) * 0.10;
   if (drive <= 180) return 0.70 - ((drive - 120) / 60) * 0.15;
@@ -289,7 +289,7 @@ function priceIndex(resort) {
   const price = safeNum(resort?.price, null);
   if (price === null) return 0.50;
   return Math.max(0, Math.min(1,
-    (SCORING.PRICE_MAX - price) / (SCORING.PRICE_MAX - SCORING.PRICE_MIN)
+    (W.SCORING.PRICE_MAX - price) / (W.SCORING.PRICE_MAX - W.SCORING.PRICE_MIN)
   ));
 }
 
@@ -301,16 +301,16 @@ function valueIndex(resort) {
 function snowQualityIndex(resort, snowTotal, wx = null, forecastIndex = null) {
   const target     = snowPreferenceTarget();
   const liveSnow   = safeNum(snowTotal, 0);
-  const reliability = Math.min(1, safeNum(resort.avgSnowfall, 0) / SCORING.SNOW_AVG_MAX);
+  const reliability = Math.min(1, safeNum(resort.avgSnowfall, 0) / W.SCORING.SNOW_AVG_MAX);
   const recent     = recentSnowIndex(resort);
 
   let live;
   if (target === 0) {
-    live = Math.min(1, liveSnow / SCORING.SNOW_SCALE);
+    live = Math.min(1, liveSnow / W.SCORING.SNOW_SCALE);
   } else if (liveSnow < target) {
     live = 0.15 * Math.min(1, liveSnow / Math.max(1, target));
   } else {
-    const cap = Math.max(target + 4, target === 12 ? 18 : SCORING.SNOW_SCALE + target);
+    const cap = Math.max(target + 4, target === 12 ? 18 : W.SCORING.SNOW_SCALE + target);
     live = Math.min(1, (liveSnow - target) / Math.max(1, cap - target));
   }
 

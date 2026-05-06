@@ -2,21 +2,6 @@ const RESORTS_NE = [{"id":"mohawk-mountain","name":"Mohawk Mountain","state":"CT
 
 const RESORTS = [...RESORTS_NE, ...(typeof RESORTS_NATIONAL !== 'undefined' ? RESORTS_NATIONAL : [])];
 
-// ─── Scoring constants ────────────────────────────────────────────────────────
-const SCORING = Object.freeze({
-  VERTICAL_CEILING:    3500,
-  ACRES_CEILING:       4500,
-  LONGEST_RUN_CEILING:  5.0,
-  SNOW_SCALE:             8,
-  SNOW_AVG_MAX:         669,
-  SNOW_FORECAST_WEIGHT: 0.95,
-  SNOW_RELIABILITY_WEIGHT: 0.05,
-  DRIVE_SCALE:          300,
-  DRIVE_DEFAULT:        0.5,
-  PRICE_MAX:            329,
-  PRICE_MIN:             40,
-  CROWD_SCALE:           85,
-});
 
 const HOW_FAR_TIERS = Object.freeze([
   { label: 'Day Trip',  floor: 0,   cap: 180,      hint: '≤3h drive'      },
@@ -33,8 +18,6 @@ const PRICE_RANGES = Object.freeze([
 
 const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 
-const DEFAULT_WEIGHTS = Object.freeze({ snow: 1, drive: 0, size: 0, value: 0, crowd: 1 });
-const SCORE_WEIGHTS   = Object.freeze({ snow: 0.30, skiability: 0.20, fit: 0.15, value: 0.10, crowd: 0.10, drive: 0.15 });
 
 // Table sort state
 let tableSort = { col: 'planner', dir: 'desc' };

@@ -9,6 +9,10 @@
 
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
+
+// Scoring constants fetched from /api/weights at startup — never shipped in client JS.
+// W is null until loadWeights() resolves. All scoring code gates on this.
+let W = null;
 // Phase-1 weather set (the "near" batch) so the verdict can be stable.
 let weatherPhase1Ids     = [];
 
@@ -223,7 +227,10 @@ function runnerReasonLine(batch, item, idx) {
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function loadSavedWeights() {
   try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
-  return { ...DEFAULT_WEIGHTS };
+  // W may not be loaded yet at state-init time — use hardcoded fallback so
+  // the app boots synchronously; weights are refreshed from W after loadWeights() resolves.
+  if (W) return { ...W.DEFAULT_WEIGHTS };
+  return { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 };
 }
 function loadSavedPassPreference() { return 'any'; }
 function normalizeOriginForState(o) {
@@ -1238,7 +1245,7 @@ async function geocodeOrigin(query) {
 function serializeState() {
   const p = new URLSearchParams();
   const w = state.weights;
-  if ([w.snow, w.size, w.value, w.crowd].join(',') !== [DEFAULT_WEIGHTS.snow, DEFAULT_WEIGHTS.size, DEFAULT_WEIGHTS.value, DEFAULT_WEIGHTS.crowd].join(',')) {
+  if ([w.snow, w.size, w.value, w.crowd].join(',') !== [W.DEFAULT_WEIGHTS.snow, W.DEFAULT_WEIGHTS.size, W.DEFAULT_WEIGHTS.value, W.DEFAULT_WEIGHTS.crowd].join(',')) {
     p.set('w', [w.snow, w.size, w.value, w.crowd].join(','));
   }
   if (state.verticalFilter !== 'any')  p.set('vert',  state.verticalFilter);
@@ -3306,7 +3313,7 @@ function wireEvents() {
     state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any';
     state.nightOnly = false; state.priceRange = 0;
     state.howFar = 0; state.verticalFilter = 'any';
-    state.weights = { ...DEFAULT_WEIGHTS };
+    state.weights = { ...W.DEFAULT_WEIGHTS };
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     state.skiDayPreset = smartDefaultWhenVal();
     state.targetDate = dayValToDate(state.skiDayPreset);
@@ -3505,6 +3512,33 @@ function wireEvents() {
 }
 
 // ─── Initialize ───────────────────────────────────────────────────────────────
+
+// ─── Weights loader ───────────────────────────────────────────────────────────
+// Fetches scoring constants from /api/weights before the app boots.
+// Falls back to hardcoded values if the endpoint is unavailable so the app
+// never breaks — the fallback contains the same values as the endpoint.
+async function loadWeights() {
+  try {
+    const res = await fetch('/api/weights');
+    if (!res.ok) throw new Error('weights fetch failed');
+    W = await res.json();
+    // Refresh state.weights now that W is available
+    state.weights = loadSavedWeights();
+  } catch (e) {
+    console.warn('[WTSN] Using fallback weights', e);
+    W = {
+      SCORING: {
+        VERTICAL_CEILING: 3500, ACRES_CEILING: 4500, LONGEST_RUN_CEILING: 5.0,
+        SNOW_SCALE: 8, SNOW_AVG_MAX: 669, SNOW_FORECAST_WEIGHT: 0.95,
+        SNOW_RELIABILITY_WEIGHT: 0.05, DRIVE_SCALE: 300, DRIVE_DEFAULT: 0.5,
+        PRICE_MAX: 329, PRICE_MIN: 40, CROWD_SCALE: 85,
+      },
+      SCORE_WEIGHTS: { snow: 0.30, skiability: 0.20, fit: 0.15, value: 0.10, crowd: 0.10, drive: 0.15 },
+      DEFAULT_WEIGHTS: { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 },
+    };
+  }
+}
+
 function syncVerdictVisibility() {
   const section = els.verdictSection;
   if (!section) return;
@@ -3740,4 +3774,4 @@ function updateHeroHeadline() {
   el.innerHTML = 'Find the best mountain<br /><span class="hn-editorial-headline-sub">for your next <span class="hn-editorial-headline-brand">ski day</span>.</span>';
 }
 
-initialize();
+loadWeights().then(() => initialize());

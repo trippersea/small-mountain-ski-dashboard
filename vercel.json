@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node prerender-homepage.mjs",
+  "buildCommand": "node obfuscate-scoring.mjs && node prerender-homepage.mjs",
   "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
@@ -55,7 +55,12 @@
     },
     {
       "source": "/sitemap.xml",
-      "headers": [{ "key": "Content-Type", "value": "application/xml" }]
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml"
+        }
+      ]
     },
     {
       "source": "/(.*)\\.(js|css|svg|png|jpg|jpeg|webp|ico|woff2|txt|json|xml)$",
@@ -80,8 +85,17 @@
     }
   ],
   "rewrites": [
-    { "source": "/ski-report/:slug", "destination": "/ski-report/:slug/index.html" },
-    { "source": "/ski/:state", "destination": "/ski/:state/index.html" },
-    { "source": "/ski-near/:city", "destination": "/ski-near/:city/index.html" }
+    {
+      "source": "/ski-report/:slug",
+      "destination": "/ski-report/:slug/index.html"
+    },
+    {
+      "source": "/ski/:state",
+      "destination": "/ski/:state/index.html"
+    },
+    {
+      "source": "/ski-near/:city",
+      "destination": "/ski-near/:city/index.html"
+    }
   ]
 }
