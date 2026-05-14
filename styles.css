@@ -1116,6 +1116,17 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   vertical-align: middle;
   margin: 0 2px;
 }
+
+/* ── Crowd label color modifiers on verdict card utility row ─────────────── */
+.hn-hero-verdict-dock .crowd-color--quiet { color: rgba(74, 222, 128, 0.9); }
+.hn-hero-verdict-dock .crowd-color--moderate { color: rgba(251, 191, 36, 0.9); }
+.hn-hero-verdict-dock .crowd-color--busy { color: rgba(248, 113, 113, 0.9); }
+.hn-hero-verdict-dock .crowd-color--avoid { color: rgba(248, 113, 113, 0.9); }
+/* Light card variant */
+.hn-hero-verdict-dock .vcard--hero-light .crowd-color--quiet    { color: #15803d; }
+.hn-hero-verdict-dock .vcard--hero-light .crowd-color--moderate { color: #92400e; }
+.hn-hero-verdict-dock .vcard--hero-light .crowd-color--busy     { color: #b91c1c; }
+.hn-hero-verdict-dock .vcard--hero-light .crowd-color--avoid    { color: #b91c1c; }
 .hn-hero-verdict-dock .vcard-freshness--quiet {
   font-size: clamp(0.72rem, 1.1vw, 0.78rem);
   color: rgba(186, 204, 220, 0.42);

@@ -1820,7 +1820,8 @@ function renderVerdict(resorts) {
   const _wxVerdict = state.weatherCache[resort.id]?.data;
   const _narrative = getMountainNarrative(buildNarrativeMountainPayload(resort, _wxVerdict));
   const _pureGoldCls = _narrative.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
-  const crowdLbl = crowdForecast(resort, _wxVerdict).label;
+  const _crowd   = crowdForecast(resort, _wxVerdict);
+  const crowdLbl = _crowd.label;
 
   const zipNudgeHtml = !state.origin
     ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong>. Once we know where you are leaving from, this swaps to a real mountain with drive time.</p>`
@@ -1932,7 +1933,7 @@ function renderVerdict(resorts) {
           <span class="vcard-utility-sep" aria-hidden="true"></span>
           <span>${esc(_utilityDrive)}</span>
           <span class="vcard-utility-sep" aria-hidden="true"></span>
-          <span class="crowd-info-tip" tabindex="0" aria-label="Crowd forecast: ${esc(_utilityCrowd)}. Based on holiday calendar, resort capacity, and distance from major metros.">${esc(_utilityCrowd)}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">Based on holiday calendar, resort capacity, and distance from major metros.</span></span>
+          <span class="crowd-info-tip crowd-color--${crowdLbl.toLowerCase()}" tabindex="0" aria-label="Crowd forecast: ${esc(_utilityCrowd)}. ${esc((_crowd.reasons[0] || '') + (_crowd.reasons[1] ? ' · ' + _crowd.reasons[1] : ''))}">${esc(_utilityCrowd)}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">${esc(_crowd.reasons.slice(0, 3).join(' · ') || 'Based on holiday calendar, resort capacity, and distance from major metros.')}</span></span>
         </div>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
@@ -2096,9 +2097,11 @@ function renderVerdict(resorts) {
               <span class="hn-runner-partner-hint">Labeled partner — your ranked order and scores are unchanged.</span>
             </div>`
           : '';
-        const _crowdDotCls = cf.label === 'Quiet' ? 'hn-crowd-dot--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'hn-crowd-dot--busy' : 'hn-crowd-dot--mod';
+        const _crowdDotCls  = cf.label === 'Quiet' ? 'hn-crowd-dot--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'hn-crowd-dot--busy' : 'hn-crowd-dot--mod';
         const _crowdChipCls = cf.label === 'Quiet' ? 'crowd-quiet-chip' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip' : 'crowd-mod-chip';
-        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls} nrc-crowd crowd-info-tip" tabindex="0" aria-label="Crowd forecast: ${esc(cf.label)}. Based on holiday calendar, resort capacity, and distance from major metros."><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>Crowd forecast: ${esc(cf.label)}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">Based on holiday calendar, resort capacity, and distance from major metros.</span></div>`;
+        const _crowdChipLabel = esc(crowdUtilityShort(cf.label));
+        const _crowdTipText   = esc(cf.reasons.slice(0, 3).join(' · ') || 'Based on holiday calendar, resort capacity, and distance from major metros.');
+        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls} nrc-crowd crowd-info-tip" tabindex="0" aria-label="Crowd forecast: ${_crowdChipLabel}. ${esc(cf.reasons[0] || '')}"><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>${_crowdChipLabel}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">${_crowdTipText}</span></div>`;
         return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
           ${_rCallout}
           <div class="nrc-body">
@@ -2750,7 +2753,9 @@ function renderDetail({ scroll = false } = {}) {
     ? esc('Once the forecast loads, we will spell out the conditions call here.')
     : esc('Loading…');
 
-  const crowdFootText = `${crowd.label} outlook — ${crowd.reasons.length ? crowd.reasons[0] : crowd.confidence}`;
+  const crowdFootText = crowd.reasons.length
+    ? `${crowdUtilityShort(crowd.label)} · ${crowd.reasons.slice(0, 3).join(' · ')}`
+    : `${crowdUtilityShort(crowd.label)} outlook — ${crowd.confidence} confidence`;
   const crowdFootHtml = esc(crowdFootText);
 
   // PATCH 4: Use resort-specific photo in detail panel hero
