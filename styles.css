@@ -951,7 +951,7 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .table-wrap { overflow: auto; }
 .comparison-table { width: 100%; border-collapse: collapse; }
 .comparison-table th,
-.comparison-table td { padding: 14px 10px; border-bottom: 1px solid rgba(26, 46, 69, 0.06); font-size: 13px; text-align: left; }
+.comparison-table td { padding: 16px 10px; border-bottom: 1px solid rgba(26, 46, 69, 0.04); font-size: 13px; text-align: left; }
 .comparison-table thead th {
   position: sticky; top: 0; z-index: 2;
   font-size: 11px; font-weight: 600;
@@ -977,13 +977,15 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .compare-weekend {
   color: var(--text);
   font-weight: 500;
-  max-width: min(36ch, 100%);
-  vertical-align: top;
+  min-width: 280px;
+  max-width: min(42ch, 100%);
+  vertical-align: middle;
   line-height: 1.45;
 }
 .compare-weekend .vibe-tag--mini {
   display: inline-flex;
-  margin-bottom: 6px;
+  vertical-align: middle;
+  margin: 0 6px 0 0;
 }
 
 /* ═══ Mountain narrative — vibe badge, story copy, “bluebird / perfect day” ═══ */
@@ -1315,13 +1317,13 @@ tr.bluebird-glow:hover td {
 }
 
 .compare-weekend .story-text {
-  display: block;
+  display: inline;
   /* Match mountain name / table body: same stack as `body`, not editorial serif */
   font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 400;
   line-height: 1.5;
-  margin-top: 2px;
+  margin-top: 0;
   color: var(--text-body);
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -3061,7 +3063,7 @@ tr.bluebird-glow:hover td {
 .compare-rank {
   display: inline-block;
   min-width: 1.25rem;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
@@ -3071,6 +3073,19 @@ tr.bluebird-glow:hover td {
   text-align: center;
   vertical-align: top;
   padding-top: 13px;
+}
+/* Hover-reveal compare checkbox inside mountain cell */
+.table-compare-check {
+  display: block;
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.comparison-table tbody tr:hover .table-compare-check,
+.table-compare-check:checked {
+  opacity: 1;
 }
 .comparison-table tbody tr:hover .compare-rank {
   color: var(--text-muted);
@@ -8194,7 +8209,7 @@ button.vcard-detail-btn:hover,
 
 /* ── Table rows ─────────────────────────────────────────────────────────── */
 #compareSection .comparison-table tbody tr {
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+  border-bottom-color: rgba(255, 255, 255, 0.04);
 }
 #compareSection .comparison-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.04);
@@ -8209,6 +8224,7 @@ button.vcard-detail-btn:hover,
   color: rgba(248, 250, 252, 0.96);
 }
 #compareSection .compare-weekend .story-text {
+  display: inline;
   font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 400;
@@ -8219,6 +8235,8 @@ button.vcard-detail-btn:hover,
   color: #f1f5f9;
   background: rgba(15, 23, 42, 0.85);
   border-color: rgba(148, 163, 184, 0.35);
+  margin: 0 6px 0 0;
+  vertical-align: middle;
 }
 
 /* ── Mountain name + state ──────────────────────────────────────────────── */
@@ -8235,7 +8253,13 @@ button.vcard-detail-btn:hover,
 
 /* ── Rank number ────────────────────────────────────────────────────────── */
 #compareSection .compare-rank {
-  color: rgba(240, 246, 252, 0.35);
+  color: rgba(240, 246, 252, 0.28);
+  font-size: 15px;
+}
+
+/* ── Hover-reveal checkbox ──────────────────────────────────────────────── */
+#compareSection .table-compare-check {
+  accent-color: #45a2ff;
 }
 
 /* ── Sponsored row ──────────────────────────────────────────────────────── */

@@ -2462,7 +2462,7 @@ function renderCompareTable(resorts) {
       : 'Try widening distance, easing snow or price limits, or pick another pass.';
     els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
-      <tr><td colspan="9" class="compare-empty-state">
+      <tr><td colspan="7" class="compare-empty-state">
         <div class="ces-icon">🎿</div>
         <div class="ces-title">${title}</div>
         <div class="ces-sub">${sub}
@@ -2551,7 +2551,6 @@ function renderCompareTable(resorts) {
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}${_tabGoldCls}" data-id="${resort.id}">
         <td class="compare-rank-cell"><span class="compare-rank" aria-hidden="true">${idx + 1}</span></td>
-        <td class="compare-select-cell"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /></td>
         <td>
           <div class="table-mountain-cell">
             <div class="table-mountain-name-row">
@@ -2559,16 +2558,14 @@ function renderCompareTable(resorts) {
               ${_sp ? '<span class="table-featured-pill" title="Advertising partner — does not change rank or score">Featured Partner</span>' : ''}
             </div>
             <div class="row-sub">${esc(resort.state)}</div>
+            <input type="checkbox" class="table-compare-check" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} aria-label="Compare ${esc(resort.name)}" onclick="event.stopPropagation()" />
           </div>
         </td>
-        <td class="compare-weekend"><div class="vibe-tag vibe-tag--mini">${esc(_tabNarr.vibe)}</div><span class="story-text">${esc(weekendLine)}</span></td>
         <td class="compare-drive ${driveCls}">${esc(formatDrive(resort.id))}</td>
+        <td class="compare-weekend"><span class="vibe-tag vibe-tag--mini vibe-tag--inline">${esc(_tabNarr.vibe)}</span><span class="story-text">${esc(weekendLine)}</span></td>
         <td>${esc(resort.passGroup)}</td>
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
-        <td>
-          <a class="table-lodging-link" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation();trackSponsorClick('${esc(resort.name)}','mobile_stay','${esc(resort.id)}','')">Stay nearby <span class="affiliate-badge">affiliate</span></a>
-        </td>
       </tr>`;
   }).join('');
 
