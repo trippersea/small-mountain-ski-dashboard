@@ -1945,6 +1945,10 @@ function renderVerdict(resorts) {
         <div class="vcard-actions vcard-actions-dash">
           ${primaryBtn}
           ${secondaryBtn}
+          <button type="button" class="vcard-detail-btn vcard-share-btn" id="verdictShareBtn" aria-label="Share this pick">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px;flex-shrink:0"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2"/></svg>
+            Share this pick
+          </button>
         </div>
         ${guidanceInsetHtml}
         ${lodgingModuleHtml}
@@ -1974,6 +1978,11 @@ function renderVerdict(resorts) {
     saveCompareSession(v, runningItems); // ensure freshest data on click
     trackFilterEvent('engagement', 'compare_mountains_click');
     window.location.href = '/compare/';
+  });
+
+  $('verdictShareBtn')?.addEventListener('click', () => {
+    trackEvent('share_click', { placement: 'verdict_card', resort: resort.id });
+    shareVerdict(resort, v);
   });
 
   // Mini runner-up cards — open detail panel on click

@@ -888,11 +888,28 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   padding: 6px 14px;
   color: var(--muted);
   border-color: var(--border);
+  display: inline-flex;
+  align-items: center;
 }
 .vcard-share-btn:hover {
   color: var(--text);
   border-color: var(--border-light);
   background: var(--surface-subtle);
+}
+.hn-hero-verdict-dock .vcard-share-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 14px;
+  min-height: 42px;
+  color: rgba(186, 210, 232, 0.72);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+}
+.hn-hero-verdict-dock .vcard-share-btn:hover {
+  color: rgba(224, 242, 254, 0.92);
+  border-color: rgba(147, 197, 253, 0.28);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
