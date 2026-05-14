@@ -1986,6 +1986,84 @@ tr.bluebird-glow:hover td {
   border: 5px solid transparent; border-top-color: var(--navy-deep);
 }
 
+/* ── Crowd model explanation tooltip ─────────────────────────────────────── */
+.crowd-info-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: default;
+}
+.crowd-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.28);
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 9px;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1;
+  flex-shrink: 0;
+  cursor: help;
+}
+.hn-hero-verdict-dock .crowd-info-icon {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(186, 210, 232, 0.6);
+}
+.crowd-info-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 220px;
+  background: #0f1c2e;
+  color: rgba(226, 232, 240, 0.92);
+  font-size: 11.5px;
+  line-height: 1.5;
+  font-weight: 400;
+  padding: 8px 11px;
+  border-radius: 9px;
+  box-shadow: 0 4px 18px rgba(15, 28, 46, 0.38);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+  z-index: 200;
+  white-space: normal;
+  text-align: center;
+}
+.crowd-info-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #0f1c2e;
+}
+.crowd-info-tip:hover .crowd-info-tooltip,
+.crowd-info-tip:focus .crowd-info-tooltip,
+.crowd-info-tip:focus-within .crowd-info-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Table Drive column no-origin hint ──────────────────────────────────── */
+#compareTable[data-no-origin] th[data-sort="drive"]::after {
+  content: 'set location';
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
 /* ─── Customize button — left-aligned ────────────────────────────────────── */
 .weight-summary-row {
   justify-content: flex-start;

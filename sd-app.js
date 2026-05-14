@@ -1932,7 +1932,7 @@ function renderVerdict(resorts) {
           <span class="vcard-utility-sep" aria-hidden="true"></span>
           <span>${esc(_utilityDrive)}</span>
           <span class="vcard-utility-sep" aria-hidden="true"></span>
-          <span>${esc(_utilityCrowd)}</span>
+          <span class="crowd-info-tip" tabindex="0" aria-label="Crowd forecast: ${esc(_utilityCrowd)}. Based on holiday calendar, resort capacity, and distance from major metros.">${esc(_utilityCrowd)}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">Based on holiday calendar, resort capacity, and distance from major metros.</span></span>
         </div>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
@@ -2098,7 +2098,7 @@ function renderVerdict(resorts) {
           : '';
         const _crowdDotCls = cf.label === 'Quiet' ? 'hn-crowd-dot--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'hn-crowd-dot--busy' : 'hn-crowd-dot--mod';
         const _crowdChipCls = cf.label === 'Quiet' ? 'crowd-quiet-chip' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip' : 'crowd-mod-chip';
-        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls} nrc-crowd"><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>Crowd forecast: ${esc(cf.label)}</div>`;
+        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls} nrc-crowd crowd-info-tip" tabindex="0" aria-label="Crowd forecast: ${esc(cf.label)}. Based on holiday calendar, resort capacity, and distance from major metros."><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>Crowd forecast: ${esc(cf.label)}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">Based on holiday calendar, resort capacity, and distance from major metros.</span></div>`;
         return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
           ${_rCallout}
           <div class="nrc-body">
@@ -2369,6 +2369,14 @@ function renderCompareTable(resorts) {
     els.comparisonBody.innerHTML = '';
     delete els.comparisonBody.dataset.prerendered;
   }
+
+  // Stamp no-origin state on the table so CSS can annotate the Drive column header
+  const _tableEl = document.getElementById('compareTable');
+  if (_tableEl) {
+    if (!state.origin) _tableEl.setAttribute('data-no-origin', 'true');
+    else _tableEl.removeAttribute('data-no-origin');
+  }
+
   const qRaw = (state.tableSearch || '').trim();
   const q = qRaw.toLowerCase();
   const w = normalizedWeights();
