@@ -1343,7 +1343,22 @@ function savePlannerState() {
   try {
     localStorage.setItem('ski-planner-weights', JSON.stringify(state.weights));
     localStorage.setItem('ski-pass-pref',       state.passPreference);
+    localStorage.setItem('ski-hero-prefs', JSON.stringify({
+      passFilter: state.passFilter,
+      howFar:     state.howFar,
+    }));
   } catch (e) {}
+}
+
+function loadHeroPrefs() {
+  try {
+    const raw = localStorage.getItem('ski-hero-prefs');
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    const pass   = typeof p.passFilter === 'string' ? p.passFilter : null;
+    const howFar = Number.isFinite(Number(p.howFar)) ? Math.min(2, Math.max(0, Number(p.howFar))) : null;
+    return { passFilter: pass, howFar };
+  } catch (e) { return null; }
 }
 
 function snapToPriority(v) {
@@ -3296,7 +3311,7 @@ function wireEvents() {
     trackEvent('filter_applied', { filter_type: 'distance', filter_value: String(e.target.value) });
     trackFilterEvent('planner_distance', _distLabel);
     if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
-    pushUrlDebounced(); syncPlannerControls(); render();
+    savePlannerState(); pushUrlDebounced(); syncPlannerControls(); render();
   });
 
   if (els.maxPriceFilter) els.maxPriceFilter.addEventListener('change', e => {
@@ -3600,6 +3615,19 @@ function initialize() {
     }
   }
 
+  if (!hadUrlState) {
+    const _heroPrefs = loadHeroPrefs();
+    if (_heroPrefs) {
+      if (_heroPrefs.passFilter !== null && UNIQUE_PASSES.includes(_heroPrefs.passFilter)) {
+        state.passFilter = _heroPrefs.passFilter;
+        state.passPreference = state.passFilter === 'All' ? 'any' : state.passFilter;
+      }
+      if (_heroPrefs.howFar !== null) {
+        state.howFar = _heroPrefs.howFar;
+      }
+    }
+  }
+
   if (hadUrlState) {
     if (els.passFilter)     els.passFilter.value = state.passFilter;
     els.stateFilter.value   = state.stateFilter;
@@ -3692,6 +3720,7 @@ function initialize() {
     const loc = await geocodeOrigin(q);
     if (loc) {
       state.origin = loc; state.driveCache = {};
+      saveOrigin(loc);
       els.locationStatus.textContent = `✓ Location set to ${loc.label}`;
       els.locationStatus.classList.remove('hero-location-status--error');
       trackEvent('location_set', { location_label: loc.label, method: 'search' });
@@ -3745,7 +3774,7 @@ function initialize() {
       state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
       els.originInput.value = 'Your location';
       trackEvent('location_set', { location_label: 'GPS', method: 'gps' });
-      if (isRememberChecked()) saveOrigin(state.origin); else clearSavedOrigin();
+      saveOrigin(state.origin);
       pushUrlDebounced();
       render();
       scrollToResultsAfterLocationSet();
