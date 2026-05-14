@@ -1567,14 +1567,14 @@ function computeVerdict(resorts) {
     tier = 'bad'; headline = 'Skip this weekend';
     detail = `Temperatures look too warm — rain likely above ${resort.baseElevation.toLocaleString()} ft at ${esc(resort.name)}.`;
   } else if (stormTotal >= 6 || tomorrowIn >= 4) {
-    tier = 'great'; headline = 'Go — excellent conditions';
+    tier = 'great'; headline = 'Go — strong forecast';
     detail = tomorrowIn >= 4
       ? `${tomorrowIn.toFixed(1)}" expected tomorrow at ${esc(resort.name)}. That's a powder day.`
       : `${stormTotal.toFixed(1)}" forecast over 3 days — this is what you wait all season for.`;
     if (coldSnow) subPoints.push('Ideal temps — light, dry snow expected');
     if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week — base is deep`);
   } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6)) {
-    tier = 'good'; headline = 'Decent conditions — worth the trip';
+    tier = 'good'; headline = 'Decent forecast — worth the trip';
     if (stormTotal >= 2) {
       detail = `${stormTotal.toFixed(1)}" in the 3-day forecast at ${esc(resort.name)}. Not a powder day, but fresh snow makes a real difference.`;
     } else {
@@ -1769,7 +1769,7 @@ function renderVerdict(resorts) {
     return;
   }
 
-  const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn } = v;
+  const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn, histTotal } = v;
   const runningItems = collectRunnerUpItems(resorts, resort.id, 3);
   saveCompareSession(v, runningItems);
   trackRecommendation(resort.id, resort.name);
@@ -1824,10 +1824,10 @@ function renderVerdict(resorts) {
     return `data-bd="${btoa(bd)}"`;
   })() : '';
 
-  const verdictBadgeText = tier === 'great' ? 'Go: great conditions'
-    : tier === 'good'    ? 'Go: good conditions'
-    : tier === 'marginal'? 'Worth checking: fair conditions'
-    : 'Skip: rough conditions';
+  const verdictBadgeText = tier === 'great' ? 'Go: strong forecast'
+    : tier === 'good'    ? 'Go: good forecast'
+    : tier === 'marginal'? 'Worth checking: fair forecast'
+    : 'Skip: rough forecast';
 
   const verdictBadgeCls = tier === 'great' ? 'vb-verdict-badge--go'
     : tier === 'good'   ? 'vb-verdict-badge--go'
@@ -1835,7 +1835,7 @@ function renderVerdict(resorts) {
     : 'vb-verdict-badge--skip';
 
   const _fitWord = fitLabel(scoreNum);
-  const primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full conditions</button>`;
+  const primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full forecast</button>`;
   const secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictSeeAllRunnersBtn">Compare Mountains</button>`;
 
   const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
@@ -1858,6 +1858,10 @@ function renderVerdict(resorts) {
   })();
   const _freshnessHtml = _agoStr
     ? `<div class="vcard-freshness vcard-freshness--quiet">Showing ${esc(_forecastDayStr)} forecast \u00b7 updated ${esc(_agoStr)}</div>`
+    : '';
+
+  const _histChipHtml = (histTotal !== null && histTotal > 0)
+    ? `<div class="vcard-hist-row"><span class="vcard-hist-chip">${histTotal}" in the last 7 days</span></div>`
     : '';
 
   const _whyPickLabels = (typeof buildWhyThisPickReasons === 'function')
@@ -1917,6 +1921,7 @@ function renderVerdict(resorts) {
         </div>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
+        ${_histChipHtml}
         ${_freshnessHtml}
         ${_whyPickHtml}
       </div>
@@ -2374,12 +2379,26 @@ function renderCompareTable(resorts) {
   const displayed = showAll ? decorated : decorated.slice(0, 10);
   const total     = resorts.length;
 
+  const _tableAgoStr = (() => {
+    for (const { resort } of displayed) {
+      const ts = state.weatherCache[resort.id]?.ts;
+      if (ts) {
+        const mins = Math.round((Date.now() - ts) / 60000);
+        if (mins < 2)  return 'just now';
+        if (mins < 60) return `${mins}m ago`;
+        return `${Math.round(mins / 60)}h ago`;
+      }
+    }
+    return null;
+  })();
+  const _tableFreshSuffix = _tableAgoStr ? ` \u00b7 data as of ${_tableAgoStr}` : '';
+
   if (q) {
     els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${qRaw}"`;
   } else if (noOriginDefault) {
-    els.resultCount.textContent = `${total} mountains — sorted by avg snowfall`;
+    els.resultCount.textContent = `${total} mountains — sorted by avg snowfall${_tableFreshSuffix}`;
   } else {
-    els.resultCount.textContent = state.tableViewAll ? `All ${total} mountains` : `Top 10 of ${total} mountains`;
+    els.resultCount.textContent = (state.tableViewAll ? `All ${total} mountains` : `Top 10 of ${total} mountains`) + _tableFreshSuffix;
   }
   if (els.tableViewAllBtn) {
     els.tableViewAllBtn.textContent = (state.tableViewAll && !q) ? 'Show Top 10' : `View All ${total}`;

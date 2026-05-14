@@ -1106,6 +1106,29 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   letter-spacing: 0.01em;
 }
 
+/* ── 7-day history snow chip on verdict card ────────────────────────────── */
+.vcard-hist-row {
+  margin-top: 9px;
+}
+.vcard-hist-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: rgba(90, 173, 220, 0.14);
+  border: 1px solid rgba(90, 173, 220, 0.32);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(147, 210, 245, 0.88);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.hn-hero-verdict-dock .vcard--hero-light .vcard-hist-chip {
+  background: rgba(43, 109, 233, 0.1);
+  border-color: rgba(43, 109, 233, 0.25);
+  color: #2b6de9;
+}
+
 .hn-hero-verdict-dock .vcard-why-pick {
   margin: 14px 0 0;
   padding: 0;
