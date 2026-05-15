@@ -192,6 +192,29 @@ body.pass-page-body .pp-table-note a {
   color: var(--pp-accent, #45a2ff);
 }
 
+/* Epic vs Ikon only: category + single prose column (no Indy cell) */
+body.pass-page-body .pp-fast-row--prose {
+  grid-template-columns: minmax(150px, 220px) 1fr;
+}
+
+body.pass-page-body .pp-table .tbl-state {
+  font-size: 0.8rem;
+  color: var(--pp-text-faint, rgba(240, 246, 252, 0.52));
+  white-space: nowrap;
+}
+body.pass-page-body .pp-table .tbl-stat {
+  font-weight: 600;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+}
+
+body.pass-page-body .rpp-section-head--spaced {
+  margin-top: 0;
+}
+
+body.pass-page-body .pp-lookup-item--span {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 600px) {
   body.pass-page-body .rpp-section-head {
     flex-direction: column;

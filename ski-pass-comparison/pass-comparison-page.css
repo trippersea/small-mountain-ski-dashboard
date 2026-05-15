@@ -176,6 +176,15 @@ body.pass-page-body .nav-divider {
 .pp-btn--primary:hover {
   background: rgba(53, 120, 240, 1);
 }
+.pp-btn--ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--pp-text);
+  border-color: var(--pp-border-strong);
+}
+.pp-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--pp-accent);
+}
 .pp-hero__panel {
   border: 1px solid var(--pp-border-strong);
   border-radius: var(--pp-radius);

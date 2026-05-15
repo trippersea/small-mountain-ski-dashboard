@@ -11,8 +11,16 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.wheretoskinext.com/epic-vs-ikon-northeast/" />
   <meta property="og:image" content="https://www.wheretoskinext.com/og-image.png" />
-  <meta property="og:image:alt" content="WhereToSkiNext.com — ski trip planner" />
-
+  <meta property="og:image:alt" content="WhereToSkiNext.com ski trip planner" />
+  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
+  <link rel="stylesheet" href="/regional-pass-page.css" />
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -69,69 +77,15 @@
   ]
 }
   </script>
-  <!-- Site chrome + pass-comparison page styles -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
-  <link rel="preload" href="/styles.css" as="style" />
-  <link rel="stylesheet" href="/styles.css" />
-  <link rel="stylesheet" href="/pass-comparison.css" />
-  <style>
-    /* Decision-first modules (Northeast page only) */
-    .ne-wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
-    .qv-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 8px; }
-    .qv-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 18px; }
-    .qv-kicker { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
-    .qv-title { font-size: 1.05rem; font-weight: 900; line-height: 1.2; margin-bottom: 6px; }
-    .qv-title.ikon { color: var(--ikon-color); }
-    .qv-title.epic { color: var(--epic-color); }
-    .qv-body { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55; margin: 0; }
-    .qv-note { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; margin: 14px 0 0; padding: 12px 14px; background: rgba(0, 87, 184, 0.06); border: 1px solid var(--border); border-radius: 12px; }
-    .ne-cta-row { margin-top: 16px; }
-    .ne-cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg-card); }
-    .ne-cta strong { font-weight: 800; }
-    .fd-head { margin: 28px 0 0; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
-    .fd-head h2 { font-size: 1.25rem; font-weight: 800; }
-    .fd-grid { display: grid; gap: 10px; margin: 14px 0 0; }
-    .fd-row { display: grid; grid-template-columns: 200px 1fr; gap: 12px 16px; align-items: start; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 14px; }
-    .fd-row strong { font-size: 0.92rem; }
-    .fd-ans { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55; }
-    .fd-pick { font-weight: 900; }
-    .fd-pick.epic { color: var(--epic-color); }
-    .fd-pick.ikon { color: var(--ikon-color); }
-    .fd-pick.split { color: var(--text-primary); }
-    .lookup-head { margin: 32px 0 0; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
-    .lookup-head h2 { font-size: 1.25rem; font-weight: 800; }
-    .lookup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-    .lookup-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 16px; }
-    .lookup-q { font-size: 0.95rem; font-weight: 900; margin: 0 0 6px; line-height: 1.25; }
-    .lookup-a { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
-    .lookup-a a { color: var(--accent-cta); font-weight: 800; text-decoration: none; }
-    .lookup-a a:hover { text-decoration: underline; }
-    .skier-head { margin: 32px 0 0; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
-    .skier-head h2 { font-size: 1.25rem; font-weight: 800; }
-    .related-ne { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 18px; margin: 28px 0 0; }
-    .related-ne h3 { font-size: 1.05rem; font-weight: 900; margin-bottom: 10px; }
-    .related-ne-links { display: flex; flex-wrap: wrap; gap: 10px; }
-    .related-ne a { font-size: 0.88rem; font-weight: 800; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); text-decoration: none; color: var(--text-primary); background: #fff; }
-    .related-ne a:hover { border-color: var(--accent-cta); color: var(--accent-cta); }
-    @media (max-width: 800px) {
-      .qv-grid { grid-template-columns: 1fr; }
-      .lookup-grid { grid-template-columns: 1fr; }
-      .fd-row { grid-template-columns: 1fr; }
-      .ne-cta { flex-direction: column; align-items: flex-start; }
-    }
-  </style>
-</head>
-<body>
-
+  </head>
+<body class="pass-page-body">
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <nav class="top-nav" role="navigation" aria-label="Main navigation">
   <div class="top-nav-inner">
     <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
       <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
       <span class="nav-brand">
-        <span class="nav-brand-name">WhereToSkiNext.com</span>
+        <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
         <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
       </span>
     </a>
@@ -139,215 +93,216 @@
     <a href="/about/" class="nav-primary">About</a>
     <span class="nav-link-sep" aria-hidden="true"></span>
     <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-    <a href="https://www.wheretoskinext.com/" class="nav-find-cta">Find My Mountain &rarr;</a>
   </div>
 </nav>
+<main class="pp-shell">
+  <section class="pp-hero" aria-labelledby="reg-hero-h1">
+    <div class="pp-hero__inner">
+      <p class="pp-breadcrumb"><a href="/">Home</a> / Epic vs Ikon: Northeast</p>
+      <div>
+        <p class="pp-eyebrow">Pass guide · Epic vs Ikon</p>
+        <h1 id="reg-hero-h1" class="pp-headline">Epic vs Ikon Northeast: Which Ski Pass Is Better for You?</h1>
+        <p class="pp-lede">This is a Northeast ski pass comparison built for fast decisions: compare Vermont, New Hampshire, Maine, Massachusetts, and New York coverage—then pick Epic vs Ikon based on where you actually ski. Pass access can change by season; always confirm on official Epic and Ikon sites.</p>
+        <div class="pp-hero__actions">
+          <a href="https://www.wheretoskinext.com/#searchSection" class="pp-btn pp-btn--primary">Find my mountain</a>
+          <a href="/ski-pass-comparison/" class="pp-btn pp-btn--ghost">All pass guides</a>
+        </div>
+      </div>
+      <aside class="pp-hero__panel" aria-label="Region snapshot">
+        <h3>Counts</h3>
+        <ul class="pp-hero-panel-list">
+          <li><strong>9</strong> Epic Pass mountains</li>
+          <li><strong>11</strong> Ikon Pass mountains</li>
+          <li><strong>5</strong> states covered</li>
+        </ul>
+        <h3 class="pp-hero-panel-h3">Remember</h3>
+        <ul class="pp-hero-panel-list">
+          <li>Vermont and Maine-heavy weekends often skew Ikon; New Hampshire-heavy often skews Epic.</li>
+          <li>If Stowe is non‑negotiable, start with Epic—then confirm pass tier rules.</li>
+          <li>Always verify current resort lists before you buy.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
 
-<!-- BREADCRUMB -->
-<div class="breadcrumb">
-  <a href="https://www.wheretoskinext.com/">Home</a>
-  <span>›</span>
-  Epic vs Ikon Northeast
-</div>
+  <section class="pp-section" id="quick-verdict" aria-labelledby="qv-h">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Start here</p>
+      <h2 id="qv-h">Quick verdict</h2>
+      <p>Three fast reads if you want a pick before you skim the rest.</p>
+    </div>
+    <div class="pp-quick-grid">
+      <article class="pp-quick-card pp-quick-card--ikon">
+        <div class="pp-quick-card__label">Quick verdict</div>
+        <div class="pp-quick-card__name">Best for Vermont and Maine skiers: Ikon</div>
+        <p>More Ikon-affiliated mountains in Vermont, plus Maine destination resorts on Ikon—usually the cleaner pick if your weekends lean VT/ME.</p>
+      </article>
+      <article class="pp-quick-card pp-quick-card--epic">
+        <div class="pp-quick-card__label">Quick verdict</div>
+        <div class="pp-quick-card__name">Best for New Hampshire skiers: Epic</div>
+        <p>Epic clusters Attitash, Wildcat, Crotched, and Sunapee—usually the better fit if NH is your home base.</p>
+      </article>
+      <article class="pp-quick-card pp-quick-card--epic">
+        <div class="pp-quick-card__label">Quick verdict</div>
+        <div class="pp-quick-card__name">Best if Stowe is your priority: Epic</div>
+        <p>If Stowe is non‑negotiable, Epic is the straightforward answer in Epic vs Ikon Northeast—then sanity‑check pass tier rules for your dates.</p>
+      </article>
+    </div>
+    <p class="pp-fast-intro" style="margin-top:18px;margin-bottom:0">If your weekends are mostly in Vermont or Maine, Ikon usually wins. If you ski New Hampshire most, Epic has the edge.</p>
+    <div style="margin-top:20px;padding:18px 20px;border-radius:16px;border:1px solid var(--pp-border);background:rgba(0,0,0,0.2);display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between">
+      <strong style="color:var(--pp-text,#f0f6fc);max-width:42ch;font-size:0.95rem">See which Northeast pass fits your home mountain and weekend trips</strong>
+      <a href="https://www.wheretoskinext.com/#searchSection" class="pp-btn pp-btn--primary">Find my mountain &rarr;</a>
+    </div>
+  </section>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-label">Pass Comparison · Northeast</div>
-  <h1>Epic vs Ikon Northeast: Which Ski Pass Is Better for You?</h1>
-  <p class="hero-sub">
-    This is a Northeast ski pass comparison built for fast decisions: compare Vermont, New Hampshire, Maine, Massachusetts, and New York coverage—then pick Epic vs Ikon based on where you actually ski. Pass access can change by season; always confirm on official Epic and Ikon sites.
-  </p>
+  <section class="pp-section" id="fast-scan" aria-labelledby="fast-h">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Fast scan</p>
+      <h2 id="fast-h">Epic vs Ikon Northeast: fast picks by home state and style</h2>
+    </div>
+    <p class="pp-fast-intro">Internal deep dives (build or strengthen next):
+      <a href="/epic-vs-ikon-vermont/">Epic vs Ikon Vermont</a>,
+      <a href="/epic-vs-ikon-new-hampshire/">Epic vs Ikon New Hampshire</a>,
+      <a href="/epic-vs-ikon-maine/">Epic vs Ikon Maine</a>,
+      <a href="/epic-vs-ikon-for-boston-skiers/">Epic vs Ikon for Boston skiers</a>,
+      <a href="/epic-vs-ikon-for-nyc-skiers/">Epic vs Ikon for NYC skiers</a>.
+    </p>
+    <div class="pp-fast-stack">
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for Vermont</div>
+        <div class="pp-fast-cell pp-fast-cell--answer"><strong class="pp-col-ikon">Ikon</strong> — Killington, Stratton, Sugarbush, and Pico typically anchor VT depth on Ikon. Epic still has big VT names (Stowe, Okemo, Mount Snow)—so if your VT list is “Stowe-first,” re-check the quick verdict cards.</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for New Hampshire</div>
+        <div class="pp-fast-cell pp-fast-cell--answer"><strong class="pp-col-epic">Epic</strong> — Attitash, Wildcat, Crotched, and Sunapee vs one strong Ikon mountain (Loon). NH-heavy skiers usually land Epic.</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for Maine</div>
+        <div class="pp-fast-cell pp-fast-cell--answer"><strong class="pp-col-ikon">Ikon</strong> — Sunday River and Sugarloaf are the classic Ikon Maine pair on this map. Epic doesn’t list Maine the same way—confirm the current season roster before buying.</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for Massachusetts</div>
+        <div class="pp-fast-cell pp-fast-cell--answer"><strong class="pp-col-ikon">Ikon</strong> — Jiminy Peak is the pass-affiliated MA option here; Epic means driving north.</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for New York / Catskills</div>
+        <div class="pp-fast-cell pp-fast-cell--answer"><strong>Split by mountain</strong> — Hunter is Epic; Windham is Ikon. If you’re Catskills-first, buy the pass that matches your favorite hill.</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for destination weekends</div>
+        <div class="pp-fast-cell pp-fast-cell--answer"><strong class="pp-col-ikon">Often Ikon</strong> if Maine + Vermont trips are in your rotation; <strong class="pp-col-epic">often Epic</strong> if NH + Stowe/OkeMo/Snow weekends are your pattern.</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for variety (Northeast roster)</div>
+        <div class="pp-fast-cell pp-fast-cell--answer"><strong class="pp-col-ikon">Ikon</strong> — more Northeast mountains on the Ikon side of this comparison (11 vs 9 here).</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best if you want one standout mountain</div>
+        <div class="pp-fast-cell pp-fast-cell--answer"><strong class="pp-col-epic">Epic</strong> — Stowe is the clearest “single-mountain” anchor on the Epic side for many skiers.</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for skiers near Boston</div>
+        <div class="pp-fast-cell pp-fast-cell--answer">Usually <strong class="pp-col-ikon">Ikon</strong> if you rotate VT/ME; usually <strong class="pp-col-epic">Epic</strong> if NH is your default. Details: <a href="/epic-vs-ikon-for-boston-skiers/">Epic vs Ikon for Boston skiers</a>.</div>
+      </div>
+      <div class="pp-fast-row pp-fast-row--prose">
+        <div class="pp-fast-row__cat">Best for skiers near NYC</div>
+        <div class="pp-fast-cell pp-fast-cell--answer">Catskills split (Hunter Epic / Windham Ikon). If you mostly go north to VT, use the Vermont row above. Details: <a href="/epic-vs-ikon-for-nyc-skiers/">Epic vs Ikon for NYC skiers</a>.</div>
+      </div>
+    </div>
+  </section>
 
-  <div class="stat-row">
-    <div class="stat-pill epic"><span class="num">9</span><span class="label">Epic Pass mountains</span></div>
-    <div class="stat-pill ikon"><span class="num">11</span><span class="label">Ikon Pass mountains</span></div>
-    <div class="stat-pill"><span class="num">5</span><span class="label">states covered</span></div>
-  </div>
-</div>
+  <section class="pp-section pp-section--compact" id="lookup" aria-labelledby="lookup-h">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Quick lookups</p>
+      <h2 id="lookup-h">Mountain lookup answers</h2>
+      <p>Short answers to common searches. Access changes by season; confirm official lists before you buy.</p>
+    </div>
+    <div class="pp-lookup-grid">
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">Is Stowe on Epic or Ikon?</div>
+        <p class="pp-lookup-a"><strong>Epic.</strong> More: <a href="/is-stowe-on-epic/">Is Stowe on Epic?</a> (confirm your pass product for the current season.)</p>
+      </div>
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">What Vermont ski resorts are on the Ikon Pass?</div>
+        <p class="pp-lookup-a">Typically <strong>Killington, Stratton, Sugarbush, and Pico</strong>. Full list changes—verify on Ikon. More: <a href="/what-vermont-resorts-are-on-ikon/">what Vermont resorts are on Ikon</a>.</p>
+      </div>
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">Does Epic include Okemo?</div>
+        <p class="pp-lookup-a"><strong>Yes—Okemo is on Epic</strong> in this Northeast map. Double-check your exact pass tier. More: <a href="/does-epic-include-okemo/">does Epic include Okemo</a>.</p>
+      </div>
+      <div class="pp-lookup-item">
+        <div class="pp-lookup-q">Do I need Epic or Ikon to ski in Maine?</div>
+        <p class="pp-lookup-a">For <strong>Sunday River / Sugarloaf</strong> on these two passes, it’s <strong>Ikon</strong>. You can always ski Maine on day tickets or other passes—this page is only Epic vs Ikon lineup fit.</p>
+      </div>
+      <div class="pp-lookup-item pp-lookup-item--span">
+        <div class="pp-lookup-q">Hunter vs Windham: Epic or Ikon?</div>
+        <p class="pp-lookup-a"><strong>Hunter is Epic; Windham is Ikon.</strong> If you’re choosing purely on Catskills weekends, match the pass to the mountain you’ll actually ski. More: <a href="/hunter-vs-windham/">Hunter vs Windham</a>.</p>
+      </div>
+    </div>
+  </section>
 
-<!-- QUICK VERDICT -->
-<section class="ne-wrap" aria-label="Quick verdict">
-  <div class="qv-grid">
-    <div class="qv-card">
-      <div class="qv-kicker">Quick verdict</div>
-      <div class="qv-title ikon">Best for Vermont and Maine skiers: Ikon</div>
-      <p class="qv-body">More Ikon-affiliated mountains in Vermont, plus Maine destination resorts on Ikon—usually the cleaner pick if your weekends lean VT/ME.</p>
+  <section class="pp-section" id="skier-types" aria-labelledby="skier-h">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Fit</p>
+      <h2 id="skier-h">Best ski pass in the Northeast by skier type</h2>
     </div>
-    <div class="qv-card">
-      <div class="qv-kicker">Quick verdict</div>
-      <div class="qv-title epic">Best for New Hampshire skiers: Epic</div>
-      <p class="qv-body">Epic clusters Attitash, Wildcat, Crotched, and Sunapee—usually the better fit if NH is your home base.</p>
+    <div class="pp-table-wrap">
+      <table class="pp-table">
+        <thead>
+          <tr>
+            <th>Skier type</th>
+            <th>Lean</th>
+            <th>Why</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>VT-first, lots of variety</strong></td>
+            <td class="pp-col-ikon"><strong>Ikon</strong></td>
+            <td>Four VT mountains on Ikon vs Epic’s VT trio—usually more “rotation” without leaving the state.</td>
+          </tr>
+          <tr>
+            <td><strong>NH-first, weekend warrior</strong></td>
+            <td class="pp-col-epic"><strong>Epic</strong></td>
+            <td>More Epic-affiliated NH options; Loon alone is rarely enough if you want breadth.</td>
+          </tr>
+          <tr>
+            <td><strong>Maine destination trips</strong></td>
+            <td class="pp-col-ikon"><strong>Ikon</strong></td>
+            <td>Sunday River + Sugarloaf are the big-ticket Maine pair on this comparison.</td>
+          </tr>
+          <tr>
+            <td><strong>Stowe-or-bust</strong></td>
+            <td class="pp-col-epic"><strong>Epic</strong></td>
+            <td>If Stowe is the whole reason, don’t overthink it—start with Epic, then validate pass rules.</td>
+          </tr>
+          <tr>
+            <td><strong>Catskills-first (NYC)</strong></td>
+            <td><span class="pass-badge epic">Epic</span> / <span class="pass-badge ikon">Ikon</span></td>
+            <td>Match Hunter vs Windham; then align the rest of your season (VT trips vs NH trips).</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="qv-card">
-      <div class="qv-kicker">Quick verdict</div>
-      <div class="qv-title epic">Best if Stowe is your priority: Epic</div>
-      <p class="qv-body">If Stowe is non‑negotiable, Epic is the straightforward answer in Epic vs Ikon Northeast—then sanity‑check pass tier rules for your dates.</p>
-    </div>
-  </div>
-  <p class="qv-note">If your weekends are mostly in Vermont or Maine, Ikon usually wins. If you ski New Hampshire most, Epic has the edge.</p>
+  </section>
 
-  <div class="ne-cta-row">
-    <div class="ne-cta">
-      <strong>See which Northeast pass fits your home mountain and weekend trips</strong>
-      <a href="https://www.wheretoskinext.com/#searchSection" class="cta-btn">Find My Mountain &rarr;</a>
+  <section class="pp-section" id="by-state-intro" aria-labelledby="states-h">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">Resorts</p>
+      <h2 id="states-h">Epic vs Ikon Northeast: state-by-state mountains</h2>
+      <p>The same resort list—now broken out by state (maps to how most skiers plan weekends).</p>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- FAST DECISION -->
-<section class="ne-wrap" aria-label="Fast decision comparison">
-  <div class="fd-head"><h2>Epic vs Ikon Northeast: fast picks by home state and style</h2></div>
-  <p style="font-size:0.92rem;color:var(--text-secondary);line-height:1.6;margin:10px 0 0">
-    Internal deep dives (build or strengthen next):
-    <a href="/epic-vs-ikon-vermont/" style="color:var(--accent-cta);font-weight:800;text-decoration:none">Epic vs Ikon Vermont</a>,
-    <a href="/epic-vs-ikon-new-hampshire/" style="color:var(--accent-cta);font-weight:800;text-decoration:none">Epic vs Ikon New Hampshire</a>,
-    <a href="/epic-vs-ikon-maine/" style="color:var(--accent-cta);font-weight:800;text-decoration:none">Epic vs Ikon Maine</a>,
-    <a href="/epic-vs-ikon-for-boston-skiers/" style="color:var(--accent-cta);font-weight:800;text-decoration:none">Epic vs Ikon for Boston skiers</a>,
-    <a href="/epic-vs-ikon-for-nyc-skiers/" style="color:var(--accent-cta);font-weight:800;text-decoration:none">Epic vs Ikon for NYC skiers</a>.
-  </p>
-  <div class="fd-grid">
-    <div class="fd-row">
-      <strong>Best for Vermont</strong>
-      <div class="fd-ans"><span class="fd-pick ikon">Ikon</span> — Killington, Stratton, Sugarbush, and Pico typically anchor VT depth on Ikon. Epic still has big VT names (Stowe, Okemo, Mount Snow)—so if your VT list is “Stowe-first,” re-check the quick verdict cards.</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best for New Hampshire</strong>
-      <div class="fd-ans"><span class="fd-pick epic">Epic</span> — Attitash, Wildcat, Crotched, and Sunapee vs one strong Ikon mountain (Loon). NH-heavy skiers usually land Epic.</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best for Maine</strong>
-      <div class="fd-ans"><span class="fd-pick ikon">Ikon</span> — Sunday River and Sugarloaf are the classic Ikon Maine pair on this map. Epic doesn’t list Maine the same way—confirm the current season roster before buying.</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best for Massachusetts</strong>
-      <div class="fd-ans"><span class="fd-pick ikon">Ikon</span> — Jiminy Peak is the pass-affiliated MA option here; Epic means driving north.</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best for New York / Catskills</strong>
-      <div class="fd-ans"><span class="fd-pick split">Split by mountain</span> — Hunter is Epic; Windham is Ikon. If you’re Catskills-first, buy the pass that matches your favorite hill.</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best for destination weekends</strong>
-      <div class="fd-ans"><span class="fd-pick ikon">Often Ikon</span> if Maine + Vermont trips are in your rotation; <span class="fd-pick epic">often Epic</span> if NH + Stowe/OkeMo/Snow weekends are your pattern.</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best for variety (Northeast roster)</strong>
-      <div class="fd-ans"><span class="fd-pick ikon">Ikon</span> — more Northeast mountains on the Ikon side of this comparison (11 vs 9 here).</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best if you want one standout mountain</strong>
-      <div class="fd-ans"><span class="fd-pick epic">Epic</span> — Stowe is the clearest “single-mountain” anchor on the Epic side for many skiers.</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best for skiers near Boston</strong>
-      <div class="fd-ans">Usually <span class="fd-pick ikon">Ikon</span> if you rotate VT/ME; usually <span class="fd-pick epic">Epic</span> if NH is your default. Details: <a href="/epic-vs-ikon-for-boston-skiers/" style="color:var(--accent-cta);font-weight:800;text-decoration:none">Epic vs Ikon for Boston skiers</a>.</div>
-    </div>
-    <div class="fd-row">
-      <strong>Best for skiers near NYC</strong>
-      <div class="fd-ans">Catskills split (Hunter Epic / Windham Ikon). If you mostly go north to VT, use the Vermont row above. Details: <a href="/epic-vs-ikon-for-nyc-skiers/" style="color:var(--accent-cta);font-weight:800;text-decoration:none">Epic vs Ikon for NYC skiers</a>.</div>
-    </div>
-  </div>
-</section>
-
-<!-- MOUNTAIN LOOKUP ANSWERS -->
-<section class="ne-wrap" aria-label="Mountain lookup answers">
-  <div class="lookup-head"><h2>Mountain lookup answers</h2></div>
-  <div class="lookup-grid">
-    <div class="lookup-card">
-      <h3 class="lookup-q">Is Stowe on Epic or Ikon?</h3>
-      <p class="lookup-a"><strong>Epic.</strong> More: <a href="/is-stowe-on-epic/">Is Stowe on Epic?</a> (confirm your pass product for the current season.)</p>
-    </div>
-    <div class="lookup-card">
-      <h3 class="lookup-q">What Vermont ski resorts are on the Ikon Pass?</h3>
-      <p class="lookup-a">Typically <strong>Killington, Stratton, Sugarbush, and Pico</strong>. Full list changes—verify on Ikon. More: <a href="/what-vermont-resorts-are-on-ikon/">what Vermont resorts are on Ikon</a>.</p>
-    </div>
-    <div class="lookup-card">
-      <h3 class="lookup-q">Does Epic include Okemo?</h3>
-      <p class="lookup-a"><strong>Yes—Okemo is on Epic</strong> in this Northeast map. Double-check your exact pass tier. More: <a href="/does-epic-include-okemo/">does Epic include Okemo</a>.</p>
-    </div>
-    <div class="lookup-card">
-      <h3 class="lookup-q">Do I need Epic or Ikon to ski in Maine?</h3>
-      <p class="lookup-a">For <strong>Sunday River / Sugarloaf</strong> on these two passes, it’s <strong>Ikon</strong>. You can always ski Maine on day tickets or other passes—this page is only Epic vs Ikon lineup fit.</p>
-    </div>
-    <div class="lookup-card" style="grid-column:1/-1">
-      <h3 class="lookup-q">Hunter vs Windham: Epic or Ikon?</h3>
-      <p class="lookup-a"><strong>Hunter is Epic; Windham is Ikon.</strong> If you’re choosing purely on Catskills weekends, match the pass to the mountain you’ll actually ski. More: <a href="/hunter-vs-windham/">Hunter vs Windham</a>.</p>
-    </div>
-  </div>
-</section>
-
-<!-- SKIER TYPES -->
-<section class="ne-wrap" aria-label="Best pass by skier type">
-  <div class="skier-head"><h2>Best ski pass in the Northeast by skier type</h2></div>
-  <div class="compare-table-wrap" style="margin-top:14px">
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>Skier type</th>
-          <th>Lean</th>
-          <th>Why</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>VT-first, lots of variety</strong></td>
-          <td><span class="pass-badge ikon">Ikon</span></td>
-          <td>Four VT mountains on Ikon vs Epic’s VT trio—usually more “rotation” without leaving the state.</td>
-        </tr>
-        <tr>
-          <td><strong>NH-first, weekend warrior</strong></td>
-          <td><span class="pass-badge epic">Epic</span></td>
-          <td>More Epic-affiliated NH options; Loon alone is rarely enough if you want breadth.</td>
-        </tr>
-        <tr>
-          <td><strong>Maine destination trips</strong></td>
-          <td><span class="pass-badge ikon">Ikon</span></td>
-          <td>Sunday River + Sugarloaf are the big-ticket Maine pair on this comparison.</td>
-        </tr>
-        <tr>
-          <td><strong>Stowe-or-bust</strong></td>
-          <td><span class="pass-badge epic">Epic</span></td>
-          <td>If Stowe is the whole reason, don’t overthink it—start with Epic, then validate pass rules.</td>
-        </tr>
-        <tr>
-          <td><strong>Catskills-first (NYC)</strong></td>
-          <td><span class="pass-badge epic">Epic</span> / <span class="pass-badge ikon">Ikon</span></td>
-          <td>Match Hunter vs Windham; then align the rest of your season (VT trips vs NH trips).</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<!--
-  Content planning: build or strengthen next
-  - /epic-vs-ikon-vermont/
-  - /epic-vs-ikon-new-hampshire/
-  - /epic-vs-ikon-maine/
-  - /is-stowe-on-epic/
-  - /what-vermont-resorts-are-on-ikon/
-  - /does-epic-include-okemo/
-  - /hunter-vs-windham/
--->
-
-<!-- CONTENT -->
-<div class="content">
-
-  <div class="section-header" style="margin-top:8px">
-    <h2>Epic vs Ikon Northeast: state-by-state mountains</h2>
-    <span class="state-sub">Same resort list as before—now placed after the quick decision layer</span>
-  </div>
-
-  <!-- VERMONT -->
-  <div class="section-header">
+  <div class="rpp-region-states">
+<!-- VERMONT -->
+  <div class="rpp-section-head">
     <h2>🍁 Vermont</h2>
-    <span class="state-sub">Epic: 3 mountains &nbsp;·&nbsp; Ikon: 4 mountains</span>
+    <span class="rpp-sub">Epic: 3 mountains &nbsp;·&nbsp; Ikon: 4 mountains</span>
   </div>
-  <div class="editorial-note">
-    <strong>Epic’s anchor is Stowe</strong> (plus Okemo and Mount Snow). <strong>Ikon’s depth is four VT mountains</strong>—Killington, Stratton, Sugarbush, Pico. If Vermont drives your season, this state usually decides Epic vs Ikon Northeast.
-  </div>
-  <div class="mountain-grid">
-    <a href="https://www.wheretoskinext.com/ski-report/stowe-mountain-resort/" class="mountain-card">
+  <p class="rpp-note"><strong>Epic’s anchor is Stowe</strong> (plus Okemo and Mount Snow). <strong>Ikon’s depth is four VT mountains</strong>—Killington, Stratton, Sugarbush, Pico. If Vermont drives your season, this state usually decides Epic vs Ikon Northeast.</p>
+  <div class="rpp-mountain-grid">
+    <a href="https://www.wheretoskinext.com/ski-report/stowe-mountain-resort/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Stowe Mountain Resort</div>
         <span class="pass-badge epic">Epic</span>
@@ -359,7 +314,7 @@
         <span>$162 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/mount-snow/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/mount-snow/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Mount Snow</div>
         <span class="pass-badge epic">Epic</span>
@@ -371,7 +326,7 @@
         <span>$146 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/okemo/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/okemo/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Okemo Mountain Resort</div>
         <span class="pass-badge epic">Epic</span>
@@ -383,7 +338,7 @@
         <span>$164 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/killington/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/killington/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Killington Resort</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -395,7 +350,7 @@
         <span>$179 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/stratton-mountain/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/stratton-mountain/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Stratton Mountain</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -407,7 +362,7 @@
         <span>$150 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/sugarbush/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/sugarbush/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Sugarbush Resort</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -419,7 +374,7 @@
         <span>$157 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/pico-mountain-at-killington/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/pico-mountain-at-killington/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Pico Mountain</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -434,15 +389,13 @@
   </div>
 
   <!-- NEW HAMPSHIRE -->
-  <div class="section-header">
+  <div class="rpp-section-head">
     <h2>🏔 New Hampshire</h2>
-    <span class="state-sub">Epic: 4 mountains &nbsp;·&nbsp; Ikon: 1 mountain</span>
+    <span class="rpp-sub">Epic: 4 mountains &nbsp;·&nbsp; Ikon: 1 mountain</span>
   </div>
-  <div class="editorial-note">
-    <strong>Epic wins NH on breadth:</strong> Attitash, Wildcat, Crotched, Sunapee. <strong>Ikon has Loon</strong>—great mountain, fewer in-state options on this map.
-  </div>
-  <div class="mountain-grid">
-    <a href="https://www.wheretoskinext.com/ski-report/attitash/" class="mountain-card">
+  <p class="rpp-note"><strong>Epic wins NH on breadth:</strong> Attitash, Wildcat, Crotched, Sunapee. <strong>Ikon has Loon</strong>—great mountain, fewer in-state options on this map.</p>
+  <div class="rpp-mountain-grid">
+    <a href="https://www.wheretoskinext.com/ski-report/attitash/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Attitash Mountain Resort</div>
         <span class="pass-badge epic">Epic</span>
@@ -453,7 +406,7 @@
         <span>$151 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/wildcat-mountain/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/wildcat-mountain/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Wildcat Mountain</div>
         <span class="pass-badge epic">Epic</span>
@@ -465,7 +418,7 @@
         <span>$154 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/crotched-mountain/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/crotched-mountain/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Crotched Mountain</div>
         <span class="pass-badge epic">Epic</span>
@@ -476,7 +429,7 @@
         <span>$133 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/mount-sunapee/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/mount-sunapee/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Mount Sunapee</div>
         <span class="pass-badge epic">Epic</span>
@@ -487,7 +440,7 @@
         <span>$135 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/loon-mountain/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/loon-mountain/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Loon Mountain</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -502,15 +455,13 @@
   </div>
 
   <!-- MAINE -->
-  <div class="section-header">
+  <div class="rpp-section-head">
     <h2>🌲 Maine</h2>
-    <span class="state-sub">Epic: 0 mountains &nbsp;·&nbsp; Ikon: 2 mountains</span>
+    <span class="rpp-sub">Epic: 0 mountains &nbsp;·&nbsp; Ikon: 2 mountains</span>
   </div>
-  <div class="editorial-note">
-    <strong>Ikon holds Maine’s big pair:</strong> Sunday River and Sugarloaf. On this Epic vs Ikon Northeast map, Epic doesn’t list Maine the same way—confirm the current season if Maine is a must.
-  </div>
-  <div class="mountain-grid">
-    <a href="https://www.wheretoskinext.com/ski-report/sunday-river/" class="mountain-card">
+  <p class="rpp-note"><strong>Ikon holds Maine’s big pair:</strong> Sunday River and Sugarloaf. On this Epic vs Ikon Northeast map, Epic doesn’t list Maine the same way—confirm the current season if Maine is a must.</p>
+  <div class="rpp-mountain-grid">
+    <a href="https://www.wheretoskinext.com/ski-report/sunday-river/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Sunday River</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -522,7 +473,7 @@
         <span>$150 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/sugarloaf/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/sugarloaf/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Sugarloaf</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -537,15 +488,13 @@
   </div>
 
   <!-- MASSACHUSETTS -->
-  <div class="section-header">
+  <div class="rpp-section-head">
     <h2>🦃 Massachusetts</h2>
-    <span class="state-sub">Epic: 0 mountains &nbsp;·&nbsp; Ikon: 1 mountain</span>
+    <span class="rpp-sub">Epic: 0 mountains &nbsp;·&nbsp; Ikon: 1 mountain</span>
   </div>
-  <div class="editorial-note">
-    <strong>Jiminy Peak is Ikon</strong>—the pass-affiliated MA option here. Epic skiers head north to NH/VT.
-  </div>
-  <div class="mountain-grid">
-    <a href="https://www.wheretoskinext.com/ski-report/jiminy-peak/" class="mountain-card">
+  <p class="rpp-note"><strong>Jiminy Peak is Ikon</strong>—the pass-affiliated MA option here. Epic skiers head north to NH/VT.</p>
+  <div class="rpp-mountain-grid">
+    <a href="https://www.wheretoskinext.com/ski-report/jiminy-peak/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Jiminy Peak</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -559,15 +508,13 @@
   </div>
 
   <!-- NEW YORK -->
-  <div class="section-header">
+  <div class="rpp-section-head">
     <h2>🗽 New York</h2>
-    <span class="state-sub">Epic: 1 mountain &nbsp;·&nbsp; Ikon: 1 mountain</span>
+    <span class="rpp-sub">Epic: 1 mountain &nbsp;·&nbsp; Ikon: 1 mountain</span>
   </div>
-  <div class="editorial-note">
-    <strong>Hunter = Epic</strong>, <strong>Windham = Ikon</strong>. If Catskills weekends decide your season, pick the pass that matches your favorite hill—then align VT/NH trips the same way.
-  </div>
-  <div class="mountain-grid">
-    <a href="https://www.wheretoskinext.com/ski-report/hunter-mountain/" class="mountain-card">
+  <p class="rpp-note"><strong>Hunter = Epic</strong>, <strong>Windham = Ikon</strong>. If Catskills weekends decide your season, pick the pass that matches your favorite hill—then align VT/NH trips the same way.</p>
+  <div class="rpp-mountain-grid">
+    <a href="https://www.wheretoskinext.com/ski-report/hunter-mountain/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Hunter Mountain</div>
         <span class="pass-badge epic">Epic</span>
@@ -578,7 +525,7 @@
         <span>$143 day ticket</span>
       </div>
     </a>
-    <a href="https://www.wheretoskinext.com/ski-report/windham-mountain/" class="mountain-card">
+    <a href="https://www.wheretoskinext.com/ski-report/windham-mountain/" class="rpp-mountain-card">
       <div class="mtn-top">
         <div class="mtn-name">Windham Mountain</div>
         <span class="pass-badge ikon">Ikon</span>
@@ -591,15 +538,14 @@
       </div>
     </a>
   </div>
+</div>
 
-  <!-- FULL COMPARISON TABLE -->
-  <div class="section-header" style="margin-top: 56px;">
-    <h2>📋 Full Northeast Mountain List</h2>
-    <span class="state-sub">All pass-affiliated mountains at a glance</span>
+  <section class="pp-section rpp-full-list" id="full-list" aria-labelledby="full-list-h"><div class="rpp-section-head rpp-section-head--spaced">
+    <h2 id="full-list-h">📋 Full Northeast Mountain List</h2>
+    <span class="rpp-sub">All pass-affiliated mountains at a glance</span>
   </div>
-
-  <div class="compare-table-wrap">
-    <table class="compare-table">
+  <div class="pp-table-wrap">
+    <table class="pp-table">
       <thead>
         <tr>
           <th></th>
@@ -767,64 +713,73 @@
         </tr>
       </tbody>
     </table>
-  </div>
-  <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 8px;">
+  </div></section>
+  <p class="pp-table-note">
     * Pass affiliations and prices are subject to change. Always verify with the official <a href="https://www.epicpass.com" target="_blank" rel="noopener">Epic Pass</a> and <a href="https://www.ikonpass.com" target="_blank" rel="noopener">Ikon Pass</a> sites before purchasing.
   </p>
 
-  <div class="section-header" style="margin-top:56px">
-    <h2>Frequently asked questions</h2>
-  </div>
-  <div class="faq-list">
-  <div class="faq-item">
-    <h3 class="faq-q">Is the Epic Pass or Ikon Pass better for Northeast skiing?</h3>
-    <p class="faq-a">Start with where you ski most weekends. <strong>Ikon</strong> usually wins Vermont and Maine on this map; <strong>Epic</strong> usually wins New Hampshire. If <strong>Stowe</strong> is your top priority, <strong>Epic</strong> is the simple answer. Confirm current resort lists for your pass tier—access changes by season.</p>
-  </div>
-  <div class="faq-item">
-    <h3 class="faq-q">Is Stowe on Epic or Ikon?</h3>
-    <p class="faq-a"><strong>Stowe is on Epic.</strong> If that one mountain drives your season, Epic vs Ikon Northeast gets easy—then verify blackout rules and pass product details for your dates.</p>
-  </div>
-  <div class="faq-item">
-    <h3 class="faq-q">What Vermont ski resorts are on the Ikon Pass?</h3>
-    <p class="faq-a">Typically <strong>Killington, Stratton, Sugarbush, and Pico</strong>. That lineup is the core reason Vermont-heavy skiers often choose Ikon—always confirm the current official list.</p>
-  </div>
-  <div class="faq-item">
-    <h3 class="faq-q">Does Epic include Okemo?</h3>
-    <p class="faq-a"><strong>Yes—Okemo is on Epic</strong> here. If Okemo and Mount Snow matter more than Ikon’s VT quartet, Epic can be the better fit.</p>
-  </div>
-  <div class="faq-item">
-    <h3 class="faq-q">Do I need Epic or Ikon to ski in Maine?</h3>
-    <p class="faq-a">For <strong>Sunday River</strong> and <strong>Sugarloaf</strong> on these two passes, you’re looking at <strong>Ikon</strong>. Epic doesn’t mirror that Maine pair on this comparison—double-check the latest maps if Maine is a must.</p>
-  </div>
-  <div class="faq-item">
-    <h3 class="faq-q">Hunter vs Windham: Epic or Ikon?</h3>
-    <p class="faq-a"><strong>Hunter is Epic; Windham is Ikon.</strong> Pick the pass that matches the Catskills mountain you’ll actually ski most.</p>
-  </div>
-  </div>
-
-  <div class="cta-block">
-    <h3>See which Northeast pass fits your home mountain and weekend trips</h3>
-    <p>Set your location and compare live snow, drive time, and crowd outlook—then get one clear pick.</p>
-    <a href="https://www.wheretoskinext.com/#searchSection" class="cta-btn">Find My Mountain &rarr;</a>
-    <p style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:14px;margin-bottom:0;">Rankings are independent—sponsors never change your order.</p>
-  </div>
-
-  <div class="related-ne" aria-label="Related comparisons">
-    <h3>Related comparisons</h3>
-    <div class="related-ne-links">
-      <a href="/ski-pass-comparison/">Epic vs Ikon vs Indy (overview)</a>
-      <a href="/epic-vs-ikon-rockies/">Epic vs Ikon Rockies</a>
-      <a href="/epic-vs-ikon-california/">Epic vs Ikon California</a>
-      <a href="/epic-vs-ikon-pacific-northwest/">Epic vs Ikon Pacific Northwest</a>
-      <a href="/epic-vs-ikon-midwest/">Epic vs Ikon Midwest</a>
+  <section class="pp-section" id="faq" aria-labelledby="faq-h">
+    <div class="pp-section__head">
+      <p class="pp-eyebrow">FAQ</p>
+      <h2 id="faq-h">Frequently asked questions</h2>
     </div>
+    <div>
+<div class="pp-faq-item">
+    <h3 class="pp-faq-q">Is the Epic Pass or Ikon Pass better for Northeast skiing?</h3>
+    <p class="pp-faq-a">Start with where you ski most weekends. <strong>Ikon</strong> usually wins Vermont and Maine on this map; <strong>Epic</strong> usually wins New Hampshire. If <strong>Stowe</strong> is your top priority, <strong>Epic</strong> is the simple answer. Confirm current resort lists for your pass tier—access changes by season.</p>
   </div>
+  <div class="pp-faq-item">
+    <h3 class="pp-faq-q">Is Stowe on Epic or Ikon?</h3>
+    <p class="pp-faq-a"><strong>Stowe is on Epic.</strong> If that one mountain drives your season, Epic vs Ikon Northeast gets easy—then verify blackout rules and pass product details for your dates.</p>
+  </div>
+  <div class="pp-faq-item">
+    <h3 class="pp-faq-q">What Vermont ski resorts are on the Ikon Pass?</h3>
+    <p class="pp-faq-a">Typically <strong>Killington, Stratton, Sugarbush, and Pico</strong>. That lineup is the core reason Vermont-heavy skiers often choose Ikon—always confirm the current official list.</p>
+  </div>
+  <div class="pp-faq-item">
+    <h3 class="pp-faq-q">Does Epic include Okemo?</h3>
+    <p class="pp-faq-a"><strong>Yes—Okemo is on Epic</strong> here. If Okemo and Mount Snow matter more than Ikon’s VT quartet, Epic can be the better fit.</p>
+  </div>
+  <div class="pp-faq-item">
+    <h3 class="pp-faq-q">Do I need Epic or Ikon to ski in Maine?</h3>
+    <p class="pp-faq-a">For <strong>Sunday River</strong> and <strong>Sugarloaf</strong> on these two passes, you’re looking at <strong>Ikon</strong>. Epic doesn’t mirror that Maine pair on this comparison—double-check the latest maps if Maine is a must.</p>
+  </div>
+  <div class="pp-faq-item">
+    <h3 class="pp-faq-q">Hunter vs Windham: Epic or Ikon?</h3>
+    <p class="pp-faq-a"><strong>Hunter is Epic; Windham is Ikon.</strong> Pick the pass that matches the Catskills mountain you’ll actually ski most.</p>
+  </div>
+    </div>
+  </section>
 
-</div>
+  <section class="pp-section rpp-cross" aria-label="Other regions">
+    <h2 class="rpp-cross-section-title">Compare passes in other regions</h2>
+    <div class="rpp-cross-grid">
+      <a href="/ski-pass-comparison/"><span class="rpp-cross-label">Overview</span><span class="rpp-cross-title">Epic vs Ikon vs Indy</span></a>
+      <a href="/epic-vs-ikon-rockies/"><span class="rpp-cross-label">Pass guide</span><span class="rpp-cross-title">Epic vs Ikon: Rockies</span></a>
+      <a href="/epic-vs-ikon-california/"><span class="rpp-cross-label">Pass guide</span><span class="rpp-cross-title">Epic vs Ikon: California</span></a>
+      <a href="/epic-vs-ikon-pacific-northwest/"><span class="rpp-cross-label">Pass guide</span><span class="rpp-cross-title">Epic vs Ikon: Pacific Northwest</span></a>
+      <a href="/epic-vs-ikon-midwest/"><span class="rpp-cross-label">Pass guide</span><span class="rpp-cross-title">Epic vs Ikon: Midwest</span></a>
+    </div>
+  </section>
 
+  <section class="pp-cta-band" aria-labelledby="cta-h">
+    <div>
+      <h2 id="cta-h">Which mountain fits your weekend?</h2>
+      <p>Set your location and compare live snow, drive time, and crowd outlook—then get one clear pick.</p>
+      <p class="pp-cta-footnote">Rankings are independent. Sponsors never change your order.</p>
+    </div>
+    <a href="https://www.wheretoskinext.com/#searchSection" class="pp-btn pp-btn--primary">Find my mountain &rarr;</a>
+  </section>
+</main>
 <footer class="site-footer">
-  <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="/">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
+  <p>&copy; 2026 WhereToSkiNext.com · <a href="/#searchSection">Find my mountain</a> · <a href="/about/">About</a> · <a href="/privacy/">Privacy Policy</a> · <a href="/partners/">Partners</a> · <a href="/ski-pass-comparison/">Pass Guides</a></p>
+  <p class="site-footer-affiliate">Some links on this site are affiliate links. If you book lodging through them we may earn a small commission at no extra cost to you. This never influences mountain scores or rankings.</p>
 </footer>
-
+<script>
+window.addEventListener('load', function gtmDeferred() {
+  window.removeEventListener('load', gtmDeferred);
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MCCDNQGB');
+});
+</script>
 </body>
 </html>
