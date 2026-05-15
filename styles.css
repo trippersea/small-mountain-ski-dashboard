@@ -8201,6 +8201,9 @@ button.vcard-detail-btn:hover,
 #compareSection .filter-pill {
   background: rgba(69, 162, 255, 0.12);
   color: #7eb8f7;
+  padding: 6px 14px;
+  border: 1px solid rgba(69, 162, 255, 0.25);
+  margin-bottom: 8px;
 }
 
 /* ── Table shell & scroll ───────────────────────────────────────────────── */
