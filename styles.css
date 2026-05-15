@@ -951,7 +951,11 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
 .table-wrap { overflow: auto; }
 .comparison-table { width: 100%; border-collapse: collapse; }
 .comparison-table th,
-.comparison-table td { padding: 16px 10px; border-bottom: 1px solid rgba(26, 46, 69, 0.04); font-size: 13px; text-align: left; }
+.comparison-table td { padding: 16px 8px; border-bottom: 1px solid rgba(26, 46, 69, 0.04); font-size: 13px; text-align: left; }
+.comparison-table th:nth-child(2),
+.comparison-table td:nth-child(2) { padding-left: 14px; }
+.comparison-table th.compare-th-conditions,
+.comparison-table td.compare-weekend { padding-left: 12px; padding-right: 12px; }
 .comparison-table thead th {
   position: sticky; top: 0; z-index: 2;
   font-size: 11px; font-weight: 600;
@@ -1318,15 +1322,30 @@ tr.bluebird-glow:hover td {
 
 .compare-weekend .story-text {
   display: inline;
-  /* Match mountain name / table body: same stack as `body`, not editorial serif */
   font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 400;
+  font-style: italic;
   line-height: 1.5;
   margin-top: 0;
   color: var(--text-body);
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+/* Truncated variant — one line, expands when row is active */
+.compare-weekend .story-text--table {
+  display: inline;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 38ch;
+  vertical-align: middle;
+}
+tr.active-row .story-text--table,
+tr:focus-within .story-text--table {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 .compare-drive { font-variant-numeric: tabular-nums; }
 .compare-drive--near { color: #15803d; font-weight: 600; }
@@ -1493,8 +1512,11 @@ tr.bluebird-glow:hover td {
 .sort-indicator {
   font-size: 0.7em;
   opacity: 0.8;
-  display: inline-block;
+  display: none;
   min-width: 12px;
+}
+.sort-active .sort-indicator {
+  display: inline-block;
 }
 
 
@@ -3063,10 +3085,12 @@ tr.bluebird-glow:hover td {
 .compare-rank {
   display: inline-block;
   min-width: 1.25rem;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
+  opacity: 0.35;
+  letter-spacing: -0.02em;
 }
 .comparison-table .compare-select-cell {
   width: 2.25rem;
@@ -8189,22 +8213,25 @@ button.vcard-detail-btn:hover,
 
 /* ── Table head ─────────────────────────────────────────────────────────── */
 #compareSection .comparison-table thead th {
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(240, 246, 252, 0.48);
-  border-bottom-color: rgba(142, 178, 226, 0.15);
-  font-size: 11px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(240, 246, 252, 0.38);
+  border-bottom-color: rgba(142, 178, 226, 0.1);
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 #compareSection .comparison-table thead th.sortable-th {
-  color: rgba(240, 246, 252, 0.48);
+  color: rgba(240, 246, 252, 0.38);
 }
 #compareSection .comparison-table thead th.sortable-th:hover {
   color: #45a2ff;
   background: rgba(69, 162, 255, 0.08);
 }
+#compareSection .comparison-table thead th.sort-active {
+  color: rgba(69, 162, 255, 0.9);
+}
 #compareSection .compare-th-muted {
-  color: rgba(240, 246, 252, 0.35);
+  color: rgba(240, 246, 252, 0.28);
 }
 
 /* ── Table rows ─────────────────────────────────────────────────────────── */
@@ -8228,8 +8255,9 @@ button.vcard-detail-btn:hover,
   font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 400;
-  color: #f8fafc;
-  -webkit-text-fill-color: #f8fafc;
+  font-style: italic;
+  color: rgba(240, 246, 252, 0.78);
+  -webkit-text-fill-color: rgba(240, 246, 252, 0.78);
 }
 #compareSection .compare-weekend .vibe-tag--mini {
   color: #f1f5f9;
@@ -8253,8 +8281,11 @@ button.vcard-detail-btn:hover,
 
 /* ── Rank number ────────────────────────────────────────────────────────── */
 #compareSection .compare-rank {
-  color: rgba(240, 246, 252, 0.28);
-  font-size: 15px;
+  color: rgba(240, 246, 252, 0.18);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  opacity: 1;
 }
 
 /* ── Hover-reveal checkbox ──────────────────────────────────────────────── */

@@ -2445,9 +2445,11 @@ function renderCompareTable(resorts) {
     if (!ind) return;
     if (th.dataset.sort === state.sortBy) {
       ind.textContent = tableSort.dir === 'asc' ? ' ▲' : ' ▼';
+      ind.style.display = 'inline-block';
       th.classList.add('sort-active');
     } else {
       ind.textContent = '';
+      ind.style.display = 'none';
       th.classList.remove('sort-active');
     }
   });
@@ -2562,7 +2564,7 @@ function renderCompareTable(resorts) {
           </div>
         </td>
         <td class="compare-drive ${driveCls}">${esc(formatDrive(resort.id))}</td>
-        <td class="compare-weekend"><span class="vibe-tag vibe-tag--mini vibe-tag--inline">${esc(_tabNarr.vibe)}</span><span class="story-text">${esc(weekendLine)}</span></td>
+        <td class="compare-weekend"><span class="vibe-tag vibe-tag--mini vibe-tag--inline">${esc(_tabNarr.vibe)}</span><span class="story-text story-text--table" data-full="${esc(weekendLine)}">${esc(weekendLine)}</span></td>
         <td>${esc(resort.passGroup)}</td>
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
