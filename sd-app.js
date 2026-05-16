@@ -1499,6 +1499,16 @@ function saveCompareSession(v, runningItems) {
   const wxVerdict = state.weatherCache[resort.id]?.data;
   const crowdV    = crowdForecast(resort, wxVerdict);
 
+  // Recompute the top pick's score from the current weather cache so it is
+  // always on the same data footing as the runners (which are scored fresh
+  // via collectRunnerUpItems). This prevents the "lower score won" display
+  // artifact that occurs when weather finishes loading after the initial
+  // verdict render but before the session is saved.
+  const freshPickBreakdown = wxVerdict
+    ? plannerScoreBreakdown(resort, wxVerdict, targetForecastIndex(), normalizedWeights())
+    : breakdown;
+  const freshPickScore = freshPickBreakdown ? Math.round(freshPickBreakdown.score) : null;
+
   const session = {
     ts:           Date.now(),
     origin:       { ...state.origin },
@@ -1518,7 +1528,7 @@ function saveCompareSession(v, runningItems) {
       driveMins:  drive,
       tomorrowIn,
       stormTotal,
-      score:      breakdown ? Math.round(breakdown.score) : null,
+      score:      freshPickScore,
       crowdLabel: crowdV.label,
       wxForecast: wxVerdict?.forecast || [],
     },
