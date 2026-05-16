@@ -37,115 +37,39 @@
   </nav>
 
   <main class="compare-page-shell">
-    <section class="compare-page-hero">
+
+    <!-- Hero: slim version — title + context only, no cards -->
+    <section class="compare-page-hero compare-page-hero--slim">
       <div class="compare-page-hero__inner">
         <div class="compare-page-hero__toprow">
           <div>
             <p class="compare-page-breadcrumb">Home / Compare Near Boston</p>
             <h1 class="compare-page-title">Compare Near <span>Boston</span></h1>
-            <p class="compare-page-subtitle">Top pick, nearby runners-up, and the full list for the trip you already set up.</p>
+            <p class="compare-page-subtitle">Top pick and nearby options, scored side by side so you can see exactly why one wins.</p>
           </div>
-          <button class="compare-page-share" type="button">Share comparison</button>
+          <button class="compare-page-share" type="button" id="shareBtn">Share comparison</button>
         </div>
 
         <div class="compare-page-context">
-          <span>🚗 Day trip</span>
+          <span>&#128663; Day trip</span>
           <span>Friday</span>
           <span>Best fit</span>
-          <span>📍 From Boston, MA</span>
+          <span>&#128205; From Boston, MA</span>
           <a href="/">Change</a>
-        </div>
-
-        <div class="compare-page-cards">
-          <article class="compare-page-card compare-page-card--top">
-            <div class="compare-page-pill">Top pick</div>
-            <h2>Wachusett</h2>
-            <p class="compare-page-card__headline">Closest solid option for tomorrow.</p>
-            <p class="compare-page-card__body">No fresh snow means most mountains will ski similarly tomorrow. Wachusett gets you on snow fastest with light crowds and no pass required.</p>
-            <div class="compare-page-stats">
-              <div><strong>1h 48m</strong><span>drive</span></div>
-              <div><strong>Dry forecast</strong><span>high 38°F</span></div>
-              <div><strong>Light crowds</strong><span>great choice</span></div>
-            </div>
-            <div class="compare-page-card__actions">
-              <a href="#full-rankings" class="compare-page-btn compare-page-btn--primary">See full conditions →</a>
-              <a href="#compare-grid" class="compare-page-btn compare-page-btn--link">Compare nearby options</a>
-            </div>
-            <div class="compare-page-partner">
-              <div>
-                <p class="compare-page-partner__eyebrow">Featured partner</p>
-                <strong>Lift Tickets &amp; Passes</strong>
-                <span>Book direct and save.</span>
-              </div>
-              <a href="#" aria-label="Open featured partner">↗</a>
-            </div>
-          </article>
-
-          <div class="compare-page-card-stack" id="compare-grid">
-            <article class="compare-page-card compare-page-card--mini">
-              <div class="compare-page-rank">2</div>
-              <h3>Gunstock</h3>
-              <div class="compare-page-tag">1h 56m away</div>
-              <p>Great views and usually quiet midweek.</p>
-              <dl>
-                <div><dt>Forecast</dt><dd>Dry, 37°F</dd></div>
-                <div><dt>Crowds</dt><dd>Quiet</dd></div>
-              </dl>
-              <a href="#full-rankings" class="compare-page-btn compare-page-btn--secondary">View conditions →</a>
-            </article>
-
-            <article class="compare-page-card compare-page-card--mini">
-              <div class="compare-page-rank">3</div>
-              <h3>Pats Peak</h3>
-              <div class="compare-page-tag">2h 01m away</div>
-              <p>Consistent grooming and quick laps.</p>
-              <dl>
-                <div><dt>Forecast</dt><dd>Dry, 36°F</dd></div>
-                <div><dt>Crowds</dt><dd>Quiet</dd></div>
-              </dl>
-              <a href="#full-rankings" class="compare-page-btn compare-page-btn--secondary">View conditions →</a>
-            </article>
-
-            <article class="compare-page-card compare-page-card--mini">
-              <div class="compare-page-rank">4</div>
-              <h3>Ragged Mountain</h3>
-              <div class="compare-page-tag">2h 16m away</div>
-              <p>Laid-back vibe and friendly local feel.</p>
-              <dl>
-                <div><dt>Forecast</dt><dd>Dry, 35°F</dd></div>
-                <div><dt>Crowds</dt><dd>Quiet</dd></div>
-              </dl>
-              <a href="#full-rankings" class="compare-page-btn compare-page-btn--secondary">View conditions →</a>
-            </article>
-          </div>
-        </div>
-
-        <div class="compare-page-jump-grid">
-          <a href="#full-rankings" class="compare-page-jump-card">
-            <div>
-              <strong>Full rankings</strong>
-              <span>Every mountain in your window, scored</span>
-            </div>
-            <em>›</em>
-          </a>
-          <a href="#hidden-gems" class="compare-page-jump-card">
-            <div>
-              <strong>Hidden gems</strong>
-              <span>Quieter days off the beaten path</span>
-            </div>
-            <em>›</em>
-          </a>
-          <a href="#powder-alert" class="compare-page-jump-card">
-            <div>
-              <strong>Powder alert</strong>
-              <span>Storm totals worth the extra miles</span>
-            </div>
-            <em>›</em>
-          </a>
         </div>
       </div>
     </section>
 
+    <!-- Amazon-style comparison table -->
+    <!-- Note: outside the hero so overflow:hidden does not break sticky columns -->
+    <section class="compare-page-band" id="compare-grid" aria-label="Side-by-side mountain comparison">
+      <p class="compare-page-eyebrow" style="margin-bottom:16px">Side-by-side comparison</p>
+      <div class="cp-cgt-scroll" id="compareTableContainer">
+        <!-- Populated by compare-page.js -->
+      </div>
+    </section>
+
+    <!-- Trust signals -->
     <section class="compare-page-band compare-page-band--trust">
       <div class="compare-page-trust-grid">
         <div>
@@ -194,7 +118,7 @@
             <tr><td>2</td><td>Gunstock</td><td>Dry, colder</td><td>1h 56m</td><td>Independent</td><td>Quiet</td><td>$99</td></tr>
             <tr><td>3</td><td>Pats Peak</td><td>Dry forecast</td><td>2h 01m</td><td>Indy</td><td>Quiet</td><td>$92</td></tr>
             <tr><td>4</td><td>Ragged Mountain</td><td>Dry forecast</td><td>2h 16m</td><td>Indy</td><td>Quiet</td><td>$109</td></tr>
-            <tr><td>5</td><td>Cannon Mountain</td><td>1" possible late</td><td>2h 55m</td><td>Indy</td><td>Moderate</td><td>$99</td></tr>
+            <tr><td>5</td><td>Cannon Mountain</td><td>1&Prime; possible late</td><td>2h 55m</td><td>Indy</td><td>Moderate</td><td>$99</td></tr>
           </tbody>
         </table>
       </div>
@@ -213,19 +137,19 @@
           <p class="compare-page-dest-card__tag">Local rhythm</p>
           <h3>Black Mountain</h3>
           <p>Classic New Hampshire feel without the pass-network circus. Good when you want turns, not a theme park.</p>
-          <a href="#full-rankings" class="compare-page-dest-card__link">Where it sits in your list →</a>
+          <a href="#full-rankings" class="compare-page-dest-card__link">Where it sits in your list &rarr;</a>
         </article>
         <article class="compare-page-info-card compare-page-dest-card">
           <p class="compare-page-dest-card__tag">Low key, honest</p>
           <h3>Dartmouth Skiway</h3>
           <p>Quiet lines and real terrain. Often the better call than a big name on a middling weekend.</p>
-          <a href="#full-rankings" class="compare-page-dest-card__link">Where it sits in your list →</a>
+          <a href="#full-rankings" class="compare-page-dest-card__link">Where it sits in your list &rarr;</a>
         </article>
         <article class="compare-page-info-card compare-page-dest-card">
           <p class="compare-page-dest-card__tag">Easy day</p>
           <h3>Whaleback</h3>
           <p>Closer and cheaper than you expect. Nice when you want a low-stakes day that still feels like skiing.</p>
-          <a href="#full-rankings" class="compare-page-dest-card__link">Where it sits in your list →</a>
+          <a href="#full-rankings" class="compare-page-dest-card__link">Where it sits in your list &rarr;</a>
         </article>
       </div>
     </section>
@@ -242,23 +166,23 @@
         <article class="compare-page-snow-card compare-page-dest-card">
           <p class="compare-page-dest-card__tag">Most snow in range</p>
           <strong>Jay Peak</strong>
-          <span>8″ forecast</span>
+          <span>8&Prime; forecast</span>
           <p>Usually the deepest bet when a storm is aimed north. Longer drive, bigger reward.</p>
-          <a href="#full-rankings" class="compare-page-dest-card__link">Check drive vs. score →</a>
+          <a href="#full-rankings" class="compare-page-dest-card__link">Check drive vs. score &rarr;</a>
         </article>
         <article class="compare-page-snow-card compare-page-dest-card">
           <p class="compare-page-dest-card__tag">NH storm day</p>
           <strong>Wildcat</strong>
-          <span>6″ forecast</span>
+          <span>6&Prime; forecast</span>
           <p>Serious upside when wind and timing cooperate. Worth watching on a northwest flow.</p>
-          <a href="#full-rankings" class="compare-page-dest-card__link">Check drive vs. score →</a>
+          <a href="#full-rankings" class="compare-page-dest-card__link">Check drive vs. score &rarr;</a>
         </article>
         <article class="compare-page-snow-card compare-page-dest-card">
           <p class="compare-page-dest-card__tag">Snow vs. drive</p>
           <strong>Cannon</strong>
-          <span>5″ forecast</span>
+          <span>5&Prime; forecast</span>
           <p>Solid snow with a drive that still feels doable for a one-day push.</p>
-          <a href="#full-rankings" class="compare-page-dest-card__link">Check drive vs. score →</a>
+          <a href="#full-rankings" class="compare-page-dest-card__link">Check drive vs. score &rarr;</a>
         </article>
       </div>
     </section>
@@ -306,18 +230,18 @@
         </div>
       </div>
       <div class="compare-page-region-grid">
-        <article><h3>Vermont</h3><p>Killington · Stowe · Sugarbush · Jay Peak · Mad River Glen</p></article>
-        <article><h3>New Hampshire</h3><p>Loon Mountain · Cannon · Waterville Valley · Bretton Woods</p></article>
-        <article><h3>Maine</h3><p>Sunday River · Sugarloaf · Saddleback · Black Mountain</p></article>
-        <article><h3>New York</h3><p>Whiteface · Hunter · Gore Mountain · Windham · Holiday Valley</p></article>
-        <article><h3>Colorado</h3><p>Vail · Breckenridge · Telluride · Steamboat · Wolf Creek</p></article>
-        <article><h3>Utah</h3><p>Park City · Deer Valley · Alta · Snowbird · Solitude</p></article>
-        <article><h3>Montana</h3><p>Big Sky · Whitefish Mountain · Bridger Bowl · Red Lodge</p></article>
-        <article><h3>Washington</h3><p>Crystal Mountain · Stevens Pass · Mt. Baker · White Pass</p></article>
-        <article><h3>California</h3><p>Mammoth · Palisades Tahoe · Heavenly · Kirkwood · June Mountain</p></article>
-        <article><h3>Wyoming</h3><p>Jackson Hole · Grand Targhee · Snow King</p></article>
-        <article><h3>Idaho</h3><p>Sun Valley · Schweitzer · Bogus Basin · Brundage</p></article>
-        <article><h3>Oregon</h3><p>Mt. Bachelor · Mt. Hood Meadows · Timberline · Willamette Pass</p></article>
+        <article><h3>Vermont</h3><p>Killington &middot; Stowe &middot; Sugarbush &middot; Jay Peak &middot; Mad River Glen</p></article>
+        <article><h3>New Hampshire</h3><p>Loon Mountain &middot; Cannon &middot; Waterville Valley &middot; Bretton Woods</p></article>
+        <article><h3>Maine</h3><p>Sunday River &middot; Sugarloaf &middot; Saddleback &middot; Black Mountain</p></article>
+        <article><h3>New York</h3><p>Whiteface &middot; Hunter &middot; Gore Mountain &middot; Windham &middot; Holiday Valley</p></article>
+        <article><h3>Colorado</h3><p>Vail &middot; Breckenridge &middot; Telluride &middot; Steamboat &middot; Wolf Creek</p></article>
+        <article><h3>Utah</h3><p>Park City &middot; Deer Valley &middot; Alta &middot; Snowbird &middot; Solitude</p></article>
+        <article><h3>Montana</h3><p>Big Sky &middot; Whitefish Mountain &middot; Bridger Bowl &middot; Red Lodge</p></article>
+        <article><h3>Washington</h3><p>Crystal Mountain &middot; Stevens Pass &middot; Mt. Baker &middot; White Pass</p></article>
+        <article><h3>California</h3><p>Mammoth &middot; Palisades Tahoe &middot; Heavenly &middot; Kirkwood &middot; June Mountain</p></article>
+        <article><h3>Wyoming</h3><p>Jackson Hole &middot; Grand Targhee &middot; Snow King</p></article>
+        <article><h3>Idaho</h3><p>Sun Valley &middot; Schweitzer &middot; Bogus Basin &middot; Brundage</p></article>
+        <article><h3>Oregon</h3><p>Mt. Bachelor &middot; Mt. Hood Meadows &middot; Timberline &middot; Willamette Pass</p></article>
       </div>
     </section>
 
@@ -326,7 +250,7 @@
         <div>
           <p class="compare-page-eyebrow">Passes</p>
           <h2>Ski pass coverage</h2>
-          <p>Set your pass once; scores use what you would really pay. <a href="/ski-pass-comparison/">Epic vs Ikon vs Indy →</a></p>
+          <p>Set your pass once; scores use what you would really pay. <a href="/ski-pass-comparison/">Epic vs Ikon vs Indy &rarr;</a></p>
         </div>
       </div>
       <div class="compare-page-grid compare-page-grid--three">
@@ -334,19 +258,19 @@
           <p class="compare-page-pass-card__eyebrow">Epic Pass</p>
           <h3>Epic Pass</h3>
           <p>Vail, Breckenridge, Park City, Stowe, Whistler, Heavenly, Northstar, Kirkwood, Attitash, Wildcat, Crotched, Mount Sunapee, Stevens Pass, and more.</p>
-          <a href="/ski-pass-comparison/">Epic pass resorts →</a>
+          <a href="/ski-pass-comparison/">Epic pass resorts &rarr;</a>
         </article>
         <article class="compare-page-pass-card">
           <p class="compare-page-pass-card__eyebrow">Ikon Pass</p>
           <h3>Ikon Pass</h3>
           <p>Jackson Hole, Mammoth, Steamboat, Killington, Sugarbush, Palisades Tahoe, Alta, Snowbird, Deer Valley, Crystal Mountain, Schweitzer, Taos, and more.</p>
-          <a href="/ski-pass-comparison/">Ikon pass resorts →</a>
+          <a href="/ski-pass-comparison/">Ikon pass resorts &rarr;</a>
         </article>
         <article class="compare-page-pass-card">
           <p class="compare-page-pass-card__eyebrow">Indy Pass</p>
           <h3>Indy Pass</h3>
           <p>100+ independent mountains across the US including Berkshire East, Jay Peak, Cannon, Bridger Bowl, Mt. Bachelor, Whitefish, Saddleback, and regional gems.</p>
-          <a href="/ski-pass-comparison/">Indy pass resorts →</a>
+          <a href="/ski-pass-comparison/">Indy pass resorts &rarr;</a>
         </article>
       </div>
     </section>
@@ -376,12 +300,12 @@
         <h2>Quick pick vs full compare</h2>
         <p>Homepage for one answer fast. This page when you want the same search broken into a top pick, nearby cards, and the full table.</p>
       </div>
-      <a href="/" class="compare-page-btn compare-page-btn--primary">Open the homepage →</a>
+      <a href="/" class="compare-page-btn compare-page-btn--primary">Open the homepage &rarr;</a>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>&copy; 2026 WhereToSkiNext.com · <a href="/about/">About</a> · <a href="/privacy/">Privacy Policy</a> · <a href="/partners/">Partners</a> · <a href="/ski-pass-comparison/">Pass Guides</a></p>
+    <p>&copy; 2026 WhereToSkiNext.com &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
     <p class="site-footer-affiliate">Some links on this site are affiliate links. If you book lodging through them we may earn a small commission at no extra cost to you. This never influences mountain scores or rankings.</p>
   </footer>
   <script src="/compare/compare-page.js"></script>

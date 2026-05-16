@@ -100,6 +100,12 @@ body.compare-page-body .nav-divider {
   pointer-events: none;
   z-index: 0;
 }
+
+/* Slim hero variant — no cards, just title + context */
+.compare-page-hero--slim {
+  min-height: min(300px, 38vh);
+}
+
 .compare-page-hero__inner {
   position: relative;
   z-index: 1;
@@ -862,4 +868,347 @@ body.compare-page-body .site-footer-affiliate {
 .compare-page-support > .compare-page-section:first-child,
 .compare-page-support > .compare-page-band:first-child {
   margin-top: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AMAZON-STYLE COMPARISON TABLE  (.cp-cgt-*)
+   Sits inside .compare-page-band so it inherits the dark glass context.
+   Horizontal scroll on mobile, sticky label column + sticky header.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Scroll wrapper — overflow here, not on the band, so sticky works */
+.cp-cgt-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 16px;
+  border: 1px solid var(--cp-border-strong);
+}
+
+/* The table */
+.cp-cgt {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+  table-layout: fixed;
+}
+
+/* Column widths */
+.cp-cgt col.cp-col-label  { width: 148px; }
+.cp-cgt col.cp-col-pick   { width: 234px; }
+.cp-cgt col.cp-col-runner { width: 196px; }
+
+/* ── All cells base ── */
+.cp-cgt th,
+.cp-cgt td {
+  padding: 13px 16px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Row dividers */
+.cp-cgt tbody tr {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.cp-cgt tbody tr:first-child { border-top: none; }
+
+/* ── Label column — sticky left ── */
+.cp-cgt .cp-lbl {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: rgba(4, 14, 28, 0.96);
+  border-right: 1px solid var(--cp-border-strong);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--cp-text-faint);
+  padding: 13px 12px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+/* Alternate label rows for easier scanning */
+.cp-cgt tbody tr:nth-child(odd) .cp-lbl  { background: rgba(4, 14, 28, 0.96); }
+.cp-cgt tbody tr:nth-child(even) .cp-lbl { background: rgba(6, 18, 40, 0.98); }
+
+/* ── Header row ── */
+.cp-cgt thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  border-bottom: 2px solid var(--cp-border-strong);
+  padding: 20px 16px 18px;
+  vertical-align: bottom;
+}
+/* Top-left corner: highest z-index, sits above both sticky axes */
+.cp-cgt thead th.cp-lbl {
+  z-index: 5;
+  background: rgba(4, 14, 28, 0.98);
+  vertical-align: bottom;
+}
+
+/* ── Top pick column header ── */
+.cp-cgt-hd-pick {
+  background: linear-gradient(160deg, rgba(25, 60, 110, 0.95) 0%, rgba(15, 38, 76, 0.98) 100%) !important;
+  border-left: 3px solid var(--cp-accent-bright) !important;
+  z-index: 4 !important;
+}
+
+/* Top pick data cells */
+.cp-cgt .cp-td-pick {
+  background: rgba(43, 109, 233, 0.08);
+  border-left: 3px solid rgba(69, 162, 255, 0.45);
+}
+.cp-cgt tbody tr:nth-child(even) .cp-td-pick {
+  background: rgba(43, 109, 233, 0.12);
+}
+
+/* ── Runner-up header ── */
+.cp-cgt-hd-runner {
+  background: rgba(8, 22, 44, 0.96) !important;
+}
+
+/* Runner data cells */
+.cp-cgt .cp-td-runner {
+  background: rgba(8, 22, 44, 0.70);
+}
+.cp-cgt tbody tr:nth-child(even) .cp-td-runner {
+  background: rgba(10, 26, 52, 0.80);
+}
+
+/* ── "Our Pick" badge ── */
+.cp-cgt-pick-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--cp-accent-bright);
+  color: #fff;
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 14px rgba(69, 162, 255, 0.35);
+}
+
+/* ── Mountain name + state in header ── */
+.cp-cgt-mtn-name {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 4px;
+  color: var(--cp-text);
+}
+.cp-cgt-mtn-state {
+  font-size: 12px;
+  color: var(--cp-text-faint);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+/* Runner rank circle */
+.cp-cgt-rank {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--cp-border-strong);
+  color: var(--cp-text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+/* Header CTA links */
+.cp-cgt-head-cta {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 13px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.cp-cgt-hd-pick .cp-cgt-head-cta {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--cp-text);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.cp-cgt-hd-pick .cp-cgt-head-cta:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.cp-cgt-hd-runner .cp-cgt-head-cta {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cp-text-dim);
+  border: 1px solid var(--cp-border);
+}
+.cp-cgt-hd-runner .cp-cgt-head-cta:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--cp-text);
+}
+
+/* ── Cell value styles ── */
+.cp-cgt-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cp-text);
+}
+.cp-cgt-sub {
+  font-size: 11px;
+  color: var(--cp-text-faint);
+  margin-top: 3px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.cp-cgt-na {
+  color: var(--cp-text-faint);
+  font-size: 13px;
+}
+
+/* Why-it-won row */
+.cp-cgt-reason {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cp-text-dim);
+  font-style: italic;
+  font-weight: 400;
+}
+/* Top pick reason gets accent color */
+.cp-td-pick .cp-cgt-reason {
+  color: var(--cp-accent-bright);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* Score row */
+.cp-cgt-score-num {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 7px;
+  color: var(--cp-accent-bright);
+}
+.cp-cgt-score-bar-track {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  max-width: 130px;
+}
+.cp-cgt-score-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cp-accent-bright), #22b38a);
+}
+/* Runner bars are muted */
+.cp-td-runner .cp-cgt-score-bar-fill {
+  background: rgba(142, 178, 226, 0.5);
+}
+.cp-td-runner .cp-cgt-score-num {
+  color: var(--cp-text-dim);
+  font-size: 20px;
+}
+
+/* Snow forecast */
+.cp-cgt-snow-big {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cp-accent-bright);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.cp-cgt-snow-dry {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cp-text-faint);
+}
+
+/* Crowd pills */
+.cp-cgt-crowd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.cp-cgt-crowd-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cp-crowd-light    { background: rgba(34, 179, 138, 0.18); color: #6ee7b7; }
+.cp-crowd-light    .cp-cgt-crowd-dot { background: #22c55e; }
+.cp-crowd-moderate { background: rgba(245, 158, 11, 0.18); color: #fcd34d; }
+.cp-crowd-moderate .cp-cgt-crowd-dot { background: #f59e0b; }
+.cp-crowd-busy     { background: rgba(239, 68, 68, 0.18);  color: #fca5a5; }
+.cp-crowd-busy     .cp-cgt-crowd-dot { background: #ef4444; }
+
+/* Pass labels */
+.cp-pass-epic { color: #7eb8ff; font-weight: 700; font-size: 13px; }
+.cp-pass-ikon { color: #c4a9ff; font-weight: 700; font-size: 13px; }
+.cp-pass-indy { color: #6ee7b7; font-weight: 700; font-size: 13px; }
+.cp-pass-ind  { color: var(--cp-text-dim); font-weight: 600; font-size: 13px; }
+
+/* "Best" badge on runner cells */
+.cp-cgt-best {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6ee7b7;
+  background: rgba(34, 179, 138, 0.18);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-left: 5px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Empty / no-session state inside the table band */
+.cp-cgt-empty {
+  text-align: center;
+  padding: 52px 24px;
+}
+.cp-cgt-empty-icon { font-size: 48px; margin-bottom: 16px; line-height: 1; }
+.cp-cgt-empty h2 {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--cp-text);
+  margin: 0 0 10px;
+}
+.cp-cgt-empty p {
+  font-size: 15px;
+  color: var(--cp-text-dim);
+  max-width: 420px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+
+/* Responsive table */
+@media (max-width: 760px) {
+  .cp-cgt col.cp-col-label  { width: 110px; }
+  .cp-cgt col.cp-col-pick   { width: 190px; }
+  .cp-cgt col.cp-col-runner { width: 165px; }
+  .cp-cgt th,
+  .cp-cgt td { padding: 11px 12px; }
+  .cp-cgt .cp-lbl { padding: 11px 10px; font-size: 10px; }
+  .cp-cgt-mtn-name { font-size: 1.2rem; }
+  .cp-cgt-score-num { font-size: 20px; }
 }
