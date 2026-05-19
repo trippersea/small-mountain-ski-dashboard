@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // SD-APP.JS — State, networking, UI rendering, events, and initialization
-// Depends on: sd-data.js, sd-scoring.js, sd-filters.js (loaded before this)
+// Depends on: resorts.js, sd-data.js, sd-scoring.js, sd-filters.js (loaded before this)
 // ═══════════════════════════════════════════════════════════════════════════
 //
 // import { getMountainNarrative } from './narrative-engine.js';
@@ -882,7 +882,7 @@ function bookingSearchUrl(searchQuery) {
 // ─── PATCH 1: Resort photo helper ────────────────────────────────────────────
 // Defaults to Trip's own /hero-bg.jpg for every resort.
 // To add a resort-specific photo: add a `photo` field to that resort in
-// resorts-national.js, e.g. `"photo": "/photos/stowe.jpg"`
+// resorts.js, e.g. `"photo": "/photos/stowe.jpg"`
 // Unsplash option (free, no key): uncomment the two lines in the function body.
 function resortPhotoStyle(resort, gradientCss) {
   // Uncomment below to use Unsplash auto-photos by state (no API key needed):

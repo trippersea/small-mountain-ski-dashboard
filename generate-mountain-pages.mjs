@@ -40,26 +40,12 @@ const FEATURED_PARTNERS = loadFeaturedPartners();
 import { createRequire } from 'module';
 const _require = createRequire(import.meta.url);
 function loadResorts() {
-  const sdData = fs.readFileSync(path.join(__dirname, 'sd-data.js'), 'utf8');
-  const neCtx = {};
-  vm.runInNewContext(sdData + '\nglobalThis.__out = RESORTS_NE;', neCtx);
-  const resortsNE = neCtx.__out || [];
-  if (!resortsNE.length) throw new Error('Could not load RESORTS_NE from sd-data.js');
-
-  let resortsNational = [];
-  const nationalPath = path.join(__dirname, 'resorts-national.js');
-  if (fs.existsSync(nationalPath)) {
-    try {
-      const nationalData = fs.readFileSync(nationalPath, 'utf8');
-      const natCtx = {};
-      vm.runInNewContext(nationalData + '\nglobalThis.__out = RESORTS_NATIONAL;', natCtx);
-      resortsNational = natCtx.__out || [];
-    } catch (e) {
-      console.warn('Warning: could not load resorts-national.js:', e.message);
-    }
-  }
-
-  return [...resortsNE, ...resortsNational];
+  const src = fs.readFileSync(path.join(__dirname, 'resorts.js'), 'utf8');
+  const ctx = {};
+  vm.runInNewContext(src + '\nglobalThis.__out = RESORTS;', ctx);
+  const resorts = ctx.__out || [];
+  if (!resorts.length) throw new Error('Could not load RESORTS from resorts.js');
+  return resorts;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

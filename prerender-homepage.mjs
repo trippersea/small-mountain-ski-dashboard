@@ -21,11 +21,9 @@ function parseResortArray(filePath, varName) {
   }
 }
 
-const RESORTS_NE       = parseResortArray('./sd-data.js',          'RESORTS_NE');
-const RESORTS_NATIONAL = parseResortArray('./resorts-national.js', 'RESORTS_NATIONAL');
-const RESORTS          = [...RESORTS_NE, ...RESORTS_NATIONAL];
+const RESORTS = parseResortArray('./resorts.js', 'RESORTS');
 
-console.log(`Loaded ${RESORTS.length} resorts (${RESORTS_NE.length} NE + ${RESORTS_NATIONAL.length} national)`);
+console.log(`Loaded ${RESORTS.length} resorts`);
 
 if (RESORTS.length === 0) {
   console.error('No resorts loaded — aborting pre-render to avoid wiping the table.');
