@@ -192,6 +192,52 @@ function crowdUtilityShort(label) {
   return 'Moderate crowds';
 }
 
+// ── Crowd Explainer: visible block replacing hidden tooltip ────────────────
+function buildCrowdExplainerHtml(crowd) {
+  if (!crowd || !crowd.reasons || !crowd.reasons.length) return '';
+
+  // Shorten reason strings to just the factor name
+  const SHORT = {
+    'Saturday':        'Saturday',
+    'Sunday':          'Sunday',
+    'Friday':          'Friday',
+    'Midweek':         'midweek',
+    'Holiday week':    'holiday week',
+    'Holiday weekend': 'holiday weekend',
+    'Fresh snow':      'fresh snow',
+    'Recent snow':     'recent snow',
+    'Bluebird day':    'bluebird forecast',
+    'Wet/icy':         'wet forecast',
+    'Epic pass':       'Epic pass network',
+    'Ikon pass':       'Ikon pass network',
+    'Small hill':      'limited lift capacity',
+  };
+  const shorts = crowd.reasons.map(r => {
+    for (const prefix in SHORT) {
+      if (r.startsWith(prefix)) return SHORT[prefix];
+    }
+    return r.split(/\s*\u2014\s*/)[0].toLowerCase();
+  });
+  const factorsStr = shorts.slice(0, 3).join(' + ');
+
+  // One-line actionable tip based on severity
+  const tip = crowd.label === 'Quiet'    ? 'Wide open. Pick your line.'
+            : crowd.label === 'Moderate' ? 'Manageable if you arrive early.'
+            : crowd.label === 'Busy'     ? 'Expect lift lines. Stick to side chairs and trees.'
+            :                              'Peak capacity. Consider shifting your day.';
+
+  const levelCls = 'crowd-expl--' + crowd.label.toLowerCase();
+
+  return `<div class="vcard-crowd-explainer ${levelCls}">
+    <div class="crowd-expl-header">
+      <span class="crowd-expl-tag">Crowd outlook</span>
+      <span class="crowd-expl-level">${esc(crowd.label)}</span>
+    </div>
+    <p class="crowd-expl-factors">${esc(factorsStr)}</p>
+    <p class="crowd-expl-tip">${esc(tip)}</p>
+  </div>`;
+}
+
 function driveUtilitySegment(resortId) {
   const mins = getDriveMins(resortId);
   if (mins == null) return 'Add a start point for drive time';
@@ -1893,11 +1939,16 @@ function renderVerdict(resorts) {
   const _whyPickLabels = (typeof buildWhyThisPickReasons === 'function')
     ? buildWhyThisPickReasons(resorts, tier)
     : ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
-  const _whyPickChips = _whyPickLabels.map(t => `<span class="vcard-why-chip">${esc(t)}</span>`).join('');
-  const _whyPickHtml = `<div class="vcard-why-pick" role="group" aria-labelledby="verdictWhyPickHeading">
+  // Filter out crowd-related pills — the crowd explainer block now covers that
+  const _whyPickFiltered = _whyPickLabels.filter(t => !/crowd/i.test(t));
+  const _whyPickChips = _whyPickFiltered.map(t => `<span class="vcard-why-chip">${esc(t)}</span>`).join('');
+  const _whyPickHtml = _whyPickFiltered.length ? `<div class="vcard-why-pick" role="group" aria-labelledby="verdictWhyPickHeading">
     <div class="vcard-why-pick-heading" id="verdictWhyPickHeading">Why this pick</div>
     <div class="vcard-why-pick-chips">${_whyPickChips}</div>
-  </div>`;
+  </div>` : '';
+
+  // ── Crowd Explainer: visible block with reasons, replaces hidden tooltip ────
+  const _crowdExplainerHtml = buildCrowdExplainerHtml(_crowd);
 
   const _verdictPhrase = topPickVerdictPhrase(tier, scoreNum);
   const _storyOneLine  = cardStoryOneLine(_narrative.story);
@@ -1943,12 +1994,13 @@ function renderVerdict(resorts) {
           <span class="vcard-utility-sep" aria-hidden="true"></span>
           <span>${esc(_utilityDrive)}</span>
           <span class="vcard-utility-sep" aria-hidden="true"></span>
-          <span class="crowd-info-tip crowd-color--${crowdLbl.toLowerCase()}" tabindex="0" aria-label="Crowd forecast: ${esc(_utilityCrowd)}. ${esc((_crowd.reasons[0] || '') + (_crowd.reasons[1] ? ' · ' + _crowd.reasons[1] : ''))}">${esc(_utilityCrowd)}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">${esc(_crowd.reasons.slice(0, 3).join(' · ') || 'Based on holiday calendar, resort capacity, and distance from major metros.')}</span></span>
+          <span class="crowd-color--${crowdLbl.toLowerCase()}" aria-label="Crowd forecast: ${esc(_utilityCrowd)}">${esc(_utilityCrowd)}</span>
         </div>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         ${_histChipHtml}
         ${_freshnessHtml}
+        ${_crowdExplainerHtml}
         ${_whyPickHtml}
       </div>
       <div class="vcard-body vcard-body-dash">

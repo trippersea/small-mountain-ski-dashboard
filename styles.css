@@ -2086,6 +2086,88 @@ tr:focus-within .story-text--table {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ── Crowd Explainer block (hero card) ─────────────────────────────────── */
+.vcard-crowd-explainer {
+  margin: 14px 0 0;
+  padding: 9px 12px 9px 13px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(148, 163, 184, 0.25);
+}
+.crowd-expl-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 5px;
+}
+.crowd-expl-tag {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(186, 200, 218, 0.45);
+}
+.crowd-expl-level {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.crowd-expl-factors {
+  margin: 0 0 3px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(210, 224, 238, 0.82);
+}
+.crowd-expl-tip {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.4;
+  color: rgba(186, 200, 218, 0.55);
+}
+
+/* Level-specific accent colors */
+.crowd-expl--quiet {
+  border-left-color: rgba(74, 222, 128, 0.6);
+}
+.crowd-expl--quiet .crowd-expl-level {
+  color: rgba(74, 222, 128, 0.9);
+}
+.crowd-expl--moderate {
+  border-left-color: rgba(251, 191, 36, 0.5);
+}
+.crowd-expl--moderate .crowd-expl-level {
+  color: rgba(251, 191, 36, 0.9);
+}
+.crowd-expl--busy {
+  border-left-color: rgba(248, 113, 113, 0.5);
+}
+.crowd-expl--busy .crowd-expl-level {
+  color: rgba(248, 113, 113, 0.9);
+}
+.crowd-expl--avoid {
+  border-left-color: rgba(239, 68, 68, 0.6);
+}
+.crowd-expl--avoid .crowd-expl-level {
+  color: rgba(248, 113, 113, 1);
+}
+
+/* Light mode variant (if hero-light ever activates) */
+.vcard--hero-light .crowd-expl--quiet .crowd-expl-level  { color: #15803d; }
+.vcard--hero-light .crowd-expl--moderate .crowd-expl-level { color: #92400e; }
+.vcard--hero-light .crowd-expl--busy .crowd-expl-level   { color: #b91c1c; }
+.vcard--hero-light .crowd-expl--avoid .crowd-expl-level  { color: #b91c1c; }
+.vcard--hero-light .vcard-crowd-explainer { background: rgba(15, 28, 46, 0.04); }
+.vcard--hero-light .crowd-expl-factors { color: #3e5060; }
+.vcard--hero-light .crowd-expl-tip { color: #6b8096; }
+
 /* ── Table Drive column no-origin hint ──────────────────────────────────── */
 #compareTable[data-no-origin] th[data-sort="drive"]::after {
   content: 'set location';
