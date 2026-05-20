@@ -3503,6 +3503,20 @@ function wireEvents() {
         hf.value = v;
         hf.dispatchEvent(new Event('change', { bubbles: true }));
       }
+      // Auto-flip forecast day to match trip type
+      const daySel = document.getElementById('heroSentenceDay');
+      if (daySel) {
+        if (v === '1') {
+          // Weekend -> Saturday
+          daySel.value = 'saturday';
+          daySel.dispatchEvent(new Event('change', { bubbles: true }));
+        } else if (v === '0') {
+          // Day trip -> next available ski day
+          daySel.value = smartDefaultWhenVal();
+          daySel.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        // Any distance (v === '2'): leave the day as-is
+      }
     });
   }
   if (els.heroSnowSelect) {
