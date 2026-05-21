@@ -134,9 +134,12 @@ function _bluebirdFactor(wx) {
 }
 
 // ─── Crowd forecast ───────────────────────────────────────────────────────────
-// Calibrated formula: Killington Saturday bluebird → BUSY (69)
-//                     Killington Holiday Saturday powder → AVOID (81)
+// Calibrated formula: Killington Saturday bluebird → BUSY (75)
+//                     Killington Holiday Saturday powder → AVOID (83)
+//                     Loon Saturday bluebird → BUSY (70)
 //                     Bousquet Saturday bluebird → MODERATE (51)
+// Destination fix: Tier 4-5 Ikon/Epic resorts with metroGravity > 750
+// no longer get capacity relief — large lifts attract crowds, not absorb them.
 // Depends on: METRO_GRAVITY and LIFT_CAPACITY_TIERS lookup tables loaded before
 // this file in HTML via metro_gravity_final.js and lift_capacity_tiers_final.js
 function crowdForecast(resort, wx = null) {
@@ -182,7 +185,17 @@ function crowdForecast(resort, wx = null) {
 
   // ── Step C: Capacity amplifier ────────────────────────────────────────────
   const rawTier  = (typeof LIFT_CAPACITY_TIERS !== 'undefined' ? LIFT_CAPACITY_TIERS[resort.id] : null) ?? 3;
-  const liftInv  = (5 - rawTier) / (5 - 1); // linear: tier5=0, tier1=1
+  let   liftInv  = (5 - rawTier) / (5 - 1); // linear: tier5=0, tier1=1
+
+  // Destination resort fix: when a high-gravity resort sits on a major pass
+  // network, large capacity acts as a crowd funnel, not a relief valve.
+  // Without this, Tier 5 Ikon/Epic destinations (Loon, Stowe, Killington)
+  // score Moderate on Saturday bluebirds when they should score Busy.
+  if (rawMG > 750 && passScore >= 0.80) {
+    if (rawTier === 5)      liftInv = 0.45;
+    else if (rawTier === 4) liftInv = 0.55;
+  }
+
   const parkingC = resort.acres < 100 ? 0.75 : resort.acres < 300 ? 0.55 : 0.40;
   const terrainC = rawTier <= 2 ? 0.65 : rawTier <= 3 ? 0.50 : 0.35;
   const A        = 0.45*liftInv + 0.35*parkingC + 0.20*terrainC;
