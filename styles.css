@@ -4999,15 +4999,36 @@ tr:focus-within .story-text--table {
 .hn-rchip-snow { background: rgba(43,109,233,0.22); color: #93c5fd; border: 1px solid rgba(147,197,253,0.25); }
 .hn-rchip-pass { background: rgba(167,139,250,0.18); color: #c4b5fd; border: 1px solid rgba(196,181,253,0.25); }
 
-/* ── Refine (planner) panel — same dense pill layout as .planner-col (section is not inside planner-verdict row) ── */
+/* ── Refine (planner) panel — dark navy treatment matching hero aesthetic ── */
 .hn-refine-panel {
-  border-top: 2px solid var(--border);
-  background: var(--panel);
+  border-top: 2px solid rgba(255, 255, 255, 0.08);
+  background: #0f1c2e;
+  color: var(--text-on-dark);
+
+  --panel: #152538;
+  --panel-2: #1a2d42;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-light: rgba(255, 255, 255, 0.10);
+  --text: #f0f6fc;
+  --muted: rgba(186, 200, 218, 0.6);
+  --accent: #5aaddc;
+  --accent-hover: #7fc4e8;
+  --text-on-dark: #f0f6fc;
 }
 .hn-refine-panel .planner-col-header {
   margin-bottom: 18px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.hn-refine-panel .planner-col-header h2,
+.hn-refine-panel .planner-col-header h3 {
+  color: #f0f6fc;
+}
+.hn-refine-panel .planner-col-header p {
+  color: rgba(186, 200, 218, 0.6);
+}
+.hn-refine-panel .planner-main-title {
+  color: #f0f6fc;
 }
 .hn-refine-panel .planner-details {
   display: flex;
@@ -5021,8 +5042,8 @@ tr:focus-within .story-text--table {
 }
 .hn-refine-panel .score-control {
   padding: 14px 15px 12px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
+  background: #152538;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   display: flex;
   flex-direction: column;
@@ -5032,6 +5053,7 @@ tr:focus-within .story-text--table {
   font-weight: 700;
   margin-bottom: 9px;
   letter-spacing: -0.01em;
+  color: #f0f6fc;
 }
 .hn-refine-panel .priority-btns {
   display: flex;
@@ -5044,9 +5066,9 @@ tr:focus-within .story-text--table {
   font-weight: 600;
   padding: 6px 11px;
   border-radius: 999px;
-  border: 1.5px solid var(--border-light);
-  background: var(--panel);
-  color: var(--muted);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(186, 200, 218, 0.75);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
@@ -5062,13 +5084,15 @@ tr:focus-within .story-text--table {
   max-width: 100%;
 }
 .hn-refine-panel .priority-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: #5aaddc;
+  color: #5aaddc;
+  background: rgba(90, 173, 220, 0.08);
 }
 .hn-refine-panel .priority-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--text-on-dark);
+  background: #5aaddc;
+  border-color: #5aaddc;
+  color: #0f1c2e;
+  font-weight: 700;
 }
 @media (max-width: 640px) {
   #plannerSection .priority-btn,
@@ -5084,7 +5108,7 @@ tr:focus-within .story-text--table {
 }
 .hn-refine-panel .slider-hint {
   font-size: 11px;
-  color: var(--muted);
+  color: rgba(186, 200, 218, 0.45);
   line-height: 1.4;
   margin-top: 8px;
   font-style: normal;
@@ -5107,17 +5131,17 @@ tr:focus-within .story-text--table {
   border-radius: 999px;
   border: none;
   cursor: pointer;
-  background: var(--accent);
-  color: var(--text-on-dark);
+  background: #5aaddc;
+  color: #0f1c2e;
   transition: background 0.12s;
 }
 .planner-see-verdict-btn:hover {
-  background: var(--accent-hover);
+  background: #7fc4e8;
 }
 .planner-see-verdict-hint {
   margin: 0;
   font-size: 13px;
-  color: var(--muted);
+  color: rgba(186, 200, 218, 0.5);
   line-height: 1.45;
   flex: 1;
   min-width: 200px;

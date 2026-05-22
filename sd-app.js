@@ -1,16 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// SD-APP.JS — State, networking, UI rendering, events, and initialization
+// SD-APP.JS · State, networking, UI rendering, events, and initialization
 // Depends on: resorts.js, sd-data.js, sd-scoring.js, sd-filters.js (loaded before this)
 // ═══════════════════════════════════════════════════════════════════════════
 //
 // import { getMountainNarrative } from './narrative-engine.js';
 // ↑ narrative-engine is loaded by narrative-bridge.js (before this script); the
-//   implementation is invoked via window.__wtsn_narrative_engine — see getMountainNarrative().
+//   implementation is invoked via window.__wtsn_narrative_engine · see getMountainNarrative().
 
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
 
-// Scoring constants fetched from /api/weights at startup — never shipped in client JS.
+// Scoring constants fetched from /api/weights at startup · never shipped in client JS.
 // W is null until loadWeights() resolves. All scoring code gates on this.
 let W = null;
 // Phase-1 weather set (the "near" batch) so the verdict can be stable.
@@ -273,7 +273,7 @@ function runnerReasonLine(batch, item, idx) {
 // ─── localStorage helpers ─────────────────────────────────────────────────────
 function loadSavedWeights() {
   try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
-  // W may not be loaded yet at state-init time — use hardcoded fallback so
+  // W may not be loaded yet at state-init time · use hardcoded fallback so
   // the app boots synchronously; weights are refreshed from W after loadWeights() resolves.
   if (W) return { ...W.DEFAULT_WEIGHTS };
   return { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 };
@@ -478,11 +478,11 @@ const state = Object.seal({
   tableViewAll:   false,
   /** Ski day for forecast index (hero); set by initHeroWhenControls / heroSentenceDay */
   targetDate:     null,
-  /** One of weekday|friday|saturday|sunday — matches hero sentence day control */
+  /** One of weekday|friday|saturday|sunday · matches hero sentence day control */
   skiDayPreset:   'weekday',
 });
 
-// ─── Hero “When” bar — maps chip value → next occurrence Date (local) ────────
+// ─── Hero “When” bar · maps chip value → next occurrence Date (local) ────────
 function dayValToDate(val) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -849,7 +849,7 @@ function runnerUpBlurb(snowInches, cf, passGroup) {
     if (cf.label === 'Quiet') {
       bits.push(cf.score <= 36 ? `usually stays pretty quiet` : `crowds tend to stay manageable`);
     } else if (cf.label === 'Avoid') {
-      bits.push(`expect a very busy day — long lift lines likely`);
+      bits.push(`expect a very busy day · long lift lines likely`);
     } else if (cf.label === 'Busy') {
       bits.push(`expect a busy day on the hill`);
     } else if (cf.label === 'Moderate') {
@@ -862,7 +862,7 @@ function runnerUpBlurb(snowInches, cf, passGroup) {
     : '';
   const body = bits.join(' and ');
   let out = '';
-  if (body && passBit) out = `${body} — ${passBit}`;
+  if (body && passBit) out = `${body} · ${passBit}`;
   else if (body) out = body;
   else if (passBit) out = passBit;
   else out = `Solid alternative with your settings`;
@@ -1169,7 +1169,7 @@ async function loadDriveTimes() {
   render();
   if (osrmSuccessCount > 0) showToast('Drive times updated with routes', 2200);
   else if (closest.length > 0) {
-    showToast('Using estimated drive times — routing service did not return routes', 4500);
+    showToast('Using estimated drive times · routing service did not return routes', 4500);
   } else showToast('Drive times ready', 1800);
 }
 
@@ -1323,8 +1323,8 @@ function pushReportUrl(resort) {
   const slug   = slugify(resort.name);
   const params = serializeState();
   const qs     = params.toString() ? '?' + params : '';
-  history.pushState({ reportSlug: slug }, resort.name + ' — WhereToSkiNext.com', '/report/' + slug + qs);
-  document.title = resort.name + ' — WhereToSkiNext.com';
+  history.pushState({ reportSlug: slug }, resort.name + ' · WhereToSkiNext.com', '/report/' + slug + qs);
+  document.title = resort.name + ' · WhereToSkiNext.com';
 }
 function popToRoot() {
   const params = serializeState();
@@ -1344,7 +1344,7 @@ const pushUrlDebounced = debounce(() => {
 function copyShareLink() {
   const p   = serializeState();
   const url = `${location.origin}${location.pathname}${p.toString() ? '?' + p : ''}`;
-  const doToast = () => showToast('Link copied — share with your crew!', 3200);
+  const doToast = () => showToast('Link copied · share with your crew!', 3200);
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(url).then(doToast).catch(() => fallbackCopy(url));
   } else { fallbackCopy(url); }
@@ -1401,7 +1401,7 @@ function normalizeWeightsToPriority() {
 function updatePlannerOriginLabel() {
   const el = document.getElementById('plannerFromLabel');
   if (!el) return;
-  el.textContent = (state.origin?.label) ? ' — ' + state.origin.label : '';
+  el.textContent = (state.origin?.label) ? ' · ' + state.origin.label : '';
   if (els.plannerEditLocation) els.plannerEditLocation.hidden = !state.origin;
 }
 
@@ -1427,7 +1427,7 @@ function syncPlannerControls() {
   document.querySelectorAll('.pass-pref-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.pass === plannerPass));
 
   const _fromLabel = document.getElementById('plannerFromLabel');
-  if (_fromLabel) _fromLabel.textContent = (state.origin?.label) ? ' — ' + state.origin.label : '';
+  if (_fromLabel) _fromLabel.textContent = (state.origin?.label) ? ' · ' + state.origin.label : '';
 
   if (els.passFilter)     els.passFilter.value = state.passFilter;
   if (els.heroPassSelect) els.heroPassSelect.value = state.passFilter;
@@ -1539,9 +1539,6 @@ function saveCompareSession(v, runningItems) {
       state:      resort.state,
       passGroup:  resort.passGroup || 'Independent',
       price:      resort.price || null,
-      vertical:   resort.vertical || null,
-      trails:     resort.trails || null,
-      avgSnowfall:resort.avgSnowfall || null,
       tier,
       headline,
       detail,
@@ -1564,9 +1561,6 @@ function saveCompareSession(v, runningItems) {
         state:      item.resort.state,
         passGroup:  item.resort.passGroup || 'Independent',
         price:      item.resort.price || null,
-        vertical:   item.resort.vertical || null,
-        trails:     item.resort.trails || null,
-        avgSnowfall:item.resort.avgSnowfall || null,
         driveText:  getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null,
         driveMins:  getDriveMins(item.resort.id),
         score:      item.breakdown ? Math.round(item.breakdown.score) : null,
@@ -1614,25 +1608,25 @@ function computeVerdict(resorts) {
 
   if (rainLikely) {
     tier = 'bad'; headline = 'Skip this weekend';
-    detail = `Temperatures look too warm — rain likely above ${resort.baseElevation.toLocaleString()} ft at ${esc(resort.name)}.`;
+    detail = `Temperatures look too warm · rain likely above ${resort.baseElevation.toLocaleString()} ft at ${esc(resort.name)}.`;
   } else if (stormTotal >= 6 || tomorrowIn >= 4) {
-    tier = 'great'; headline = 'Go — strong forecast';
+    tier = 'great'; headline = 'Go · strong forecast';
     detail = tomorrowIn >= 4
       ? `${tomorrowIn.toFixed(1)}" expected tomorrow at ${esc(resort.name)}. That's a powder day.`
-      : `${stormTotal.toFixed(1)}" forecast over 3 days — this is what you wait all season for.`;
-    if (coldSnow) subPoints.push('Ideal temps — light, dry snow expected');
-    if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week — base is deep`);
+      : `${stormTotal.toFixed(1)}" forecast over 3 days · this is what you wait all season for.`;
+    if (coldSnow) subPoints.push('Ideal temps · light, dry snow expected');
+    if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week · base is deep`);
   } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6)) {
-    tier = 'good'; headline = 'Decent forecast — worth the trip';
+    tier = 'good'; headline = 'Decent forecast · worth the trip';
     if (stormTotal >= 2) {
       detail = `${stormTotal.toFixed(1)}" in the 3-day forecast at ${esc(resort.name)}. Not a powder day, but fresh snow makes a real difference.`;
     } else {
       detail = `${histTotal}" fell this week at ${esc(resort.name)}. Expect a solid, consolidated base even without new snow.`;
     }
-    if (warmCaution) subPoints.push('Snow may be dense/wet — get out early for best runs');
+    if (warmCaution) subPoints.push('Snow may be dense/wet · get out early for best runs');
   } else if (stormTotal >= 0.5) {
-    tier = 'marginal'; headline = 'Marginal — manage your expectations';
-    detail = `Only ${stormTotal.toFixed(1)}" in the forecast. Mostly working with the existing base — groomed runs will be fine.`;
+    tier = 'marginal'; headline = 'Marginal · manage your expectations';
+    detail = `Only ${stormTotal.toFixed(1)}" in the forecast. Mostly working with the existing base · groomed runs will be fine.`;
     subPoints.push('Stick to groomed trails, get out early, avoid south-facing terrain');
   } else {
     tier = 'bad'; headline = 'Probably skip this one';
@@ -1787,25 +1781,25 @@ function renderVerdict(resorts) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
           <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
           <div class="vcard-placeholder-title">Loading live forecasts…</div>
-          <div class="vcard-placeholder-sub">We're still pulling forecasts and snow totals — your pick will show up as soon as the numbers land.</div>
+          <div class="vcard-placeholder-sub">We're still pulling forecasts and snow totals · your pick will show up as soon as the numbers land.</div>
         </div>`;
       } else if (!anyWx && weatherFetchPhase1Done && weatherFetchPhase2Done) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
           <div class="vcard-placeholder-icon">☁</div>
           <div class="vcard-placeholder-title">Forecast data unavailable</div>
-          <div class="vcard-placeholder-sub">We could not load weather from our data provider. Drive times and the mountain list below still work — try refreshing the page in a minute.</div>
+          <div class="vcard-placeholder-sub">We could not load weather from our data provider. Drive times and the mountain list below still work · try refreshing the page in a minute.</div>
         </div>`;
       } else if (!anyWx) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
           <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
           <div class="vcard-placeholder-title">Still loading forecasts…</div>
-          <div class="vcard-placeholder-sub">Still filling in snow for more mountains — the list below may refresh first for places near you.</div>
+          <div class="vcard-placeholder-sub">Still filling in snow for more mountains · the list below may refresh first for places near you.</div>
         </div>`;
       } else {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
           <div class="vcard-placeholder-icon">⛷</div>
           <div class="vcard-placeholder-title">Almost ready</div>
-          <div class="vcard-placeholder-sub">Almost there — we're recalculating after the latest forecast.</div>
+          <div class="vcard-placeholder-sub">Almost there · we're recalculating after the latest forecast.</div>
         </div>`;
       }
     } else {
@@ -1890,7 +1884,7 @@ function renderVerdict(resorts) {
 
   const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
   const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock' : '';
-  const _vcardHeroLightCls = ''; // Always dark — never light mode
+  const _vcardHeroLightCls = ''; // Always dark · never light mode
   const _verdictPhotoStyle = resortPhotoStyle(resort, 'linear-gradient(180deg,rgba(8,16,28,.18) 0%,rgba(8,16,28,.62) 50%,rgba(8,16,28,.94) 100%)');
   const _heroDashStyleAttr = _verdictPhotoStyle ? ` style="${_verdictPhotoStyle}"` : '';
 
@@ -1917,7 +1911,7 @@ function renderVerdict(resorts) {
   const _whyPickLabels = (typeof buildWhyThisPickReasons === 'function')
     ? buildWhyThisPickReasons(resorts, tier)
     : ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
-  // Filter out crowd-related pills — the crowd explainer block now covers that
+  // Filter out crowd-related pills · the crowd explainer block now covers that
   const _whyPickFiltered = _whyPickLabels.filter(t => !/crowd/i.test(t));
   const _whyPickChips = _whyPickFiltered.map(t => `<span class="vcard-why-chip">${esc(t)}</span>`).join('');
   const _whyPickHtml = _whyPickFiltered.length ? `<div class="vcard-why-pick" role="group" aria-labelledby="verdictWhyPickHeading">
@@ -1933,7 +1927,7 @@ function renderVerdict(resorts) {
   const _utilityCrowd  = crowdUtilityShort(crowdLbl);
   const _utilityDrive  = driveUtilitySegment(resort.id);
 
-  // ── Runner-up mini strip — always-on teaser inside the verdict card ─────────
+  // ── Runner-up mini strip · always-on teaser inside the verdict card ─────────
   const runnerStripHtml = runningItems.length > 0 ? (() => {
     const miniCards = runningItems.map((item, rIdx) => {
       const _rWx = state.weatherCache[item.resort.id]?.data;
@@ -2028,7 +2022,7 @@ function renderVerdict(resorts) {
     shareVerdict(resort, v);
   });
 
-  // Mini runner-up cards — open detail panel on click
+  // Mini runner-up cards · open detail panel on click
   els.verdictCard.querySelectorAll('.vcard-mini-runner[data-mini-runner-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       state.selectedId = btn.dataset.miniRunnerId;
@@ -2073,7 +2067,7 @@ function renderVerdict(resorts) {
     });
   });
 
-  // PATCH 5: Runner-up section title — pass + proximity angle
+  // PATCH 5: Runner-up section title · pass + proximity angle
   const _hnSection = document.getElementById('hnRunnerUpSection');
   const _hnGrid    = document.getElementById('hnRunnersGrid');
   const _hnTitle   = document.getElementById('hnRunnersTitle');
@@ -2138,7 +2132,7 @@ function renderVerdict(resorts) {
         const _rCallout = _rSponsor
           ? `<div class="hn-runner-partner-callout" role="note">
               <span class="hn-runner-partner-pill">Featured Partner</span>
-              <span class="hn-runner-partner-hint">Labeled partner — your ranked order and scores are unchanged.</span>
+              <span class="hn-runner-partner-hint">Labeled partner · your ranked order and scores are unchanged.</span>
             </div>`
           : '';
         const _crowdDotCls  = cf.label === 'Quiet' ? 'hn-crowd-dot--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'hn-crowd-dot--busy' : 'hn-crowd-dot--mod';
@@ -2171,7 +2165,7 @@ function renderVerdict(resorts) {
     }
   }
 
-  // Guidance block removed — storm note is now in the runner-up section subtitle
+  // Guidance block removed · storm note is now in the runner-up section subtitle
   document.getElementById('hnConditionsGuidance')?.remove();
 }
 
@@ -2190,7 +2184,7 @@ function buildWriteupPrompt(v, origin) {
     resort.vertical ? `${resort.vertical.toLocaleString()}ft vertical` : null,
     resort.passGroup !== 'Independent' ? `${resort.passGroup} pass access` : null,
   ].filter(Boolean).join('; ');
-  return `You're texting a friend who skis. In 1–2 short, confident sentences say why ${resort.name} in ${resort.state} is the right call for this ski day${originStr ? ' for someone ' + originStr : ''}. Use only these facts: ${facts}. Internally the model tiers this as "${tier}" — do not say "tier", "score", or any number out of 100. No corporate filler ("leverage", "insights"). Sound like a human on a lift pass.`;
+  return `You're texting a friend who skis. In 1–2 short, confident sentences say why ${resort.name} in ${resort.state} is the right call for this ski day${originStr ? ' for someone ' + originStr : ''}. Use only these facts: ${facts}. Internally the model tiers this as "${tier}" · do not say "tier", "score", or any number out of 100. No corporate filler ("leverage", "insights"). Sound like a human on a lift pass.`;
 }
 
 async function fetchVerdictWriteup(v, origin) {
@@ -2237,7 +2231,7 @@ async function injectVerdictWriteup(v) {
     liveSlot.classList.remove('vcard-writeup--fallback');
     if (fb) fb.setAttribute('hidden', '');
   } else {
-    liveSlot.textContent = 'Short take unavailable right now — the forecast and pick above are still live.';
+    liveSlot.textContent = 'Short take unavailable right now · the forecast and pick above are still live.';
     liveSlot.classList.add('vcard-writeup--fallback');
     if (fb) fb.removeAttribute('hidden');
   }
@@ -2300,7 +2294,7 @@ function _renderStorm(resorts) {
     .map(r => { const wx = state.weatherCache[r.id]?.data; const storm = (wx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0); return { resort: r, wx, storm }; })
     .filter(item => item.wx)
     .sort((a, b) => b.storm - a.storm)
-    .slice(0, 3); // cap at 3 — never allow a 3+1 orphan layout
+    .slice(0, 3); // cap at 3 · never allow a 3+1 orphan layout
 
   if (!enriched.length) {
     if (!weatherFetchPhase1Done) {
@@ -2322,14 +2316,14 @@ function _renderStorm(resorts) {
   // ── Empty state: no meaningful snow anywhere ───────────────────────────────
   if (maxStorm < 0.5) {
     if (stormTitle) stormTitle.textContent = 'Storm Chaser';
-    if (stormDesc)  stormDesc.textContent  = 'No major storms in the next 3 days. Check back mid-week — this updates as new systems develop.';
+    if (stormDesc)  stormDesc.textContent  = 'No major storms in the next 3 days. Check back mid-week · this updates as new systems develop.';
     stormSection?.classList.remove('storm-alert-active');
     els.stormGrid.innerHTML = `<div class="storm-empty-state storm-empty-state--full">
       <div class="storm-empty-inner">
         <div class="storm-empty-icon">&#9729;</div>
         <div class="storm-empty-body">
           <p class="storm-empty-title">No major storms in the next 3 days.</p>
-          <p class="storm-empty-sub">Check back mid-week — forecasts shift quickly and a storm can change the rankings overnight.</p>
+          <p class="storm-empty-sub">Check back mid-week · forecasts shift quickly and a storm can change the rankings overnight.</p>
         </div>
       </div>
     </div>`;
@@ -2339,15 +2333,15 @@ function _renderStorm(resorts) {
   // ── Powder alert mode: real snow incoming ─────────────────────────────────
   if (maxStorm >= 6) {
     if (stormTitle) stormTitle.innerHTML = '&#10052; Powder Alert';
-    if (stormDesc)  stormDesc.textContent = `${maxStorm.toFixed(0)}" incoming — these mountains have the most snow in the forecast right now.`;
+    if (stormDesc)  stormDesc.textContent = `${maxStorm.toFixed(0)}" incoming · these mountains have the most snow in the forecast right now.`;
     stormSection?.classList.add('storm-alert-active');
   } else if (maxStorm >= 2) {
     if (stormTitle) stormTitle.textContent = 'Storm Chaser';
-    if (stormDesc)  stormDesc.textContent  = `Snow in the forecast — these are your best bets this week.`;
+    if (stormDesc)  stormDesc.textContent  = `Snow in the forecast · these are your best bets this week.`;
     stormSection?.classList.remove('storm-alert-active');
   } else {
     if (stormTitle) stormTitle.textContent = 'Storm Chaser';
-    if (stormDesc)  stormDesc.textContent  = 'Light snow in the forecast — groomed conditions at best.';
+    if (stormDesc)  stormDesc.textContent  = 'Light snow in the forecast · groomed conditions at best.';
     stormSection?.classList.remove('storm-alert-active');
   }
 
@@ -2357,7 +2351,7 @@ function _renderStorm(resorts) {
     const nm = esc(item.resort.name);
     const forecast = item.wx.forecast || [];
 
-    // Only show day chips with meaningful snow (> 0) — suppress zero rows
+    // Only show day chips with meaningful snow (> 0) · suppress zero rows
     const hasAnySnow = forecast.some(f => f.snow > 0);
     const dayChips = hasAnySnow
       ? forecast
@@ -2381,7 +2375,7 @@ function _renderStorm(resorts) {
 function renderHiddenGems(resorts) {
   if (!els.hiddenGemGrid) return;
   if (!resorts.length) {
-    els.hiddenGemGrid.innerHTML = '<div class="planner-card hidden-gems-empty" role="status">No picks here yet — widen your filters to see hidden gems.</div>';
+    els.hiddenGemGrid.innerHTML = '<div class="planner-card hidden-gems-empty" role="status">No picks here yet · widen your filters to see hidden gems.</div>';
     return;
   }
   const withScore = resorts.map(r => ({ r, score: hiddenGemScore(r, state.weatherCache[r.id]?.data) }));
@@ -2475,7 +2469,7 @@ function renderCompareTable(resorts) {
   if (q) {
     els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${qRaw}"`;
   } else if (noOriginDefault) {
-    els.resultCount.textContent = `${total} mountains — sorted by avg snowfall${_tableFreshSuffix}`;
+    els.resultCount.textContent = `${total} mountains · sorted by avg snowfall${_tableFreshSuffix}`;
   } else {
     els.resultCount.textContent = (state.tableViewAll ? `All ${total} mountains` : `Top 10 of ${total} mountains`) + _tableFreshSuffix;
   }
@@ -2538,7 +2532,7 @@ function renderCompareTable(resorts) {
       els.compareLocationHint.innerHTML = `
         <div class="compare-location-hint-inner">
           <span class="compare-location-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.35 7-10a7 7 0 10-14 0c0 5.65 7 10 7 10z" stroke="currentColor" stroke-width="1.75"/><circle cx="12" cy="11" r="2.25" stroke="currentColor" stroke-width="1.75"/></svg></span>
-          <p class="compare-location-copy"><strong>Add your start point</strong> — we rank by live snow, drive time, and your pass using your location from the search bar above.</p>
+          <p class="compare-location-copy"><strong>Add your start point</strong> · we rank by live snow, drive time, and your pass using your location from the search bar above.</p>
           <button type="button" class="compare-location-btn">Set location</button>
         </div>`;
       const _locBtn = els.compareLocationHint.querySelector('.compare-location-btn');
@@ -2601,7 +2595,7 @@ function renderCompareTable(resorts) {
           <div class="table-mountain-cell">
             <div class="table-mountain-name-row">
               <a class="row-name row-name--report" href="/ski-report/${esc(resort.id)}/" onclick="event.stopPropagation()">${esc(resort.name)}</a>
-              ${_sp ? '<span class="table-featured-pill" title="Advertising partner — does not change rank or score">Featured Partner</span>' : ''}
+              ${_sp ? '<span class="table-featured-pill" title="Advertising partner · does not change rank or score">Featured Partner</span>' : ''}
             </div>
             <div class="row-sub">${esc(resort.state)}</div>
             <input type="checkbox" class="table-compare-check" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} aria-label="Compare ${esc(resort.name)}" onclick="event.stopPropagation()" />
@@ -2680,7 +2674,7 @@ function renderComparePanel() {
         aiBox.innerHTML = `<div class="ai-verdict-inner"><div class="ai-verdict-text">${safeText.replace(/\n/g, '<br>')}</div></div>`;
       })
       .catch(err => {
-        aiBox.innerHTML = `<div class="ai-thinking muted">AI recommendation unavailable — ${esc(err.message)}</div>`;
+        aiBox.innerHTML = `<div class="ai-thinking muted">AI recommendation unavailable · ${esc(err.message)}</div>`;
       });
   }
   els.comparePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2768,18 +2762,18 @@ function renderDetail({ scroll = false } = {}) {
     : esc('Loading forecast…');
 
   const dhrFitPill = skis
-    ? `<span class="dhr-fit-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Fit score ${skis.skiScore} — tap for breakdown"><span class="dhr-fit-pill-dot" aria-hidden="true"></span><span class="dhr-fit-pill-num">${skis.skiScore}</span></span>`
+    ? `<span class="dhr-fit-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Fit score ${skis.skiScore} · tap for breakdown"><span class="dhr-fit-pill-dot" aria-hidden="true"></span><span class="dhr-fit-pill-num">${skis.skiScore}</span></span>`
     : '';
 
   const detailWatchSentence = !vd
-    ? 'Forecasts can shift inside 24 hours — peek out the window before you commit.'
+    ? 'Forecasts can shift inside 24 hours · peek out the window before you commit.'
     : vd.rainLikely
-    ? 'Rain is likely at this elevation — expect wet, sloppy snow.'
+    ? 'Rain is likely at this elevation · expect wet, sloppy snow.'
     : vd.tier === 'bad' && !vd.rainLikely
-    ? 'Very little new snow in the forecast — you are mostly skiing whatever is already on the hill.'
+    ? 'Very little new snow in the forecast · you are mostly skiing whatever is already on the hill.'
     : resort.price >= 175
-    ? 'Ticket is on the steep side — worth it if the day delivers.'
-    : 'Forecasts can shift inside 24 hours — peek out the window before you commit.';
+    ? 'Ticket is on the steep side · worth it if the day delivers.'
+    : 'Forecasts can shift inside 24 hours · peek out the window before you commit.';
 
   const whyProseHtml = (wx && bd)
     ? preferenceReasons(resort, wx, bd)
@@ -2788,7 +2782,7 @@ function renderDetail({ scroll = false } = {}) {
         return /[.!?…]$/.test(t) ? esc(t) : esc(t) + '.';
       })
       .join(' ')
-    : esc('Still pulling forecast data — check back in a moment.');
+    : esc('Still pulling forecast data · check back in a moment.');
 
   const decisionProseHtml = (wx && vd)
     ? esc(vd.detail) + ' Watch: ' + esc(detailWatchSentence)
@@ -2798,7 +2792,7 @@ function renderDetail({ scroll = false } = {}) {
 
   const crowdFootText = crowd.reasons.length
     ? `${crowdUtilityShort(crowd.label)} · ${crowd.reasons.slice(0, 3).join(' · ')}`
-    : `${crowdUtilityShort(crowd.label)} outlook — ${crowd.confidence} confidence`;
+    : `${crowdUtilityShort(crowd.label)} outlook · ${crowd.confidence} confidence`;
   const crowdFootHtml = esc(crowdFootText);
 
   // PATCH 4: Use resort-specific photo in detail panel hero
@@ -2918,7 +2912,7 @@ async function askAI(query) {
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-error';
       els.aiChatResult.removeAttribute('hidden');
-      els.aiChatResult.innerHTML = '<span>No mountains match your current filters. Widen distance, pass, or snow settings — or reset filters — then ask again.</span>';
+      els.aiChatResult.innerHTML = '<span>No mountains match your current filters. Widen distance, pass, or snow settings · or reset filters · then ask again.</span>';
     }
     return;
   }
@@ -2975,7 +2969,7 @@ async function askAI(query) {
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-error';
       els.aiChatResult.removeAttribute('hidden');
-      els.aiChatResult.innerHTML = `<span>${esc(err.message || 'AI unavailable — try again shortly')}</span>`;
+      els.aiChatResult.innerHTML = `<span>${esc(err.message || 'AI unavailable · try again shortly')}</span>`;
     }
   } finally {
     aiChatLoading = false;
@@ -3076,15 +3070,15 @@ function shareVerdict(resort, verdictData) {
   const { stormTotal, driveText } = verdictData;
   const snowText  = stormTotal > 0 ? `${stormTotal.toFixed(1)}" forecast` : 'solid groomed conditions';
   const driveInfo = driveText ? ` · ${driveText} drive` : '';
-  const shareText = `I'm skiing ${resort.name} (${resort.state}) this weekend — ${snowText}${driveInfo}. Pass: ${resort.passGroup}. Find your mountain.`;
+  const shareText = `I'm skiing ${resort.name} (${resort.state}) this weekend · ${snowText}${driveInfo}. Pass: ${resort.passGroup}. Find your mountain.`;
   const p   = serializeState();
   const url = `${location.origin}${location.pathname}${p.toString() ? '?' + p : ''}`;
   if (navigator.share) {
-    navigator.share({ title: `Ski day at ${resort.name} — WhereToSkiNext.com`, text: shareText, url }).catch(() => {});
+    navigator.share({ title: `Ski day at ${resort.name} · WhereToSkiNext.com`, text: shareText, url }).catch(() => {});
   } else {
     const full = `${shareText} ${url}`;
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(full).then(() => showToast('Plan copied — share with your crew!', 3200)).catch(() => fallbackCopy(full));
+      navigator.clipboard.writeText(full).then(() => showToast('Plan copied · share with your crew!', 3200)).catch(() => fallbackCopy(full));
     } else { fallbackCopy(full); }
   }
 }
@@ -3177,7 +3171,7 @@ function trackRecommendation(resortId, resortName) {
   // Skip entirely if nothing changed since last logged row
   if (stateKey === _lastRecommendedKey) return;
 
-  // Debounce: renderVerdict fires on every weather update — wait 2s for things to settle
+  // Debounce: renderVerdict fires on every weather update · wait 2s for things to settle
   if (_recommendDebounceTimer) clearTimeout(_recommendDebounceTimer);
 
   _recommendDebounceTimer = setTimeout(function () {
@@ -3231,7 +3225,7 @@ function trackFilterEvent(filterType, filterValue) {
       filter_value: filterValue || '',
       session_id:   sessionId
     })
-  }).catch(function () {}); // silent fail — never interrupt the UI
+  }).catch(function () {}); // silent fail · never interrupt the UI
 }
 
 // ─── Log all current filter state on Find My Mountain click ──────────────────
@@ -3629,7 +3623,7 @@ function wireEvents() {
 // ─── Weights loader ───────────────────────────────────────────────────────────
 // Fetches scoring constants from /api/weights before the app boots.
 // Falls back to hardcoded values if the endpoint is unavailable so the app
-// never breaks — the fallback contains the same values as the endpoint.
+// never breaks · the fallback contains the same values as the endpoint.
 async function loadWeights() {
   try {
     const res = await fetch('/api/weights');
@@ -3746,7 +3740,7 @@ function initialize() {
     if (found) {
       // Ski-report CTAs use ?resort=…#searchSection so users land in the planner. Shared planner
       // links include loc/lat in the query. In those cases do not auto-open the bottom detail
-      // panel or scroll past the hero — a linked resort (e.g. Grand Targhee) looked like it
+      // panel or scroll past the hero · a linked resort (e.g. Grand Targhee) looked like it
       // "loaded first" while the real top pick was still fetching forecasts.
       const hashId = (window.location.hash || '').replace(/^#/, '');
       const plannerFirstHash = hashId === 'searchSection' || hashId === 'compareSection' || hashId === 'comparePanel';
@@ -3756,7 +3750,7 @@ function initialize() {
 
       if (!deferResortDetail) {
         state.selectedId = found.id;
-        document.title = found.name + ' — WhereToSkiNext.com';
+        document.title = found.name + ' · WhereToSkiNext.com';
         setTimeout(() => {
           renderDetail();
           document.getElementById('detailSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3777,7 +3771,7 @@ function initialize() {
     const slug = getReportSlug();
     if (slug) {
       const found = findResortBySlug(slug);
-      if (found) { state.selectedId = found.id; document.title = found.name + ' — WhereToSkiNext.com'; renderDetail({ scroll: true }); return; }
+      if (found) { state.selectedId = found.id; document.title = found.name + ' · WhereToSkiNext.com'; renderDetail({ scroll: true }); return; }
     }
     state.selectedId = null;
     if (els.detailSection) els.detailSection.classList.add('hidden');
@@ -3813,10 +3807,10 @@ function initialize() {
       const raw = els.originInput.value.trim();
       const zipOnly = extractUsZip(raw) !== null;
       els.locationStatus.textContent = zipOnly
-        ? 'No match for that ZIP — try city & state (e.g. Denver, CO) or a street address.'
-        : 'Location not found — try a U.S. ZIP, city, or landmark.';
+        ? 'No match for that ZIP · try city & state (e.g. Denver, CO) or a street address.'
+        : 'Location not found · try a U.S. ZIP, city, or landmark.';
       els.locationStatus.classList.add('hero-location-status--error');
-      showToast(zipOnly ? 'Invalid or unsupported ZIP — try a city name' : 'Could not find that place');
+      showToast(zipOnly ? 'Invalid or unsupported ZIP · try a city name' : 'Could not find that place');
     }
   };
 
@@ -3863,20 +3857,20 @@ function initialize() {
       updatePlannerOriginLabel();
       syncVerdictVisibility();
     }, () => {
-      els.locationStatus.textContent = 'Location blocked or unavailable — allow access in your browser, or type a ZIP or city.';
+      els.locationStatus.textContent = 'Location blocked or unavailable · allow access in your browser, or type a ZIP or city.';
       els.locationStatus.classList.add('hero-location-status--error');
-      showToast('Location permission needed — use search instead');
+      showToast('Location permission needed · use search instead');
     });
   });
 
   // ── Silent auto-geolocation on first visit ──────────────────────────────
   // If no saved/URL origin, quietly ask the browser for location.
   // User sees a real scored result immediately instead of the empty state.
-  // If denied or unavailable we fail silently — the improved empty state handles it.
+  // If denied or unavailable we fail silently · the improved empty state handles it.
   if (!state.origin && navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       async function(pos) {
-        if (state.origin) return; // user set manually while we waited — don't override
+        if (state.origin) return; // user set manually while we waited · don't override
         state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
         els.originInput.value = 'Your location';
         els.locationStatus.textContent = '✓ Using your location';
@@ -3888,7 +3882,7 @@ function initialize() {
         render();
         await loadDriveTimes();
       },
-      function() { /* silently fail — improved empty state guides the user */ },
+      function() { /* silently fail · improved empty state guides the user */ },
       { timeout: 8000, maximumAge: 600000 }
     );
   }
