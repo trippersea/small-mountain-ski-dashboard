@@ -192,6 +192,20 @@ function crowdUtilityShort(label) {
   return 'Moderate crowds';
 }
 
+/** Crowd utility label plus optional delta vs top pick (HTML; base label escaped). */
+function crowdUtilityDeltaHtml(runnerCrowd, topPickCrowdScore) {
+  const base = esc(crowdUtilityShort(runnerCrowd.label));
+  if (topPickCrowdScore == null || runnerCrowd?.score == null) return base;
+  const delta = topPickCrowdScore - runnerCrowd.score;
+  if (delta >= 10) {
+    return `${base}<span class="runner-crowd-delta"> (${delta}pts lighter)</span>`;
+  }
+  if (delta <= -10) {
+    return `${base}<span class="runner-crowd-delta"> (${Math.abs(delta)}pts busier)</span>`;
+  }
+  return base;
+}
+
 // ── Crowd Explainer: visible block replacing hidden tooltip ────────────────
 function buildCrowdExplainerHtml(crowd) {
   if (!crowd || !crowd.reasons || !crowd.reasons.length) return '';
@@ -869,11 +883,19 @@ function runnerUpBlurb(snowInches, cf, passGroup) {
   return out.charAt(0).toUpperCase() + out.slice(1) + (out.endsWith('.') ? '' : '.');
 }
 
-function runnerDifferentiator(item, allRunners) {
+function runnerDifferentiator(item, allRunners, primaryCrowd) {
   const resort = item.resort;
   const _rWx   = state.weatherCache[resort.id]?.data;
   const _rSnow = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
   const drive  = getDriveMins(resort.id);
+  const runnerCf = crowdForecast(resort, _rWx);
+
+  if (primaryCrowd && runnerCf.score < primaryCrowd.score - 8) {
+    return 'Lighter crowds than your top pick';
+  }
+  if (primaryCrowd && runnerCf.score > primaryCrowd.score + 8) {
+    return 'Busier than your top pick';
+  }
 
   const drives = allRunners.map(r => getDriveMins(r.resort.id)).filter(Boolean);
   const isClosest = drive !== null && drives.length > 1 && drive === Math.min(...drives);
@@ -1965,12 +1987,12 @@ function renderVerdict(resorts) {
         : { vibe: 'Fair Enough', story: 'Loading…' };
       const _rGold = _rNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
       const _rReason = esc(runnerReasonLine(runningItems, item, rIdx));
-      const _rCrowdU = esc(crowdUtilityShort(cf.label));
+      const _rCrowdHtml = crowdUtilityDeltaHtml(cf, _crowd.score);
       const _rDriveU = esc(driveUtilitySegment(item.resort.id));
       return `<button type="button" class="vcard-mini-runner${_rGold}" data-mini-runner-id="${esc(item.resort.id)}">
         <span class="vmr-name">${esc(item.resort.name)}</span>
         <p class="vmr-reason">${_rReason}</p>
-        <div class="vmr-meta" aria-label="Drive and crowds">${_rDriveU} · ${_rCrowdU}</div>
+        <div class="vmr-meta" aria-label="Drive and crowds">${_rDriveU} · ${_rCrowdHtml}</div>
       </button>`;
     }).join('');
     return `<div class="vcard-runners-zone">
@@ -2150,7 +2172,7 @@ function renderVerdict(resorts) {
         const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
         const cf = crowdForecast(item.resort, item.wx);
         const _rBlurb = esc(runnerUpBlurb(_rSnow, cf, item.resort.passGroup));
-        const _diff = esc(runnerDifferentiator(item, runningItems));
+        const _diff = esc(runnerDifferentiator(item, runningItems, _crowd));
         const _rCtaLabel = _rSponsor?.tagline ? esc(_rSponsor.tagline) : 'Visit partner';
         const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation();trackSponsorClick('${esc(item.resort.name)}','runner_card','${esc(item.resort.id)}','')">${_rCtaLabel} →</a>` : '';
         const _rCallout = _rSponsor
@@ -2161,9 +2183,9 @@ function renderVerdict(resorts) {
           : '';
         const _crowdDotCls  = cf.label === 'Quiet' ? 'hn-crowd-dot--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'hn-crowd-dot--busy' : 'hn-crowd-dot--mod';
         const _crowdChipCls = cf.label === 'Quiet' ? 'crowd-quiet-chip' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip' : 'crowd-mod-chip';
-        const _crowdChipLabel = esc(crowdUtilityShort(cf.label));
+        const _crowdChipLabel = crowdUtilityDeltaHtml(cf, _crowd.score);
         const _crowdTipText   = esc(cf.reasons.slice(0, 3).join(' · ') || 'Based on holiday calendar, resort capacity, and distance from major metros.');
-        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls} nrc-crowd crowd-info-tip" tabindex="0" aria-label="Crowd forecast: ${_crowdChipLabel}. ${esc(cf.reasons[0] || '')}"><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>${_crowdChipLabel}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">${_crowdTipText}</span></div>`;
+        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls} nrc-crowd crowd-info-tip" tabindex="0" aria-label="Crowd forecast: ${esc(crowdUtilityShort(cf.label))}. ${esc(cf.reasons[0] || '')}"><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>${_crowdChipLabel}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">${_crowdTipText}</span></div>`;
         return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
           ${_rCallout}
           <div class="nrc-body">
