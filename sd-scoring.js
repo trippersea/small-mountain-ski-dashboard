@@ -625,6 +625,91 @@ function getDecisionContext() {
   };
 }
 
+// ─── Runner card differentiator (plain language, no point values) ─────────────
+function diffWordCount(s) {
+  return String(s).trim().split(/\s+/).filter(Boolean).length;
+}
+
+function combineRunnerPhrases(crowdPhrase, basePhrase, maxWords = 6) {
+  if (!crowdPhrase && !basePhrase) return 'Solid local option';
+  if (!crowdPhrase) return basePhrase;
+  if (!basePhrase) return crowdPhrase;
+  const candidates = [
+    `${crowdPhrase}, ${basePhrase}`,
+    `${basePhrase}, ${crowdPhrase}`,
+  ];
+  for (const s of candidates) {
+    if (diffWordCount(s) <= maxWords) return s;
+  }
+  if (diffWordCount(basePhrase) <= maxWords) return basePhrase;
+  return crowdPhrase;
+}
+
+function runnerCrowdPhrase(primary, backup) {
+  if (!primary?.crowd || !backup?.crowd) return null;
+  const topLabel = primary.crowd.label;
+  const runLabel = backup.crowd.label;
+  if (runLabel === topLabel) return null;
+  const crowdDelta = primary.crowd.score - backup.crowd.score;
+  if (crowdDelta >= 15) return 'Lighter crowds';
+  if (crowdDelta >= 8) return 'Slightly quieter';
+  if (crowdDelta <= -15) return 'More crowded';
+  if (crowdDelta <= -8) return 'Slightly busier';
+  return null;
+}
+
+function runnerDifferentiator(primary, backup, allRunners) {
+  if (!backup?.resort) return 'Solid local option';
+
+  const resort = backup.resort;
+  const _rWx   = state.weatherCache[resort.id]?.data;
+  const backupCrowd = backup.crowd || crowdForecast(resort, _rWx);
+  const _rSnow = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+  const drive  = backup.drive ?? getDriveMins(resort.id);
+  const primaryDrive = primary?.drive ?? (primary?.resort ? getDriveMins(primary.resort.id) : null);
+
+  const crowdPhrase = runnerCrowdPhrase(primary, { crowd: backupCrowd });
+
+  const primaryWx = primary?.resort ? state.weatherCache[primary.resort.id]?.data : null;
+  const primarySnow = primaryWx
+    ? (primaryWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0)
+    : null;
+
+  const drives = (allRunners || []).map(r => getDriveMins(r.resort.id)).filter(Boolean);
+  const isClosest = drive !== null && drives.length > 1 && drive === Math.min(...drives);
+
+  const snows = (allRunners || [])
+    .map(r => {
+      const wx = state.weatherCache[r.resort.id]?.data;
+      return wx ? (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+    })
+    .filter(x => x !== null);
+  const hasMostSnow = _rSnow !== null && snows.length > 1 && _rSnow === Math.max(...snows);
+
+  let basePhrase = null;
+
+  if (_rSnow !== null && _rSnow >= 4 && (hasMostSnow || (primarySnow != null && _rSnow > primarySnow + 1))) {
+    basePhrase = 'Better snow';
+  } else if (isClosest && drive !== null) {
+    basePhrase = 'Closest quick option';
+  } else if (hasMostSnow && _rSnow > 0) {
+    basePhrase = 'Better snow';
+  } else if (drive !== null && primaryDrive !== null && drive >= primaryDrive + 20) {
+    basePhrase = 'longer drive';
+  } else if (drive !== null && primaryDrive !== null && drive + 20 <= primaryDrive) {
+    basePhrase = 'shorter drive';
+  } else if (
+    typeof resort.price === 'number' &&
+    primary?.resort &&
+    typeof primary.resort.price === 'number' &&
+    resort.price < primary.resort.price - 10
+  ) {
+    basePhrase = 'Better value';
+  }
+
+  return combineRunnerPhrases(crowdPhrase, basePhrase);
+}
+
 // ─── Backup pick reason ───────────────────────────────────────────────────────
 function backupReason(primary, backup) {
   if (!primary || !backup) return 'solid fallback';

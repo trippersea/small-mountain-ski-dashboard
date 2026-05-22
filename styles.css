@@ -5901,13 +5901,6 @@ button.vcard-detail-btn:hover,
 .hn-crowd-dot--mod   { background: #f59e0b; }
 .hn-crowd-dot--busy  { background: #ef4444; }
 
-.runner-crowd-delta {
-  font-size: 10px;
-  font-weight: 400;
-  opacity: 0.55;
-  margin-left: 3px;
-}
-
 /* Crowd chip colour themes — dark-glass context inside runner-up section */
 .crowd-quiet-chip {
   background: rgba(20,160,80,0.22);
