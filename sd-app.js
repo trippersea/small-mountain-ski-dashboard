@@ -1588,50 +1588,15 @@ function computeVerdict(resorts) {
   }).sort((a, b) => b.breakdown.score - a.breakdown.score);
 
   const { resort, wx, breakdown, history } = ranked[0];
-  const forecast   = wx.forecast || [];
-  const fi         = targetForecastIndex();
-  const tomorrowIn = forecast[fi]?.snow || 0;
-  const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
-  const histTotal  = history?.total ?? null;
-  const histDays   = history?.days ?? null;
-
-  const baseLo      = forecast[fi]?.lo ?? 30;
-  const sLo         = summitTempF(baseLo, resort.baseElevation, resort.summitElevation);
-  const rainLikely  = sLo > 34;
-  const warmCaution = sLo > 28 && !rainLikely;
-  const coldSnow    = sLo <= 24;
+  const histDays = history?.days ?? null;
 
   const drive     = getDriveMins(resort.id);
   const driveText = drive !== null ? formatDrive(resort.id) : '';
 
-  let tier, headline, detail, subPoints = [];
-
-  if (rainLikely) {
-    tier = 'bad'; headline = 'Skip this weekend';
-    detail = `Temperatures look too warm · rain likely above ${resort.baseElevation.toLocaleString()} ft at ${esc(resort.name)}.`;
-  } else if (stormTotal >= 6 || tomorrowIn >= 4) {
-    tier = 'great'; headline = 'Go · strong forecast';
-    detail = tomorrowIn >= 4
-      ? `${tomorrowIn.toFixed(1)}" expected tomorrow at ${esc(resort.name)}. That's a powder day.`
-      : `${stormTotal.toFixed(1)}" forecast over 3 days · this is what you wait all season for.`;
-    if (coldSnow) subPoints.push('Ideal temps · light, dry snow expected');
-    if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week · base is deep`);
-  } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6)) {
-    tier = 'good'; headline = 'Decent forecast · worth the trip';
-    if (stormTotal >= 2) {
-      detail = `${stormTotal.toFixed(1)}" in the 3-day forecast at ${esc(resort.name)}. Not a powder day, but fresh snow makes a real difference.`;
-    } else {
-      detail = `${histTotal}" fell this week at ${esc(resort.name)}. Expect a solid, consolidated base even without new snow.`;
-    }
-    if (warmCaution) subPoints.push('Snow may be dense/wet · get out early for best runs');
-  } else if (stormTotal >= 0.5) {
-    tier = 'marginal'; headline = 'Marginal · manage your expectations';
-    detail = `Only ${stormTotal.toFixed(1)}" in the forecast. Mostly working with the existing base · groomed runs will be fine.`;
-    subPoints.push('Stick to groomed trails, get out early, avoid south-facing terrain');
-  } else {
-    tier = 'bad'; headline = 'Probably skip this one';
-    detail = `Less than half an inch forecast and limited recent snowfall at ${esc(resort.name)}.`;
-  }
+  // Unified verdict: one shared function so hero card, detail panel, and compare
+  // all use the same tier thresholds and the same trip-mode snow window.
+  const vd = verdictFromBreakdown(resort, wx, breakdown);
+  const { tier, label: headline, detail, subPoints, stormTotal, tomorrowIn, histTotal } = vd;
 
   return { tier, headline, detail, subPoints, resort, breakdown, drive, driveText, tomorrowIn, stormTotal, histTotal, histDays };
 }
@@ -2179,7 +2144,7 @@ function buildWriteupPrompt(v, origin) {
   const tomorrow   = tomorrowForecast(wx);
   const weatherStr = tomorrow ? `tomorrow low ${tomorrow.lo}°F, high ${tomorrow.hi}°F, wind ${tomorrow.wind || 0} mph` : null;
   const facts = [
-    `${tomorrowIn.toFixed(1)}" forecast tomorrow, ${stormTotal.toFixed(1)}" over 3 days`,
+    `${tomorrowIn.toFixed(1)}" forecast for your ski day, ${stormTotal.toFixed(1)}" in the window`,
     weatherStr, driveText ? driveStr : null, histStr,
     resort.vertical ? `${resort.vertical.toLocaleString()}ft vertical` : null,
     resort.passGroup !== 'Independent' ? `${resort.passGroup} pass access` : null,

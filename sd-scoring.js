@@ -49,6 +49,18 @@ function targetForecastIndex() {
   return Math.max(0, Math.min(2, diffDays - 1));
 }
 
+// ─── Trip-mode snow window ────────────────────────────────────────────────────
+// Returns the snow total that matches what the ranking engine scored on.
+// Day trip (howFar=0): only the target forecast day, so rank and story agree.
+// Weekend (howFar=1) or All (howFar=2): full 3-day sum — the whole window matters.
+function tripWindowSnow(forecast) {
+  if (state.howFar === 0) {
+    const fi = targetForecastIndex();
+    return forecast[fi]?.snow || 0;
+  }
+  return forecast.reduce((s, f) => s + (f.snow || 0), 0);
+}
+
 // ─── Temperature bucket filter ────────────────────────────────────────────────
 function tempBucketMatches(temp) {
   if (state.tempBucket === 'any' || temp == null) return true;
@@ -421,12 +433,15 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
 
 // ─── Unified verdict from a pre-computed breakdown ────────────────────────────
 // Single source of truth for tier + label + detail used by BOTH the verdict
-// card (computeVerdict) and the detail panel (renderDetail). Replaces the
-// static score threshold labels that previously caused contradictory results.
+// card (computeVerdict) and the detail panel (renderDetail).
+//
+// Snow window: uses tripWindowSnow() so the story matches what the ranking saw.
+// Day trip → target day only. Weekend/All → 3-day sum.
+// Copy avoids "3 days" language for day-trippers who only care about their day.
 function verdictFromBreakdown(resort, wx, breakdown) {
   const forecast   = wx?.forecast || [];
   const fi         = targetForecastIndex();
-  const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
+  const stormTotal = tripWindowSnow(forecast);   // trip-mode aware — matches ranking
   const tomorrowIn = forecast[fi]?.snow || 0;
   const hist       = historyCache.get(resort.id);
   const histTotal  = hist?.total ?? null;
@@ -440,6 +455,11 @@ function verdictFromBreakdown(resort, wx, breakdown) {
   const target  = snowPreferenceTarget();
   const snowMet = target === 0 || stormTotal >= target;
 
+  // Copy helpers: day trip vs weekend framing so "3 days" never describes a 1-day trip.
+  const isWeekend  = state.howFar >= 1;
+  const inWindow   = isWeekend ? 'in the forecast this weekend' : 'in the forecast';
+  const overWindow = isWeekend ? 'over the weekend'            : 'forecast';
+
   let tier, label, detail, subPoints = [];
 
   if (rainLikely) {
@@ -447,30 +467,30 @@ function verdictFromBreakdown(resort, wx, breakdown) {
     label = 'Skip — rain likely';
     detail = `Temperatures look too warm — rain likely above ${resort.baseElevation.toLocaleString()} ft.`;
   } else if (target >= 6 && !snowMet) {
-    // User wants storm snow or powder but forecast falls short
+    // User wants storm snow or powder but the window falls short.
     tier  = 'marginal';
     label = 'Below your snow target';
-    detail = `You're looking for ${target}"+ of snow — only ${stormTotal.toFixed(1)}" in the forecast here.`;
+    detail = `You're looking for ${target}"+ of snow — only ${stormTotal.toFixed(1)}" ${inWindow}.`;
     subPoints.push('Try widening your snow filter or checking Storm Chaser for better options');
   } else if (stormTotal >= 6 || tomorrowIn >= 4) {
     tier  = 'great';
     label = 'Go — excellent conditions';
     detail = tomorrowIn >= 4
-      ? `${tomorrowIn.toFixed(1)}" expected tomorrow. That's a powder day.`
-      : `${stormTotal.toFixed(1)}" forecast over 3 days — this is what you wait all season for.`;
+      ? `${tomorrowIn.toFixed(1)}" ${overWindow}. That's a powder day.`
+      : `${stormTotal.toFixed(1)}" ${inWindow} — this is what you wait all season for.`;
     if (coldSnow) subPoints.push('Ideal temps — light, dry snow expected');
     if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week — base is deep`);
   } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6)) {
     tier  = 'good';
     label = 'Good conditions';
     detail = stormTotal >= 2
-      ? `${stormTotal.toFixed(1)}" in the 3-day forecast — fresh snow makes a real difference.`
+      ? `${stormTotal.toFixed(1)}" ${inWindow} — fresh snow makes a real difference.`
       : `${histTotal}" fell this week — expect a solid, consolidated base.`;
     if (warmCaution) subPoints.push('Snow may be dense/wet — get out early for best runs');
   } else if (stormTotal >= 0.5) {
     tier  = 'marginal';
     label = 'Marginal — manage expectations';
-    detail = `Only ${stormTotal.toFixed(1)}" in the forecast. Mostly working with the existing base — groomed runs will be fine.`;
+    detail = `Only ${stormTotal.toFixed(1)}" ${inWindow}. Mostly working with the existing base — groomed runs will be fine.`;
     subPoints.push('Stick to groomed trails, get out early, avoid south-facing terrain');
   } else {
     tier  = 'bad';
@@ -487,7 +507,8 @@ function verdictFromBreakdown(resort, wx, breakdown) {
 function preferenceReasons(resort, wx, breakdown) {
   const reasons    = [];
   const forecast   = wx?.forecast || [];
-  const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
+  // Use tripWindowSnow so reasons match what the ranking engine actually scored on.
+  const stormTotal = tripWindowSnow(forecast);
   const snowPref   = state.weights.snow  || 1;
   const crowdPref  = state.weights.crowd || 1;
   const valuePref  = state.weights.value || 0;
@@ -583,9 +604,12 @@ function passBreakEven(passGroup, skiDays, avgTicketPrice) {
 }
 
 // ─── Weather risk score (0–100) ───────────────────────────────────────────────
+// Uses targetForecastIndex so it stays consistent with whichever day the
+// ranking and verdict tier are evaluating. Previously always used forecast[0].
 function weatherRiskScore(wx) {
   if (!wx) return 50;
-  const fc = tomorrowForecast(wx);
+  const fi = targetForecastIndex();
+  const fc = wx?.forecast?.[fi] || tomorrowForecast(wx);
   if (!fc) return 50;
   let risk = 0;
   if (fc.wind > 25) risk += 35;
@@ -664,16 +688,15 @@ function runnerDifferentiator(primary, backup, allRunners) {
   const resort = backup.resort;
   const _rWx   = state.weatherCache[resort.id]?.data;
   const backupCrowd = backup.crowd || crowdForecast(resort, _rWx);
-  const _rSnow = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
+  // Use tripWindowSnow so "Better snow" reflects the same window as the ranking.
+  const _rSnow = _rWx ? tripWindowSnow(_rWx.forecast || []) : null;
   const drive  = backup.drive ?? getDriveMins(resort.id);
   const primaryDrive = primary?.drive ?? (primary?.resort ? getDriveMins(primary.resort.id) : null);
 
   const crowdPhrase = runnerCrowdPhrase(primary, { crowd: backupCrowd });
 
   const primaryWx = primary?.resort ? state.weatherCache[primary.resort.id]?.data : null;
-  const primarySnow = primaryWx
-    ? (primaryWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0)
-    : null;
+  const primarySnow = primaryWx ? tripWindowSnow(primaryWx.forecast || []) : null;
 
   const drives = (allRunners || []).map(r => getDriveMins(r.resort.id)).filter(Boolean);
   const isClosest = drive !== null && drives.length > 1 && drive === Math.min(...drives);
