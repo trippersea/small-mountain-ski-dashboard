@@ -671,14 +671,23 @@ function combineRunnerPhrases(crowdPhrase, basePhrase, maxWords = 6) {
 
 function runnerCrowdPhrase(primary, backup) {
   if (!primary?.crowd || !backup?.crowd) return null;
-  const topLabel = primary.crowd.label;
-  const runLabel = backup.crowd.label;
-  if (runLabel === topLabel) return null;
+  const topLabel   = primary.crowd.label;
+  const runLabel   = backup.crowd.label;
   const crowdDelta = primary.crowd.score - backup.crowd.score;
+
+  if (runLabel === topLabel) {
+    // Same bucket label — only surface the gap when it's meaningful enough to
+    // tell a real story (12+ points within the same label range). No raw numbers
+    // in copy — just signal direction.
+    if (crowdDelta >= 12) return 'Quieter than it looks';
+    if (crowdDelta <= -12) return 'Busier than it looks';
+    return null;
+  }
+
   if (crowdDelta >= 15) return 'Lighter crowds';
-  if (crowdDelta >= 8) return 'Slightly quieter';
+  if (crowdDelta >= 8)  return 'Slightly quieter';
   if (crowdDelta <= -15) return 'More crowded';
-  if (crowdDelta <= -8) return 'Slightly busier';
+  if (crowdDelta <= -8)  return 'Slightly busier';
   return null;
 }
 
@@ -765,13 +774,26 @@ function primaryReasons(item) {
 }
 
 // ─── Hidden gem score ─────────────────────────────────────────────────────────
+// Uses live tripWindowSnow when wx is available so gems with actual forecast snow
+// bubble ahead of gems that just have a good historical average.
+// avgSnowfall / 4 stays as a reliability proxy when live data is absent.
 function hiddenGemScore(resort, wx = null) {
   const crowd = crowdForecast(resort, wx).score;
   let score = 0;
   score += Math.max(0, 100 - crowd);
   score += Math.max(0, 120 - resort.price);
   score += Math.min(60, resort.vertical / 25);
-  score += resort.avgSnowfall / 4;
+
+  if (wx) {
+    // Live snow: up to 25 bonus points, scaled so 8" in the trip window = full bonus.
+    const liveSnow = tripWindowSnow(wx.forecast || []);
+    score += Math.min(25, liveSnow * 3.125);
+    // Historical average still contributes at reduced weight when live data present.
+    score += resort.avgSnowfall / 8;
+  } else {
+    score += resort.avgSnowfall / 4;
+  }
+
   if (resort.passGroup === 'Independent' || resort.passGroup === 'Indy') score += 15;
   return Math.round(score);
 }

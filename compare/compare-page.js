@@ -8,16 +8,17 @@
 //
 // Session shape (written by sd-app.js):
 // {
-//   ts:           <timestamp ms>,
-//   origin:       { label: 'Boston, MA', lat, lon },
-//   passFilter:   'All' | 'Epic' | 'Ikon' | 'Indy',
-//   howFar:       0 | 1 | 2,
-//   skiDayPreset: 'weekday' | 'friday' | 'saturday' | 'sunday',
-//   topPick:      { id, name, state, passGroup, driveText, stormTotal,
-//                   tomorrowIn, wxForecast, crowdLabel, price, vertical,
-//                   trails, avgSnowfall, headline, detail,
-//                   baseElevation?, summitElevation?, score? },
-//   runners:      [ /* same shape, up to 3, may lack headline/detail */ ]
+//   ts:            <timestamp ms>,
+//   origin:        { label: 'Boston, MA', lat, lon },
+//   passFilter:    'All' | 'Epic' | 'Ikon' | 'Indy',
+//   howFar:        0 | 1 | 2,
+//   skiDayPreset:  'weekday' | 'friday' | 'saturday' | 'sunday',
+//   forecastIndex: 0 | 1 | 2,  // which forecast[] slot was active (0=tomorrow, 1=day after, 2=third day)
+//   topPick:       { id, name, state, passGroup, driveText, stormTotal,
+//                    tomorrowIn, wxForecast, crowdLabel, price, vertical,
+//                    trails, avgSnowfall, headline, detail,
+//                    baseElevation?, summitElevation?, score? },
+//   runners:       [ /* same shape, up to 3, may lack headline/detail */ ]
 // }
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -52,14 +53,17 @@
   }
 
   // Builds a readable forecast line: "4" tomorrow" or "Dry forecast, 36°F"
+  // Uses forecastIndex (from session) so the temperature matches whichever day
+  // the ranking engine was evaluating — not always forecast[0].
   function forecastLine(stormTotal, tomorrowIn, wxForecast) {
     let snow;
-    if (tomorrowIn >= 4)        snow = `${tomorrowIn.toFixed(0)}\u2033 tomorrow`;
+    if (tomorrowIn >= 4)        snow = `${tomorrowIn.toFixed(0)}\u2033 forecast`;
     else if (stormTotal >= 2)   snow = `${Math.round(stormTotal)}\u2033 in forecast`;
     else if (stormTotal >= 0.5) snow = `${stormTotal.toFixed(1)}\u2033 forecast`;
     else                        snow = 'Dry forecast';
 
-    const hi = wxForecast?.[0]?.hi;
+    const fc = wxForecast?.[forecastIndex] || wxForecast?.[0];
+    const hi = fc?.hi;
     return hi != null ? `${snow}, ${Math.round(hi)}\u00b0F` : snow;
   }
 
@@ -109,9 +113,13 @@
   // Generate a short reason for runners that have no headline/detail
   function autoReason(r) {
     const parts = [];
+    // Use the session's ski day label so "tomorrow" isn't hardcoded for a Saturday trip.
+    const daySnowLabel = skiDayPreset && skiDayPreset !== 'weekday'
+      ? (dayLabel(skiDayPreset) + ' forecast')
+      : 'forecast';
     if (r.driveText)                         parts.push(r.driveText + ' away');
-    if (r.stormTotal >= 4)                   parts.push(`${Math.round(r.stormTotal)}\u2033 of snow forecast`);
-    else if (r.tomorrowIn >= 1)              parts.push(`${r.tomorrowIn.toFixed(1)}\u2033 tomorrow`);
+    if (r.stormTotal >= 4)                   parts.push(`${Math.round(r.stormTotal)}\u2033 of snow ${daySnowLabel}`);
+    else if (r.tomorrowIn >= 1)              parts.push(`${r.tomorrowIn.toFixed(1)}\u2033 ${daySnowLabel}`);
     const cl = (r.crowdLabel || '').toLowerCase();
     if (cl.includes('quiet') || cl.includes('light')) parts.push('light crowds expected');
     if (r.passGroup && r.passGroup !== 'Independent') parts.push(`${r.passGroup} pass access`);
@@ -155,7 +163,7 @@
   }
 
   // ─── Hydrate page ──────────────────────────────────────────────────────────
-  const { origin, passFilter, howFar, skiDayPreset, topPick, runners = [] } = session;
+  const { origin, passFilter, howFar, skiDayPreset, forecastIndex = 0, topPick, runners = [] } = session;
   const city = cityName(origin.label);
 
   // Page title
@@ -201,6 +209,11 @@
       }
     });
   }
+
+  // ── snowWindowLabel: trip-mode aware sub-label for snow forecast cells ───────
+  // Day trip = "forecast", Weekend = "weekend forecast", All = "3-day forecast".
+  // Used in both the comparison table and the full rankings table.
+  const snowWindowLabel = howFar === 0 ? 'forecast' : howFar === 1 ? 'weekend forecast' : '3-day forecast';
 
   // ════════════════════════════════════════════════════════════════
   // BUILD AMAZON-STYLE COMPARISON TABLE
@@ -313,18 +326,21 @@
     );
 
     // ── Row 4: Snow forecast ──
+    // Uses forecastIndex so temperature matches the day the ranking engine evaluated.
+    // snowWindowLabel is defined at IIFE scope (above) for use here and in the rankings tbody.
     function forecastCell(r) {
       const st = r.stormTotal || 0;
       const ti = r.tomorrowIn || 0;
-      const hi = r.wxForecast && r.wxForecast[0] ? r.wxForecast[0].hi : null;
+      const fc = r.wxForecast && r.wxForecast[forecastIndex] ? r.wxForecast[forecastIndex] : (r.wxForecast && r.wxForecast[0]);
+      const hi = fc?.hi != null ? fc.hi : null;
       const tempStr = hi != null ? '<div class="cp-cgt-sub">High ' + Math.round(hi) + '\u00b0F</div>' : '';
       if (ti >= 4) {
         return '<div class="cp-cgt-snow-big">' + ti.toFixed(0) + '\u2033</div>' +
-               '<div class="cp-cgt-sub">tomorrow' + (hi != null ? ' \u00B7 High ' + Math.round(hi) + '\u00b0F' : '') + '</div>';
+               '<div class="cp-cgt-sub">' + snowWindowLabel + (hi != null ? ' \u00B7 High ' + Math.round(hi) + '\u00b0F' : '') + '</div>';
       }
       if (st >= 0.5) {
         return '<div class="cp-cgt-snow-big">' + st.toFixed(1) + '\u2033</div>' +
-               '<div class="cp-cgt-sub">3-day forecast' + (hi != null ? ' \u00B7 High ' + Math.round(hi) + '\u00b0F' : '') + '</div>';
+               '<div class="cp-cgt-sub">' + snowWindowLabel + (hi != null ? ' \u00B7 High ' + Math.round(hi) + '\u00b0F' : '') + '</div>';
       }
       return '<div class="cp-cgt-snow-dry">Dry forecast</div>' + tempStr;
     }
@@ -436,7 +452,8 @@
   if (tbody) {
     const allResorts = [topPick, ...runners];
     tbody.innerHTML = allResorts.map(function (r, i) {
-      const snowText  = r.stormTotal >= 0.5 ? `${r.stormTotal.toFixed(1)}\u2033 forecast` : 'Dry forecast';
+      // stormTotal is already trip-mode aware (written by saveCompareSession using tripWindowSnow).
+      const snowText  = r.stormTotal >= 0.5 ? `${r.stormTotal.toFixed(1)}\u2033 ${snowWindowLabel}` : 'Dry forecast';
       const priceText = r.price ? `$${r.price}` : '\u2014';
       const driveText = r.driveText || '\u2014';
       const crowdText = crowdTopLabel(r.crowdLabel) || '\u2014';

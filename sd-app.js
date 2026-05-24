@@ -276,7 +276,9 @@ function loadSavedWeights() {
   // W may not be loaded yet at state-init time · use hardcoded fallback so
   // the app boots synchronously; weights are refreshed from W after loadWeights() resolves.
   if (W) return { ...W.DEFAULT_WEIGHTS };
-  return { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 };
+  // drive is intentionally absent — normalizedWeights() computes drive as a fixed
+  // share of remaining weight and never reads state.weights.drive.
+  return { snow: 1, size: 0, value: 0, crowd: 1 };
 }
 function loadSavedPassPreference() { return 'any'; }
 function normalizeOriginForState(o) {
@@ -1528,11 +1530,14 @@ function saveCompareSession(v, runningItems) {
   const freshPickScore = freshPickBreakdown ? Math.round(freshPickBreakdown.score) : null;
 
   const session = {
-    ts:           Date.now(),
-    origin:       { ...state.origin },
-    passFilter:   state.passFilter,
-    howFar:       state.howFar,
-    skiDayPreset: state.skiDayPreset,
+    ts:            Date.now(),
+    origin:        { ...state.origin },
+    passFilter:    state.passFilter,
+    howFar:        state.howFar,
+    skiDayPreset:  state.skiDayPreset,
+    // forecastIndex tells compare-page which forecast slot the ranking used,
+    // so temperature and snow copy match what the user was shown on the homepage.
+    forecastIndex: targetForecastIndex(),
     topPick: {
       id:         resort.id,
       name:       resort.name,
@@ -1553,8 +1558,10 @@ function saveCompareSession(v, runningItems) {
     runners: (runningItems || []).map(item => {
       const rWx    = state.weatherCache[item.resort.id]?.data;
       const rCrowd = crowdForecast(item.resort, rWx);
-      const rStorm = (rWx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-      const rTomIn = rWx?.forecast?.[0]?.snow || 0;
+      // Use the same trip-mode window and target day as the ranking engine.
+      const rFi    = targetForecastIndex();
+      const rStorm = rWx ? tripWindowSnow(rWx.forecast || []) : 0;
+      const rTomIn = rWx?.forecast?.[rFi]?.snow || 0;
       return {
         id:         item.resort.id,
         name:       item.resort.name,
@@ -2343,7 +2350,14 @@ function renderHiddenGems(resorts) {
     els.hiddenGemGrid.innerHTML = '<div class="planner-card hidden-gems-empty" role="status">No picks here yet · widen your filters to see hidden gems.</div>';
     return;
   }
-  const withScore = resorts.map(r => ({ r, score: hiddenGemScore(r, state.weatherCache[r.id]?.data) }));
+  // Apply the same drive-tier gate as the verdict engine. A day tripper from Boston
+  // should not see a gem that is a 5-hour drive. If no origin, show all.
+  const pool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
+  if (!pool.length) {
+    els.hiddenGemGrid.innerHTML = '<div class="planner-card hidden-gems-empty" role="status">No gems in this drive window · try widening your distance range.</div>';
+    return;
+  }
+  const withScore = pool.map(r => ({ r, score: hiddenGemScore(r, state.weatherCache[r.id]?.data) }));
   withScore.sort((a, b) => b.score - a.score);
   const top = withScore.slice(0, 3);
   els.hiddenGemGrid.innerHTML = top.map(({ r }) => {
@@ -3606,7 +3620,9 @@ async function loadWeights() {
         PRICE_MAX: 329, PRICE_MIN: 40, CROWD_SCALE: 85,
       },
       SCORE_WEIGHTS: { snow: 0.30, skiability: 0.20, fit: 0.15, value: 0.10, crowd: 0.10, drive: 0.15 },
-      DEFAULT_WEIGHTS: { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 },
+      // drive is absent from DEFAULT_WEIGHTS: normalizedWeights() computes it as
+      // remaining * 0.18 and never reads state.weights.drive.
+      DEFAULT_WEIGHTS: { snow: 1, size: 0, value: 0, crowd: 1 },
     };
   }
 }
