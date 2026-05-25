@@ -3,6 +3,17 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
+  "crons": [
+    {
+      "path": "/api/newsletter-generator",
+      "schedule": "0 23 * * 4"
+    }
+  ],
+  "functions": {
+    "api/newsletter-generator.js": {
+      "maxDuration": 120
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
