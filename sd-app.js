@@ -339,15 +339,6 @@ function getSponsor(resortId) {
     .cond-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
     .cond-chip { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,.13); color:rgba(240,246,252,.85); border:1px solid rgba(255,255,255,.18); }
     .cond-chip--surface { background:rgba(34,179,138,.22); color:#6ee7b7; border-color:rgba(110,231,183,.3); }
-    .vcard-lodging { margin:14px 0 0; border-radius:10px; background:#e8f4fc; border:1px solid #bfdbfe; overflow:hidden; }
-    .vcard-lodging-link { display:flex; align-items:center; gap:10px; padding:12px 16px; text-decoration:none; color:#2b6de9; font-size:14px; font-weight:600; transition:background .12s; }
-    .vcard-lodging-link:hover { background:#dbeafe; }
-    .vcard-lodging-icon { font-size:16px; flex-shrink:0; }
-    .vcard-lodging-text { flex:1; }
-    .vcard-lodging-arrow { color:#2b6de9; font-weight:700; }
-    .vcard-lodging-sub { padding:0 16px 8px; font-size:10px; color:#7a92a8; letter-spacing:.03em; }
-    .table-lodging-link { font-size:12px; font-weight:400; color:#9ca3af; text-decoration:none; white-space:nowrap; }
-    .table-lodging-link:hover { text-decoration:underline; }
 
     /* ── Also in the running (legacy strip + unified zone) ──────────────────── */
     .vcard-runners-strip { margin: 10px -22px -18px; padding: 14px 22px 16px; border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 0 0 12px 12px; }
@@ -415,14 +406,6 @@ function getSponsor(resortId) {
     .vcard-guidance-compact.vcard-guidance--soft .vcard-guidance-compact-btn:hover { background: rgba(43,109,233,.35); border-color: rgba(147,197,253,.55); color: #fff; }
     .vcard-guidance-compact-btn { background: none; border: none; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: #fca5a5; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color .12s; }
     .vcard-guidance-compact-btn:hover { color: #f87171; }
-    .hn-hero-verdict-dock .vcard-lodging-slim { margin-top: 16px; padding: 10px 14px; background: rgba(255,255,255,.04) !important; border: 1px solid rgba(255,255,255,.08) !important; border-radius: 10px; }
-    .hn-hero-verdict-dock .vcard-lodging-slim-link { color: #bfdbfe !important; }
-
-    /* ── Lodging slim row ───────────────────────────────────────────────────── */
-    .vcard-lodging-slim { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 12px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); border-radius: 8px; }
-    .vcard-lodging-slim-link { font-size: 12px; font-weight: 600; color: #93c5fd; text-decoration: none; flex: 1; transition: color .12s; }
-    .vcard-lodging-slim-link:hover { color: #bfdbfe; text-decoration: underline; }
-    .vcard-lodging-slim-tag { font-size: 10px; color: rgba(240,246,252,.35); white-space: nowrap; flex-shrink: 0; }
 
     /* ── Verdict context line: "Based on: city · trip · pass · day" ─────────── */
     .vcard-context-line { font-size: 10px; color: rgba(240,246,252,.58); margin: 2px 0 6px; letter-spacing: .01em; line-height: 1.45; }
@@ -880,23 +863,6 @@ function formatDistanceFromOrigin(resortId) {
   return `Distance: ${Math.round(km * 0.621371)} mi`;
 }
 
-// ─── Booking.com affiliate URL (Awin) ────────────────────────────────────────
-const AWIN_BOOKING_REDIRECT = 'https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2816032';
-
-function awinBookingRedirect(bookingSearchResultsUrl) {
-  return `${AWIN_BOOKING_REDIRECT}&ued=${encodeURIComponent(bookingSearchResultsUrl)}`;
-}
-
-function bookingUrl(resort) {
-  const dest = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(resort.name + ', ' + resort.state)}`;
-  return awinBookingRedirect(dest);
-}
-
-function bookingSearchUrl(searchQuery) {
-  const dest = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(searchQuery)}`;
-  return awinBookingRedirect(dest);
-}
-
 // ─── PATCH 1: Resort photo helper ────────────────────────────────────────────
 // Defaults to Trip's own /hero-bg.jpg for every resort.
 // To add a resort-specific photo: add a `photo` field to that resort in
@@ -911,19 +877,10 @@ function resortPhotoStyle(resort, gradientCss) {
   return `background-image: ${grad}, url('${photo}'); background-size: cover; background-position: center 40%;`;
 }
 
-/** Weekend lodging strip: top-pick area search via Awin, or generic ski search if no verdict yet.
- *  When trip is Weekend (howFar === 1) and the verdict card shows the in-card lodging module, hide this strip to avoid duplicate CTAs. */
+/** Weekend lodging strip removed — affiliate links no longer active. */
 function syncWeekendLodgingStrip(verdict) {
   const strip = document.getElementById('hnBookingStrip');
-  const a = strip?.querySelector('a.hn-booking-btn');
-  if (!strip) return;
-  const weekend = state.howFar >= 1;
-  const lodgingInVerdictCard = state.howFar === 1 && verdict?.resort;
-  strip.hidden = !weekend || lodgingInVerdictCard;
-  strip.style.display = (!weekend || lodgingInVerdictCard) ? 'none' : '';
-  if (!a || !weekend || lodgingInVerdictCard) return;
-  a.href = verdict?.resort ? bookingUrl(verdict.resort) : bookingSearchUrl('ski resort');
-  a.setAttribute('rel', 'noopener sponsored');
+  if (strip) strip.hidden = true;
 }
 
 // ─── Haversine / drive estimates ──────────────────────────────────────────────
@@ -1809,13 +1766,6 @@ function renderVerdict(resorts) {
         <span class="vcard-refine-hint-inline"><span class="vcard-refine-hint-line">Conditions look tight. </span><button type="button" class="vcard-refine-hint-link" id="verdictRefineGuidanceBtn">${esc(_widenSuggestion)}</button></span>
       </p>`
     : '';
-  const _lodgingUrl = bookingUrl(resort);
-  const lodgingModuleHtml = state.howFar === 1 && !splitHero
-    ? `<div class="vcard-lodging-slim">
-        <a class="vcard-lodging-slim-link" href="${_lodgingUrl}" target="_blank" rel="noopener sponsored" data-track-placement="verdict_lodging" data-track-resort="${esc(resort.name)}">Find lodging near ${esc(_bookName)} &rarr;</a>
-        <span class="vcard-lodging-slim-tag">weekend &middot; affiliate</span>
-      </div>`
-    : '';
   const _wxVerdict = state.weatherCache[resort.id]?.data;
   const _narrative = getMountainNarrative(buildNarrativeMountainPayload(resort, _wxVerdict));
   const _pureGoldCls = _narrative.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
@@ -1959,7 +1909,6 @@ function renderVerdict(resorts) {
           </button>
         </div>
         ${guidanceInsetHtml}
-        ${lodgingModuleHtml}
         ${runnerStripHtml}
       </div>
        </div>`;
@@ -2030,13 +1979,6 @@ function renderVerdict(resorts) {
   }
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
-
-  els.verdictCard.querySelectorAll('a[data-track-placement]').forEach(a => {
-    a.addEventListener('click', () => {
-      trackEvent('booking_click', { placement: a.dataset.trackPlacement, resort: a.dataset.trackResort });
-      trackSponsorClick(a.dataset.trackResort || '', a.dataset.trackPlacement || 'verdict_lodging', '', '');
-    });
-  });
 
   // PATCH 5: Runner-up section title · pass + proximity angle
   const _hnSection = document.getElementById('hnRunnerUpSection');
@@ -2582,12 +2524,6 @@ function renderCompareTable(resorts) {
 
   renderMobileCards(displayed);
 
-  els.comparisonBody.querySelectorAll('a[data-track-placement="table_row"]').forEach(a => {
-    a.addEventListener('click', () => {
-      trackEvent('booking_click', { placement: 'table_row', resort: a.dataset.trackResort });
-      trackSponsorClick(a.dataset.trackResort || '', 'table_row', '', '');
-    });
-  });
 }
 
 function renderCompareTray() {
@@ -3029,7 +2965,6 @@ function renderMobileCards(decorated, emptyOpts) {
         <label class="mob-compare-label"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /> Compare</label>
         <div class="mob-card-actions">
           ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Website</a>` : ''}
-          <a class="mob-stay-btn" href="${bookingUrl(resort)}" target="_blank" rel="noopener sponsored" data-track-placement="table_row" data-track-resort="${esc(resort.name)}" onclick="event.stopPropagation()">Stay nearby <span class="affiliate-badge">affiliate</span></a>
           <button type="button" class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details →</button>
         </div>
       </div>
@@ -3266,7 +3201,6 @@ function wireEvents() {
   wireHeroV2();
   // Weekend lodging strip affiliate tracking
   document.addEventListener('click', function(e) {
-    const btn = e.target.closest('a.hn-booking-btn');
     if (!btn) return;
     const verdict = computeVerdictStaged(filteredResorts());
     const resortName = verdict && verdict.resort ? verdict.resort.name : '';
