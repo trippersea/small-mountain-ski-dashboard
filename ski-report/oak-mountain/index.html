@@ -89,6 +89,60 @@
         "item": "https://www.wheretoskinext.com/ski-report/oak-mountain/"
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is Oak Mountain on the Epic, Ikon, or Indy Pass?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Oak Mountain is an independent mountain and is not on the Epic Pass, Ikon Pass, or Indy Pass. Day tickets are available directly through the resort at approximately $77."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many trails does Oak Mountain have?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Oak Mountain has 31 trails covering 130 skiable acres with 650 feet of vertical drop. The terrain breakdown is roughly 45% beginner, 27% intermediate, and 18% advanced or expert."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Oak Mountain good for beginners?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. About 45% of the terrain at Oak Mountain is rated for beginners, making it a solid choice for newer skiers and families with kids just learning."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How much does a lift ticket cost at Oak Mountain?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Day ticket prices at Oak Mountain start at approximately $77, though window rates vary by date and demand. Booking in advance is typically cheaper than buying at the window."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the average annual snowfall at Oak Mountain?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Oak Mountain averages approximately 160 inches of snowfall per season. The resort also operates 1,800 GPM of snowmaking to supplement natural snow and extend the season. Snowmaking plays an important role in maintaining coverage during lighter snow years."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When is the best time to ski Oak Mountain?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "January and February is typically peak season at Oak Mountain when snowpack is deepest and conditions are most consistent. December can be good if the season starts early. Midweek visits are almost always less crowded than weekends."
+        }
+      }
+    ]
   }
 ]
   </script>
@@ -108,6 +162,57 @@
         </span>
       </a>
       <div class="nav-divider"></div>
+      <div class="nav-browse-wrap">
+        <button class="nav-primary nav-browse-btn" aria-expanded="false" aria-haspopup="true">Browse &#9662;</button>
+        <div class="nav-browse-dropdown" role="menu">
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Northeast</div>
+            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
+            <a href="/ski/maine/" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york/" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Southeast</div>
+            <a href="/ski/maryland/" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia/" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
+            <a href="/ski/illinois/" role="menuitem">Illinois</a>
+            <a href="/ski/indiana/" role="menuitem">Indiana</a>
+            <a href="/ski/iowa/" role="menuitem">Iowa</a>
+            <a href="/ski/michigan/" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri/" role="menuitem">Missouri</a>
+            <a href="/ski/ohio/" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Rockies</div>
+            <a href="/ski/colorado/" role="menuitem">Colorado</a>
+            <a href="/ski/idaho/" role="menuitem">Idaho</a>
+            <a href="/ski/montana/" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
+            <a href="/ski/utah/" role="menuitem">Utah</a>
+            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <div class="nav-browse-region" style="margin-top:10px;">West</div>
+            <a href="/ski/alaska/" role="menuitem">Alaska</a>
+            <a href="/ski/arizona/" role="menuitem">Arizona</a>
+            <a href="/ski/california/" role="menuitem">California</a>
+            <a href="/ski/nevada/" role="menuitem">Nevada</a>
+            <a href="/ski/oregon/" role="menuitem">Oregon</a>
+            <a href="/ski/washington/" role="menuitem">Washington</a>
+          </div>
+        </div>
+      </div>
+      <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
@@ -539,6 +644,25 @@
   }
 })();
 </script>
+  <script>
+  (function() {
+    var wrap = document.querySelector('.nav-browse-wrap');
+    var btn  = document.querySelector('.nav-browse-btn');
+    if (!wrap || !btn) return;
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = wrap.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function() {
+      wrap.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+    });
+  })();
+  </script>
 
 </body>
 </html>

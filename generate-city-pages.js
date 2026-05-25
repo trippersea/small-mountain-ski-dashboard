@@ -258,6 +258,19 @@ function generatePage(city) {
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', 'DM Sans', system-ui, sans-serif; background: #f8f9fa; color: #111827; margin: 0; line-height: 1.6; }
 
+
+    /* Browse dropdown */
+    .nav-browse-wrap { position:relative; display:flex; align-items:center; flex-shrink:0; }
+    .nav-browse-btn { background:none; border:none; cursor:pointer; font-family:inherit; }
+    .nav-browse-dropdown { display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#fff; border:1px solid #d6e1f0; border-radius:12px; box-shadow:0 8px 32px rgba(15,28,46,.13); z-index:999; padding:16px 8px; min-width:560px; flex-direction:row; gap:0; }
+    .nav-browse-wrap:hover .nav-browse-dropdown,
+    .nav-browse-wrap.open .nav-browse-dropdown { display:flex; }
+    .nav-browse-col { flex:1; padding:0 12px; border-right:1px solid #edf4ff; }
+    .nav-browse-col:last-child { border-right:none; }
+    .nav-browse-region { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#7a92a8; margin-bottom:6px; }
+    .nav-browse-dropdown a { display:block; font-size:13px; color:#1a2e45; text-decoration:none; padding:3px 4px; border-radius:5px; line-height:1.5; }
+    .nav-browse-dropdown a:hover { background:#f0f4f8; color:#0f1c2e; }
+    @media (max-width:640px) { .nav-browse-wrap { display:none; } }
     /* Nav: .top-nav, .nav-primary, .nav-find-cta from /styles.css */
 
     /* Layout */
@@ -347,6 +360,57 @@ function generatePage(city) {
       </span>
     </a>
     <div class="nav-divider"></div>
+    <div class="nav-browse-wrap">
+      <button class="nav-primary nav-browse-btn" aria-expanded="false" aria-haspopup="true">Browse &#9662;</button>
+      <div class="nav-browse-dropdown" role="menu">
+        <div class="nav-browse-col">
+        <div class="nav-browse-region">Northeast</div>
+        <a href="https://www.wheretoskinext.com/ski/connecticut/" role="menuitem">Connecticut</a>
+        <a href="https://www.wheretoskinext.com/ski/maine/" role="menuitem">Maine</a>
+        <a href="https://www.wheretoskinext.com/ski/massachusetts/" role="menuitem">Massachusetts</a>
+        <a href="https://www.wheretoskinext.com/ski/new-hampshire/" role="menuitem">New Hampshire</a>
+        <a href="https://www.wheretoskinext.com/ski/new-jersey/" role="menuitem">New Jersey</a>
+        <a href="https://www.wheretoskinext.com/ski/new-york/" role="menuitem">New York</a>
+        <a href="https://www.wheretoskinext.com/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
+        <a href="https://www.wheretoskinext.com/ski/rhode-island/" role="menuitem">Rhode Island</a>
+        <a href="https://www.wheretoskinext.com/ski/vermont/" role="menuitem">Vermont</a>
+        </div>
+        <div class="nav-browse-col">
+        <div class="nav-browse-region">Southeast</div>
+        <a href="https://www.wheretoskinext.com/ski/maryland/" role="menuitem">Maryland</a>
+        <a href="https://www.wheretoskinext.com/ski/north-carolina/" role="menuitem">North Carolina</a>
+        <a href="https://www.wheretoskinext.com/ski/tennessee/" role="menuitem">Tennessee</a>
+        <a href="https://www.wheretoskinext.com/ski/virginia/" role="menuitem">Virginia</a>
+        <a href="https://www.wheretoskinext.com/ski/west-virginia/" role="menuitem">West Virginia</a>
+        <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
+        <a href="https://www.wheretoskinext.com/ski/illinois/" role="menuitem">Illinois</a>
+        <a href="https://www.wheretoskinext.com/ski/indiana/" role="menuitem">Indiana</a>
+        <a href="https://www.wheretoskinext.com/ski/iowa/" role="menuitem">Iowa</a>
+        <a href="https://www.wheretoskinext.com/ski/michigan/" role="menuitem">Michigan</a>
+        <a href="https://www.wheretoskinext.com/ski/minnesota/" role="menuitem">Minnesota</a>
+        <a href="https://www.wheretoskinext.com/ski/missouri/" role="menuitem">Missouri</a>
+        <a href="https://www.wheretoskinext.com/ski/ohio/" role="menuitem">Ohio</a>
+        <a href="https://www.wheretoskinext.com/ski/wisconsin/" role="menuitem">Wisconsin</a>
+        </div>
+        <div class="nav-browse-col">
+        <div class="nav-browse-region">Rockies</div>
+        <a href="https://www.wheretoskinext.com/ski/colorado/" role="menuitem">Colorado</a>
+        <a href="https://www.wheretoskinext.com/ski/idaho/" role="menuitem">Idaho</a>
+        <a href="https://www.wheretoskinext.com/ski/montana/" role="menuitem">Montana</a>
+        <a href="https://www.wheretoskinext.com/ski/new-mexico/" role="menuitem">New Mexico</a>
+        <a href="https://www.wheretoskinext.com/ski/utah/" role="menuitem">Utah</a>
+        <a href="https://www.wheretoskinext.com/ski/wyoming/" role="menuitem">Wyoming</a>
+        <div class="nav-browse-region" style="margin-top:10px;">West</div>
+        <a href="https://www.wheretoskinext.com/ski/alaska/" role="menuitem">Alaska</a>
+        <a href="https://www.wheretoskinext.com/ski/arizona/" role="menuitem">Arizona</a>
+        <a href="https://www.wheretoskinext.com/ski/california/" role="menuitem">California</a>
+        <a href="https://www.wheretoskinext.com/ski/nevada/" role="menuitem">Nevada</a>
+        <a href="https://www.wheretoskinext.com/ski/oregon/" role="menuitem">Oregon</a>
+        <a href="https://www.wheretoskinext.com/ski/washington/" role="menuitem">Washington</a>
+        </div>
+      </div>
+    </div>
+    <span class="nav-link-sep" aria-hidden="true"></span>
     <a href="https://www.wheretoskinext.com/about/" class="nav-primary">About</a>
     <span class="nav-link-sep" aria-hidden="true"></span>
     <a href="https://www.wheretoskinext.com/ski-pass-comparison/" class="nav-primary">Pass Guides</a>

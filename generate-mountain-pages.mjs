@@ -148,6 +148,67 @@ function nearbyResorts(resort, allResorts, limit = 4) {
     .map(x => x.r);
 }
 
+// ─── FAQ schema ───────────────────────────────────────────────────────────────
+function buildFAQSchema(resort, stateName) {
+  const tb       = resort.terrainBreakdown || {};
+  const begPct   = Math.round((tb.beginner || 0) * 100);
+  const advPct   = Math.round((tb.advanced || 0) * 100);
+  const intPct   = Math.round((tb.intermediate || 0) * 100);
+  const passName = { Epic: 'Epic Pass', Ikon: 'Ikon Pass', Indy: 'Indy Pass', Independent: 'no major pass' }[resort.passGroup] || 'no major pass';
+  const isPass   = resort.passGroup !== 'Independent';
+
+  const skillFit = advPct >= 35
+    ? `${resort.name} skews toward experienced skiers — about ${advPct}% of the terrain is advanced or expert. Beginners will find some options but the mountain is best suited to intermediates and above.`
+    : begPct >= 35
+    ? `${resort.name} is beginner-friendly, with about ${begPct}% of trails suited to newer skiers. There is also plenty for intermediates, though advanced skiers may find the challenge limited.`
+    : `${resort.name} is well-suited to intermediate skiers — about ${intPct}% of the terrain falls in that range. There is something for most skill levels here.`;
+
+  const peakMonths = resort.avgSnowfall >= 200 ? 'January through early March' : 'January and February';
+
+  const questions = [
+    {
+      q: `Is ${resort.name} on the ${isPass ? passName : 'Epic, Ikon, or Indy Pass'}?`,
+      a: isPass
+        ? `Yes. ${resort.name} is a ${passName} mountain. Pass holders can ski here as part of their pass benefits — check the current pass terms for any blackout dates or restrictions.`
+        : `${resort.name} is an independent mountain and is not on the Epic Pass, Ikon Pass, or Indy Pass. Day tickets are available directly through the resort at approximately $${resort.price}.`,
+    },
+    {
+      q: `How many trails does ${resort.name} have?`,
+      a: `${resort.name} has ${resort.trails} trails covering ${resort.acres.toLocaleString()} skiable acres with ${resort.vertical.toLocaleString()} feet of vertical drop. The terrain breakdown is roughly ${begPct}% beginner, ${intPct}% intermediate, and ${advPct}% advanced or expert.`,
+    },
+    {
+      q: `Is ${resort.name} good for beginners?`,
+      a: begPct >= 35
+        ? `Yes. About ${begPct}% of the terrain at ${resort.name} is rated for beginners, making it a solid choice for newer skiers and families with kids just learning.`
+        : begPct >= 20
+        ? `${resort.name} has some beginner terrain — about ${begPct}% of trails — but the mountain generally skews toward intermediate and advanced skiers. Beginners will find options but may feel more comfortable at a mountain with a stronger beginner focus.`
+        : `${resort.name} is not an ideal mountain for beginners. Only about ${begPct}% of the terrain is beginner-rated, and the mountain skews toward more experienced skiers.`,
+    },
+    {
+      q: `How much does a lift ticket cost at ${resort.name}?`,
+      a: `Day ticket prices at ${resort.name} start at approximately $${resort.price}, though window rates vary by date and demand. ${isPass ? `${passName} holders ski here as part of their pass.` : 'Booking in advance is typically cheaper than buying at the window.'}`,
+    },
+    {
+      q: `What is the average annual snowfall at ${resort.name}?`,
+      a: `${resort.name} averages approximately ${resort.avgSnowfall} inches of snowfall per season.${resort.snowmaking ? ` The resort also operates ${resort.snowmaking.toLocaleString()} GPM of snowmaking to supplement natural snow and extend the season.` : ''} ${resort.avgSnowfall >= 200 ? 'This is well above average and makes it a reliable snow destination.' : resort.avgSnowfall >= 100 ? 'Snowmaking plays an important role in maintaining coverage during lighter snow years.' : 'Snowmaking is essential for keeping the mountain open across the full season.'}`,
+    },
+    {
+      q: `When is the best time to ski ${resort.name}?`,
+      a: `${peakMonths} is typically peak season at ${resort.name} when snowpack is deepest and conditions are most consistent. ${resort.avgSnowfall >= 150 ? 'December can be good if the season starts early.' : 'December is hit or miss — the base needs time to build.'} Midweek visits are almost always less crowded than weekends${isPass ? ', especially when pass holders fill the mountain on Saturdays and holidays' : ''}.`,
+    },
+  ];
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: questions.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  };
+}
+
 // ─── JSON-LD schemas ──────────────────────────────────────────────────────────
 function buildSchemas(resort, stateName) {
   const canonUrl = `https://www.wheretoskinext.com/ski-report/${resort.id}/`;
@@ -178,7 +239,8 @@ function buildSchemas(resort, stateName) {
     ],
   };
 
-  return [sportsLocation, breadcrumb];
+  const faq = buildFAQSchema(resort, stateName);
+  return [sportsLocation, breadcrumb, faq];
 }
 
 // ─── Terrain bar HTML ─────────────────────────────────────────────────────────
@@ -475,6 +537,57 @@ function generateMountainPage(resort, allResorts) {
         </span>
       </a>
       <div class="nav-divider"></div>
+      <div class="nav-browse-wrap">
+        <button class="nav-primary nav-browse-btn" aria-expanded="false" aria-haspopup="true">Browse &#9662;</button>
+        <div class="nav-browse-dropdown" role="menu">
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Northeast</div>
+            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
+            <a href="/ski/maine/" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york/" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Southeast</div>
+            <a href="/ski/maryland/" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia/" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
+            <a href="/ski/illinois/" role="menuitem">Illinois</a>
+            <a href="/ski/indiana/" role="menuitem">Indiana</a>
+            <a href="/ski/iowa/" role="menuitem">Iowa</a>
+            <a href="/ski/michigan/" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri/" role="menuitem">Missouri</a>
+            <a href="/ski/ohio/" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Rockies</div>
+            <a href="/ski/colorado/" role="menuitem">Colorado</a>
+            <a href="/ski/idaho/" role="menuitem">Idaho</a>
+            <a href="/ski/montana/" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
+            <a href="/ski/utah/" role="menuitem">Utah</a>
+            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <div class="nav-browse-region" style="margin-top:10px;">West</div>
+            <a href="/ski/alaska/" role="menuitem">Alaska</a>
+            <a href="/ski/arizona/" role="menuitem">Arizona</a>
+            <a href="/ski/california/" role="menuitem">California</a>
+            <a href="/ski/nevada/" role="menuitem">Nevada</a>
+            <a href="/ski/oregon/" role="menuitem">Oregon</a>
+            <a href="/ski/washington/" role="menuitem">Washington</a>
+          </div>
+        </div>
+      </div>
+      <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
@@ -760,6 +873,25 @@ function generateMountainPage(resort, allResorts) {
 
   <script src="/featured-partners.js"></script>
   ${matcherScript(resort)}
+  <script>
+  (function() {
+    var wrap = document.querySelector('.nav-browse-wrap');
+    var btn  = document.querySelector('.nav-browse-btn');
+    if (!wrap || !btn) return;
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = wrap.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function() {
+      wrap.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+    });
+  })();
+  </script>
 
 </body>
 </html>`;

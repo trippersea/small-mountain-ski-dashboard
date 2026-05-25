@@ -345,6 +345,57 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
         </span>
       </a>
       <div class="nav-divider"></div>
+      <div class="nav-browse-wrap">
+        <button class="nav-primary nav-browse-btn" aria-expanded="false" aria-haspopup="true">Browse &#9662;</button>
+        <div class="nav-browse-dropdown" role="menu">
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Northeast</div>
+            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
+            <a href="/ski/maine/" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york/" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Southeast</div>
+            <a href="/ski/maryland/" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia/" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
+            <a href="/ski/illinois/" role="menuitem">Illinois</a>
+            <a href="/ski/indiana/" role="menuitem">Indiana</a>
+            <a href="/ski/iowa/" role="menuitem">Iowa</a>
+            <a href="/ski/michigan/" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri/" role="menuitem">Missouri</a>
+            <a href="/ski/ohio/" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Rockies</div>
+            <a href="/ski/colorado/" role="menuitem">Colorado</a>
+            <a href="/ski/idaho/" role="menuitem">Idaho</a>
+            <a href="/ski/montana/" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
+            <a href="/ski/utah/" role="menuitem">Utah</a>
+            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <div class="nav-browse-region" style="margin-top:10px;">West</div>
+            <a href="/ski/alaska/" role="menuitem">Alaska</a>
+            <a href="/ski/arizona/" role="menuitem">Arizona</a>
+            <a href="/ski/california/" role="menuitem">California</a>
+            <a href="/ski/nevada/" role="menuitem">Nevada</a>
+            <a href="/ski/oregon/" role="menuitem">Oregon</a>
+            <a href="/ski/washington/" role="menuitem">Washington</a>
+          </div>
+        </div>
+      </div>
+      <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
