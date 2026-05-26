@@ -111,6 +111,12 @@ body:has(#searchSection.hero-v2) .nav-brand-name .nav-brand-next {
 }
 body:has(#searchSection.hero-v2) .nav-brand-tag { color: rgba(200, 220, 240, 0.52); }
 body:has(#searchSection.hero-v2) .nav-link-sep { background: rgba(255,255,255,0.12); }
+/* Keep dropdown links dark even when nav is in dark mode */
+body:has(#searchSection.hero-v2) .nav-browse-dropdown a { color: #1a2e45; }
+body:has(#searchSection.hero-v2) .nav-browse-dropdown a:hover { color: #0f1c2e; background: #f0f4f8; }
+body:has(#searchSection.hero-v2) .nav-browse-region { color: #7a92a8; }
+/* Keep subscribe dropdown dark too */
+body:has(#searchSection.hero-v2) .nav-subscribe-dropdown { color: #1a2e45; }
 .top-nav-inner {
   max-width: 1100px;
   margin: 0 auto;
@@ -240,6 +246,55 @@ body:has(#searchSection.hero-v2) .nav-link-sep { background: rgba(255,255,255,0.
 @media (max-width: 640px) {
   .nav-browse-wrap { display: none; }
 }
+
+/* ── Scroll cue ─────────────────────────────────────────────────────────────── */
+#searchSection { position: relative; }
+.scroll-cue {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: rgba(255,255,255,.38);
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0;
+  animation: scroll-cue-appear .5s ease 3s forwards;
+  transition: opacity .4s ease;
+  background: none;
+  border: none;
+  font: inherit;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.scroll-cue:hover { color: rgba(255,255,255,.65); }
+.scroll-cue.hidden {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+.scroll-cue-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.scroll-cue-arrow {
+  animation: scroll-cue-bounce 1.1s ease-in-out infinite;
+}
+@keyframes scroll-cue-appear {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes scroll-cue-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+@media (max-width: 640px) { .scroll-cue { bottom: 10px; } }
+
 /* ── Subscribe dropdown ─────────────────────────────────────────────────────── */
 .nav-subscribe-wrap {
   position: relative;

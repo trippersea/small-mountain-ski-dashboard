@@ -742,6 +742,14 @@
           </div>
         </div>
       </div>
+
+      <!-- Scroll cue: fades in after 3s, hides on first scroll -->
+      <button class="scroll-cue" id="scrollCue" aria-label="Scroll to results" aria-hidden="true" tabindex="-1">
+        <span class="scroll-cue-label">scroll</span>
+        <svg class="scroll-cue-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M4 7l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </section>
 
     <!-- ═══ RESULTS & DISCOVERY (unified region) ═══════════════════════════ -->
@@ -6424,6 +6432,24 @@
       subSubmit.addEventListener('click', handleSub);
       subInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleSub(); });
     }
+  })();
+  </script>
+  <script>
+  // ── Scroll cue: hide on first scroll, click to scroll to results ──────────
+  (function() {
+    var cue = document.getElementById('scrollCue');
+    if (!cue) return;
+    cue.addEventListener('click', function() {
+      var target = document.querySelector('.hn-results-region') || document.querySelector('.container');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    var gone = false;
+    window.addEventListener('scroll', function() {
+      if (!gone && window.scrollY > 80) {
+        gone = true;
+        cue.classList.add('hidden');
+      }
+    }, { passive: true });
   })();
   </script>
 </body>
