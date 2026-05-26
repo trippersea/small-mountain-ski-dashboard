@@ -20,26 +20,6 @@
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   <style>
     .hero-trust-line { font-size:11px; color:var(--muted); text-align:center; margin-top:10px; letter-spacing:.01em; }
-    .nav-primary { font-size:14px; font-weight:500; color:var(--muted); text-decoration:none; padding:6px 11px; border-radius:8px; white-space:nowrap; transition:background .12s,color .12s; flex-shrink:0; }
-    .nav-primary:hover { background:var(--bg-section-alt); color:var(--text); }
-    .nav-link-sep { width:1px; height:16px; background:var(--border); margin:0 2px; flex-shrink:0; align-self:center; }
-    @media (max-width:640px) {
-      .top-nav a.nav-primary[href="/ski-pass-comparison/"] { display:none; }
-      .top-nav a[href="/about/"] + .nav-link-sep { display:none; }
-      .nav-divider { display:none; }
-    }
-    /* Browse dropdown */
-    .nav-browse-wrap { position:relative; display:flex; align-items:center; flex-shrink:0; }
-    .nav-browse-btn { background:none; border:none; cursor:pointer; font-family:inherit; }
-    .nav-browse-dropdown { display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#fff; border:1px solid #d6e1f0; border-radius:12px; box-shadow:0 8px 32px rgba(15,28,46,.13); z-index:999; padding:16px 8px; min-width:560px; flex-direction:row; gap:0; }
-    .nav-browse-wrap:hover .nav-browse-dropdown,
-    .nav-browse-wrap.open .nav-browse-dropdown { display:flex; }
-    .nav-browse-col { flex:1; padding:0 12px; border-right:1px solid #edf4ff; }
-    .nav-browse-col:last-child { border-right:none; }
-    .nav-browse-region { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#7a92a8; margin-bottom:6px; }
-    .nav-browse-dropdown a { display:block; font-size:13px; color:#1a2e45; text-decoration:none; padding:3px 4px; border-radius:5px; line-height:1.5; }
-    .nav-browse-dropdown a:hover { background:#f0f4f8; color:#0f1c2e; }
-    @media (max-width:640px) { .nav-browse-wrap { display:none; } }
     /* Affiliate disclosure styles */
     .site-footer-affiliate { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.55; }
     .hn-booking-affiliate { display:block; font-size:11px; color:#7a92a8; margin-top:3px; }
@@ -91,8 +71,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet"></noscript>
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
-  <link rel="preload" href="styles.css" as="style" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preload" href="/styles.css" as="style" />
+  <link rel="stylesheet" href="/styles.css" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -119,7 +99,7 @@
     }
   }
   </script>
-        <script type="application/ld+json" id="ld-home-itemlist">
+          <script type="application/ld+json" id="ld-home-itemlist">
 {
   "@context": "https://schema.org",
   "@type": "ItemList",
