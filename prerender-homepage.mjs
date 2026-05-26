@@ -3,7 +3,8 @@
 // Injects static mountain data into index.html so Googlebot sees real content
 // without waiting for JavaScript. JS clears and replaces these rows at runtime.
 
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
+import path from 'path';
 
 // ─── Load resort data ──────────────────────────────────────────────────────
 function parseResortArray(filePath, varName) {
@@ -128,3 +129,66 @@ writeFileSync('./index.html', html, 'utf8');
 console.log(`✓  Injected ${RESORTS.length} static table rows into index.html`);
 console.log(`✓  Injected summary card counts`);
 console.log(`✓  Injected ItemList schema (${Math.min(50, RESORTS.length)} items)`);
+
+// ─── Shared nav injection (build-time, no runtime HTML injection) ──────────
+function extractCanonicalNav(indexHtml) {
+  const m = indexHtml.match(/<nav\s+class="top-nav"[\s\S]*?<\/nav>/);
+  if (!m) {
+    throw new Error('Could not find canonical <nav class="top-nav"> block in index.html');
+  }
+  return m[0];
+}
+
+function listHtmlTargets() {
+  const root = '.';
+  const excludeDirs = new Set(['node_modules', 'ski-report', 'ski', 'ski-near']);
+  const targets = [];
+
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith('.html')) {
+      if (entry.name !== 'index.html') targets.push(entry.name);
+      continue;
+    }
+    if (entry.isDirectory() && !excludeDirs.has(entry.name)) {
+      const dirPath = path.join(root, entry.name);
+      // Only immediate subdirectory HTML files
+      for (const child of readdirSync(dirPath, { withFileTypes: true })) {
+        if (child.isFile() && child.name.endsWith('.html')) {
+          targets.push(path.join(entry.name, child.name));
+        }
+      }
+    }
+  }
+
+  return targets.sort();
+}
+
+function injectNavIntoFile(filePath, canonicalNavHtml) {
+  const src = readFileSync(filePath, 'utf8');
+  if (!src.includes('<!-- NAV_PLACEHOLDER -->')) return false;
+  const out = src.replace('<!-- NAV_PLACEHOLDER -->', canonicalNavHtml);
+  if (out === src) return false;
+  writeFileSync(filePath, out, 'utf8');
+  return true;
+}
+
+try {
+  const indexSrc = readFileSync('./index.html', 'utf8');
+  const canonicalNav = extractCanonicalNav(indexSrc);
+  const targets = listHtmlTargets();
+
+  let updated = 0;
+  for (const f of targets) {
+    if (injectNavIntoFile(f, canonicalNav)) {
+      updated++;
+      console.log(`✓ Nav injected into ${f.replace(/\\/g, '/')}`);
+    }
+  }
+
+  if (updated === 0) {
+    console.log('✓ Nav injection: no pages needed updates');
+  }
+} catch (e) {
+  console.error('Nav injection failed:', e && e.message ? e.message : e);
+  process.exit(1);
+}
