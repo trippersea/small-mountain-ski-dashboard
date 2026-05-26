@@ -82,41 +82,11 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); }
 /* ── Top Nav ────────────────────────────────────────────────────────────── */
 .top-nav {
   position: sticky; top: 0; z-index: 1000;
-  background: rgba(255, 255, 255, 0.92);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(10px);
-}
-
-/* ── Dark nav when hero-v2 hero is present ─────────────────────────────────── */
-body:has(#searchSection.hero-v2) .top-nav {
-  background: rgba(8, 16, 28, 0.82);
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: rgba(8, 16, 28, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
-body:has(#searchSection.hero-v2) .top-nav a,
-body:has(#searchSection.hero-v2) .top-nav .nav-primary {
-  color: rgba(240, 246, 252, 0.78);
-}
-body:has(#searchSection.hero-v2) .top-nav a:hover,
-body:has(#searchSection.hero-v2) .top-nav .nav-primary:hover {
-  color: #f0f6fc;
-  background: rgba(255, 255, 255, 0.08);
-}
-body:has(#searchSection.hero-v2) .nav-brand-name {
-  color: #f0f6fc;
-}
-body:has(#searchSection.hero-v2) .nav-brand-name .nav-brand-next {
-  color: var(--accent);
-}
-body:has(#searchSection.hero-v2) .nav-brand-tag { color: rgba(200, 220, 240, 0.52); }
-body:has(#searchSection.hero-v2) .nav-link-sep { background: rgba(255,255,255,0.12); }
-/* Keep dropdown links dark even when nav is in dark mode */
-body:has(#searchSection.hero-v2) .nav-browse-dropdown a { color: #1a2e45; }
-body:has(#searchSection.hero-v2) .nav-browse-dropdown a:hover { color: #0f1c2e; background: #f0f4f8; }
-body:has(#searchSection.hero-v2) .nav-browse-region { color: #7a92a8; }
-/* Keep subscribe dropdown dark too */
-body:has(#searchSection.hero-v2) .nav-subscribe-dropdown { color: #1a2e45; }
 .top-nav-inner {
   max-width: 1100px;
   margin: 0 auto;
@@ -136,16 +106,16 @@ body:has(#searchSection.hero-v2) .nav-subscribe-dropdown { color: #1a2e45; }
   padding: 2px 0; white-space: nowrap; color: var(--text);
   margin-right: 4px; display: flex; flex-direction: column; gap: 1px;
 }
-.nav-brand-name { color: var(--text); font-weight: 600; font-size: 15px; line-height: 1.2; }
+.nav-brand-name { color: #f0f6fc; font-weight: 600; font-size: 15px; line-height: 1.2; }
 /* “Next” — same #2b6de9 as logo shield & all --accent CTAs */
 .nav-brand-name .nav-brand-next { color: var(--accent); font-weight: 600; }
-.nav-brand-tag  { color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.2; }
+.nav-brand-tag  { color: rgba(200, 220, 240, 0.52); font-size: 12px; font-weight: 400; line-height: 1.2; }
 .top-nav a {
-  text-decoration: none; color: var(--muted); font-weight: 500; font-size: 14px;
+  text-decoration: none; color: rgba(240, 246, 252, 0.78); font-weight: 500; font-size: 14px;
   padding: 7px 11px; border-radius: 8px; border: 1px solid transparent;
   white-space: nowrap; transition: background .12s, color .12s;
 }
-.top-nav a:hover { background: var(--bg-section-alt); color: var(--text); border-color: transparent; }
+.top-nav a:hover { background: rgba(255, 255, 255, 0.08); color: #f0f6fc; border-color: transparent; }
 .nav-find-cta {
   margin-left: auto; flex-shrink: 0;
   background: var(--accent); color: var(--text-on-dark) !important;
@@ -159,7 +129,7 @@ body:has(#searchSection.hero-v2) .nav-subscribe-dropdown { color: #1a2e45; }
 /* Text nav links (shared with generated ski-near / ski-report / state pages) */
 .top-nav a.nav-primary {
   text-decoration: none;
-  color: var(--muted);
+  color: rgba(240, 246, 252, 0.78);
   font-weight: 500;
   font-size: 14px;
   padding: 7px 11px;
@@ -169,13 +139,13 @@ body:has(#searchSection.hero-v2) .nav-subscribe-dropdown { color: #1a2e45; }
   transition: background .12s, color .12s;
 }
 .top-nav a.nav-primary:hover {
-  background: var(--bg-section-alt);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f0f6fc;
 }
 .top-nav .nav-link-sep {
   width: 1px;
   height: 16px;
-  background: var(--border);
+  background: rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
   margin: 0 2px;
   align-self: center;
@@ -200,14 +170,14 @@ body:has(#searchSection.hero-v2) .nav-subscribe-dropdown { color: #1a2e45; }
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
-  color: var(--muted);
+  color: rgba(240, 246, 252, 0.78);
   padding: 7px 11px;
   white-space: nowrap;
   transition: background .12s, color .12s;
 }
 .nav-browse-btn:hover {
-  background: var(--bg-section-alt);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f0f6fc;
   border-color: transparent;
 }
 .nav-browse-dropdown {
