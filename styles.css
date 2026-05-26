@@ -194,9 +194,21 @@ body:has(#searchSection.hero-v2) .nav-subscribe-dropdown { color: #1a2e45; }
 }
 .nav-browse-btn {
   background: none;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 7px 11px;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+.nav-browse-btn:hover {
+  background: var(--bg-section-alt);
+  color: var(--text);
+  border-color: transparent;
 }
 .nav-browse-dropdown {
   display: none;
