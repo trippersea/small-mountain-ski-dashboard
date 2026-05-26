@@ -348,10 +348,89 @@
         </span>
       </a>
       <div class="nav-divider"></div>
+      <div class="nav-browse-wrap">
+        <button class="nav-primary nav-browse-btn" aria-expanded="false" aria-haspopup="true">Browse &#9662;</button>
+        <div class="nav-browse-dropdown" role="menu">
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Northeast</div>
+            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
+            <a href="/ski/maine/" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york/" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Southeast</div>
+            <a href="/ski/maryland/" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia/" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
+            <a href="/ski/illinois/" role="menuitem">Illinois</a>
+            <a href="/ski/indiana/" role="menuitem">Indiana</a>
+            <a href="/ski/iowa/" role="menuitem">Iowa</a>
+            <a href="/ski/michigan/" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri/" role="menuitem">Missouri</a>
+            <a href="/ski/ohio/" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Rockies</div>
+            <a href="/ski/colorado/" role="menuitem">Colorado</a>
+            <a href="/ski/idaho/" role="menuitem">Idaho</a>
+            <a href="/ski/montana/" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
+            <a href="/ski/utah/" role="menuitem">Utah</a>
+            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <div class="nav-browse-region" style="margin-top:10px;">West</div>
+            <a href="/ski/alaska/" role="menuitem">Alaska</a>
+            <a href="/ski/arizona/" role="menuitem">Arizona</a>
+            <a href="/ski/california/" role="menuitem">California</a>
+            <a href="/ski/nevada/" role="menuitem">Nevada</a>
+            <a href="/ski/oregon/" role="menuitem">Oregon</a>
+            <a href="/ski/washington/" role="menuitem">Washington</a>
+          </div>
+        </div>
+      </div>
+      <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-      <a href="https://www.wheretoskinext.com/?st=UT#searchSection" class="nav-find-cta">Find my mountain &rarr;</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <div class="nav-subscribe-wrap">
+        <button class="nav-subscribe-btn" id="navSubBtn" aria-expanded="false" aria-haspopup="true">Subscribe &#9662;</button>
+        <div class="nav-subscribe-dropdown" id="navSubDropdown">
+          <div id="navSubForm">
+            <div class="nav-subscribe-kicker">Next winter</div>
+            <p class="nav-subscribe-headline">First powder. First to know.</p>
+            <p class="nav-subscribe-sub">One email when the site goes live for next season.</p>
+            <div class="nav-subscribe-row">
+              <input
+                type="email"
+                id="navSubEmail"
+                class="nav-subscribe-input"
+                placeholder="you@email.com"
+                autocomplete="email"
+                spellcheck="false"
+              />
+              <button id="navSubSubmit" class="nav-subscribe-submit" type="button">Notify me</button>
+            </div>
+            <p id="navSubErr" class="nav-subscribe-err" role="alert"></p>
+            <p class="nav-subscribe-fine">One email. No spam. Unsubscribe anytime.</p>
+          </div>
+          <div id="navSubOk" class="nav-subscribe-ok">
+            <div class="nav-subscribe-ok-icon">&#10003;</div>
+            <p class="nav-subscribe-ok-head">You're on the list</p>
+            <p class="nav-subscribe-ok-sub">See you next season.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -595,5 +674,6 @@
     <p>&copy; 2026 WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
   </footer>
 
+  <script src="/nav.js"></script>
 </body>
 </html>

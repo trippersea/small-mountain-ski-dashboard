@@ -141,7 +141,9 @@ function extractCanonicalNav(indexHtml) {
 
 function listHtmlTargets() {
   const root = '.';
-  const excludeDirs = new Set(['node_modules', 'ski-report', 'ski', 'ski-near']);
+  // We DO exclude ski-report/ and ski-near/ (large generated trees with their own nav).
+  // We DO include ski/ (state pages) so their nav stays in sync.
+  const excludeDirs = new Set(['node_modules', 'ski-report', 'ski-near']);
   const targets = [];
 
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -151,10 +153,21 @@ function listHtmlTargets() {
     }
     if (entry.isDirectory() && !excludeDirs.has(entry.name)) {
       const dirPath = path.join(root, entry.name);
-      // Only immediate subdirectory HTML files
+      // Immediate subdirectory HTML files (e.g. compare/index.html, partners/index.html)
       for (const child of readdirSync(dirPath, { withFileTypes: true })) {
         if (child.isFile() && child.name.endsWith('.html')) {
           targets.push(path.join(entry.name, child.name));
+        }
+      }
+
+      // One level deeper for ski/*/index.html state pages
+      if (entry.name === 'ski') {
+        for (const childDir of readdirSync(dirPath, { withFileTypes: true })) {
+          if (!childDir.isDirectory()) continue;
+          const maybe = path.join(entry.name, childDir.name, 'index.html');
+          try {
+            if (statSync(maybe).isFile()) targets.push(maybe);
+          } catch (_) { /* ignore */ }
         }
       }
     }
@@ -163,10 +176,28 @@ function listHtmlTargets() {
   return targets.sort();
 }
 
+function ensureNavScript(html) {
+  if (html.includes('<script src="/nav.js"></script>')) return html;
+  // Insert just before </body> when possible
+  if (html.includes('</body>')) return html.replace('</body>', '  <script src="/nav.js"></script>\n</body>');
+  return html + '\n<script src="/nav.js"></script>\n';
+}
+
+function replaceNav(html, canonicalNavHtml) {
+  if (html.includes('<!-- NAV_PLACEHOLDER -->')) {
+    return html.replace('<!-- NAV_PLACEHOLDER -->', canonicalNavHtml);
+  }
+  // Fallback for pages that still have a hardcoded top nav (e.g. generated state pages):
+  // swap the existing <nav class="top-nav">...</nav> with the canonical one.
+  const navRe = /<nav\s+class="top-nav"[\s\S]*?<\/nav>/;
+  if (navRe.test(html)) return html.replace(navRe, canonicalNavHtml);
+  return html;
+}
+
 function injectNavIntoFile(filePath, canonicalNavHtml) {
   const src = readFileSync(filePath, 'utf8');
-  if (!src.includes('<!-- NAV_PLACEHOLDER -->')) return false;
-  const out = src.replace('<!-- NAV_PLACEHOLDER -->', canonicalNavHtml);
+  let out = replaceNav(src, canonicalNavHtml);
+  out = ensureNavScript(out);
   if (out === src) return false;
   writeFileSync(filePath, out, 'utf8');
   return true;
