@@ -477,6 +477,7 @@ async function postBeehiivDraft(subject, previewText, htmlContent) {
       'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
+      title:         subject,
       subject,
       preview_text:  previewText,
       status:        'draft',
