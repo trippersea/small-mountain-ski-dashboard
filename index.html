@@ -6011,11 +6011,12 @@
 <style>
   .nl-band {
     position: relative;
+    display: block;
     background: linear-gradient(160deg, #0c1824 0%, #0f1c2e 55%, #0d1f38 100%);
     overflow: hidden;
     margin-top: 72px;
-    clip-path: polygon(0 28px, 100% 0, 100% 100%, 0 100%);
     padding: 80px 24px 68px;
+    min-height: 200px;
   }
   .nl-band::before {
     content: '';
@@ -6205,7 +6206,6 @@
   }
   @media (max-width: 660px) {
     .nl-band {
-      clip-path: polygon(0 16px, 100% 0, 100% 100%, 0 100%);
       padding: 60px 20px 52px;
       margin-top: 56px;
     }
