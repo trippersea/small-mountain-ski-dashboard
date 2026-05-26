@@ -552,6 +552,35 @@
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <div class="nav-subscribe-wrap">
+        <button class="nav-subscribe-btn" id="navSubBtn" aria-expanded="false" aria-haspopup="true">Subscribe &#9662;</button>
+        <div class="nav-subscribe-dropdown" id="navSubDropdown">
+          <div id="navSubForm">
+            <div class="nav-subscribe-kicker">Next winter</div>
+            <p class="nav-subscribe-headline">First powder. First to know.</p>
+            <p class="nav-subscribe-sub">One email when the site goes live for next season.</p>
+            <div class="nav-subscribe-row">
+              <input
+                type="email"
+                id="navSubEmail"
+                class="nav-subscribe-input"
+                placeholder="you@email.com"
+                autocomplete="email"
+                spellcheck="false"
+              />
+              <button id="navSubSubmit" class="nav-subscribe-submit" type="button">Notify me</button>
+            </div>
+            <p id="navSubErr" class="nav-subscribe-err" role="alert"></p>
+            <p class="nav-subscribe-fine">One email. No spam. Unsubscribe anytime.</p>
+          </div>
+          <div id="navSubOk" class="nav-subscribe-ok">
+            <div class="nav-subscribe-ok-icon">&#10003;</div>
+            <p class="nav-subscribe-ok-head">You're on the list</p>
+            <p class="nav-subscribe-ok-sub">See you next season.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -6312,21 +6341,89 @@
   </footer>
   <script>
   (function() {
-    var wrap = document.querySelector('.nav-browse-wrap');
-    var btn  = document.querySelector('.nav-browse-btn');
-    if (!wrap || !btn) return;
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var open = wrap.classList.toggle('open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    document.addEventListener('click', function() {
-      wrap.classList.remove('open');
-      btn.setAttribute('aria-expanded', 'false');
-    });
+    // ── Browse dropdown ──────────────────────────────────────────────────
+    var browseWrap = document.querySelector('.nav-browse-wrap');
+    var browseBtn  = document.querySelector('.nav-browse-btn');
+
+    // ── Subscribe dropdown ───────────────────────────────────────────────
+    var subWrap    = document.getElementById('navSubDropdown') && document.querySelector('.nav-subscribe-wrap');
+    var subBtn     = document.getElementById('navSubBtn');
+    var subDropdown = document.getElementById('navSubDropdown');
+    var subSubmit  = document.getElementById('navSubSubmit');
+    var subInput   = document.getElementById('navSubEmail');
+    var subErr     = document.getElementById('navSubErr');
+    var subForm    = document.getElementById('navSubForm');
+    var subOk      = document.getElementById('navSubOk');
+
+    function closeBrowse() {
+      if (browseWrap) browseWrap.classList.remove('open');
+      if (browseBtn)  browseBtn.setAttribute('aria-expanded', 'false');
+    }
+    function closeSub() {
+      if (subWrap) subWrap.classList.remove('open');
+      if (subBtn)  subBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    if (browseWrap && browseBtn) {
+      browseBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeSub();
+        var open = browseWrap.classList.toggle('open');
+        browseBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+
+    if (subWrap && subBtn) {
+      subBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeBrowse();
+        var open = subWrap.classList.toggle('open');
+        subBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open && subInput) setTimeout(function() { subInput.focus(); }, 50);
+      });
+      subDropdown.addEventListener('click', function(e) { e.stopPropagation(); });
+    }
+
+    document.addEventListener('click', function() { closeBrowse(); closeSub(); });
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+      if (e.key === 'Escape') { closeBrowse(); closeSub(); }
     });
+
+    // Subscribe form submission
+    if (subSubmit && subInput) {
+      function setSubErr(msg) {
+        subErr.textContent = msg;
+        subErr.style.display = msg ? 'block' : 'none';
+      }
+      function handleSub() {
+        setSubErr('');
+        var email = subInput.value.trim();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setSubErr('Enter a valid email address.');
+          subInput.focus();
+          return;
+        }
+        subSubmit.disabled = true;
+        subSubmit.textContent = 'Saving...';
+        fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        })
+        .then(function(r) { if (!r.ok) throw new Error(); return r.json(); })
+        .then(function() {
+          subForm.style.display = 'none';
+          subOk.style.display = 'block';
+        })
+        .catch(function() {
+          subSubmit.disabled = false;
+          subSubmit.textContent = 'Notify me';
+          setSubErr('Something went wrong. Try again.');
+        });
+      }
+      subSubmit.addEventListener('click', handleSub);
+      subInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleSub(); });
+    }
   })();
   </script>
 </body>

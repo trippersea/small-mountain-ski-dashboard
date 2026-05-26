@@ -115,7 +115,7 @@ body:has(#searchSection.hero-v2) .nav-link-sep { background: rgba(255,255,255,0.
   max-width: 1100px;
   margin: 0 auto;
   display: flex; align-items: center; gap: 6px;
-  overflow-x: auto; padding: 12px 24px;
+  overflow: visible; padding: 12px 24px;
 }
 .nav-brand-link {
   display: flex; align-items: center; gap: 8px;
@@ -240,6 +240,161 @@ body:has(#searchSection.hero-v2) .nav-link-sep { background: rgba(255,255,255,0.
 @media (max-width: 640px) {
   .nav-browse-wrap { display: none; }
 }
+/* ── Subscribe dropdown ─────────────────────────────────────────────────────── */
+.nav-subscribe-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.nav-subscribe-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #5aaddc;
+  padding: 7px 11px;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+.nav-subscribe-btn:hover {
+  background: rgba(90,173,220,.1);
+  color: #3a9bc8;
+}
+body:has(#searchSection.hero-v2) .nav-subscribe-btn {
+  color: #5aaddc;
+}
+body:has(#searchSection.hero-v2) .nav-subscribe-btn:hover {
+  background: rgba(90,173,220,.15);
+}
+.nav-subscribe-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #d6e1f0;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(15,28,46,.14);
+  z-index: 999;
+  padding: 20px;
+  width: 340px;
+}
+.nav-subscribe-wrap.open .nav-subscribe-dropdown { display: block; }
+.nav-subscribe-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #5aaddc;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-subscribe-kicker::before {
+  content: '';
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  background: #5aaddc;
+  flex-shrink: 0;
+}
+.nav-subscribe-headline {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a2e45;
+  letter-spacing: -.02em;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+.nav-subscribe-sub {
+  font-size: 13px;
+  color: #667a96;
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+.nav-subscribe-row {
+  display: flex;
+  background: #f0f4f8;
+  border: 1.5px solid #d6e1f0;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color .15s, background .15s;
+}
+.nav-subscribe-row:focus-within {
+  border-color: #5aaddc;
+  background: #fff;
+}
+.nav-subscribe-input {
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  color: #1a2e45;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 14px;
+  min-width: 0;
+}
+.nav-subscribe-input::placeholder { color: #9aafc4; }
+.nav-subscribe-submit {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: #1a2e45;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .12s;
+}
+.nav-subscribe-submit:hover:not(:disabled) { background: #0f1c2e; }
+.nav-subscribe-submit:disabled { opacity: .45; cursor: not-allowed; }
+.nav-subscribe-err {
+  display: none;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #c0392b;
+  font-family: 'DM Mono', monospace;
+}
+.nav-subscribe-fine {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #9aafc4;
+  font-family: 'DM Mono', monospace;
+}
+.nav-subscribe-ok {
+  display: none;
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.nav-subscribe-ok-icon {
+  width: 36px; height: 36px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background: rgba(90,173,220,.12);
+  border: 1.5px solid rgba(90,173,220,.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #5aaddc;
+}
+.nav-subscribe-ok-head {
+  font-size: 14px; font-weight: 800;
+  color: #1a2e45; letter-spacing: -.02em;
+  margin: 0 0 4px;
+}
+.nav-subscribe-ok-sub {
+  font-size: 12px; color: #667a96; margin: 0;
+}
+@media (max-width: 640px) { .nav-subscribe-wrap { display: none; } }
+
 
 .nav-share {
   flex-shrink: 0;
