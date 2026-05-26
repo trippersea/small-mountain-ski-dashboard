@@ -3,7 +3,7 @@
 // Injects static mountain data into index.html so Googlebot sees real content
 // without waiting for JavaScript. JS clears and replaces these rows at runtime.
 
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync } from 'fs';
 import path from 'path';
 
 // ─── Load resort data ──────────────────────────────────────────────────────
@@ -141,9 +141,7 @@ function extractCanonicalNav(indexHtml) {
 
 function listHtmlTargets() {
   const root = '.';
-  // We DO exclude ski-report/ and ski-near/ (large generated trees with their own nav).
-  // We DO include ski/ (state pages) so their nav stays in sync.
-  const excludeDirs = new Set(['node_modules', 'ski-report', 'ski-near']);
+  const excludeDirs = new Set(['node_modules', 'ski-report', 'ski', 'ski-near']);
   const targets = [];
 
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -153,21 +151,9 @@ function listHtmlTargets() {
     }
     if (entry.isDirectory() && !excludeDirs.has(entry.name)) {
       const dirPath = path.join(root, entry.name);
-      // Immediate subdirectory HTML files (e.g. compare/index.html, partners/index.html)
       for (const child of readdirSync(dirPath, { withFileTypes: true })) {
         if (child.isFile() && child.name.endsWith('.html')) {
           targets.push(path.join(entry.name, child.name));
-        }
-      }
-
-      // One level deeper for ski/*/index.html state pages
-      if (entry.name === 'ski') {
-        for (const childDir of readdirSync(dirPath, { withFileTypes: true })) {
-          if (!childDir.isDirectory()) continue;
-          const maybe = path.join(entry.name, childDir.name, 'index.html');
-          try {
-            if (statSync(maybe).isFile()) targets.push(maybe);
-          } catch (_) { /* ignore */ }
         }
       }
     }
@@ -183,20 +169,13 @@ function ensureNavScript(html) {
   return html + '\n<script src="/nav.js"></script>\n';
 }
 
-function replaceNav(html, canonicalNavHtml) {
-  if (html.includes('<!-- NAV_PLACEHOLDER -->')) {
-    return html.replace('<!-- NAV_PLACEHOLDER -->', canonicalNavHtml);
-  }
-  // Fallback for pages that still have a hardcoded top nav (e.g. generated state pages):
-  // swap the existing <nav class="top-nav">...</nav> with the canonical one.
-  const navRe = /<nav\s+class="top-nav"[\s\S]*?<\/nav>/;
-  if (navRe.test(html)) return html.replace(navRe, canonicalNavHtml);
-  return html;
-}
-
 function injectNavIntoFile(filePath, canonicalNavHtml) {
   const src = readFileSync(filePath, 'utf8');
-  let out = replaceNav(src, canonicalNavHtml);
+  if (!src.includes('<!-- NAV_PLACEHOLDER -->')) {
+    console.warn(`⚠ Skipped ${filePath.replace(/\\/g, '/')}: missing <!-- NAV_PLACEHOLDER -->`);
+    return false;
+  }
+  let out = src.replace('<!-- NAV_PLACEHOLDER -->', canonicalNavHtml);
   out = ensureNavScript(out);
   if (out === src) return false;
   writeFileSync(filePath, out, 'utf8');
@@ -212,7 +191,7 @@ try {
   for (const f of targets) {
     if (injectNavIntoFile(f, canonicalNav)) {
       updated++;
-      console.log(`✓ Nav injected into ${f.replace(/\\/g, '/')}`);
+      console.log(`✓  Nav injected into ${f.replace(/\\/g, '/')}`);
     }
   }
 
