@@ -1,11 +1,12 @@
 /**
  * /api/newsletter-generator.js
  *
- * Scores resorts in 4 regions, picks one per region + a skip,
+ * Scores resorts in 5 regions, selects Pick + Trap + 3 Also picks per region,
  * generates copy via Anthropic, and posts a DRAFT to Beehiiv.
  *
  * Runs Thursday 11pm UTC (7pm ET) via Vercel cron.
- * Manual trigger: GET /api/newsletter-generator with Authorization: Bearer <CRON_SECRET>
+ * Manual trigger: GET /api/newsletter-generator
+ *   with Authorization: Bearer <CRON_SECRET>
  *
  * Required env vars:
  *   BEEHIIV_API_KEY
@@ -13,31 +14,46 @@
  *   ANTHROPIC_API_KEY
  *   CRON_SECRET  (any random string -- openssl rand -hex 32)
  *
- * One-line change required in resorts.js (or resorts-national.js) -- add at the very bottom:
+ * One-line change required in resorts-national.js -- add at the very bottom:
  *   if (typeof module !== 'undefined') module.exports = { RESORTS };
  */
 
 
 // ============================================================================
 // REGIONS
+// Five editorial regions matching the newsletter template.
 // ============================================================================
 
 const REGIONS = {
-  'new-england': {
-    label:  'New England',
-    states: ['VT', 'NH', 'ME', 'MA', 'CT', 'RI'],
+  'northeast': {
+    label:          'Northeast',
+    states:         ['VT', 'NH', 'ME', 'MA', 'CT', 'RI', 'NY', 'NJ', 'PA'],
+    driveAnchor:    'Boston, MA',
+    passContextTitle: 'Check Your Pass Logic',
+  },
+  'rockies': {
+    label:          'Rockies',
+    states:         ['CO', 'UT', 'WY', 'MT', 'ID', 'NM'],
+    driveAnchor:    'Denver, CO',
+    passContextTitle: "Don't Get Stuck on I-70",
+  },
+  'west': {
+    label:          'West',
+    states:         ['CA', 'OR', 'WA', 'NV', 'AK'],
+    driveAnchor:    'Los Angeles, CA',
+    passContextTitle: 'Pass Holders Take Note',
+  },
+  'southeast': {
+    label:          'Southeast',
+    states:         ['NC', 'TN', 'VA', 'WV', 'GA'],
+    driveAnchor:    'Charlotte, NC',
+    passContextTitle: 'Your Starting Point Changes Everything',
   },
   'midwest': {
-    label:  'Midwest',
-    states: ['MI', 'WI', 'MN', 'OH', 'IN', 'IL', 'MO', 'IA'],
-  },
-  'colorado': {
-    label:  'Colorado',
-    states: ['CO'],
-  },
-  'utah': {
-    label:  'Utah',
-    states: ['UT'],
+    label:          'Midwest',
+    states:         ['MI', 'WI', 'MN', 'OH', 'IN', 'IL', 'MO', 'IA'],
+    driveAnchor:    'Milwaukee, WI',
+    passContextTitle: 'Not Up for the Drive?',
   },
 };
 
@@ -54,20 +70,20 @@ const WEIGHTS = {
   baseDepth:    0.20,
 };
 
-// Normalization caps (cm)
 const CAPS = {
-  newSnow72h:   40,     // ~16" = perfect score
-  forecast48h:  25,     // ~10" = perfect score
-  baseDepth:    200,    // ~79" = perfect score
+  newSnow72h:   40,   // cm  ~16" = perfect score
+  forecast48h:  25,   // cm  ~10" = perfect score
+  baseDepth:    200,  // cm  ~79" = perfect score
 };
 
-// A pick with total score below this threshold gets a "thin conditions" warning in the draft.
+// Picks with score below this are flagged in the reviewer comment only.
+// No yellow banners in subscriber-facing HTML.
 const MIN_PUBLISH_SCORE = 30;
 
 
 // ============================================================================
 // HOLIDAY CALENDAR
-// Update at the start of each season. Fri-Sun windows of peak demand.
+// Fri-Sun windows of peak demand. Update at the start of each season.
 // ============================================================================
 
 const HOLIDAY_DATES = [
@@ -94,20 +110,14 @@ function isHolidayWeekend() {
 
 // ============================================================================
 // CROWD SCORING
-// No metro_gravity or capacity_tier on resort objects, so we derive from:
-//   price  -- demand proxy ($295 Vail = very high, $35 small hill = low)
-//   lifts  -- capacity proxy (more lifts = crowds spread out better)
-// This produces sensible results: Vail scores ~1.0, Wolf Creek ~0.33.
 // ============================================================================
 
 function getCrowdScore(resort) {
   const price = resort.price || 80;
   const lifts = resort.lifts || 5;
 
-  // Demand: normalize price against $280 ceiling
   const demandNorm = Math.min(price / 280, 1);
 
-  // Capacity tier from lift count (more lifts = better crowd absorption)
   let capacityMult;
   if      (lifts >= 20) capacityMult = 1.4;
   else if (lifts >= 12) capacityMult = 1.2;
@@ -127,10 +137,67 @@ function crowdLabel(score) {
   return 'Very Heavy';
 }
 
+// Returns inline-style values for the crowd stat tile.
+// Heavy/Very Heavy = amber. Moderate = neutral. Light = green.
+function crowdTileColors(label) {
+  if (label === 'Heavy' || label === 'Very Heavy')
+    return { bg: '#fef3c7', valColor: '#b45309', borderTop: '#b45309' };
+  if (label === 'Moderate')
+    return { bg: '#f7fafc', valColor: '#4a6177', borderTop: '#2b6de9' };
+  return { bg: '#dcfce7', valColor: '#16a34a', borderTop: '#16a34a' };
+}
+
+
+// ============================================================================
+// SIGNAL BADGES (Also strip)
+// Picks the most specific data signal for why this mountain is worth a look.
+// ============================================================================
+
+function signalBadge(scores) {
+  if (scores.newSnow72hIn  >= 12) return 'Big Dump';
+  if (scores.forecast48hIn >= 8)  return 'Big Forecast';
+  if (scores.newSnow72hIn  >= 6)  return 'Fresh Snow';
+  if (scores.crowdLabel === 'Light' || scores.crowdLabel === 'Moderate') return 'No Lines';
+  if (scores.baseDepthIn   >= 48) return 'Deep Base';
+  if (scores.forecast48hIn >= 4)  return 'Forecast Up';
+  return 'Worth a Look';
+}
+
+
+// ============================================================================
+// URL SLUG
+// Converts resort name to /ski-report/[slug]/ path.
+// If resort has a slug field already, use it directly.
+// ============================================================================
+
+function toSlug(resort) {
+  if (resort.slug) return resort.slug;
+  return resort.name
+    .toLowerCase()
+    .replace(/['']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function resortUrl(resort, utmContent) {
+  const slug = toSlug(resort);
+  return `https://www.wheretoskinext.com/ski-report/${slug}/?utm_source=newsletter&utm_medium=email&utm_campaign=weekly-pick&utm_content=${utmContent}`;
+}
+
+
+// ============================================================================
+// RESORT LOCATION LABEL
+// Uses resort.city if present, falls back to state only.
+// ============================================================================
+
+function resortLocation(resort) {
+  if (resort.city) return `${resort.city}, ${resort.state}`;
+  return resort.state;
+}
+
 
 // ============================================================================
 // WEATHER
-// Open-Meteo units: snowfall in cm/h, snow_depth in meters
 // ============================================================================
 
 async function fetchWeather(resort) {
@@ -180,8 +247,8 @@ async function fetchWeatherBatch(resorts, batchSize = 20) {
 
 function scoreResort(resort, weather) {
   const times     = weather.hourly.time;
-  const snowfall  = weather.hourly.snowfall;    // cm per hour
-  const snowDepth = weather.hourly.snow_depth;  // meters
+  const snowfall  = weather.hourly.snowfall;
+  const snowDepth = weather.hourly.snow_depth;
 
   const now   = Date.now();
   const ms72h = 72 * 3600 * 1000;
@@ -220,13 +287,10 @@ function scoreResort(resort, weather) {
 
   return {
     total:         Math.round(total * 10) / 10,
-    newSnow72hCm,
-    forecast48hCm,
-    baseDepthCm,
-    crowdScore,
     newSnow72hIn:  cmToIn(newSnow72hCm),
     forecast48hIn: cmToIn(forecast48hCm),
     baseDepthIn:   Math.round(baseDepthCm / 2.54),
+    crowdScore,
     crowdLabel:    crowdLabel(crowdScore),
   };
 }
@@ -234,25 +298,74 @@ function scoreResort(resort, weather) {
 
 // ============================================================================
 // COPY GENERATION
-// Calls Anthropic for pick and skip copy. Falls back to data-driven sentences.
+// Pick: returns { tagline, body, passNote }
+// Trap: returns string (body copy only)
+// Falls back to data-driven sentences on any API failure.
 // ============================================================================
 
-async function generateCopy(resort, scores, regionLabel, type) {
-  const isSkip = type === 'skip';
-
+async function generatePickCopy(resort, scores, region) {
   const dataBlock = [
-    `Mountain: ${resort.name}, ${resort.state}`,
-    `Region: ${regionLabel}`,
+    `Mountain: ${resort.name}`,
+    `Location: ${resortLocation(resort)}`,
+    `Region: ${region.label}`,
     `New snow (last 72h): ${scores.newSnow72hIn}"`,
-    `Forecast snow (next 48h): ${scores.forecast48hIn}"`,
+    `Forecast (next 48h): ${scores.forecast48hIn}"`,
     `Base depth: ${scores.baseDepthIn}"`,
     `Crowd outlook: ${scores.crowdLabel}`,
-    `Score: ${scores.total}/100`,
   ].join('\n');
 
-  const instruction = isSkip
-    ? `Write 1-2 sentences on why ${resort.name} is the mountain to skip this weekend. Lead with the actual reason (crowds, no new snow, thin base -- pick the worst factor). Direct. Skier voice. No em dashes. No marketing language.`
-    : `Write exactly 2 sentences on why ${resort.name} is the pick this weekend. First sentence: the snow situation. Second sentence: one specific reason it is worth the drive. Direct. Skier voice. No em dashes. No marketing language.`;
+  const prompt = `You write for WhereToSkiNext, a weekly ski newsletter. Skier talking to a skier. Short. Direct. Opinionated. No em dashes. No marketing language.
+
+Data for this week's pick:
+${dataBlock}
+
+Return ONLY a valid JSON object with exactly these three keys. No preamble, no markdown, no trailing text:
+{
+  "tagline": "A punchy 5-8 word headline for why to go this weekend. Example: 'Go get your laps' or 'Soft turns without the scene'.",
+  "body": "Exactly 2 sentences. First sentence: the snow situation. Second sentence: one specific reason it is worth the drive.",
+  "passNote": "1-2 sentences about pass considerations for this specific mountain. If it is independent, say so and tell them to check WTSN for pass-compatible alternatives."
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages:   [{ role: 'user', content: prompt }],
+      }),
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!resp.ok) throw new Error(`Anthropic ${resp.status}`);
+    const data = await resp.json();
+    const raw  = data.content?.[0]?.text?.trim() || '';
+    const clean = raw.replace(/^```json|^```|```$/gm, '').trim();
+    const parsed = JSON.parse(clean);
+    if (parsed.tagline && parsed.body && parsed.passNote) return parsed;
+    throw new Error('Incomplete JSON from Anthropic');
+  } catch (err) {
+    console.warn(`Pick copy failed for ${resort.name}:`, err.message);
+    return fallbackPickCopy(scores, resort.name);
+  }
+}
+
+async function generateTrapCopy(resort, scores, regionLabel) {
+  const dataBlock = [
+    `Mountain: ${resort.name}`,
+    `Region: ${regionLabel}`,
+    `Crowd outlook: ${scores.crowdLabel}`,
+    `New snow (last 72h): ${scores.newSnow72hIn}"`,
+    `Forecast (next 48h): ${scores.forecast48hIn}"`,
+  ].join('\n');
+
+  const prompt = `Write 2 sentences on why ${resort.name} is the mountain to skip this weekend. This is the "Where Everyone's Going" card -- the well-known resort that will be crowded. Focus on the crowd situation and why it is the wrong choice this specific weekend. No em dashes. Direct. Skier voice.
+
+${dataBlock}`;
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -265,199 +378,409 @@ async function generateCopy(resort, scores, regionLabel, type) {
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
         max_tokens: 150,
-        system:     'You write for WhereToSkiNext, a ski recommendation newsletter. Short. Opinionated. Skier talking to a skier. Never use em dashes.',
-        messages:   [{ role: 'user', content: `${instruction}\n\n${dataBlock}` }],
+        messages:   [{ role: 'user', content: prompt }],
       }),
       signal: AbortSignal.timeout(12000),
     });
     if (!resp.ok) throw new Error(`Anthropic ${resp.status}`);
     const data = await resp.json();
-    return data.content?.[0]?.text?.trim() || fallbackCopy(scores, resort.name, isSkip);
+    return data.content?.[0]?.text?.trim() || fallbackTrapCopy(scores, resort.name);
   } catch (err) {
-    console.warn(`Copy generation failed for ${resort.name}:`, err.message);
-    return fallbackCopy(scores, resort.name, isSkip);
+    console.warn(`Trap copy failed for ${resort.name}:`, err.message);
+    return fallbackTrapCopy(scores, resort.name);
   }
 }
 
-function fallbackCopy(scores, name, isSkip) {
-  if (isSkip) {
-    const reason = scores.crowdScore > 0.6
-      ? `${scores.crowdLabel.toLowerCase()} crowds expected`
-      : scores.newSnow72hIn < 2
-        ? 'no meaningful new snow'
-        : 'thin base';
-    return `Skip ${name} this weekend -- ${reason}.`;
-  }
+function fallbackPickCopy(scores, name) {
   const snowLine = scores.newSnow72hIn > 0
-    ? `${scores.newSnow72hIn}" in the last 72 hours.`
-    : `Forecast shows ${scores.forecast48hIn}" coming.`;
-  return `${snowLine} ${scores.crowdLabel} crowds expected this weekend.`;
+    ? `${scores.newSnow72hIn}" fell in the last 72 hours at ${name}.`
+    : `${name} has ${scores.forecast48hIn}" forecast for the next 48 hours.`;
+  return {
+    tagline:  'The engine picked this one.',
+    body:     `${snowLine} ${scores.crowdLabel} crowds expected this weekend.`,
+    passNote: 'Check your pass coverage on WTSN before you commit to the drive.',
+  };
+}
+
+function fallbackTrapCopy(scores, name) {
+  const crowdReason = scores.crowdLabel === 'Heavy' || scores.crowdLabel === 'Very Heavy'
+    ? `${scores.crowdLabel.toLowerCase()} crowds expected`
+    : 'likely to be busier than the pick';
+  return `${name} will have ${crowdReason} this weekend. The conditions may be fine but the experience will not be.`;
 }
 
 
 // ============================================================================
-// EMAIL HTML
+// RESORT SELECTION PER REGION
+// Pick:   top scorer
+// Trap:   highest-priced resort that is NOT the pick
+//         (price = demand proxy; most recognizable name in the region)
+// Also 1: Best for a Full Day -- most lifts among top scorers (excl. pick + trap)
+// Also 2: Best Kept Secret -- best scorer among below-median-price resorts
+// Also 3: Under the Radar  -- best scorer among lowest-quartile-price resorts
+// ============================================================================
+
+function selectResorts(scored) {
+  if (scored.length === 0) return { pick: null, trap: null, also: [] };
+
+  const pick = scored[0];
+  const usedNames = new Set([pick.resort.name]);
+
+  // Trap: highest-demand (price) resort that is not the pick
+  const trap = [...scored]
+    .filter(x => !usedNames.has(x.resort.name))
+    .sort((a, b) => (b.resort.price || 0) - (a.resort.price || 0))[0] || null;
+  if (trap) usedNames.add(trap.resort.name);
+
+  const remaining = scored.filter(x => !usedNames.has(x.resort.name));
+
+  // Also 1: Best for a Full Day -- most lifts
+  const also1 = [...remaining]
+    .sort((a, b) => (b.resort.lifts || 0) - (a.resort.lifts || 0))[0] || null;
+  if (also1) usedNames.add(also1.resort.name);
+
+  const remaining2 = scored.filter(x => !usedNames.has(x.resort.name));
+  const allPrices  = scored.map(x => x.resort.price || 80).sort((a, b) => a - b);
+  const medianPrice = allPrices[Math.floor(allPrices.length / 2)] || 80;
+
+  // Also 2: Best Kept Secret -- best scorer at below-median price
+  const secretPool = remaining2.filter(x => (x.resort.price || 80) < medianPrice);
+  const also2 = (secretPool.length > 0 ? secretPool : remaining2)[0] || null;
+  if (also2) usedNames.add(also2.resort.name);
+
+  const remaining3 = scored.filter(x => !usedNames.has(x.resort.name));
+  const q25Price   = allPrices[Math.floor(allPrices.length * 0.25)] || 60;
+
+  // Also 3: Under the Radar -- lowest-quartile price and decent score
+  const radarPool = remaining3.filter(x => (x.resort.price || 80) <= q25Price && x.scores.total > 15);
+  const also3 = (radarPool.length > 0 ? radarPool : remaining3)[0] || null;
+
+  return {
+    pick,
+    trap,
+    also: [
+      also1 ? { ...also1, role: 'Best for a Full Day',  badge: signalBadge(also1.scores) } : null,
+      also2 ? { ...also2, role: 'Best Kept Secret',     badge: signalBadge(also2.scores) } : null,
+      also3 ? { ...also3, role: 'Under the Radar',      badge: signalBadge(also3.scores) } : null,
+    ].filter(Boolean),
+  };
+}
+
+
+// ============================================================================
+// HTML HELPERS
+// ============================================================================
+
+// Single stat tile used in both Pick and Trap cards.
+function statTile({ value, label1, label2, accentColor, bgColor, textColor }) {
+  const bg     = bgColor     || '#ffffff';
+  const accent = accentColor || '#2b6de9';
+  const color  = textColor   || '#2a4158';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td align="center" style="background:${bg};border:1px solid #dde5ee;border-top:3px solid ${accent};border-radius:10px;padding:9px 4px;">
+      <strong style="display:block;font-size:24px;font-weight:800;color:${color};line-height:1.05;letter-spacing:-0.02em;">${value}</strong>
+      <span style="font-size:11px;color:#7f96a9;line-height:1.2;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-top:2px;">${label1}<br>${label2}</span>
+    </td>
+  </tr></table>`;
+}
+
+function statRow(scores, cardType) {
+  // cardType: 'pick' (blue accent) or 'trap' (amber accent on first 3 tiles)
+  const accentColor = cardType === 'trap' ? '#b45309' : '#2b6de9';
+  const borderColor = cardType === 'trap' ? '#fde68a' : '#dde5ee';
+  const crowd = crowdTileColors(scores.crowdLabel);
+
+  const tile = (value, l1, l2, opts = {}) => {
+    const bg     = opts.bg     || '#ffffff';
+    const accent = opts.accent || accentColor;
+    const vc     = opts.vc     || (cardType === 'pick' ? '#2a4158' : '#2a4158');
+    const border = opts.border || borderColor;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+      <td align="center" style="background:${bg};border:1px solid ${border};border-top:3px solid ${accent};border-radius:10px;padding:9px 4px;">
+        <strong style="display:block;font-size:24px;font-weight:800;color:${vc};line-height:1.05;letter-spacing:-0.02em;">${value}</strong>
+        <span style="font-size:11px;color:#7f96a9;line-height:1.2;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-top:2px;">${l1}<br>${l2}</span>
+      </td>
+    </tr></table>`;
+  };
+
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 12px;">
+    <tr>
+      <td class="stat-tile" width="25%" style="padding-right:6px;padding-bottom:6px;" valign="top">
+        ${tile(scores.newSnow72hIn + '"', 'new', '72h')}
+      </td>
+      <td class="stat-tile" width="25%" style="padding-right:6px;padding-bottom:6px;" valign="top">
+        ${tile(scores.forecast48hIn + '"', 'fcast', '48h')}
+      </td>
+      <td class="stat-tile" width="25%" style="padding-right:6px;padding-bottom:6px;" valign="top">
+        ${tile(scores.baseDepthIn + '"', 'base', 'depth')}
+      </td>
+      <td class="stat-tile" width="25%" style="padding-right:0;padding-bottom:6px;" valign="top">
+        ${tile(scores.crowdLabel, 'crowd', 'outlook', {
+          bg: crowd.bg, accent: crowd.borderTop, vc: crowd.valColor, border: '#dde5ee',
+        })}
+      </td>
+    </tr>
+  </table>`;
+}
+
+
+// ============================================================================
+// REGION BLOCK BUILDER
+// Outputs: region band + Pick card + Trap card + Also strip + spacer
+// ============================================================================
+
+function buildRegionBlock(r) {
+  const { region, pick, trap, also } = r;
+  const pickScores = pick.scores;
+  const regionId   = r.regionId;
+  const conditionFlag = pickScores.total < MIN_PUBLISH_SCORE
+    ? `<!-- REVIEWER: thin conditions in ${region.label} (score: ${pickScores.total}/100). Review before sending. -->`
+    : '';
+
+  // ---- PICK CARD ----
+  const pickCard = `
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td style="padding:8px 28px 16px;" class="section-pad">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="background:#0f1c2e;border:1px solid #233b56;border-radius:16px;overflow:hidden;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding:18px 20px 20px;background:#0f1c2e;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td valign="top">
+                          <p style="font-size:12px;font-weight:800;letter-spacing:0.11em;text-transform:uppercase;color:#8fb6ff;margin:0 0 4px;">Where You Should Go</p>
+                          <p style="font-size:32px;font-weight:800;color:#f0f6fc;margin:0 0 1px;line-height:1.05;letter-spacing:-0.03em;">${pick.resort.name}</p>
+                          <p style="font-size:14px;color:rgba(240,246,252,0.68);margin:0 0 12px;">${resortLocation(pick.resort)}</p>
+                        </td>
+                        <td align="right" valign="top" style="padding-left:12px;">
+                          <span style="display:inline-block;background:#2b6de9;color:#ffffff;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;">Top Pick</span>
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="font-size:21px;font-weight:800;color:#ffffff;margin:0 0 6px;line-height:1.3;">${pick.copy.tagline}</p>
+                    <p style="font-size:16px;color:rgba(240,246,252,0.88);line-height:1.45;margin:0 0 14px;">${pick.copy.body}</p>
+                    ${statRow(pickScores, 'pick')}
+                    <p style="font-size:12px;color:rgba(240,246,252,0.46);margin:0 0 16px;font-style:italic;">*Drive time mapped from ${region.driveAnchor}.</p>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px;">
+                      <tr>
+                        <td style="background:#162537;border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:14px 16px;">
+                          <p style="font-size:12px;font-weight:800;color:#8fb6ff;letter-spacing:0.09em;text-transform:uppercase;margin:0 0 6px;">${region.passContextTitle}</p>
+                          <p style="font-size:14px;color:rgba(240,246,252,0.84);line-height:1.45;margin:0;">${pick.copy.passNote}</p>
+                        </td>
+                      </tr>
+                    </table>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td align="center">
+                          <a href="${resortUrl(pick.resort, regionId + '-pick')}" style="display:block;width:100%;box-sizing:border-box;text-align:center;background-color:#2b6de9;border-radius:999px;color:#ffffff;font-size:16px;font-weight:800;padding:14px 20px;text-decoration:none;letter-spacing:0.01em;">See ${pick.resort.name} on WTSN</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>`;
+
+  // ---- TRAP CARD ----
+  const trapCard = trap ? `
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td style="padding:0 28px 16px;" class="section-pad">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="background:#fffbf4;border:1px solid #fde68a;border-left:4px solid #b45309;border-radius:12px;padding:16px 20px;">
+              <p style="font-size:12px;font-weight:800;letter-spacing:0.11em;text-transform:uppercase;color:#b45309;margin:0 0 6px;">Where Everyone&#x27;s Going</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td valign="top">
+                    <p style="font-size:24px;font-weight:800;color:#2a4158;margin:0 0 4px;line-height:1.1;letter-spacing:-0.02em;">${trap.resort.name}</p>
+                    <p style="font-size:13px;color:#7f96a9;margin:0 0 16px;">${resortLocation(trap.resort)}</p>
+                  </td>
+                  <td align="right" valign="top" style="padding-left:12px;">
+                    <span style="display:inline-block;background:#fef3c7;color:#b45309;border:1px solid #fde68a;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;">Crowd Magnet</span>
+                  </td>
+                </tr>
+              </table>
+              ${statRow(trap.scores, 'trap')}
+              <p style="font-size:15px;color:#4a6177;line-height:1.5;margin:0 0 10px;">${trap.copy}</p>
+              <a href="${resortUrl(trap.resort, regionId + '-trap')}" style="font-size:13px;font-weight:800;color:#2b6de9;text-decoration:none;">View weekend crowd data on WTSN &rarr;</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>` : '';
+
+  // ---- ALSO STRIP ----
+  const alsoColumns = also.map((item, idx) => {
+    const isFirst = idx === 0;
+    const isLast  = idx === also.length - 1;
+    const width   = isLast ? '34%' : '33%';
+    const pl      = isFirst ? '0' : '12px';
+    const pr      = isLast  ? '0' : '12px';
+    const border  = isFirst ? '' : 'border-left:1px solid rgba(255,255,255,0.08);';
+    return `<td class="also-stack" width="${width}" style="padding-right:${pr};padding-left:${pl};${border}" valign="top">
+      <p style="font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#8fb6ff;margin:0 0 8px;">${item.role}</p>
+      <p style="font-size:18px;font-weight:800;color:#f0f6fc;margin:0 0 2px;line-height:1.2;">${item.resort.name}</p>
+      <p style="font-size:12px;color:rgba(240,246,252,0.52);margin:0 0 12px;">${resortLocation(item.resort)}</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 10px;"><tr><td>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+          <td align="center" style="background:#162537;border:1px solid rgba(255,255,255,0.08);border-top:2px solid #2b6de9;border-radius:8px;padding:8px 4px;">
+            <strong style="font-size:14px;font-weight:800;color:#8fb6ff;display:block;line-height:1;text-transform:uppercase;letter-spacing:0.05em;">${item.badge}</strong>
+          </td>
+        </tr></table>
+      </td></tr></table>
+      <a href="${resortUrl(item.resort, regionId + '-also-' + (idx + 1))}" style="font-size:13px;font-weight:800;color:#8fb6ff;text-decoration:none;">View on WTSN &rarr;</a>
+    </td>`;
+  }).join('\n');
+
+  const alsoStrip = also.length > 0 ? `
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#1e3448">
+    <tr>
+      <td style="padding:20px 28px 20px;background:#1e3448;" class="section-pad">
+        <p style="font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(240,246,252,0.46);margin:0 0 20px;">Also This Week in the ${region.label}</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr valign="top">
+            ${alsoColumns}
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>` : '';
+
+  // ---- REGION BAND ----
+  const regionBand = `
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#d4e8f8">
+    <tr>
+      <td style="padding:12px 28px 12px;background:#d4e8f8;border-top:1px solid #c4d0de;" class="section-pad">
+        <p style="font-size:14px;font-weight:800;letter-spacing:0.13em;text-transform:uppercase;color:#2b6de9;margin:0 0 2px;">${region.label}</p>
+        <p style="font-size:13px;color:#4a6177;margin:0;">Updated [DAY], [TIME] ET.</p>
+      </td>
+    </tr>
+  </table>`;
+
+  const spacer = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td height="16" style="font-size:0;line-height:0;background:#f7fafc;"></td></tr></table>`;
+
+  return `\n  ${conditionFlag}\n  ${regionBand}\n  ${pickCard}\n  ${trapCard}\n  ${alsoStrip}\n  ${spacer}`;
+}
+
+
+// ============================================================================
+// FULL EMAIL HTML
 // ============================================================================
 
 function buildEmailHtml(regionResults, generatedAt) {
   const blocks = regionResults.map(r => buildRegionBlock(r)).join('\n');
 
+  // Best preheader hook: pick with the most new snow
+  const bestPick = regionResults.reduce((top, r) =>
+    r.pick.scores.newSnow72hIn > top.pick.scores.newSnow72hIn ? r : top,
+    regionResults[0]
+  );
+  const preheader = `${bestPick.pick.scores.newSnow72hIn}" at ${bestPick.pick.resort.name} this weekend.`
+    + ` ${regionResults.filter(r => r !== bestPick).map(r => r.region.label + ': ' + r.pick.resort.name).join(', ')}.`;
+
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>WhereToSkiNext Weekly Draft</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>WhereToSkiNext Weekly</title>
+  <style type="text/css">
+    body, table, td, p, a, span, strong { font-family: Helvetica, Arial, sans-serif !important; }
+    body { margin:0; padding:0; background-color:#d4e8f8; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table { border-collapse:separate; }
+    a { text-decoration:none; }
+    img { border:0; outline:none; text-decoration:none; }
+    @media only screen and (max-width: 600px) {
+      .email-container { width:100% !important; max-width:100% !important; }
+      .section-pad { padding-left:16px !important; padding-right:16px !important; }
+      .stat-tile { display:inline-block !important; width:50% !important; padding-right:6px !important; padding-bottom:8px !important; box-sizing:border-box !important; }
+      .also-stack { display:block !important; width:100% !important; padding-left:0 !important; padding-right:0 !important; border-left:none !important; padding-bottom:16px !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background-color:#d4e8f8;">
 
 <!-- ================================================================
 REVIEWER NOTES -- delete before sending
 Generated: ${generatedAt}
-One pick per region, scored on: new snow (30%), forecast (25%), crowds (25%), base depth (20%).
-Score < ${MIN_PUBLISH_SCORE}/100 = thin conditions warning. Edit copy freely before sending.
+Scoring: new snow 30% / forecast 25% / crowds 25% / base depth 20%
+Picks below ${MIN_PUBLISH_SCORE}/100 are flagged inline above their region.
+Review copy, update [DAY] and [TIME] in region bands, then send.
 ================================================================ -->
 
-<div style="max-width:600px;margin:0 auto;background:#ffffff;">
-
-  <div style="background:#0f1c2e;padding:24px 32px;text-align:center;">
-    <a href="https://www.wheretoskinext.com/?utm_source=newsletter&utm_medium=email&utm_campaign=weekly-pick"
-       style="color:#5aaddc;font-size:18px;font-weight:700;text-decoration:none;letter-spacing:0.5px;">
-      WhereToSkiNext.com
-    </a>
-  </div>
-
-  <div style="padding:24px 32px 0;border-bottom:1px solid #e8ecef;">
-    <p style="color:#4A5B6A;font-size:16px;line-height:1.6;margin:0 0 12px;">
-      One pick per region. No drive time, no pass filter -- that is what the site is for.
-    </p>
-    <ul style="color:#1a2e45;font-size:15px;line-height:1.9;margin:0 0 24px;padding-left:20px;">
-      ${regionResults.map(r =>
-        `<li><strong>${r.region.label}:</strong> ${r.pick.resort.name} &mdash; ${r.pick.scores.newSnow72hIn}" new, ${r.pick.scores.crowdLabel} crowds</li>`
-      ).join('\n      ')}
-    </ul>
-  </div>
-
-  ${blocks}
-
-  <div style="padding:32px;text-align:center;border-top:1px solid #e8ecef;">
-    <p style="color:#4A5B6A;font-size:15px;margin:0 0 16px;">
-      Not in these regions? Personalize the pick for your location, pass, and drive time.
-    </p>
-    <a href="https://www.wheretoskinext.com/?utm_source=newsletter&utm_medium=email&utm_campaign=weekly-pick"
-       style="display:inline-block;background:#5aaddc;color:#ffffff;font-size:15px;font-weight:700;
-              padding:12px 28px;border-radius:6px;text-decoration:none;">
-      Find Your Mountain
-    </a>
-  </div>
-
-  <div style="background:#283642;padding:24px 32px;">
-    <p style="color:#F3F1EE;font-size:13px;margin:0 0 6px;font-weight:700;">WhereToSkiNext Weekly</p>
-    <p style="color:#9aa8b4;font-size:12px;margin:0;">Auto-generated ${generatedAt}.</p>
-  </div>
-
+<div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#ffffff;line-height:1px;mso-hide:all;">
+  ${preheader}&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;
 </div>
-</body>
-</html>`;
-}
 
+<div class="email-container" style="max-width:600px;margin:0 auto;background:#f7fafc;">
 
-function buildRegionBlock(r) {
-  const scores  = r.pick.scores;
-
-  const warning = scores.total < MIN_PUBLISH_SCORE
-    ? `<div style="background:#fff8e1;border:1px solid #f0c040;border-radius:6px;
-                   padding:12px 16px;margin-bottom:16px;font-size:13px;color:#7a5a00;">
-        <strong>Thin conditions in ${r.region.label} (score: ${scores.total}/100).</strong>
-        Consider skipping this region or flagging it as advisory.
-       </div>`
-    : '';
-
-  const runners = r.runners.length > 0
-    ? `<p style="font-size:11px;color:#8899aa;margin:16px 0 0;line-height:1.5;">
-         Also considered: ${r.runners.map(x => `${x.resort.name} (${x.scores.total})`).join(', ')}
-       </p>`
-    : '';
-
-  const skipBlock = r.skip
-    ? `<div style="background:#fdf5f4;border-left:3px solid #c9503a;padding:14px 16px;
-                   margin-top:24px;border-radius:0 6px 6px 0;">
-         <p style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-                   color:#c9503a;margin:0 0 6px;">Skip It</p>
-         <p style="font-size:15px;font-weight:700;color:#1a2e45;margin:0 0 6px;">
-           ${r.skip.resort.name}, ${r.skip.resort.state}
-         </p>
-         <p style="font-size:14px;color:#4A5B6A;line-height:1.6;margin:0;">
-           ${r.skip.copy}
-         </p>
-       </div>`
-    : '';
-
-  return `
-<!-- ${r.region.label.toUpperCase()} -->
-<div style="padding:32px 32px 24px;border-bottom:1px solid #e8ecef;">
-  ${warning}
-
-  <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-             color:#5aaddc;margin:0 0 12px;">
-    ${r.region.label}
-  </p>
-
-  <h2 style="font-family:Helvetica,Arial,sans-serif;font-size:26px;font-weight:700;
-              color:#0f1c2e;margin:0 0 2px;line-height:1.1;">
-    ${r.pick.resort.name}
-  </h2>
-  <p style="font-size:13px;color:#8899aa;margin:0 0 20px;">
-    ${r.pick.resort.state} &nbsp;&middot;&nbsp; Score: ${scores.total}/100
-  </p>
-
-  <table cellpadding="0" cellspacing="0" border="0" width="100%"
-         style="border-collapse:separate;border-spacing:6px 0;margin:0 0 20px;">
+  <!-- HEADER -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#0f1c2e">
     <tr>
-      <td width="25%" style="background:#f0f4f8;border-radius:6px;padding:10px 12px;
-                              font-size:12px;color:#4A5B6A;text-align:center;vertical-align:top;">
-        <strong style="display:block;font-size:22px;font-weight:700;color:#0f1c2e;line-height:1.1;">
-          ${scores.newSnow72hIn}"
-        </strong>
-        new snow<br/>72h
+      <td align="center" style="padding:16px 28px 14px;background:#0f1c2e;" class="section-pad">
+        <a href="https://www.wheretoskinext.com/?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=weekly-pick&amp;utm_content=header-logo" style="display:inline-block;font-size:24px;font-weight:800;color:#f0f6fc;margin:0;line-height:1.15;letter-spacing:-0.02em;text-decoration:none;">
+          WhereToSki<span style="color:#2b6de9;">Next</span>.com
+        </a>
+        <p style="font-size:12px;font-weight:700;letter-spacing:0.11em;text-transform:uppercase;color:rgba(240,246,252,0.62);margin:4px 0 0;">Week of [DATE]</p>
       </td>
-      <td width="25%" style="background:#f0f4f8;border-radius:6px;padding:10px 12px;
-                              font-size:12px;color:#4A5B6A;text-align:center;vertical-align:top;">
-        <strong style="display:block;font-size:22px;font-weight:700;color:#0f1c2e;line-height:1.1;">
-          ${scores.forecast48hIn}"
-        </strong>
-        forecast<br/>48h
-      </td>
-      <td width="25%" style="background:#f0f4f8;border-radius:6px;padding:10px 12px;
-                              font-size:12px;color:#4A5B6A;text-align:center;vertical-align:top;">
-        <strong style="display:block;font-size:22px;font-weight:700;color:#0f1c2e;line-height:1.1;">
-          ${scores.baseDepthIn}"
-        </strong>
-        base<br/>depth
-      </td>
-      <td width="25%" style="background:#f0f4f8;border-radius:6px;padding:10px 12px;
-                              font-size:12px;color:#4A5B6A;text-align:center;vertical-align:top;">
-        <strong style="display:block;font-size:22px;font-weight:700;color:#0f1c2e;line-height:1.1;">
-          ${scores.crowdLabel}
-        </strong>
-        crowd<br/>outlook
+    </tr>
+  </table>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr><td height="4" bgcolor="#2b6de9" style="background:#2b6de9;font-size:0;line-height:0;"></td></tr>
+  </table>
+
+  <!-- HERO INTRO -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#ffffff">
+    <tr>
+      <td style="padding:28px 28px 32px;border-bottom:1px solid #dde5ee;text-align:center;" class="section-pad">
+        <p style="font-size:24px;color:#2a4158;line-height:1.25;margin:0 0 12px;letter-spacing:-0.02em;">
+          <strong style="font-weight:800;color:#2a4158;">Everyone loves fresh snow.</strong><br>
+          <span style="color:#4a6177;font-size:20px;">Nobody loves chasing it with everyone else.</span>
+        </p>
+        <p style="font-size:16px;color:#4a6177;line-height:1.5;margin:0 0 24px;padding:0 10px;">
+          Dial in your exact starting point, pass type, and drive limit. We'll run the numbers and map the best turns for your weekend.
+        </p>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td align="center">
+              <a href="https://www.wheretoskinext.com/?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=weekly-pick&amp;utm_content=hero-cta" style="display:inline-block;background:#2b6de9;color:#ffffff;border-radius:999px;padding:16px 32px;font-size:16px;font-weight:800;line-height:1;text-decoration:none;white-space:nowrap;">
+                Find My Mountain
+              </a>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>
 
-  <p style="font-size:16px;color:#1a2e45;line-height:1.65;margin:0 0 20px;">
-    ${r.pick.copy}
-  </p>
+  ${blocks}
 
-  <a href="https://www.wheretoskinext.com/?utm_source=newsletter&utm_medium=email&utm_campaign=weekly-pick&state=${r.pick.resort.state}"
-     style="display:inline-block;background:#5aaddc;color:#ffffff;font-size:14px;font-weight:700;
-            padding:10px 22px;border-radius:6px;text-decoration:none;">
-    Find Your Mountain
-  </a>
+  <!-- SIGN OFF -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td style="padding:40px 28px 40px;text-align:center;" class="section-pad">
+        <p style="font-size:18px;color:#4a6177;margin:0;line-height:1.5;">
+          See you out there,<br>
+          <strong style="color:#2a4158;font-size:20px;">Trip</strong>
+        </p>
+      </td>
+    </tr>
+  </table>
 
-  ${skipBlock}
-  ${runners}
-</div>`;
+</div>
+</body>
+</html>`;
 }
 
 
@@ -477,11 +800,11 @@ async function postBeehiivDraft(subject, previewText, htmlContent) {
       'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      title:         subject,
+      title:        subject,
       subject,
-      preview_text:  previewText,
-      status:        'draft',
-      content_html:  htmlContent,
+      preview_text: previewText,
+      status:       'draft',
+      content_html: htmlContent,
     }),
     signal: AbortSignal.timeout(15000),
   });
@@ -500,7 +823,6 @@ async function postBeehiivDraft(subject, previewText, htmlContent) {
 
 module.exports = async function handler(req, res) {
 
-  // Auth: Vercel cron sends x-vercel-cron; manual trigger uses CRON_SECRET
   const isVercelCron = req.headers['x-vercel-cron'] === '1';
   const cronSecret   = process.env.CRON_SECRET;
   const authHeader   = req.headers['authorization'] || '';
@@ -519,16 +841,11 @@ module.exports = async function handler(req, res) {
   });
 
   // Load resort data
-  // The file should have at its bottom:
-  //   if (typeof module !== 'undefined') module.exports = { RESORTS };
   let allResorts;
   try {
     let data;
-    try {
-      data = require('../resorts-national.js');
-    } catch {
-      data = require('../resorts.js');
-    }
+    try { data = require('../resorts-national.js'); }
+    catch { data = require('../resorts.js'); }
     allResorts = data.RESORTS || data.RESORTS_NATIONAL || (Array.isArray(data) ? data : null);
     if (!allResorts) {
       const key = Object.keys(data).find(k => Array.isArray(data[k]) && data[k].length > 50);
@@ -538,7 +855,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({
       error:  'Could not load resort data.',
       detail: err.message,
-      fix:    'Add this line at the bottom of resorts.js (or resorts-national.js): if (typeof module !== "undefined") module.exports = { RESORTS };',
+      fix:    'Add this line at the bottom of resorts-national.js: if (typeof module !== "undefined") module.exports = { RESORTS };',
     });
   }
 
@@ -566,8 +883,7 @@ module.exports = async function handler(req, res) {
         const weather = weatherMap.get(resort.name);
         if (!weather) continue;
         try {
-          const scores = scoreResort(resort, weather);
-          scored.push({ resort, scores });
+          scored.push({ resort, scores: scoreResort(resort, weather) });
         } catch (err) {
           console.warn(`  Score failed for ${resort.name}:`, err.message);
         }
@@ -580,30 +896,26 @@ module.exports = async function handler(req, res) {
 
       scored.sort((a, b) => b.scores.total - a.scores.total);
 
-      const pick    = scored[0];
-      const runners = scored.slice(1, 4);
+      const { pick, trap, also } = selectResorts(scored);
 
-      // Skip: most expensive resort (highest demand) that scores in the bottom third
-      // This surfaces the well-known mountain that is a bad choice this specific weekend.
-      const bottomThird   = scored.slice(Math.max(1, Math.floor(scored.length * 0.67)));
-      const skipCandidate = [...bottomThird].sort((a, b) => b.resort.price - a.resort.price)[0];
-      const skip          = (skipCandidate && skipCandidate.resort.name !== pick.resort.name)
-                            ? skipCandidate
-                            : null;
+      console.log(
+        `  Pick: ${pick.resort.name} (${pick.scores.total})`,
+        `| Trap: ${trap?.resort.name || 'none'}`,
+        `| Also: ${also.map(a => a.resort.name).join(', ')}`
+      );
 
-      console.log(`  Pick: ${pick.resort.name} (${pick.scores.total}). Skip: ${skip?.resort.name || 'none'}`);
-
-      const [pickCopy, skipCopy] = await Promise.all([
-        generateCopy(pick.resort, pick.scores, region.label, 'pick'),
-        skip ? generateCopy(skip.resort, skip.scores, region.label, 'skip') : Promise.resolve(''),
+      // Generate copy (2 API calls per region)
+      const [pickCopy, trapCopy] = await Promise.all([
+        generatePickCopy(pick.resort, pick.scores, region),
+        trap ? generateTrapCopy(trap.resort, trap.scores, region.label) : Promise.resolve(''),
       ]);
 
       regionResults.push({
         regionId,
         region,
-        pick:    { ...pick, copy: pickCopy },
-        skip:    skip ? { ...skip, copy: skipCopy } : null,
-        runners,
+        pick:  { ...pick, copy: pickCopy },
+        trap:  trap ? { ...trap, copy: trapCopy } : null,
+        also,
       });
 
     } catch (err) {
@@ -615,8 +927,13 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'No regions produced results. Check weather API and resort data.' });
   }
 
-  const pickList    = regionResults.map(r => `${r.region.label}: ${r.pick.resort.name}`).join(', ');
-  const subject     = `The pick this weekend -- ${pickList}`;
+  // Subject: lead with the top snow event of the week
+  const topSnow = regionResults.reduce((top, r) =>
+    r.pick.scores.newSnow72hIn > top.pick.scores.newSnow72hIn ? r : top,
+    regionResults[0]
+  );
+  const subject = `Where to ski this weekend -- ${topSnow.pick.scores.newSnow72hIn}" at ${topSnow.pick.resort.name} leads the ${topSnow.region.label}`;
+
   const previewText = regionResults
     .map(r => `${r.region.label}: ${r.pick.resort.name} (${r.pick.scores.newSnow72hIn}" new)`)
     .join(' | ');
@@ -637,6 +954,7 @@ module.exports = async function handler(req, res) {
       picks: regionResults.map(r => ({
         region: r.region.label,
         pick:   r.pick.resort.name,
+        trap:   r.trap?.resort.name || null,
         score:  r.pick.scores.total,
       })),
     });
@@ -649,13 +967,13 @@ module.exports = async function handler(req, res) {
     previewText,
     regionsRun:    regionResults.length,
     picks: regionResults.map(r => ({
-      region:    r.region.label,
-      pick:      r.pick.resort.name,
-      score:     r.pick.scores.total,
-      newSnowIn: r.pick.scores.newSnow72hIn,
-      crowds:    r.pick.scores.crowdLabel,
-      skip:      r.skip?.resort.name || null,
-      runners:   r.runners.map(x => x.resort.name),
+      region:     r.region.label,
+      pick:       r.pick.resort.name,
+      score:      r.pick.scores.total,
+      newSnowIn:  r.pick.scores.newSnow72hIn,
+      crowds:     r.pick.scores.crowdLabel,
+      trap:       r.trap?.resort.name || null,
+      also:       r.also.map(a => `${a.role}: ${a.resort.name}`),
     })),
     beehiivPostId: beehiivData?.data?.id,
     beehiivUrl:    beehiivData?.data?.web_url || beehiivData?.data?.url,
