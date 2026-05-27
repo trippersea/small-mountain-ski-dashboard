@@ -240,19 +240,19 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); }
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  color: rgba(255,255,255,.38);
+  color: rgba(255,255,255,.72);
   cursor: pointer;
   z-index: 10;
   opacity: 0;
-  animation: scroll-cue-appear .5s ease 3s forwards;
-  transition: opacity .4s ease;
-  background: none;
-  border: none;
+  animation: scroll-cue-appear .5s ease 1.5s forwards;
+  transition: opacity .4s ease, color .2s ease;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
   font: inherit;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 8px 14px;
+  border-radius: 20px;
 }
-.scroll-cue:hover { color: rgba(255,255,255,.65); }
+.scroll-cue:hover { color: rgba(255,255,255,.95); background: rgba(255,255,255,.12); }
 .scroll-cue.hidden {
   opacity: 0 !important;
   pointer-events: none;

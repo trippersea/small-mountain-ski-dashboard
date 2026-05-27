@@ -771,6 +771,7 @@ const els = {
   heroSnowSelect:      $('heroSnowSelect'),
   hnRefinePromptBtn:   $('hnRefinePromptBtn'),
   plannerSeeVerdictBtn: $('plannerSeeVerdictBtn'),
+  scrollCue:           $('scrollCue'),
 };
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -3767,6 +3768,17 @@ function initialize() {
       showToast('Location permission needed · use search instead');
     });
   });
+
+  // ── Scroll cue: wire click + auto-hide on first scroll ──────────────────
+  if (els.scrollCue) {
+    els.scrollCue.addEventListener('click', () => {
+      document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      els.scrollCue.classList.add('hidden');
+    });
+    window.addEventListener('scroll', () => {
+      els.scrollCue.classList.add('hidden');
+    }, { once: true, passive: true });
+  }
 
   // ── Silent auto-geolocation on first visit ──────────────────────────────
   // If no saved/URL origin, quietly ask the browser for location.
