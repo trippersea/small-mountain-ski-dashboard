@@ -85,6 +85,17 @@
   ],
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.wheretoskinext.com"
+        }
+      ],
+      "destination": "https://wheretoskinext.com/:path*",
+      "permanent": true
+    },
+    {
       "source": "/about.html",
       "destination": "/about",
       "permanent": true
