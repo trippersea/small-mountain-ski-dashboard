@@ -33,25 +33,29 @@ const REGIONS = {
   },
   'rockies': {
     label:          'Rockies',
+    // NM included: Taos, Ski Santa Fe, Angel Fire are Rocky Mountain skiing
     states:         ['CO', 'UT', 'WY', 'MT', 'ID', 'NM'],
     driveAnchor:    'Denver, CO',
     passContextTitle: "Don't Get Stuck on I-70",
   },
   'west': {
     label:          'West',
-    states:         ['CA', 'OR', 'WA', 'NV', 'AK'],
+    // AZ and NV have genuine ski mountains (Snowbowl, Mt. Rose, Lee Canyon)
+    states:         ['CA', 'OR', 'WA', 'NV', 'AZ', 'AK'],
     driveAnchor:    'Los Angeles, CA',
     passContextTitle: 'Pass Holders Take Note',
   },
   'southeast': {
     label:          'Southeast',
-    states:         ['NC', 'TN', 'VA', 'WV', 'GA'],
+    // MD included: Wisp Resort is Appalachian skiing, draws DC/Baltimore market
+    states:         ['NC', 'TN', 'VA', 'WV', 'MD', 'GA'],
     driveAnchor:    'Charlotte, NC',
     passContextTitle: 'Your Starting Point Changes Everything',
   },
   'midwest': {
     label:          'Midwest',
-    states:         ['MI', 'WI', 'MN', 'OH', 'IN', 'IL', 'MO', 'IA'],
+    // SD and ND have operating ski areas (Terry Peak, Huff Hills)
+    states:         ['MI', 'WI', 'MN', 'OH', 'IN', 'IL', 'MO', 'IA', 'SD', 'ND'],
     driveAnchor:    'Milwaukee, WI',
     passContextTitle: 'Not Up for the Drive?',
   },
@@ -166,17 +170,12 @@ function signalBadge(scores) {
 
 // ============================================================================
 // URL SLUG
-// Converts resort name to /ski-report/[slug]/ path.
-// If resort has a slug field already, use it directly.
+// resorts.js uses resort.id as the canonical slug (e.g. "killington-resort",
+// "mad-river-glen", "mt-bohemia"). Use it directly -- do not derive from name.
 // ============================================================================
 
 function toSlug(resort) {
-  if (resort.slug) return resort.slug;
-  return resort.name
-    .toLowerCase()
-    .replace(/['']/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+  return resort.id;
 }
 
 function resortUrl(resort, utmContent) {
@@ -187,11 +186,10 @@ function resortUrl(resort, utmContent) {
 
 // ============================================================================
 // RESORT LOCATION LABEL
-// Uses resort.city if present, falls back to state only.
+// resorts.js has no city field. Use state abbreviation only.
 // ============================================================================
 
 function resortLocation(resort) {
-  if (resort.city) return `${resort.city}, ${resort.state}`;
   return resort.state;
 }
 
@@ -843,10 +841,9 @@ module.exports = async function handler(req, res) {
   // Load resort data
   let allResorts;
   try {
-    let data;
-    try { data = require('../resorts-national.js'); }
-    catch { data = require('../resorts.js'); }
-    allResorts = data.RESORTS || data.RESORTS_NATIONAL || (Array.isArray(data) ? data : null);
+    // resorts.js already has: if (typeof module !== 'undefined') module.exports = { RESORTS };
+    const data = require('../resorts.js');
+    allResorts = data.RESORTS || (Array.isArray(data) ? data : null);
     if (!allResorts) {
       const key = Object.keys(data).find(k => Array.isArray(data[k]) && data[k].length > 50);
       allResorts = key ? data[key] : [];
@@ -855,7 +852,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({
       error:  'Could not load resort data.',
       detail: err.message,
-      fix:    'Add this line at the bottom of resorts-national.js: if (typeof module !== "undefined") module.exports = { RESORTS };',
+      fix:    'Add this line at the bottom of resorts.js: if (typeof module !== "undefined") module.exports = { RESORTS }; (it may already be there)',
     });
   }
 
