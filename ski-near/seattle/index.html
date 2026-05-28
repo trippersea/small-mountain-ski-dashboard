@@ -94,11 +94,13 @@
   }
   </script>
 
+  <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
 
   <style>
@@ -179,7 +181,7 @@
     }
   </style>
 </head>
-<body>
+<body class="pass-page-body">
 
 <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
@@ -278,7 +280,7 @@
     </div>
   </nav>
 
-<main class="page">
+<main class="pp-shell page">
 
   <!-- Breadcrumb -->
   <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -344,7 +346,7 @@
 
   <!-- Drive note -->
   <div class="drive-note">
-    <strong>🚗 Getting there from Seattle:</strong> Mountain passes can close during heavy snowfall. Check WSDOT pass reports before heading out. Snoqualmie is the most reliable for quick access; Stevens and Crystal require more planning on storm days.
+    <strong>Getting there from Seattle:</strong> Mountain passes can close during heavy snowfall. Check WSDOT pass reports before heading out. Snoqualmie is the most reliable for quick access; Stevens and Crystal require more planning on storm days.
   </div>
 
   <!-- By Distance -->

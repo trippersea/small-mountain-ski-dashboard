@@ -359,11 +359,13 @@ function generatePage(city) {
   }
   </script>
 
+  <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
 
   <style>
@@ -444,11 +446,11 @@ function generatePage(city) {
     }
   </style>
 </head>
-<body>
+<body class="pass-page-body">
 
 ${topNav}
 
-<main class="page">
+<main class="pp-shell page">
 
   <!-- Breadcrumb -->
   <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -494,7 +496,7 @@ ${topNav}
 
   <!-- Drive note -->
   <div class="drive-note">
-    <strong>🚗 Getting there from ${city.name}:</strong> ${city.driveNote}
+    <strong>Getting there from ${city.name}:</strong> ${city.driveNote}
   </div>
 
   <!-- By Distance -->
