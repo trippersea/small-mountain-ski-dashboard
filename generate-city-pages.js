@@ -369,6 +369,7 @@ function generatePage(city) {
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
   <link rel="stylesheet" href="/ski/state-page.css" />
   <link rel="stylesheet" href="/ski-near/city-page.css" />
+  <link rel="stylesheet" href="/newsletter-band.css" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
 </head>
 <body class="pass-page-body state-page city-page">
@@ -482,6 +483,8 @@ ${topNav}
   </div>
 
 </main>
+
+<script src="/newsletter-band.js"></script>
 
 <footer class="site-footer">
   <p>&copy; 2026 WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>

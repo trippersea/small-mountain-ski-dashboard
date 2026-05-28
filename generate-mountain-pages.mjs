@@ -517,6 +517,7 @@ function generateMountainPage(resort, allResorts) {
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
   <link rel="stylesheet" href="/ski-report/ski-report-page.css" />
+  <link rel="stylesheet" href="/newsletter-band.css" />
 
   <script type="application/ld+json">
   ${JSON.stringify(schemas, null, 2)}
@@ -817,6 +818,8 @@ function generateMountainPage(resort, allResorts) {
     </p>
 
   </main>
+
+  <script src="/newsletter-band.js"></script>
 
   <footer class="site-footer">
     <p>© ${year} WhereToSkiNext.com · <a href="/#searchSection">Find my mountain</a> · <a href="/about/">About</a> · <a href="/partners/">Partners</a></p>

@@ -327,6 +327,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
   <link rel="stylesheet" href="/ski/state-page.css" />
+  <link rel="stylesheet" href="/newsletter-band.css" />
   <script type="application/ld+json">
   ${JSON.stringify(jsonLdArray, null, 2)}
   </script>
@@ -476,6 +477,8 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
     </section>
 
   </main>
+
+  <script src="/newsletter-band.js"></script>
 
   <footer class="site-footer">
     <p>&copy; ${year} WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
