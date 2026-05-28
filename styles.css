@@ -312,10 +312,10 @@ body:has(#searchSection.hero-v2) .nav-subscribe-btn:hover {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: #fff;
-  border: 1px solid #d6e1f0;
+  background: #0f1c2e;
+  border: 1px solid rgba(255,255,255,.1);
   border-radius: 14px;
-  box-shadow: 0 8px 32px rgba(15,28,46,.14);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
   z-index: 999;
   padding: 20px;
   width: 340px;
@@ -344,47 +344,47 @@ body:has(#searchSection.hero-v2) .nav-subscribe-btn:hover {
 .nav-subscribe-headline {
   font-size: 15px;
   font-weight: 800;
-  color: #1a2e45;
+  color: #f0f6fc;
   letter-spacing: -.02em;
   margin: 0 0 4px;
   line-height: 1.2;
 }
 .nav-subscribe-sub {
   font-size: 13px;
-  color: #667a96;
+  color: rgba(240,246,252,.55);
   line-height: 1.55;
   margin: 0 0 14px;
 }
 .nav-subscribe-row {
   display: flex;
-  background: #f0f4f8;
-  border: 1.5px solid #d6e1f0;
+  background: rgba(255,255,255,.07);
+  border: 1.5px solid rgba(255,255,255,.12);
   border-radius: 10px;
   overflow: hidden;
   transition: border-color .15s, background .15s;
 }
 .nav-subscribe-row:focus-within {
   border-color: #5aaddc;
-  background: #fff;
+  background: rgba(255,255,255,.1);
 }
 .nav-subscribe-input {
   flex: 1;
   font: inherit;
   font-size: 13px;
-  color: #1a2e45;
+  color: #f0f6fc;
   background: transparent;
   border: none;
   outline: none;
   padding: 10px 14px;
   min-width: 0;
 }
-.nav-subscribe-input::placeholder { color: #9aafc4; }
+.nav-subscribe-input::placeholder { color: rgba(240,246,252,.3); }
 .nav-subscribe-submit {
   font: inherit;
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
-  background: #1a2e45;
+  color: #0f1c2e;
+  background: #5aaddc;
   border: none;
   border-radius: 0 8px 8px 0;
   padding: 10px 16px;
@@ -393,7 +393,7 @@ body:has(#searchSection.hero-v2) .nav-subscribe-btn:hover {
   flex-shrink: 0;
   transition: background .12s;
 }
-.nav-subscribe-submit:hover:not(:disabled) { background: #0f1c2e; }
+.nav-subscribe-submit:hover:not(:disabled) { background: #72c0e8; }
 .nav-subscribe-submit:disabled { opacity: .45; cursor: not-allowed; }
 .nav-subscribe-err {
   display: none;
@@ -405,7 +405,7 @@ body:has(#searchSection.hero-v2) .nav-subscribe-btn:hover {
 .nav-subscribe-fine {
   margin-top: 10px;
   font-size: 11px;
-  color: #9aafc4;
+  color: rgba(240,246,252,.3);
   font-family: 'DM Mono', monospace;
 }
 .nav-subscribe-ok {
@@ -424,11 +424,11 @@ body:has(#searchSection.hero-v2) .nav-subscribe-btn:hover {
 }
 .nav-subscribe-ok-head {
   font-size: 14px; font-weight: 800;
-  color: #1a2e45; letter-spacing: -.02em;
+  color: #f0f6fc; letter-spacing: -.02em;
   margin: 0 0 4px;
 }
 .nav-subscribe-ok-sub {
-  font-size: 12px; color: #667a96; margin: 0;
+  font-size: 12px; color: rgba(240,246,252,.45); margin: 0;
 }
 @media (max-width: 640px) { .nav-subscribe-wrap { display: none; } }
 
