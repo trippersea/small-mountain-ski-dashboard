@@ -180,19 +180,19 @@ function generatePage(city) {
     const tb  = r.terrainBreakdown || {};
     const beg = Math.round((tb.beginner || 0) * 100);
     const adv = Math.round((tb.advanced  || 0) * 100);
-    return `<a href="https://www.wheretoskinext.com/ski-report/${r.id}/" class="resort-card">
-      <div class="rc-name">${r.name}</div>
-      <div class="rc-meta">
+    return `<a href="https://www.wheretoskinext.com/ski-report/${r.id}/" class="sn-resort-card">
+      <div class="sn-rc-name">${r.name}</div>
+      <div class="sn-rc-meta">
         ${r.state}
         ${showDrive ? `· ${formatDrive(r.mins)} drive` : ''}
         · ${r.vertical.toLocaleString()} ft
         · $${r.price}
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">${passLabel(r.passGroup)}</span>
-        ${r.avgSnowfall >= 200 ? '<span class="rc-chip rc-chip--snow">❅ ' + r.avgSnowfall + '" avg</span>' : ''}
-        ${beg >= 40 ? '<span class="rc-chip rc-chip--green">Beginner friendly</span>' : ''}
-        ${adv >= 35 ? '<span class="rc-chip rc-chip--blue">Expert terrain</span>' : ''}
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">${passLabel(r.passGroup)}</span>
+        ${r.avgSnowfall >= 200 ? '<span class="sn-rc-chip sn-rc-chip--snow">' + r.avgSnowfall + '" avg snow</span>' : ''}
+        ${beg >= 40 ? '<span class="sn-rc-chip sn-rc-chip--green">Beginner friendly</span>' : ''}
+        ${adv >= 35 ? '<span class="sn-rc-chip sn-rc-chip--blue">Expert terrain</span>' : ''}
       </div>
     </a>`;
   }
@@ -200,24 +200,24 @@ function generatePage(city) {
   function bandSection(label, bandResorts, desc) {
     if (!bandResorts.length) return '';
     return `
-    <div class="band-section">
-      <h2 class="band-title">${label}</h2>
-      <p class="band-desc">${desc}</p>
-      <div class="resort-grid">
+    <section class="sn-band">
+      <h2 class="sn-band-title">${label}</h2>
+      <p class="sn-band-desc">${desc}</p>
+      <div class="sn-resort-grid">
         ${bandResorts.slice(0, 8).map(r => resortCard(r)).join('')}
       </div>
-      ${bandResorts.length > 8 ? `<p class="band-more">+ ${bandResorts.length - 8} more mountains in this range</p>` : ''}
-    </div>`;
+      ${bandResorts.length > 8 ? `<p class="sn-band-more">+ ${bandResorts.length - 8} more mountains in this range</p>` : ''}
+    </section>`;
   }
 
   function pickCard(label, r, reason) {
     if (!r) return '';
-    return `<div class="pick-card">
-      <div class="pick-label">${label}</div>
-      <div class="pick-name"><a href="https://www.wheretoskinext.com/ski-report/${r.id}/">${r.name}</a></div>
-      <div class="pick-reason">${reason}</div>
-      <div class="pick-meta">${r.state} · ${formatDrive(r.mins)} · $${r.price} · ${passLabel(r.passGroup)}</div>
-    </div>`;
+    return `<article class="sn-pick-card">
+      <div class="sn-pick-label">${label}</div>
+      <h3 class="sn-pick-name"><a href="https://www.wheretoskinext.com/ski-report/${r.id}/">${r.name}</a></h3>
+      <p class="sn-pick-reason">${reason}</p>
+      <p class="sn-pick-meta">${r.state} · ${formatDrive(r.mins)} · $${r.price} · ${passLabel(r.passGroup)}</p>
+    </article>`;
   }
 
   const topNav = `<nav class="top-nav" role="navigation" aria-label="Main navigation">
@@ -361,132 +361,67 @@ function generatePage(city) {
 
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
+  <link rel="stylesheet" href="/ski/state-page.css" />
+  <link rel="stylesheet" href="/ski-near/city-page.css" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
-
-  <style>
-    /* Nav styles come from /styles.css (keeps all pages consistent) */
-
-    /* Layout */
-    .page { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
-
-    /* Breadcrumb */
-    .breadcrumb { font-size: 13px; color: #667a96; margin-bottom: 28px; }
-    .breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
-
-    /* Hero */
-    .hero-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #2563eb; margin-bottom: 12px; }
-    .hero-title { font-size: clamp(26px,5vw,44px); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; margin: 0 0 16px; }
-    .hero-intro { font-size: 17px; color: #2e3f54; line-height: 1.75; margin: 0 0 24px; max-width: 720px; }
-    .hero-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
-    .hero-stat { }
-    .hero-stat-num { font-size: 28px; font-weight: 600; color: #2563eb; }
-    .hero-stat-label { font-size: 13px; color: #667a96; font-weight: 600; }
-
-    /* CTA banner */
-    .cta-banner { background: linear-gradient(135deg,#edf4ff,#f7fbff); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 24px; margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
-    .cta-banner-text h2 { font-size: 16px; font-weight: 800; color: #1e40af; margin: 0 0 4px; }
-    .cta-banner-text p  { font-size: 13px; color: #1d4ed8; margin: 0; }
-    .cta-btn { display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #fff; border-radius: 999px; padding: 10px 20px; font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; box-shadow: 0 4px 14px rgba(37,99,235,.25); }
-    .cta-btn:hover { background: #1d4ed8; }
-
-    /* Top picks */
-    .picks-section { margin-bottom: 48px; }
-    .section-title { font-size: 22px; font-weight: 800; margin: 0 0 6px; }
-    .section-sub   { font-size: 15px; color: #667a96; margin: 0 0 20px; }
-    .picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-    .pick-card { background: #fff; border: 1px solid #d6e1f0; border-radius: 14px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(30,60,100,.05); }
-    .pick-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #667a96; margin-bottom: 6px; }
-    .pick-name { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
-    .pick-name a { color: #1b2a3a; text-decoration: none; }
-    .pick-name a:hover { color: #2563eb; }
-    .pick-reason { font-size: 13px; color: #2e3f54; margin-bottom: 8px; line-height: 1.5; }
-    .pick-meta { font-size: 12px; color: #667a96; }
-
-    /* Drive note */
-    .drive-note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 18px; margin-bottom: 40px; font-size: 14px; color: #92400e; line-height: 1.6; }
-    .drive-note strong { font-weight: 700; }
-
-    /* Band sections */
-    .band-section { margin-bottom: 48px; }
-    .band-title { font-size: 22px; font-weight: 800; margin: 0 0 6px; }
-    .band-desc  { font-size: 15px; color: #667a96; margin: 0 0 20px; }
-    .band-more  { font-size: 14px; color: #667a96; margin-top: 12px; }
-    .resort-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-
-    /* Resort cards */
-    .resort-card { display: block; background: #fff; border: 1px solid #d6e1f0; border-radius: 12px; padding: 14px 16px; text-decoration: none; color: #1b2a3a; transition: border-color .12s, box-shadow .12s; }
-    .resort-card:hover { border-color: #2563eb; box-shadow: 0 4px 16px rgba(37,99,235,.08); }
-    .rc-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-    .rc-meta { font-size: 12px; color: #667a96; margin-bottom: 8px; }
-    .rc-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-    .rc-chip { font-size: 11px; font-weight: 600; background: #eff6ff; color: #2563eb; border-radius: 999px; padding: 2px 9px; }
-    .rc-chip--snow  { background: #eff6ff; color: #1d4ed8; }
-    .rc-chip--green { background: #f0fdf4; color: #16a34a; }
-    .rc-chip--blue  { background: #f0f9ff; color: #0369a1; }
-
-    /* Pass section */
-    .pass-section { margin-bottom: 48px; }
-    .pass-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
-    .pass-card { background: #fff; border: 1px solid #d6e1f0; border-radius: 12px; padding: 16px; }
-    .pass-card-name  { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
-    .pass-card-count { font-size: 13px; color: #667a96; margin-bottom: 8px; }
-    .pass-card-list  { font-size: 13px; color: #2e3f54; line-height: 1.8; }
-
-    /* Footer: .site-footer from /styles.css */
-
-    @media (max-width: 600px) {
-      .hero-stats { gap: 16px; }
-      .cta-banner { flex-direction: column; }
-      .picks-grid, .resort-grid, .pass-grid { grid-template-columns: 1fr; }
-    }
-  </style>
 </head>
-<body class="pass-page-body">
+<body class="pass-page-body state-page city-page">
 
 ${topNav}
 
-<main class="pp-shell page">
+<main class="pp-shell sp-page">
 
-  <!-- Breadcrumb -->
-  <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="/">Home</a> › <span>Ski Resorts Near ${city.name}</span>
+  <nav class="sp-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span class="sp-breadcrumb-sep">/</span>
+    <span>Ski resorts near ${city.name}</span>
   </nav>
 
-  <!-- Hero -->
-  <div class="hero-eyebrow">Skiing Near ${city.name} · ${city.region}</div>
-  <h1 class="hero-title">Best Ski Resorts Near ${city.name} This Weekend</h1>
-  <p class="hero-intro">${city.intro}</p>
-
-  <div class="hero-stats">
-    ${bands.under2h.length  ? `<div class="hero-stat"><div class="hero-stat-num">${bands.under2h.length}</div><div class="hero-stat-label">resorts under 2 hours</div></div>` : ''}
-    ${bands.two3h.length    ? `<div class="hero-stat"><div class="hero-stat-num">${bands.two3h.length}</div><div class="hero-stat-label">resorts 2–3 hours</div></div>` : ''}
-    ${bands.three4h.length  ? `<div class="hero-stat"><div class="hero-stat-num">${bands.three4h.length}</div><div class="hero-stat-label">resorts 3–4 hours</div></div>` : ''}
-    <div class="hero-stat"><div class="hero-stat-num">${total}</div><div class="hero-stat-label">total within 6 hours</div></div>
-  </div>
-
-  <!-- Live CTA -->
-  <div class="cta-banner">
-    <div class="cta-banner-text">
-      <h2>Get your personalized pick for this weekend</h2>
-      <p>Enter your exact starting point — we'll score every mountain by live snow, real drive time, pass access, and crowd outlook, and give you one clear answer.</p>
-      <p style="font-size:12px;margin:6px 0 0;opacity:.75;">Scores are independent — resort sponsors never influence rankings.</p>
+  <header class="sp-hero">
+    <div class="sp-hero-inner">
+      <div class="sp-hero-grid">
+        <div>
+          <p class="sp-eyebrow">Skiing near ${city.name} · ${city.region}</p>
+          <h1 class="sp-title">Best Ski Resorts Near ${city.name} This Weekend</h1>
+          <p class="sp-lede">${city.intro}</p>
+          <div class="sp-hero-cta">
+            <a href="${city.appUrl}" class="sp-btn sp-btn--primary">Find my mountain</a>
+          </div>
+          <p class="sp-hero-trust">Live forecast, drive time, pass access, and crowds in one ranking. Compare resorts near ${city.name}, then get one personalized pick when you are ready.</p>
+        </div>
+        <aside class="sp-hero-aside">
+          <div class="sp-metric-grid">
+            ${bands.under2h.length  ? `<div class="sp-metric"><strong>${bands.under2h.length}</strong><span>Under 2 hours</span></div>` : ''}
+            ${bands.two3h.length    ? `<div class="sp-metric"><strong>${bands.two3h.length}</strong><span>2–3 hours</span></div>` : ''}
+            ${bands.three4h.length  ? `<div class="sp-metric"><strong>${bands.three4h.length}</strong><span>3–4 hours</span></div>` : ''}
+            <div class="sp-metric"><strong>${total}</strong><span>Within 6 hours</span></div>
+          </div>
+        </aside>
+      </div>
     </div>
-    <a href="${city.appUrl}" class="cta-btn">
-      Find My Mountain
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </a>
+  </header>
+
+  <div class="sn-cta-band">
+    <div>
+      <h2>Get your personalized pick for this weekend</h2>
+      <p>Enter your exact starting point — we score every mountain by live snow, real drive time, pass access, and crowd outlook, and give you one clear answer.</p>
+      <p class="sn-cta-fine">Scores are independent — resort sponsors never influence rankings.</p>
+    </div>
+    <a href="${city.appUrl}" class="sp-btn sp-btn--primary">Find my mountain &rarr;</a>
   </div>
 
-  <!-- Top Picks -->
-  <section class="picks-section">
-    <h2 class="section-title">Best picks near ${city.name}</h2>
-    <p class="section-sub">Sorted by what matters — not just distance.</p>
-    <div class="picks-grid">
+  <section class="sn-section">
+    <div class="sn-section-head">
+      <h2 class="sn-section-title">Best picks near ${city.name}</h2>
+      <p class="sn-section-sub">Sorted by what matters — not just distance.</p>
+    </div>
+    <div class="sn-pick-grid">
       ${pickCard('Closest serious mountain', picks.bestOverall, `The best all-around option at ${formatDrive(picks.bestOverall?.mins || 0)} from ${city.name}, balancing terrain, snow, and drive time.`)}
       ${picks.bestPowder && picks.bestPowder.id !== picks.bestOverall?.id ? pickCard('Best snowfall', picks.bestPowder, `${picks.bestPowder.avgSnowfall}" average annual snowfall — the highest of any resort near ${city.name}.`) : ''}
       ${picks.bestBudget && picks.bestBudget.id !== picks.bestOverall?.id ? pickCard('Best value', picks.bestBudget, `$${picks.bestBudget.price} day ticket — one of the most affordable days on snow within reach of ${city.name}.`) : ''}
@@ -494,8 +429,7 @@ ${topNav}
     </div>
   </section>
 
-  <!-- Drive note -->
-  <div class="drive-note">
+  <div class="sn-callout">
     <strong>Getting there from ${city.name}:</strong> ${city.driveNote}
   </div>
 
@@ -521,38 +455,36 @@ ${topNav}
     `Destination trips only. Plan a long weekend — these mountains earn the drive.`
   ) : ''}
 
-  <!-- Pass breakdown -->
-  <section class="pass-section">
-    <h2 class="section-title">Pass access near ${city.name}</h2>
-    <p class="section-sub">Which passes work within driving distance.</p>
-    <div class="pass-grid">
+  <section class="sn-section">
+    <div class="sn-section-head">
+      <h2 class="sn-section-title">Pass access near ${city.name}</h2>
+      <p class="sn-section-sub">Which passes work within driving distance.</p>
+    </div>
+    <div class="sn-pass-grid">
       ${['Epic', 'Ikon', 'Indy', 'Independent'].map(pass => {
         const group = passes[pass] || [];
         if (!group.length) return '';
-        return `<div class="pass-card">
-          <div class="pass-card-name">${passLabel(pass)}</div>
-          <div class="pass-card-count">${group.length} resort${group.length !== 1 ? 's' : ''} within 6 hours</div>
-          <div class="pass-card-list">${group.slice(0, 5).map(r => r.name).join(', ')}${group.length > 5 ? ` and ${group.length - 5} more` : ''}</div>
-        </div>`;
+        return `<article class="sn-pass-card">
+          <div class="sn-pass-card-name">${passLabel(pass)}</div>
+          <div class="sn-pass-card-count">${group.length} resort${group.length !== 1 ? 's' : ''} within 6 hours</div>
+          <div class="sn-pass-card-list">${group.slice(0, 5).map(r => r.name).join(', ')}${group.length > 5 ? ` and ${group.length - 5} more` : ''}</div>
+        </article>`;
       }).join('')}
     </div>
   </section>
 
-  <!-- Bottom CTA -->
-  <div class="cta-banner">
-    <div class="cta-banner-text">
+  <div class="sn-cta-band">
+    <div>
       <h2>Which mountain is best this weekend?</h2>
       <p>Live snow + your drive time + pass + crowds — one answer, updated daily. Stop researching. Start skiing.</p>
     </div>
-    <a href="${city.appUrl}" class="cta-btn">
-      Get My Top Pick →
-    </a>
+    <a href="${city.appUrl}" class="sp-btn sp-btn--primary">Get my top pick &rarr;</a>
   </div>
 
 </main>
 
 <footer class="site-footer">
-  <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="https://www.wheretoskinext.com/#searchSection">Find My Mountain</a> &middot; <a href="https://www.wheretoskinext.com/about/">About</a> &middot; <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a> &middot; <a href="https://www.wheretoskinext.com/partners/">Partners</a></p>
+  <p>&copy; 2026 WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
 </footer>
 
 <script src="/nav.js"></script>

@@ -96,92 +96,17 @@
 
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
+  <link rel="stylesheet" href="/ski/state-page.css" />
+  <link rel="stylesheet" href="/ski-near/city-page.css" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
-
-  <style>
-    /* Nav styles come from /styles.css (keeps all pages consistent) */
-
-    /* Layout */
-    .page { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
-
-    /* Breadcrumb */
-    .breadcrumb { font-size: 13px; color: #667a96; margin-bottom: 28px; }
-    .breadcrumb a { color: #2563eb; text-decoration: none; font-weight: 500; }
-
-    /* Hero */
-    .hero-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #2563eb; margin-bottom: 12px; }
-    .hero-title { font-size: clamp(26px,5vw,44px); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; margin: 0 0 16px; }
-    .hero-intro { font-size: 17px; color: #2e3f54; line-height: 1.75; margin: 0 0 24px; max-width: 720px; }
-    .hero-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
-    .hero-stat { }
-    .hero-stat-num { font-size: 28px; font-weight: 600; color: #2563eb; }
-    .hero-stat-label { font-size: 13px; color: #667a96; font-weight: 600; }
-
-    /* CTA banner */
-    .cta-banner { background: linear-gradient(135deg,#edf4ff,#f7fbff); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 20px 24px; margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
-    .cta-banner-text h2 { font-size: 16px; font-weight: 800; color: #1e40af; margin: 0 0 4px; }
-    .cta-banner-text p  { font-size: 13px; color: #1d4ed8; margin: 0; }
-    .cta-btn { display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #fff; border-radius: 999px; padding: 10px 20px; font-weight: 600; font-size: 14px; text-decoration: none; white-space: nowrap; box-shadow: 0 4px 14px rgba(37,99,235,.25); }
-    .cta-btn:hover { background: #1d4ed8; }
-
-    /* Top picks */
-    .picks-section { margin-bottom: 48px; }
-    .section-title { font-size: 22px; font-weight: 800; margin: 0 0 6px; }
-    .section-sub   { font-size: 15px; color: #667a96; margin: 0 0 20px; }
-    .picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-    .pick-card { background: #fff; border: 1px solid #d6e1f0; border-radius: 14px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(30,60,100,.05); }
-    .pick-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #667a96; margin-bottom: 6px; }
-    .pick-name { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
-    .pick-name a { color: #1b2a3a; text-decoration: none; }
-    .pick-name a:hover { color: #2563eb; }
-    .pick-reason { font-size: 13px; color: #2e3f54; margin-bottom: 8px; line-height: 1.5; }
-    .pick-meta { font-size: 12px; color: #667a96; }
-
-    /* Drive note */
-    .drive-note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 18px; margin-bottom: 40px; font-size: 14px; color: #92400e; line-height: 1.6; }
-    .drive-note strong { font-weight: 700; }
-
-    /* Band sections */
-    .band-section { margin-bottom: 48px; }
-    .band-title { font-size: 22px; font-weight: 800; margin: 0 0 6px; }
-    .band-desc  { font-size: 15px; color: #667a96; margin: 0 0 20px; }
-    .band-more  { font-size: 14px; color: #667a96; margin-top: 12px; }
-    .resort-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-
-    /* Resort cards */
-    .resort-card { display: block; background: #fff; border: 1px solid #d6e1f0; border-radius: 12px; padding: 14px 16px; text-decoration: none; color: #1b2a3a; transition: border-color .12s, box-shadow .12s; }
-    .resort-card:hover { border-color: #2563eb; box-shadow: 0 4px 16px rgba(37,99,235,.08); }
-    .rc-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-    .rc-meta { font-size: 12px; color: #667a96; margin-bottom: 8px; }
-    .rc-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-    .rc-chip { font-size: 11px; font-weight: 600; background: #eff6ff; color: #2563eb; border-radius: 999px; padding: 2px 9px; }
-    .rc-chip--snow  { background: #eff6ff; color: #1d4ed8; }
-    .rc-chip--green { background: #f0fdf4; color: #16a34a; }
-    .rc-chip--blue  { background: #f0f9ff; color: #0369a1; }
-
-    /* Pass section */
-    .pass-section { margin-bottom: 48px; }
-    .pass-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
-    .pass-card { background: #fff; border: 1px solid #d6e1f0; border-radius: 12px; padding: 16px; }
-    .pass-card-name  { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
-    .pass-card-count { font-size: 13px; color: #667a96; margin-bottom: 8px; }
-    .pass-card-list  { font-size: 13px; color: #2e3f54; line-height: 1.8; }
-
-    /* Footer: .site-footer from /styles.css */
-
-    @media (max-width: 600px) {
-      .hero-stats { gap: 16px; }
-      .cta-banner { flex-direction: column; }
-      .picks-grid, .resort-grid, .pass-grid { grid-template-columns: 1fr; }
-    }
-  </style>
 </head>
-<body class="pass-page-body">
+<body class="pass-page-body state-page city-page">
 
 <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
@@ -280,86 +205,95 @@
     </div>
   </nav>
 
-<main class="pp-shell page">
+<main class="pp-shell sp-page">
 
-  <!-- Breadcrumb -->
-  <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="/">Home</a> › <span>Ski Resorts Near Chicago</span>
+  <nav class="sp-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span class="sp-breadcrumb-sep">/</span>
+    <span>Ski resorts near Chicago</span>
   </nav>
 
-  <!-- Hero -->
-  <div class="hero-eyebrow">Skiing Near Chicago · Midwest</div>
-  <h1 class="hero-title">Best Ski Resorts Near Chicago This Weekend</h1>
-  <p class="hero-intro">Chicago skiers have to be honest with themselves: there are no serious mountains within a short drive. The local hills in Wisconsin and Illinois are great for beginners, night skiing, and staying sharp mid-week. But if you want real vertical — Upper Michigan, Minnesota, or a full weekend trip to Colorado — you need to plan for it.</p>
+  <header class="sp-hero">
+    <div class="sp-hero-inner">
+      <div class="sp-hero-grid">
+        <div>
+          <p class="sp-eyebrow">Skiing near Chicago · Midwest</p>
+          <h1 class="sp-title">Best Ski Resorts Near Chicago This Weekend</h1>
+          <p class="sp-lede">Chicago skiers have to be honest with themselves: there are no serious mountains within a short drive. The local hills in Wisconsin and Illinois are great for beginners, night skiing, and staying sharp mid-week. But if you want real vertical — Upper Michigan, Minnesota, or a full weekend trip to Colorado — you need to plan for it.</p>
+          <div class="sp-hero-cta">
+            <a href="https://www.wheretoskinext.com/?loc=Chicago%2C+IL&lat=41.8781&lon=-87.6298" class="sp-btn sp-btn--primary">Find my mountain</a>
+          </div>
+          <p class="sp-hero-trust">Live forecast, drive time, pass access, and crowds in one ranking. Compare resorts near Chicago, then get one personalized pick when you are ready.</p>
+        </div>
+        <aside class="sp-hero-aside">
+          <div class="sp-metric-grid">
+            <div class="sp-metric"><strong>1</strong><span>Under 2 hours</span></div>
+            <div class="sp-metric"><strong>1</strong><span>2–3 hours</span></div>
+            <div class="sp-metric"><strong>1</strong><span>3–4 hours</span></div>
+            <div class="sp-metric"><strong>10</strong><span>Within 6 hours</span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </header>
 
-  <div class="hero-stats">
-    <div class="hero-stat"><div class="hero-stat-num">1</div><div class="hero-stat-label">resorts under 2 hours</div></div>
-    <div class="hero-stat"><div class="hero-stat-num">1</div><div class="hero-stat-label">resorts 2–3 hours</div></div>
-    <div class="hero-stat"><div class="hero-stat-num">1</div><div class="hero-stat-label">resorts 3–4 hours</div></div>
-    <div class="hero-stat"><div class="hero-stat-num">10</div><div class="hero-stat-label">total within 6 hours</div></div>
-  </div>
-
-  <!-- Live CTA -->
-  <div class="cta-banner">
-    <div class="cta-banner-text">
+  <div class="sn-cta-band">
+    <div>
       <h2>Get your personalized pick for this weekend</h2>
-      <p>Enter your exact starting point — we'll score every mountain by live snow, real drive time, pass access, and crowd outlook, and give you one clear answer.</p>
-      <p style="font-size:12px;margin:6px 0 0;opacity:.75;">Scores are independent — resort sponsors never influence rankings.</p>
+      <p>Enter your exact starting point — we score every mountain by live snow, real drive time, pass access, and crowd outlook, and give you one clear answer.</p>
+      <p class="sn-cta-fine">Scores are independent — resort sponsors never influence rankings.</p>
     </div>
-    <a href="https://www.wheretoskinext.com/?loc=Chicago%2C+IL&lat=41.8781&lon=-87.6298" class="cta-btn">
-      Find My Mountain
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </a>
+    <a href="https://www.wheretoskinext.com/?loc=Chicago%2C+IL&lat=41.8781&lon=-87.6298" class="sp-btn sp-btn--primary">Find my mountain &rarr;</a>
   </div>
 
-  <!-- Top Picks -->
-  <section class="picks-section">
-    <h2 class="section-title">Best picks near Chicago</h2>
-    <p class="section-sub">Sorted by what matters — not just distance.</p>
-    <div class="picks-grid">
-      <div class="pick-card">
-      <div class="pick-label">Closest serious mountain</div>
-      <div class="pick-name"><a href="https://www.wheretoskinext.com/ski-report/wilmot-mountain/">Wilmot Mountain</a></div>
-      <div class="pick-reason">The best all-around option at 1h 43m from Chicago, balancing terrain, snow, and drive time.</div>
-      <div class="pick-meta">WI · 1h 43m · $60 · Epic Pass</div>
+  <section class="sn-section">
+    <div class="sn-section-head">
+      <h2 class="sn-section-title">Best picks near Chicago</h2>
+      <p class="sn-section-sub">Sorted by what matters — not just distance.</p>
     </div>
-      <div class="pick-card">
-      <div class="pick-label">Best snowfall</div>
-      <div class="pick-name"><a href="https://www.wheretoskinext.com/ski-report/caberfae-peaks/">Caberfae Peaks</a></div>
-      <div class="pick-reason">145" average annual snowfall — the highest of any resort near Chicago.</div>
-      <div class="pick-meta">MI · 5h 42m · $56 · Indy Pass</div>
-    </div>
-      <div class="pick-card">
-      <div class="pick-label">Best value</div>
-      <div class="pick-name"><a href="https://www.wheretoskinext.com/ski-report/nordic-mountain-wi/">Nordic Mountain</a></div>
-      <div class="pick-reason">$42 day ticket — one of the most affordable days on snow within reach of Chicago.</div>
-      <div class="pick-meta">WI · 5h 11m · $42 · Indy Pass</div>
-    </div>
+    <div class="sn-pick-grid">
+      <article class="sn-pick-card">
+      <div class="sn-pick-label">Closest serious mountain</div>
+      <h3 class="sn-pick-name"><a href="https://www.wheretoskinext.com/ski-report/wilmot-mountain/">Wilmot Mountain</a></h3>
+      <p class="sn-pick-reason">The best all-around option at 1h 43m from Chicago, balancing terrain, snow, and drive time.</p>
+      <p class="sn-pick-meta">WI · 1h 43m · $60 · Epic Pass</p>
+    </article>
+      <article class="sn-pick-card">
+      <div class="sn-pick-label">Best snowfall</div>
+      <h3 class="sn-pick-name"><a href="https://www.wheretoskinext.com/ski-report/caberfae-peaks/">Caberfae Peaks</a></h3>
+      <p class="sn-pick-reason">145" average annual snowfall — the highest of any resort near Chicago.</p>
+      <p class="sn-pick-meta">MI · 5h 42m · $56 · Indy Pass</p>
+    </article>
+      <article class="sn-pick-card">
+      <div class="sn-pick-label">Best value</div>
+      <h3 class="sn-pick-name"><a href="https://www.wheretoskinext.com/ski-report/nordic-mountain-wi/">Nordic Mountain</a></h3>
+      <p class="sn-pick-reason">$42 day ticket — one of the most affordable days on snow within reach of Chicago.</p>
+      <p class="sn-pick-meta">WI · 5h 11m · $42 · Indy Pass</p>
+    </article>
       
     </div>
   </section>
 
-  <!-- Drive note -->
-  <div class="drive-note">
+  <div class="sn-callout">
     <strong>Getting there from Chicago:</strong> Midwest skiing is a different mindset than mountain skiing. Embrace the local hills for convenience and budget one or two bigger trips per season to real mountains. Denver is a 2-hour flight — often the smartest play.
   </div>
 
   <!-- By Distance -->
   
-    <div class="band-section">
-      <h2 class="band-title">Under 2 hours from Chicago</h2>
-      <p class="band-desc">Quick day trips — you can be on the slopes by morning and home for dinner.</p>
-      <div class="resort-grid">
-        <a href="https://www.wheretoskinext.com/ski-report/wilmot-mountain/" class="resort-card">
-      <div class="rc-name">Wilmot Mountain</div>
-      <div class="rc-meta">
+    <section class="sn-band">
+      <h2 class="sn-band-title">Under 2 hours from Chicago</h2>
+      <p class="sn-band-desc">Quick day trips — you can be on the slopes by morning and home for dinner.</p>
+      <div class="sn-resort-grid">
+        <a href="https://www.wheretoskinext.com/ski-report/wilmot-mountain/" class="sn-resort-card">
+      <div class="sn-rc-name">Wilmot Mountain</div>
+      <div class="sn-rc-meta">
         WI
         · 1h 43m drive
         · 230 ft
         · $60
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Epic Pass</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Epic Pass</span>
         
         
         
@@ -367,22 +301,22 @@
     </a>
       </div>
       
-    </div>
+    </section>
   
-    <div class="band-section">
-      <h2 class="band-title">2–3 hours from Chicago</h2>
-      <p class="band-desc">Worth a dedicated day. Leave early, get full laps in, head back the same night.</p>
-      <div class="resort-grid">
-        <a href="https://www.wheretoskinext.com/ski-report/alpine-valley-wi/" class="resort-card">
-      <div class="rc-name">Alpine Valley</div>
-      <div class="rc-meta">
+    <section class="sn-band">
+      <h2 class="sn-band-title">2–3 hours from Chicago</h2>
+      <p class="sn-band-desc">Worth a dedicated day. Leave early, get full laps in, head back the same night.</p>
+      <div class="sn-resort-grid">
+        <a href="https://www.wheretoskinext.com/ski-report/alpine-valley-wi/" class="sn-resort-card">
+      <div class="sn-rc-name">Alpine Valley</div>
+      <div class="sn-rc-meta">
         WI
         · 2h 18m drive
         · 388 ft
         · $55
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Independent</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Independent</span>
         
         
         
@@ -390,22 +324,22 @@
     </a>
       </div>
       
-    </div>
+    </section>
   
-    <div class="band-section">
-      <h2 class="band-title">3–4 hours from Chicago</h2>
-      <p class="band-desc">Weekend territory — better as a two-day trip to make the drive worthwhile.</p>
-      <div class="resort-grid">
-        <a href="https://www.wheretoskinext.com/ski-report/bittersweet-ski-area/" class="resort-card">
-      <div class="rc-name">Bittersweet</div>
-      <div class="rc-meta">
+    <section class="sn-band">
+      <h2 class="sn-band-title">3–4 hours from Chicago</h2>
+      <p class="sn-band-desc">Weekend territory — better as a two-day trip to make the drive worthwhile.</p>
+      <div class="sn-resort-grid">
+        <a href="https://www.wheretoskinext.com/ski-report/bittersweet-ski-area/" class="sn-resort-card">
+      <div class="sn-rc-name">Bittersweet</div>
+      <div class="sn-rc-meta">
         MI
         · 3h 16m drive
         · 350 ft
         · $45
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Independent</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Independent</span>
         
         
         
@@ -413,106 +347,106 @@
     </a>
       </div>
       
-    </div>
+    </section>
   
-    <div class="band-section">
-      <h2 class="band-title">4–6 hours from Chicago</h2>
-      <p class="band-desc">Destination trips only. Plan a long weekend — these mountains earn the drive.</p>
-      <div class="resort-grid">
-        <a href="https://www.wheretoskinext.com/ski-report/chestnut-mountain-il/" class="resort-card">
-      <div class="rc-name">Chestnut Mountain</div>
-      <div class="rc-meta">
+    <section class="sn-band">
+      <h2 class="sn-band-title">4–6 hours from Chicago</h2>
+      <p class="sn-band-desc">Destination trips only. Plan a long weekend — these mountains earn the drive.</p>
+      <div class="sn-resort-grid">
+        <a href="https://www.wheretoskinext.com/ski-report/chestnut-mountain-il/" class="sn-resort-card">
+      <div class="sn-rc-name">Chestnut Mountain</div>
+      <div class="sn-rc-meta">
         IL
         · 4h 23m drive
         · 475 ft
         · $55
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Independent</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Independent</span>
         
         
         
       </div>
-    </a><a href="https://www.wheretoskinext.com/ski-report/devils-head-resort/" class="resort-card">
-      <div class="rc-name">Devil's Head</div>
-      <div class="rc-meta">
+    </a><a href="https://www.wheretoskinext.com/ski-report/devils-head-resort/" class="sn-resort-card">
+      <div class="sn-rc-name">Devil's Head</div>
+      <div class="sn-rc-meta">
         WI
         · 4h 33m drive
         · 500 ft
         · $65
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Ikon Pass</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Ikon Pass</span>
         
         
         
       </div>
-    </a><a href="https://www.wheretoskinext.com/ski-report/cascade-mountain-wi/" class="resort-card">
-      <div class="rc-name">Cascade Mountain</div>
-      <div class="rc-meta">
+    </a><a href="https://www.wheretoskinext.com/ski-report/cascade-mountain-wi/" class="sn-resort-card">
+      <div class="sn-rc-name">Cascade Mountain</div>
+      <div class="sn-rc-meta">
         WI
         · 4h 38m drive
         · 460 ft
         · $62
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Indy Pass</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Indy Pass</span>
         
         
         
       </div>
-    </a><a href="https://www.wheretoskinext.com/ski-report/sundown-mountain-ia/" class="resort-card">
-      <div class="rc-name">Sundown Mountain</div>
-      <div class="rc-meta">
+    </a><a href="https://www.wheretoskinext.com/ski-report/sundown-mountain-ia/" class="sn-resort-card">
+      <div class="sn-rc-name">Sundown Mountain</div>
+      <div class="sn-rc-meta">
         IA
         · 5h 9m drive
         · 475 ft
         · $55
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Indy Pass</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Indy Pass</span>
         
         
         
       </div>
-    </a><a href="https://www.wheretoskinext.com/ski-report/nordic-mountain-wi/" class="resort-card">
-      <div class="rc-name">Nordic Mountain</div>
-      <div class="rc-meta">
+    </a><a href="https://www.wheretoskinext.com/ski-report/nordic-mountain-wi/" class="sn-resort-card">
+      <div class="sn-rc-name">Nordic Mountain</div>
+      <div class="sn-rc-meta">
         WI
         · 5h 11m drive
         · 265 ft
         · $42
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Indy Pass</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Indy Pass</span>
         
         
         
       </div>
-    </a><a href="https://www.wheretoskinext.com/ski-report/caberfae-peaks/" class="resort-card">
-      <div class="rc-name">Caberfae Peaks</div>
-      <div class="rc-meta">
+    </a><a href="https://www.wheretoskinext.com/ski-report/caberfae-peaks/" class="sn-resort-card">
+      <div class="sn-rc-name">Caberfae Peaks</div>
+      <div class="sn-rc-meta">
         MI
         · 5h 42m drive
         · 485 ft
         · $56
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Indy Pass</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Indy Pass</span>
         
         
         
       </div>
-    </a><a href="https://www.wheretoskinext.com/ski-report/mt-brighton/" class="resort-card">
-      <div class="rc-name">Mt. Brighton</div>
-      <div class="rc-meta">
+    </a><a href="https://www.wheretoskinext.com/ski-report/mt-brighton/" class="sn-resort-card">
+      <div class="sn-rc-name">Mt. Brighton</div>
+      <div class="sn-rc-meta">
         MI
         · 5h 58m drive
         · 230 ft
         · $65
       </div>
-      <div class="rc-chips">
-        <span class="rc-chip">Epic Pass</span>
+      <div class="sn-rc-chips">
+        <span class="sn-rc-chip">Epic Pass</span>
         
         
         
@@ -520,48 +454,46 @@
     </a>
       </div>
       
-    </div>
+    </section>
 
-  <!-- Pass breakdown -->
-  <section class="pass-section">
-    <h2 class="section-title">Pass access near Chicago</h2>
-    <p class="section-sub">Which passes work within driving distance.</p>
-    <div class="pass-grid">
-      <div class="pass-card">
-          <div class="pass-card-name">Epic Pass</div>
-          <div class="pass-card-count">2 resorts within 6 hours</div>
-          <div class="pass-card-list">Wilmot Mountain, Mt. Brighton</div>
-        </div><div class="pass-card">
-          <div class="pass-card-name">Ikon Pass</div>
-          <div class="pass-card-count">1 resort within 6 hours</div>
-          <div class="pass-card-list">Devil's Head</div>
-        </div><div class="pass-card">
-          <div class="pass-card-name">Indy Pass</div>
-          <div class="pass-card-count">4 resorts within 6 hours</div>
-          <div class="pass-card-list">Cascade Mountain, Sundown Mountain, Nordic Mountain, Caberfae Peaks</div>
-        </div><div class="pass-card">
-          <div class="pass-card-name">Independent</div>
-          <div class="pass-card-count">3 resorts within 6 hours</div>
-          <div class="pass-card-list">Alpine Valley, Bittersweet, Chestnut Mountain</div>
-        </div>
+  <section class="sn-section">
+    <div class="sn-section-head">
+      <h2 class="sn-section-title">Pass access near Chicago</h2>
+      <p class="sn-section-sub">Which passes work within driving distance.</p>
+    </div>
+    <div class="sn-pass-grid">
+      <article class="sn-pass-card">
+          <div class="sn-pass-card-name">Epic Pass</div>
+          <div class="sn-pass-card-count">2 resorts within 6 hours</div>
+          <div class="sn-pass-card-list">Wilmot Mountain, Mt. Brighton</div>
+        </article><article class="sn-pass-card">
+          <div class="sn-pass-card-name">Ikon Pass</div>
+          <div class="sn-pass-card-count">1 resort within 6 hours</div>
+          <div class="sn-pass-card-list">Devil's Head</div>
+        </article><article class="sn-pass-card">
+          <div class="sn-pass-card-name">Indy Pass</div>
+          <div class="sn-pass-card-count">4 resorts within 6 hours</div>
+          <div class="sn-pass-card-list">Cascade Mountain, Sundown Mountain, Nordic Mountain, Caberfae Peaks</div>
+        </article><article class="sn-pass-card">
+          <div class="sn-pass-card-name">Independent</div>
+          <div class="sn-pass-card-count">3 resorts within 6 hours</div>
+          <div class="sn-pass-card-list">Alpine Valley, Bittersweet, Chestnut Mountain</div>
+        </article>
     </div>
   </section>
 
-  <!-- Bottom CTA -->
-  <div class="cta-banner">
-    <div class="cta-banner-text">
+  <div class="sn-cta-band">
+    <div>
       <h2>Which mountain is best this weekend?</h2>
       <p>Live snow + your drive time + pass + crowds — one answer, updated daily. Stop researching. Start skiing.</p>
     </div>
-    <a href="https://www.wheretoskinext.com/?loc=Chicago%2C+IL&lat=41.8781&lon=-87.6298" class="cta-btn">
-      Get My Top Pick →
-    </a>
+    <a href="https://www.wheretoskinext.com/?loc=Chicago%2C+IL&lat=41.8781&lon=-87.6298" class="sp-btn sp-btn--primary">Get my top pick &rarr;</a>
   </div>
 
 </main>
 
 <footer class="site-footer">
-  <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="https://www.wheretoskinext.com/#searchSection">Find My Mountain</a> &middot; <a href="https://www.wheretoskinext.com/about/">About</a> &middot; <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a> &middot; <a href="https://www.wheretoskinext.com/partners/">Partners</a></p>
+  <p>&copy; 2026 WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
 </footer>
 
 <script src="/nav.js"></script>

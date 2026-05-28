@@ -1,0 +1,260 @@
+/* City pages (/ski-near/{city}/): same dark system as /ski/{state}/ */
+/* Requires: /styles.css, /ski-pass-comparison/pass-comparison-page.css, /ski/state-page.css */
+
+body.pass-page-body.city-page {
+  --sn-accent: var(--pp-accent, #45a2ff);
+}
+
+.city-page .sp-page {
+  padding-top: 8px;
+  padding-bottom: 56px;
+}
+
+/* Section headings */
+.sn-section {
+  margin-bottom: 40px;
+}
+.sn-section-head {
+  margin-bottom: 18px;
+}
+.sn-section-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--pp-text, #f0f6fc);
+  letter-spacing: -0.02em;
+}
+.sn-section-sub {
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+}
+
+/* In-hero CTA band */
+.sn-cta-band {
+  background: rgba(69, 162, 255, 0.08);
+  border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.25));
+  border-radius: var(--pp-radius-sm, 16px);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.sn-cta-band h2 {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--pp-text, #f0f6fc);
+}
+.sn-cta-band p {
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+  max-width: 52ch;
+}
+.sn-cta-band .sn-cta-fine {
+  font-size: 12px;
+  margin-top: 6px;
+  color: var(--pp-text-faint, rgba(240, 246, 252, 0.48));
+}
+
+/* Pick cards */
+.sn-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.sn-pick-card {
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.18));
+  border-radius: 14px;
+  padding: 16px 18px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.sn-pick-card:hover {
+  border-color: var(--pp-border-strong, rgba(94, 148, 222, 0.42));
+  background: rgba(69, 162, 255, 0.06);
+}
+.sn-pick-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sn-accent);
+  margin-bottom: 8px;
+}
+.sn-pick-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  line-height: 1.25;
+}
+.sn-pick-name a {
+  color: var(--pp-text, #f0f6fc);
+  text-decoration: none;
+}
+.sn-pick-name a:hover {
+  color: var(--sn-accent);
+}
+.sn-pick-reason {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+  margin: 0 0 10px;
+}
+.sn-pick-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pp-text-faint, rgba(240, 246, 252, 0.52));
+}
+
+/* Drive / travel callout */
+.sn-callout {
+  border-radius: var(--pp-radius-sm, 16px);
+  border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.2));
+  background: rgba(255, 255, 255, 0.04);
+  padding: 16px 20px;
+  margin-bottom: 32px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+}
+.sn-callout strong {
+  color: var(--pp-text, #f0f6fc);
+  font-weight: 700;
+}
+
+/* Distance bands */
+.sn-band {
+  margin-bottom: 40px;
+}
+.sn-band-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--pp-text, #f0f6fc);
+}
+.sn-band-desc {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+  margin: 0 0 16px;
+}
+.sn-band-more {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pp-text-faint, rgba(240, 246, 252, 0.52));
+  margin: 14px 0 0;
+}
+
+.sn-resort-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.sn-resort-card {
+  display: block;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.2));
+  background: rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.sn-resort-card:hover {
+  border-color: var(--pp-border-strong, rgba(94, 148, 222, 0.42));
+  background: rgba(69, 162, 255, 0.08);
+  transform: translateY(-1px);
+}
+.sn-rc-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pp-text, #f0f6fc);
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+.sn-rc-meta {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--pp-text-faint, rgba(240, 246, 252, 0.55));
+  margin-bottom: 10px;
+}
+.sn-rc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sn-rc-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(69, 162, 255, 0.15);
+  color: var(--sn-accent);
+  border: 1px solid rgba(69, 162, 255, 0.25);
+}
+.sn-rc-chip--snow {
+  background: rgba(147, 197, 253, 0.12);
+  color: #93c5fd;
+  border-color: rgba(147, 197, 253, 0.28);
+}
+.sn-rc-chip--green {
+  background: rgba(74, 222, 128, 0.12);
+  color: #86efac;
+  border-color: rgba(74, 222, 128, 0.28);
+}
+.sn-rc-chip--blue {
+  background: rgba(125, 211, 252, 0.12);
+  color: #7dd3fc;
+  border-color: rgba(125, 211, 252, 0.28);
+}
+
+/* Pass breakdown */
+.sn-pass-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.sn-pass-card {
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.18));
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.sn-pass-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pp-text, #f0f6fc);
+  margin-bottom: 4px;
+}
+.sn-pass-card-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sn-accent);
+  margin-bottom: 8px;
+}
+.sn-pass-card-list {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+}
+
+@media (max-width: 600px) {
+  .sn-cta-band {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sn-pick-grid,
+  .sn-resort-grid,
+  .sn-pass-grid {
+    grid-template-columns: 1fr;
+  }
+}
