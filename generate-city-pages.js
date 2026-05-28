@@ -10,11 +10,28 @@ const path = require('path');
 
 // ─── Load resort data ────────────────────────────────────────────────────────
 function loadResorts() {
+  // Preferred: single bundled list (keeps generators consistent)
+  try {
+    // resorts.js exports { RESORTS } via CommonJS
+    // eslint-disable-next-line global-require
+    const { RESORTS } = require('./resorts.js');
+    if (Array.isArray(RESORTS) && RESORTS.length) return RESORTS;
+  } catch (e) { /* fall back */ }
+
+  // Legacy fallback: separate NE + National lists
   const sdData  = fs.readFileSync('./sd-data.js', 'utf8');
-  const natData = fs.readFileSync('./resorts-national.js', 'utf8');
-  const neScope  = new Function(sdData.replace(/const RESORTS\s*=[\s\S]*$/, '') + '; return RESORTS_NE;');
-  const natScope = new Function(natData + '; return RESORTS_NATIONAL;');
-  return [...neScope(), ...natScope()];
+  const neScope  = new Function(sdData.replace(/const RESORTS\\s*=[\\s\\S]*$/, '') + '; return RESORTS_NE;');
+  const ne = neScope();
+  let nat = [];
+  try {
+    const natData = fs.readFileSync('./resorts-national.js', 'utf8');
+    const natScope = new Function(natData + '; return RESORTS_NATIONAL;');
+    nat = natScope();
+  } catch (e) {
+    nat = [];
+  }
+
+  return [...ne, ...nat];
 }
 
 const RESORTS = loadResorts();
@@ -203,6 +220,103 @@ function generatePage(city) {
     </div>`;
   }
 
+  const topNav = `<nav class="top-nav" role="navigation" aria-label="Main navigation">
+    <div class="top-nav-inner">
+      <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
+        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
+        <span class="nav-brand">
+          <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
+          <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
+        </span>
+      </a>
+      <div class="nav-divider"></div>
+      <div class="nav-browse-wrap">
+        <button class="nav-primary nav-browse-btn" aria-expanded="false" aria-haspopup="true">Browse &#9662;</button>
+        <div class="nav-browse-dropdown" role="menu">
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Northeast</div>
+            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
+            <a href="/ski/maine/" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york/" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Southeast</div>
+            <a href="/ski/maryland/" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia/" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
+            <a href="/ski/illinois/" role="menuitem">Illinois</a>
+            <a href="/ski/indiana/" role="menuitem">Indiana</a>
+            <a href="/ski/iowa/" role="menuitem">Iowa</a>
+            <a href="/ski/michigan/" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri/" role="menuitem">Missouri</a>
+            <a href="/ski/ohio/" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+          </div>
+          <div class="nav-browse-col">
+            <div class="nav-browse-region">Rockies</div>
+            <a href="/ski/colorado/" role="menuitem">Colorado</a>
+            <a href="/ski/idaho/" role="menuitem">Idaho</a>
+            <a href="/ski/montana/" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
+            <a href="/ski/utah/" role="menuitem">Utah</a>
+            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <div class="nav-browse-region" style="margin-top:10px;">West</div>
+            <a href="/ski/alaska/" role="menuitem">Alaska</a>
+            <a href="/ski/arizona/" role="menuitem">Arizona</a>
+            <a href="/ski/california/" role="menuitem">California</a>
+            <a href="/ski/nevada/" role="menuitem">Nevada</a>
+            <a href="/ski/oregon/" role="menuitem">Oregon</a>
+            <a href="/ski/washington/" role="menuitem">Washington</a>
+          </div>
+        </div>
+      </div>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/about/" class="nav-primary">About</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
+      <div class="nav-subscribe-wrap">
+        <button class="nav-subscribe-btn" id="navSubBtn" aria-expanded="false" aria-haspopup="true">Subscribe &#9662;</button>
+        <div class="nav-subscribe-dropdown" id="navSubDropdown">
+          <div id="navSubForm">
+            <div class="nav-subscribe-kicker">Next winter</div>
+            <p class="nav-subscribe-headline">First powder. First to know.</p>
+            <p class="nav-subscribe-sub">One email when the site goes live for next season.</p>
+            <div class="nav-subscribe-row">
+              <input
+                type="email"
+                id="navSubEmail"
+                class="nav-subscribe-input"
+                placeholder="you@email.com"
+                autocomplete="email"
+                spellcheck="false"
+              />
+              <button id="navSubSubmit" class="nav-subscribe-submit" type="button">Notify me</button>
+            </div>
+            <p id="navSubErr" class="nav-subscribe-err" role="alert"></p>
+            <p class="nav-subscribe-fine">One email. No spam. Unsubscribe anytime.</p>
+          </div>
+          <div id="navSubOk" class="nav-subscribe-ok">
+            <div class="nav-subscribe-ok-icon">&#10003;</div>
+            <p class="nav-subscribe-ok-head">You're on the list</p>
+            <p class="nav-subscribe-ok-sub">See you next season.</p>
+          </div>
+        </div>
+      </div>
+      <a href="${city.appUrl}" class="nav-find-cta">Find My Mountain →</a>
+    </div>
+  </nav>`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -246,32 +360,14 @@ function generatePage(city) {
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
-  <link rel="icon" href="/ski-decision-logo.png" type="image/png" />
+  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', 'DM Sans', system-ui, sans-serif; background: #f8f9fa; color: #111827; margin: 0; line-height: 1.6; }
-
-
-    /* Browse dropdown */
-    .nav-browse-wrap { position:relative; display:flex; align-items:center; flex-shrink:0; }
-    .nav-browse-btn { background:none; border:none; cursor:pointer; font-family:inherit; }
-    .nav-browse-dropdown { display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#fff; border:1px solid #d6e1f0; border-radius:12px; box-shadow:0 8px 32px rgba(15,28,46,.13); z-index:999; padding:16px 8px; min-width:560px; flex-direction:row; gap:0; }
-    .nav-browse-wrap:hover .nav-browse-dropdown,
-    .nav-browse-wrap.open .nav-browse-dropdown { display:flex; }
-    .nav-browse-col { flex:1; padding:0 12px; border-right:1px solid #edf4ff; }
-    .nav-browse-col:last-child { border-right:none; }
-    .nav-browse-region { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#7a92a8; margin-bottom:6px; }
-    .nav-browse-dropdown a { display:block; font-size:13px; color:#1a2e45; text-decoration:none; padding:3px 4px; border-radius:5px; line-height:1.5; }
-    .nav-browse-dropdown a:hover { background:#f0f4f8; color:#0f1c2e; }
-    @media (max-width:640px) { .nav-browse-wrap { display:none; } }
-    /* Nav: .top-nav, .nav-primary, .nav-find-cta from /styles.css */
+    /* Nav styles come from /styles.css (keeps all pages consistent) */
 
     /* Layout */
     .page { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
@@ -350,73 +446,7 @@ function generatePage(city) {
 </head>
 <body>
 
-<nav class="top-nav" role="navigation" aria-label="Main navigation">
-  <div class="top-nav-inner">
-    <a href="https://www.wheretoskinext.com/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-      <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
-      <span class="nav-brand">
-        <span class="nav-brand-name">WhereToSkiNext.com</span>
-        <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
-      </span>
-    </a>
-    <div class="nav-divider"></div>
-    <div class="nav-browse-wrap">
-      <button class="nav-primary nav-browse-btn" aria-expanded="false" aria-haspopup="true">Browse &#9662;</button>
-      <div class="nav-browse-dropdown" role="menu">
-        <div class="nav-browse-col">
-        <div class="nav-browse-region">Northeast</div>
-        <a href="https://www.wheretoskinext.com/ski/connecticut/" role="menuitem">Connecticut</a>
-        <a href="https://www.wheretoskinext.com/ski/maine/" role="menuitem">Maine</a>
-        <a href="https://www.wheretoskinext.com/ski/massachusetts/" role="menuitem">Massachusetts</a>
-        <a href="https://www.wheretoskinext.com/ski/new-hampshire/" role="menuitem">New Hampshire</a>
-        <a href="https://www.wheretoskinext.com/ski/new-jersey/" role="menuitem">New Jersey</a>
-        <a href="https://www.wheretoskinext.com/ski/new-york/" role="menuitem">New York</a>
-        <a href="https://www.wheretoskinext.com/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
-        <a href="https://www.wheretoskinext.com/ski/rhode-island/" role="menuitem">Rhode Island</a>
-        <a href="https://www.wheretoskinext.com/ski/vermont/" role="menuitem">Vermont</a>
-        </div>
-        <div class="nav-browse-col">
-        <div class="nav-browse-region">Southeast</div>
-        <a href="https://www.wheretoskinext.com/ski/maryland/" role="menuitem">Maryland</a>
-        <a href="https://www.wheretoskinext.com/ski/north-carolina/" role="menuitem">North Carolina</a>
-        <a href="https://www.wheretoskinext.com/ski/tennessee/" role="menuitem">Tennessee</a>
-        <a href="https://www.wheretoskinext.com/ski/virginia/" role="menuitem">Virginia</a>
-        <a href="https://www.wheretoskinext.com/ski/west-virginia/" role="menuitem">West Virginia</a>
-        <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
-        <a href="https://www.wheretoskinext.com/ski/illinois/" role="menuitem">Illinois</a>
-        <a href="https://www.wheretoskinext.com/ski/indiana/" role="menuitem">Indiana</a>
-        <a href="https://www.wheretoskinext.com/ski/iowa/" role="menuitem">Iowa</a>
-        <a href="https://www.wheretoskinext.com/ski/michigan/" role="menuitem">Michigan</a>
-        <a href="https://www.wheretoskinext.com/ski/minnesota/" role="menuitem">Minnesota</a>
-        <a href="https://www.wheretoskinext.com/ski/missouri/" role="menuitem">Missouri</a>
-        <a href="https://www.wheretoskinext.com/ski/ohio/" role="menuitem">Ohio</a>
-        <a href="https://www.wheretoskinext.com/ski/wisconsin/" role="menuitem">Wisconsin</a>
-        </div>
-        <div class="nav-browse-col">
-        <div class="nav-browse-region">Rockies</div>
-        <a href="https://www.wheretoskinext.com/ski/colorado/" role="menuitem">Colorado</a>
-        <a href="https://www.wheretoskinext.com/ski/idaho/" role="menuitem">Idaho</a>
-        <a href="https://www.wheretoskinext.com/ski/montana/" role="menuitem">Montana</a>
-        <a href="https://www.wheretoskinext.com/ski/new-mexico/" role="menuitem">New Mexico</a>
-        <a href="https://www.wheretoskinext.com/ski/utah/" role="menuitem">Utah</a>
-        <a href="https://www.wheretoskinext.com/ski/wyoming/" role="menuitem">Wyoming</a>
-        <div class="nav-browse-region" style="margin-top:10px;">West</div>
-        <a href="https://www.wheretoskinext.com/ski/alaska/" role="menuitem">Alaska</a>
-        <a href="https://www.wheretoskinext.com/ski/arizona/" role="menuitem">Arizona</a>
-        <a href="https://www.wheretoskinext.com/ski/california/" role="menuitem">California</a>
-        <a href="https://www.wheretoskinext.com/ski/nevada/" role="menuitem">Nevada</a>
-        <a href="https://www.wheretoskinext.com/ski/oregon/" role="menuitem">Oregon</a>
-        <a href="https://www.wheretoskinext.com/ski/washington/" role="menuitem">Washington</a>
-        </div>
-      </div>
-    </div>
-    <span class="nav-link-sep" aria-hidden="true"></span>
-    <a href="https://www.wheretoskinext.com/about/" class="nav-primary">About</a>
-    <span class="nav-link-sep" aria-hidden="true"></span>
-    <a href="https://www.wheretoskinext.com/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-    <a href="${city.appUrl}" class="nav-find-cta">Find My Mountain →</a>
-  </div>
-</nav>
+${topNav}
 
 <main class="page">
 
@@ -523,6 +553,7 @@ function generatePage(city) {
   <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="https://www.wheretoskinext.com/#searchSection">Find My Mountain</a> &middot; <a href="https://www.wheretoskinext.com/about/">About</a> &middot; <a href="https://www.wheretoskinext.com/privacy/">Privacy Policy</a> &middot; <a href="https://www.wheretoskinext.com/partners/">Partners</a></p>
 </footer>
 
+<script src="/nav.js"></script>
 </body>
 </html>`;
 }
