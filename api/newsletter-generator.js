@@ -4,7 +4,7 @@
  * Scores resorts in 5 regions, selects Pick + Trap + 3 Also picks per region,
  * generates copy via Anthropic, and posts a DRAFT to Beehiiv.
  *
- * Runs Thursday 11pm UTC (7pm ET) via Vercel cron.
+ * Generates Thursday 11pm UTC (7pm ET) via Vercel cron -- for Friday send.
  * Manual trigger: GET /api/newsletter-generator
  *   with Authorization: Bearer <CRON_SECRET>
  *
@@ -660,7 +660,7 @@ function buildRegionBlock(r) {
     <tr>
       <td style="padding:12px 28px 12px;background:#d4e8f8;border-top:1px solid #c4d0de;" class="section-pad">
         <p style="font-size:14px;font-weight:800;letter-spacing:0.13em;text-transform:uppercase;color:#2b6de9;margin:0 0 2px;">${region.label}</p>
-        <p style="font-size:13px;color:#4a6177;margin:0;">Updated [DAY], [TIME] ET.</p>
+        <p style="font-size:13px;color:#4a6177;margin:0;">Updated Friday mornings.</p>
       </td>
     </tr>
   </table>`;
@@ -714,7 +714,7 @@ REVIEWER NOTES -- delete before sending
 Generated: ${generatedAt}
 Scoring: new snow 30% / forecast 25% / crowds 25% / base depth 20%
 Picks below ${MIN_PUBLISH_SCORE}/100 are flagged inline above their region.
-Review copy, update [DAY] and [TIME] in region bands, then send.
+Review copy, then send.
 ================================================================ -->
 
 <div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#ffffff;line-height:1px;mso-hide:all;">
