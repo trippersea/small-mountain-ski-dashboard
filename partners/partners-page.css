@@ -1,0 +1,219 @@
+/* Partners page — extends about-page dark system */
+
+.partners-page-hero__headline em {
+  font-style: normal;
+  color: var(--ap-accent);
+}
+
+.partners-page-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.partners-page-flow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.partners-page-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.partners-page-card {
+  border: 1px solid var(--ap-border);
+  border-radius: var(--ap-radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 18px;
+}
+.partners-page-card h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ap-text);
+}
+.partners-page-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ap-text-dim);
+}
+
+.partners-page-pricing {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+.partners-page-pricing-card {
+  border: 1px solid var(--ap-border);
+  border-radius: var(--ap-radius);
+  background: rgba(0, 0, 0, 0.22);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.partners-page-pricing-card--featured {
+  border-color: var(--ap-border-strong);
+  background: linear-gradient(165deg, rgba(16, 42, 78, 0.75) 0%, rgba(8, 22, 44, 0.88) 100%);
+}
+.partners-page-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ap-accent);
+  background: rgba(43, 109, 233, 0.15);
+  border: 1px solid var(--accent-blue-ring);
+  border-radius: 999px;
+  padding: 4px 10px;
+  margin-bottom: 12px;
+  align-self: flex-start;
+}
+.partners-page-badge--muted {
+  color: var(--ap-text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--ap-border);
+}
+.partners-page-pricing-name {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ap-text);
+  margin: 0 0 6px;
+}
+.partners-page-pricing-sub {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ap-accent);
+  margin: 0 0 12px;
+}
+.partners-page-pricing-price {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ap-text);
+  margin: 0 0 14px;
+}
+.partners-page-divider {
+  height: 1px;
+  background: var(--ap-border);
+  margin: 14px 0;
+}
+.partners-page-features-intro {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ap-text);
+  margin: 0 0 10px;
+}
+
+.partners-page-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+  display: grid;
+  gap: 8px;
+}
+.partners-page-features li {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ap-text-dim);
+  padding-left: 1.1rem;
+  position: relative;
+}
+.partners-page-features li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--ap-accent);
+  font-weight: 700;
+}
+.partners-page-addon {
+  border-radius: var(--ap-radius-sm);
+  border: 1px solid var(--ap-border);
+  background: rgba(43, 109, 233, 0.1);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ap-text-dim);
+}
+.partners-page-addon strong {
+  color: var(--ap-text);
+}
+.partners-page-best-for {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ap-text-faint);
+  margin-bottom: 4px;
+}
+.partners-page-for {
+  font-size: 0.85rem;
+  color: var(--ap-text-faint);
+  margin: 0;
+}
+
+.partners-page-integrity {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.partners-page-inline-cta {
+  margin-top: 22px;
+  padding: 22px 26px;
+  border-radius: var(--ap-radius);
+  border: 1px solid var(--ap-border-strong);
+  background: linear-gradient(135deg, rgba(12, 32, 58, 0.92) 0%, rgba(6, 18, 38, 0.96) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.partners-page-inline-cta h3 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ap-text);
+}
+.partners-page-inline-cta p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ap-text-dim);
+}
+
+@media (max-width: 900px) {
+  .partners-page-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .partners-page-card-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .partners-page-pricing {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .partners-page-flow,
+  .partners-page-integrity {
+    grid-template-columns: 1fr;
+  }
+  .partners-page-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .partners-page-inline-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
