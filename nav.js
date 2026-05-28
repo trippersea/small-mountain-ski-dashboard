@@ -76,7 +76,7 @@
         })
         .catch(function () {
           subSubmit.disabled = false;
-          subSubmit.textContent = 'Notify me';
+          subSubmit.textContent = 'Get the picks';
           setSubErr('Something went wrong. Try again.');
         });
     }
