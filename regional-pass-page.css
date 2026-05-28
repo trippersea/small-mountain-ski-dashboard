@@ -177,7 +177,7 @@ body.pass-page-body .rpp-cross-label {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
   margin-bottom: 4px;
 }
 body.pass-page-body .rpp-cross-title {
@@ -189,7 +189,7 @@ body.pass-page-body .pp-table-note {
   color: var(--pp-text-faint, rgba(240, 246, 252, 0.52)) !important;
 }
 body.pass-page-body .pp-table-note a {
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
 }
 
 /* Epic vs Ikon only: category + single prose column (no Indy cell) */

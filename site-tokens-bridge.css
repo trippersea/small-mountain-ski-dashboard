@@ -1,0 +1,35 @@
+/**
+ * Unifies editorial/static pages with homepage tokens (styles.css :root).
+ * Load last in <head> so brand accent and text colors stay consistent site-wide.
+ */
+:root {
+  --pp-accent: var(--accent);
+  --ap-accent: var(--accent);
+  --cp-accent-bright: var(--accent);
+  --sp-accent: var(--accent);
+  --sn-accent: var(--accent);
+}
+
+/* Newsletter footer band — same CTA blue as homepage */
+.nl-kicker,
+.nl-headline em {
+  color: var(--accent);
+}
+.nl-kicker::before {
+  background: var(--accent);
+}
+.nl-field-row:focus-within {
+  border-color: var(--accent);
+}
+.nl-submit {
+  color: var(--text-on-dark);
+  background: var(--accent);
+}
+.nl-submit:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.nl-success-ring {
+  color: var(--accent);
+  background: var(--accent-blue-dim);
+  border-color: var(--accent-blue-ring);
+}

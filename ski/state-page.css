@@ -2,7 +2,7 @@
 /* Requires: /styles.css, /ski-pass-comparison/pass-comparison-page.css */
 
 body.pass-page-body.state-page {
-  --sp-accent: var(--pp-accent, #45a2ff);
+  --sp-accent: var(--accent, #2b6de9);
 }
 
 .sp-page {

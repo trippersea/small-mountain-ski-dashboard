@@ -8,7 +8,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CSS_LINK = '  <link rel="stylesheet" href="/newsletter-band.css" />';
+const NEWSLETTER_CSS = '  <link rel="stylesheet" href="/newsletter-band.css" />';
+const BRIDGE_CSS = '  <link rel="stylesheet" href="/site-tokens-bridge.css" />';
 const JS_SCRIPT = '  <script src="/newsletter-band.js"></script>';
 
 function walkHtml(dir, files = []) {
@@ -24,24 +25,32 @@ function walkHtml(dir, files = []) {
 
 function inject(file) {
   let html = fs.readFileSync(file, 'utf8');
-  if (html.includes('newsletter-band.js')) return false;
+  const hasNewsletter = html.includes('newsletter-band.js');
+  const hasBridge = html.includes('site-tokens-bridge.css');
+  if (hasNewsletter && hasBridge) return false;
 
   let changed = false;
 
-  if (!html.includes('newsletter-band.css')) {
-    if (html.includes('</head>')) {
-      html = html.replace('</head>', `${CSS_LINK}\n</head>`);
+  if (html.includes('</head>')) {
+    if (!html.includes('newsletter-band.css')) {
+      html = html.replace('</head>', `${NEWSLETTER_CSS}\n</head>`);
+      changed = true;
+    }
+    if (!html.includes('site-tokens-bridge.css')) {
+      html = html.replace('</head>', `${BRIDGE_CSS}\n</head>`);
       changed = true;
     }
   }
 
-  const footerIdx = html.indexOf('<footer class="site-footer"');
-  if (footerIdx !== -1) {
-    html = html.slice(0, footerIdx) + `${JS_SCRIPT}\n\n` + html.slice(footerIdx);
-    changed = true;
-  } else if (html.includes('</body>')) {
-    html = html.replace('</body>', `${JS_SCRIPT}\n</body>`);
-    changed = true;
+  if (!html.includes('newsletter-band.js')) {
+    const footerIdx = html.indexOf('<footer class="site-footer"');
+    if (footerIdx !== -1) {
+      html = html.slice(0, footerIdx) + `${JS_SCRIPT}\n\n` + html.slice(footerIdx);
+      changed = true;
+    } else if (html.includes('</body>')) {
+      html = html.replace('</body>', `${JS_SCRIPT}\n</body>`);
+      changed = true;
+    }
   }
 
   if (changed) {
@@ -59,7 +68,10 @@ function stripHomepageInline(file) {
   if (end === -1) return false;
   html = html.slice(0, start) + html.slice(end);
   if (!html.includes('newsletter-band.css')) {
-    html = html.replace('</head>', `${CSS_LINK}\n</head>`);
+    html = html.replace('</head>', `${NEWSLETTER_CSS}\n</head>`);
+  }
+  if (!html.includes('site-tokens-bridge.css')) {
+    html = html.replace('</head>', `${BRIDGE_CSS}\n</head>`);
   }
   if (!html.includes('newsletter-band.js')) {
     html = html.replace('<footer class="site-footer"', `${JS_SCRIPT}\n\n<footer class="site-footer"`);

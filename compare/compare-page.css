@@ -8,7 +8,7 @@
   --cp-border-strong: rgba(94, 148, 222, 0.42);
   --cp-glass: linear-gradient(165deg, rgba(12, 32, 58, 0.78) 0%, rgba(6, 18, 38, 0.88) 100%);
   --cp-glass-soft: rgba(8, 22, 44, 0.55);
-  --cp-accent-bright: #45a2ff;
+  --cp-accent-bright: var(--accent, #2b6de9);
   --cp-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   --cp-radius: 22px;
 }

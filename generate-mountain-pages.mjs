@@ -518,6 +518,7 @@ function generateMountainPage(resort, allResorts) {
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
   <link rel="stylesheet" href="/ski-report/ski-report-page.css" />
   <link rel="stylesheet" href="/newsletter-band.css" />
+  <link rel="stylesheet" href="/site-tokens-bridge.css" />
 
   <script type="application/ld+json">
   ${JSON.stringify(schemas, null, 2)}

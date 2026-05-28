@@ -54,7 +54,7 @@
   font-weight: 500;
   letter-spacing: .18em;
   text-transform: uppercase;
-  color: #5aaddc;
+  color: var(--accent);
   margin-bottom: 18px;
 }
 .nl-kicker::before {
@@ -62,7 +62,7 @@
   display: block;
   width: 24px;
   height: 1.5px;
-  background: #5aaddc;
+  background: var(--accent);
   flex-shrink: 0;
 }
 .nl-headline {
@@ -75,7 +75,7 @@
 }
 .nl-headline em {
   font-style: normal;
-  color: #5aaddc;
+  color: var(--accent);
 }
 .nl-body {
   font-size: 15px;
@@ -103,7 +103,7 @@
   transition: border-color .15s, background .15s;
 }
 .nl-field-row:focus-within {
-  border-color: #5aaddc;
+  border-color: var(--accent);
   background: rgba(255,255,255,.1);
 }
 .nl-email {
@@ -124,7 +124,7 @@
   font-weight: 700;
   letter-spacing: .01em;
   color: #0f1c2e;
-  background: #5aaddc;
+  background: var(--accent);
   border: none;
   border-radius: 0 12px 12px 0;
   padding: 15px 24px;
@@ -133,7 +133,7 @@
   flex-shrink: 0;
   transition: background .12s;
 }
-.nl-submit:hover:not(:disabled) { background: #72c0e8; }
+.nl-submit:hover:not(:disabled) { background: var(--accent-hover); }
 .nl-submit:disabled { opacity: .45; cursor: not-allowed; }
 .nl-err {
   display: none;
@@ -176,13 +176,13 @@
   height: 52px;
   margin: 0 auto 18px;
   border-radius: 50%;
-  background: rgba(90,173,220,.12);
-  border: 1.5px solid rgba(90,173,220,.35);
+  background: var(--accent-blue-dim);
+  border: 1.5px solid var(--accent-blue-ring);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  color: #5aaddc;
+  color: var(--accent);
 }
 .nl-success-head {
   font-size: 20px;

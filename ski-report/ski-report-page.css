@@ -21,7 +21,7 @@ body.pass-page-body.ski-report-page {
   flex-wrap: wrap;
 }
 .sr-breadcrumb a {
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
   text-decoration: none;
   font-weight: 500;
 }
@@ -176,7 +176,7 @@ body.pass-page-body.ski-report-page {
   border: 1px solid transparent;
 }
 .sr-btn--primary {
-  background: var(--pp-accent, #45a2ff);
+  background: var(--accent, #2b6de9);
   color: #061018 !important;
   box-shadow: 0 8px 28px rgba(69, 162, 255, 0.28);
 }
@@ -330,7 +330,7 @@ body.pass-page-body.ski-report-page {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
   margin: 0 0 12px;
 }
 .sr-highlight-chips {
@@ -474,7 +474,7 @@ body.pass-page-body.ski-report-page {
   text-align: right;
 }
 .sr-detail-val a {
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
   text-decoration: none;
   font-weight: 700;
 }
@@ -547,7 +547,7 @@ body.pass-page-body.ski-report-page {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
   margin-bottom: 4px;
 }
 .sr-pass-callout h3 {
@@ -613,7 +613,7 @@ body.pass-page-body.ski-report-page {
 }
 .sr-matcher .mo:hover,
 .sr-matcher .mo.selected {
-  border-color: var(--pp-accent, #45a2ff);
+  border-color: var(--accent, #2b6de9);
   background: rgba(69, 162, 255, 0.2);
   color: var(--pp-text, #f0f6fc);
 }
@@ -658,7 +658,7 @@ body.pass-page-body.ski-report-page {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--pp-accent, #45a2ff);
+  background: var(--accent, #2b6de9);
   color: #061018 !important;
   font-size: 13px;
   font-weight: 700;
@@ -692,7 +692,7 @@ body.pass-page-body.ski-report-page {
 .sr-nearby-head a {
   font-size: 13px;
   font-weight: 600;
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
   text-decoration: none;
 }
 .sr-nearby-head a:hover {
@@ -766,7 +766,7 @@ body.pass-page-body.ski-report-page {
 .sr-nc-arrow {
   font-size: 12px;
   font-weight: 700;
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
   margin-top: auto;
   padding-top: 8px;
 }
@@ -777,7 +777,7 @@ body.pass-page-body.ski-report-page {
   margin-bottom: 20px;
 }
 .sr-state-link a {
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
   font-weight: 600;
   text-decoration: none;
 }
@@ -845,7 +845,7 @@ body.pass-page-body.ski-report-page {
   line-height: 1.45;
 }
 .hero-sponsor-btn {
-  background: var(--pp-accent, #45a2ff);
+  background: var(--accent, #2b6de9);
   color: #061018 !important;
   font-size: 13px;
   font-weight: 600;
@@ -890,5 +890,5 @@ body.pass-page-body.ski-report-page .site-footer a {
   color: rgba(240, 246, 252, 0.55);
 }
 body.pass-page-body.ski-report-page .site-footer a:hover {
-  color: var(--pp-accent, #45a2ff);
+  color: var(--accent, #2b6de9);
 }

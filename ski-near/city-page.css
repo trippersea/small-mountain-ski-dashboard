@@ -2,7 +2,7 @@
 /* Requires: /styles.css, /ski-pass-comparison/pass-comparison-page.css, /ski/state-page.css */
 
 body.pass-page-body.city-page {
-  --sn-accent: var(--pp-accent, #45a2ff);
+  --sn-accent: var(--accent, #2b6de9);
 }
 
 .city-page .sp-page {
@@ -34,7 +34,7 @@ body.pass-page-body.city-page {
 
 /* In-hero CTA band */
 .sn-cta-band {
-  background: rgba(69, 162, 255, 0.08);
+  background: var(--accent-blue-dim);
   border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.25));
   border-radius: var(--pp-radius-sm, 16px);
   padding: 18px 22px;
@@ -171,7 +171,7 @@ body.pass-page-body.city-page {
 }
 .sn-resort-card:hover {
   border-color: var(--pp-border-strong, rgba(94, 148, 222, 0.42));
-  background: rgba(69, 162, 255, 0.08);
+  background: var(--accent-blue-dim);
   transform: translateY(-1px);
 }
 .sn-rc-name {
@@ -197,9 +197,9 @@ body.pass-page-body.city-page {
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(69, 162, 255, 0.15);
+  background: var(--accent-blue-dim);
   color: var(--sn-accent);
-  border: 1px solid rgba(69, 162, 255, 0.25);
+  border: 1px solid var(--accent-blue-ring);
 }
 .sn-rc-chip--snow {
   background: rgba(147, 197, 253, 0.12);

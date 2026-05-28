@@ -328,6 +328,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
   <link rel="stylesheet" href="/ski/state-page.css" />
   <link rel="stylesheet" href="/newsletter-band.css" />
+  <link rel="stylesheet" href="/site-tokens-bridge.css" />
   <script type="application/ld+json">
   ${JSON.stringify(jsonLdArray, null, 2)}
   </script>

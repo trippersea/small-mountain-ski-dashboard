@@ -370,6 +370,7 @@ function generatePage(city) {
   <link rel="stylesheet" href="/ski/state-page.css" />
   <link rel="stylesheet" href="/ski-near/city-page.css" />
   <link rel="stylesheet" href="/newsletter-band.css" />
+  <link rel="stylesheet" href="/site-tokens-bridge.css" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
 </head>
 <body class="pass-page-body state-page city-page">
