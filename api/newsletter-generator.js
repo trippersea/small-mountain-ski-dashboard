@@ -5,8 +5,11 @@
  * generates copy via Anthropic, and posts a DRAFT to Beehiiv.
  *
  * Generates Thursday 11pm UTC (7pm ET) via Vercel cron -- for Friday send.
- * Manual trigger: GET /api/newsletter-generator
+ * Manual trigger: POST /api/newsletter-generator
  *   with Authorization: Bearer <CRON_SECRET>
+ *
+ * Auth: ALL callers (Vercel cron and manual) must supply Authorization: Bearer <CRON_SECRET>.
+ * The x-vercel-cron header is NOT used for auth -- it is not a secret and can be spoofed.
  *
  * Required env vars:
  *   BEEHIIV_API_KEY
@@ -821,15 +824,26 @@ async function postBeehiivDraft(subject, previewText, htmlContent) {
 
 module.exports = async function handler(req, res) {
 
-  const isVercelCron = req.headers['x-vercel-cron'] === '1';
-  const cronSecret   = process.env.CRON_SECRET;
-  const authHeader   = req.headers['authorization'] || '';
-  const isManual     = cronSecret && authHeader === `Bearer ${cronSecret}`;
+  // Auth: require Authorization: Bearer <CRON_SECRET> for ALL callers.
+  // The x-vercel-cron header is NOT trusted — it is not a secret and can be
+  // spoofed by any client. Vercel's cron runner sends whatever headers are
+  // configured in vercel.json, so it must also send the Bearer token.
+  const cronSecret = process.env.CRON_SECRET;
 
-  if (!isVercelCron && !isManual) {
+  if (!cronSecret) {
+    console.error('[newsletter-generator] CRON_SECRET env var is not set — rejecting request.');
+    return res.status(500).json({
+      error: 'Server misconfiguration: CRON_SECRET is not set.',
+    });
+  }
+
+  const authHeader   = req.headers['authorization'] || '';
+  const isAuthorized = authHeader === `Bearer ${cronSecret}`;
+
+  if (!isAuthorized) {
     return res.status(401).json({
       error: 'Unauthorized',
-      hint:  'Pass Authorization: Bearer <CRON_SECRET> to trigger manually.',
+      hint:  'Pass Authorization: Bearer <CRON_SECRET> to trigger manually, or configure vercel.json cron headers.',
     });
   }
 
