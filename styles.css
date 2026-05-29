@@ -7730,7 +7730,7 @@ button.vcard-detail-btn:hover,
 }
 #searchSection.hero-v2 .hero-v2__location {
   display: grid;
-  grid-template-columns: 44px 1fr 48px;
+  grid-template-columns: 44px 1fr;
   align-items: center;
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.055);
@@ -7752,22 +7752,6 @@ button.vcard-detail-btn:hover,
   align-items: center;
   justify-content: center;
   color: rgba(200, 220, 240, 0.48);
-}
-#searchSection.hero-v2 .hero-v2__location-submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 100%;
-  border: none;
-  background: #2b6de9;
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.12s;
-  flex-shrink: 0;
-}
-#searchSection.hero-v2 .hero-v2__location-submit:hover {
-  background: #1a5dd8;
 }
 #searchSection.hero-v2 .hero-v2__location-input {
   width: 100%;
@@ -7959,6 +7943,29 @@ button.vcard-detail-btn:hover,
   box-shadow: 0 8px 22px rgba(43, 109, 233, 0.22);
   width: 100%;
   max-width: 100%;
+}
+/* ── CTA hover + dirty (stale params) state ─────────────────────────────── */
+#searchSection.hero-v2 .hero-v2__cta:hover {
+  background: #1a5dd8;
+  box-shadow: 0 10px 28px rgba(43, 109, 233, 0.32);
+}
+#searchSection.hero-v2 .hero-v2__cta.is-dirty {
+  background: #1a5dd8;
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.45), 0 8px 22px rgba(43, 109, 233, 0.3);
+  animation: cta-pulse 1.6s ease-in-out 2;
+}
+@keyframes cta-pulse {
+  0%   { box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.45), 0 8px 22px rgba(43, 109, 233, 0.3); }
+  50%  { box-shadow: 0 0 0 6px rgba(147, 197, 253, 0.22), 0 8px 28px rgba(43, 109, 233, 0.45); }
+  100% { box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.45), 0 8px 22px rgba(43, 109, 233, 0.3); }
+}
+/* Mobile: make CTA taller and more prominent */
+@media (max-width: 640px) {
+  #searchSection.hero-v2 .hero-v2__cta {
+    min-height: 54px;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+  }
 }
 #searchSection.hero-v2 .hero-v2__trust {
   max-width: none;

@@ -720,6 +720,7 @@ function wireHeroV2() {
     passSel.value = btn.dataset.pass;
     passSel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
+    markCtaDirty();
   });
 
   document.getElementById('heroV2TripPills')?.addEventListener('click', e => {
@@ -728,7 +729,27 @@ function wireHeroV2() {
     tripSel.value = btn.dataset.trip;
     tripSel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
+    markCtaDirty();
   });
+
+  // ── Dirty-state helpers ──────────────────────────────────────────────────
+  // When params change after results are showing, pulse the CTA and relabel it.
+  function markCtaDirty() {
+    const cta = document.getElementById('setLocation');
+    if (!cta || !state.origin) return; // no results yet; nothing to update
+    if (cta.classList.contains('is-dirty')) return; // already dirty
+    cta.classList.add('is-dirty');
+    cta._originalText = cta.textContent;
+    cta.textContent = 'Update Results';
+  }
+  function clearCtaDirty() {
+    const cta = document.getElementById('setLocation');
+    if (!cta) return;
+    cta.classList.remove('is-dirty');
+    if (cta._originalText) { cta.textContent = cta._originalText; cta._originalText = null; }
+  }
+  // Expose so we can call clearCtaDirty after setLocation runs.
+  window.__wtsnClearCtaDirty = clearCtaDirty;
 
   const change = document.getElementById('heroV2DefaultsChange');
   const summaryChip = document.getElementById('heroV2SummaryChip');
@@ -745,6 +766,7 @@ function wireHeroV2() {
     daySel.value = btn.dataset.day;
     daySel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
+    markCtaDirty();
   });
   document.getElementById('heroV2PriorityPills')?.addEventListener('click', e => {
     const btn = e.target.closest('.hero-v2__mini-pill[data-priority]');
@@ -752,6 +774,7 @@ function wireHeroV2() {
     prSel.value = btn.dataset.priority;
     prSel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
+    markCtaDirty();
   });
 
   // Keep in sync with existing state changes.
@@ -3818,7 +3841,8 @@ function initialize() {
   };
 
   els.setLocation.addEventListener('click', async () => {
-    const originalText = els.setLocation.textContent;
+    const originalText = els.setLocation.classList.contains('is-dirty') ? (els.setLocation._originalText || 'Find My Mountain') : els.setLocation.textContent;
+    if (typeof window.__wtsnClearCtaDirty === 'function') window.__wtsnClearCtaDirty();
     els.setLocation.textContent = 'Finding…';
     els.setLocation.disabled = true;
     logCurrentFilters();
@@ -3843,6 +3867,7 @@ function initialize() {
     });
   }
   els.originInput.addEventListener('keydown', async e => { if (e.key === 'Enter') { e.preventDefault(); await applyLocation(); } });
+  els.originInput.addEventListener('input', () => { if (state.origin) markCtaDirty(); });
   els.detectLocation.addEventListener('click', () => {
     if (!navigator.geolocation) { showToast('Geolocation not supported'); return; }
     els.locationStatus.textContent = 'Detecting your location…';
