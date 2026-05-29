@@ -485,7 +485,7 @@ function statTile({ value, label1, label2, accentColor, bgColor, textColor }) {
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td align="center" style="background:${bg};border:1px solid #dde5ee;border-top:3px solid ${accent};border-radius:10px;padding:9px 4px;">
       <strong style="display:block;font-size:24px;font-weight:800;color:${color};line-height:1.05;letter-spacing:-0.02em;">${value}</strong>
-      <span style="font-size:11px;color:#7f96a9;line-height:1.2;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-top:2px;">${label1}<br>${label2}</span>
+      <span class="mono" style="font-size:10px;color:#7f96a9;line-height:1.25;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-top:3px;">${label1}<br>${label2}</span>
     </td>
   </tr></table>`;
 }
@@ -504,7 +504,7 @@ function statRow(scores, cardType) {
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
       <td align="center" style="background:${bg};border:1px solid ${border};border-top:3px solid ${accent};border-radius:10px;padding:9px 4px;">
         <strong style="display:block;font-size:24px;font-weight:800;color:${vc};line-height:1.05;letter-spacing:-0.02em;">${value}</strong>
-        <span style="font-size:11px;color:#7f96a9;line-height:1.2;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-top:2px;">${l1}<br>${l2}</span>
+        <span class="mono" style="font-size:10px;color:#7f96a9;line-height:1.25;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-top:3px;">${l1}<br>${l2}</span>
       </td>
     </tr></table>`;
   };
@@ -557,24 +557,24 @@ function buildRegionBlock(r) {
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td valign="top">
-                          <p style="font-size:12px;font-weight:800;letter-spacing:0.11em;text-transform:uppercase;color:#8fb6ff;margin:0 0 4px;">Where You Should Go</p>
+                          <p class="mono" style="font-size:11px;font-weight:800;letter-spacing:0.13em;text-transform:uppercase;color:#8fb6ff;margin:0 0 5px;">Where You Should Go</p>
                           <p style="font-size:32px;font-weight:800;color:#f0f6fc;margin:0 0 1px;line-height:1.05;letter-spacing:-0.03em;">${pick.resort.name}</p>
                           <p style="font-size:14px;color:rgba(240,246,252,0.68);margin:0 0 12px;">${resortLocation(pick.resort)}</p>
                         </td>
                         <td align="right" valign="top" style="padding-left:12px;">
-                          <span style="display:inline-block;background:#2b6de9;color:#ffffff;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;">Top Pick</span>
+                          <span class="mono" style="display:inline-block;background:#2b6de9;color:#ffffff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;">Top Pick</span>
                         </td>
                       </tr>
                     </table>
-                    <p style="font-size:21px;font-weight:800;color:#ffffff;margin:0 0 6px;line-height:1.3;">${pick.copy.tagline}</p>
-                    <p style="font-size:16px;color:rgba(240,246,252,0.88);line-height:1.45;margin:0 0 14px;">${pick.copy.body}</p>
+                    <p style="font-size:21px;font-weight:800;color:#ffffff;margin:0 0 6px;line-height:1.3;letter-spacing:-0.01em;">${pick.copy.tagline}</p>
+                    <p class="serif" style="font-size:17px;color:rgba(240,246,252,0.9);line-height:1.55;margin:0 0 14px;">${pick.copy.body}</p>
                     ${statRow(pickScores, 'pick')}
-                    <p style="font-size:12px;color:rgba(240,246,252,0.46);margin:0 0 16px;font-style:italic;">*Drive time mapped from ${region.driveAnchor}.</p>
+                    <p class="mono" style="font-size:11px;color:rgba(240,246,252,0.46);margin:0 0 16px;">Drive time mapped from ${region.driveAnchor}.</p>
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px;">
                       <tr>
                         <td style="background:#162537;border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:14px 16px;">
-                          <p style="font-size:12px;font-weight:800;color:#8fb6ff;letter-spacing:0.09em;text-transform:uppercase;margin:0 0 6px;">${region.passContextTitle}</p>
-                          <p style="font-size:14px;color:rgba(240,246,252,0.84);line-height:1.45;margin:0;">${pick.copy.passNote}</p>
+                          <p class="mono" style="font-size:11px;font-weight:800;color:#8fb6ff;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 6px;">${region.passContextTitle}</p>
+                          <p class="serif" style="font-size:15px;color:rgba(240,246,252,0.86);line-height:1.5;margin:0;">${pick.copy.passNote}</p>
                         </td>
                       </tr>
                     </table>
@@ -603,7 +603,7 @@ function buildRegionBlock(r) {
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
             <td style="background:#fffbf4;border:1px solid #fde68a;border-left:4px solid #b45309;border-radius:12px;padding:16px 20px;">
-              <p style="font-size:12px;font-weight:800;letter-spacing:0.11em;text-transform:uppercase;color:#b45309;margin:0 0 6px;">Where Everyone&#x27;s Going</p>
+              <p class="mono" style="font-size:11px;font-weight:800;letter-spacing:0.13em;text-transform:uppercase;color:#b45309;margin:0 0 6px;">Where Everyone&#x27;s Going</p>
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td valign="top">
@@ -611,12 +611,12 @@ function buildRegionBlock(r) {
                     <p style="font-size:13px;color:#7f96a9;margin:0 0 16px;">${resortLocation(trap.resort)}</p>
                   </td>
                   <td align="right" valign="top" style="padding-left:12px;">
-                    <span style="display:inline-block;background:#fef3c7;color:#b45309;border:1px solid #fde68a;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;">Crowd Magnet</span>
+                    <span class="mono" style="display:inline-block;background:#fef3c7;color:#b45309;border:1px solid #fde68a;border-radius:999px;padding:6px 10px;font-size:10px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;">Crowd Magnet</span>
                   </td>
                 </tr>
               </table>
               ${statRow(trap.scores, 'trap')}
-              <p style="font-size:15px;color:#4a6177;line-height:1.5;margin:0 0 10px;">${trap.copy}</p>
+              <p class="serif" style="font-size:16px;color:#4a6177;line-height:1.55;margin:0 0 10px;">${trap.copy}</p>
               <a href="${resortUrl(trap.resort, regionId + '-trap')}" style="font-size:13px;font-weight:800;color:#2b6de9;text-decoration:none;">View weekend crowd data on WTSN &rarr;</a>
             </td>
           </tr>
@@ -626,33 +626,57 @@ function buildRegionBlock(r) {
   </table>` : '';
 
   // ---- ALSO STRIP ----
+  // Each column is a 3-row stack: a fixed-height top zone (role + note + name +
+  // location), then the signal badge, then the link. Fixing the top zone height
+  // keeps the badges and links aligned across columns even when a resort name
+  // wraps to two lines, so nothing floats out of line.
+  const ALSO_NOTES = {
+    'Best for a Full Day': 'Most lifts spinning',
+    'Best Kept Secret':    'Quiet and cheaper',
+    'Under the Radar':     'Lowest ticket price',
+  };
   const alsoColumns = also.map((item, idx) => {
     const isFirst = idx === 0;
     const isLast  = idx === also.length - 1;
     const width   = isLast ? '34%' : '33%';
-    const pl      = isFirst ? '0' : '12px';
-    const pr      = isLast  ? '0' : '12px';
+    const pl      = isFirst ? '0' : '14px';
+    const pr      = isLast  ? '0' : '14px';
     const border  = isFirst ? '' : 'border-left:1px solid rgba(255,255,255,0.08);';
+    const note    = ALSO_NOTES[item.role] || '';
     return `<td class="also-stack" width="${width}" style="padding-right:${pr};padding-left:${pl};${border}" valign="top">
-      <p style="font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#8fb6ff;margin:0 0 8px;">${item.role}</p>
-      <p style="font-size:18px;font-weight:800;color:#f0f6fc;margin:0 0 2px;line-height:1.2;">${item.resort.name}</p>
-      <p style="font-size:12px;color:rgba(240,246,252,0.52);margin:0 0 12px;">${resortLocation(item.resort)}</p>
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 10px;"><tr><td>
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-          <td align="center" style="background:#162537;border:1px solid rgba(255,255,255,0.08);border-top:2px solid #2b6de9;border-radius:8px;padding:8px 4px;">
-            <strong style="font-size:14px;font-weight:800;color:#8fb6ff;display:block;line-height:1;text-transform:uppercase;letter-spacing:0.05em;">${item.badge}</strong>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td class="also-zone" height="104" valign="top" style="height:104px;">
+            <p class="mono" style="font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#8fb6ff;margin:0 0 4px;">${item.role}</p>
+            <p style="font-size:11px;color:rgba(240,246,252,0.46);margin:0 0 10px;line-height:1.3;">${note}</p>
+            <p style="font-size:18px;font-weight:800;color:#f0f6fc;margin:0 0 2px;line-height:1.2;">${item.resort.name}</p>
+            <p style="font-size:12px;color:rgba(240,246,252,0.52);margin:0;">${resortLocation(item.resort)}</p>
           </td>
-        </tr></table>
-      </td></tr></table>
-      <a href="${resortUrl(item.resort, regionId + '-also-' + (idx + 1))}" style="font-size:13px;font-weight:800;color:#8fb6ff;text-decoration:none;">View on WTSN &rarr;</a>
+        </tr>
+        <tr>
+          <td valign="top" style="padding-top:12px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+              <td align="center" style="background:#162537;border:1px solid rgba(255,255,255,0.08);border-top:2px solid #2b6de9;border-radius:8px;padding:8px 4px;">
+                <strong class="mono" style="font-size:13px;font-weight:800;color:#8fb6ff;display:block;line-height:1;text-transform:uppercase;letter-spacing:0.05em;">${item.badge}</strong>
+              </td>
+            </tr></table>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" style="padding-top:12px;">
+            <a href="${resortUrl(item.resort, regionId + '-also-' + (idx + 1))}" style="font-size:13px;font-weight:800;color:#8fb6ff;text-decoration:none;">View on WTSN &rarr;</a>
+          </td>
+        </tr>
+      </table>
     </td>`;
   }).join('\n');
 
   const alsoStrip = also.length > 0 ? `
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#1e3448">
     <tr>
-      <td style="padding:20px 28px 20px;background:#1e3448;" class="section-pad">
-        <p style="font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(240,246,252,0.46);margin:0 0 20px;">Also This Week in the ${region.label}</p>
+      <td style="padding:22px 28px 22px;background:#1e3448;" class="section-pad">
+        <p class="mono" style="font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(240,246,252,0.46);margin:0 0 4px;">Also This Week in the ${region.label}</p>
+        <p style="font-size:13px;color:rgba(240,246,252,0.5);line-height:1.45;margin:0 0 20px;">Three more worth a look. Same scoring, different angle.</p>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr valign="top">
             ${alsoColumns}
@@ -671,15 +695,26 @@ function buildRegionBlock(r) {
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#d4e8f8">
     <tr>
       <td style="padding:12px 28px 12px;background:#d4e8f8;border-top:1px solid #c4d0de;" class="section-pad">
-        <p style="font-size:14px;font-weight:800;letter-spacing:0.13em;text-transform:uppercase;color:#2b6de9;margin:0 0 2px;">${region.label}</p>
+        <p class="mono" style="font-size:13px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#2b6de9;margin:0 0 2px;">${region.label}</p>
         <p style="font-size:13px;color:#4a6177;margin:0;">Updated Friday mornings.</p>
+      </td>
+    </tr>
+  </table>`;
+
+  // Quiet jump back to the region list at the top. Uses the same in-email anchor
+  // system as the nav, so it degrades to a harmless no-op where anchors are ignored.
+  const backToTop = `
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#f7fafc">
+    <tr>
+      <td align="right" style="padding:10px 28px 4px;background:#f7fafc;" class="section-pad">
+        <a href="#top" class="mono" style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#7f96a9;text-decoration:none;">&uarr;&nbsp;All regions</a>
       </td>
     </tr>
   </table>`;
 
   const spacer = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td height="16" style="font-size:0;line-height:0;background:#f7fafc;"></td></tr></table>`;
 
-  return `\n  ${conditionFlag}\n  ${regionBand}\n  ${pickCard}\n  ${trapCard}\n  ${alsoStrip}\n  ${spacer}`;
+  return `\n  ${conditionFlag}\n  ${regionBand}\n  ${pickCard}\n  ${trapCard}\n  ${alsoStrip}\n  ${backToTop}\n  ${spacer}`;
 }
 
 
@@ -695,9 +730,10 @@ function buildRegionNav(regionResults) {
   if (regionResults.length <= 1) return '';
 
   const items = regionResults.map(r => `<tr>
-        <td style="padding:10px 0;border-bottom:1px solid #e2e9f1;">
+        <td style="padding:11px 0;border-bottom:1px solid #e2e9f1;">
           <a href="#region-${r.regionId}" style="font-size:15px;font-weight:800;color:#2b6de9;text-decoration:none;">${r.region.label}</a>
           <span style="font-size:14px;color:#7f96a9;">&nbsp;&middot;&nbsp;${r.pick.resort.name}</span>
+          <span class="mono" style="font-size:12px;color:#16a34a;font-weight:500;">&nbsp;&nbsp;${r.pick.scores.newSnow72hIn}&Prime; new</span>
         </td>
       </tr>`).join('\n');
 
@@ -705,7 +741,8 @@ function buildRegionNav(regionResults) {
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#ffffff">
     <tr>
       <td style="padding:22px 28px 24px;border-bottom:1px solid #dde5ee;" class="section-pad">
-        <p style="font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#7f96a9;margin:0 0 14px;">Jump to your region</p>
+        <p class="mono" style="font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#7f96a9;margin:0 0 4px;">Jump to your region</p>
+        <p style="font-size:13px;color:#7f96a9;line-height:1.45;margin:0 0 12px;">Every pick is scored on fresh snow, the next 48 hours, crowd outlook, and base depth. Tap a region to drop straight to it.</p>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
 ${items}
         </table>
@@ -738,8 +775,17 @@ function buildEmailHtml(regionResults, generatedAt) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>WhereToSkiNext Weekly</title>
+  <!-- Web fonts match the site: Inter (body/headings), DM Mono (labels), Newsreader (editorial copy).
+       Clients that support web fonts (Apple Mail, iOS Mail, Outlook for Mac) load them; the rest
+       fall back to the system stacks below, so the email never looks broken. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
   <style type="text/css">
-    body, table, td, p, a, span, strong { font-family: Helvetica, Arial, sans-serif !important; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap');
+    body, table, td, p, a, span, strong { font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; }
+    .mono, .mono strong, .mono span, .mono a { font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace !important; }
+    .serif, .serif strong, .serif span, .serif a { font-family: 'Newsreader', ui-serif, Georgia, 'Times New Roman', serif !important; }
     body { margin:0; padding:0; background-color:#d4e8f8; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
     table { border-collapse:separate; }
     a { text-decoration:none; }
@@ -749,6 +795,7 @@ function buildEmailHtml(regionResults, generatedAt) {
       .section-pad { padding-left:16px !important; padding-right:16px !important; }
       .stat-tile { display:inline-block !important; width:50% !important; padding-right:6px !important; padding-bottom:8px !important; box-sizing:border-box !important; }
       .also-stack { display:block !important; width:100% !important; padding-left:0 !important; padding-right:0 !important; border-left:none !important; padding-bottom:16px !important; }
+      .also-zone { height:auto !important; }
     }
   </style>
 </head>
@@ -767,6 +814,7 @@ Review copy, then send.
 </div>
 
 <div class="email-container" style="max-width:600px;margin:0 auto;background:#f7fafc;">
+  <a name="top" id="top"></a>
 
   <!-- HEADER -->
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#0f1c2e">
@@ -775,7 +823,7 @@ Review copy, then send.
         <a href="https://www.wheretoskinext.com/?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=weekly-pick&amp;utm_content=header-logo" style="display:inline-block;font-size:24px;font-weight:800;color:#f0f6fc;margin:0;line-height:1.15;letter-spacing:-0.02em;text-decoration:none;">
           WhereToSki<span style="color:#2b6de9;">Next</span>.com
         </a>
-        <p style="font-size:12px;font-weight:700;letter-spacing:0.11em;text-transform:uppercase;color:rgba(240,246,252,0.62);margin:4px 0 0;">Week of [DATE]</p>
+        <p class="mono" style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:rgba(240,246,252,0.62);margin:6px 0 0;">Week of [DATE]</p>
       </td>
     </tr>
   </table>
@@ -789,7 +837,7 @@ Review copy, then send.
       <td style="padding:28px 28px 32px;border-bottom:1px solid #dde5ee;text-align:center;" class="section-pad">
         <p style="font-size:24px;color:#2a4158;line-height:1.25;margin:0 0 12px;letter-spacing:-0.02em;">
           <strong style="font-weight:800;color:#2a4158;">Everyone loves fresh snow.</strong><br>
-          <span style="color:#4a6177;font-size:20px;">Nobody loves chasing it with everyone else.</span>
+          <span class="serif" style="color:#4a6177;font-size:21px;font-weight:500;">Nobody loves chasing it with everyone else.</span>
         </p>
         <p style="font-size:16px;color:#4a6177;line-height:1.5;margin:0 0 24px;padding:0 10px;">
           Dial in your exact starting point, pass type, and drive limit. We'll run the numbers and map the best turns for your weekend.
