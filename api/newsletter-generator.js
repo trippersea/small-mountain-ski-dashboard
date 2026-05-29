@@ -8,15 +8,19 @@
  * Manual trigger: POST /api/newsletter-generator
  *   with Authorization: Bearer <CRON_SECRET>
  *
- * Cron auth: Authorization: Bearer <CRON_SECRET> on every request.
- *   Set CRON_SECRET in Vercel env — Vercel Cron includes this header automatically.
- *   x-vercel-cron and query-string tokens are NOT trusted.
+ * Cron auth:
+ *   Vercel scheduled runs:  query param ?cron_token=<CRON_JOB_TOKEN> (set in vercel.json path)
+ *   Manual triggers:        Authorization: Bearer <CRON_SECRET> header
+ *   x-vercel-cron header is NOT trusted -- it is not a secret and can be spoofed.
+ *   NOTE: Vercel cron does NOT send headers automatically -- query param is the only
+ *   reliable way to authenticate scheduled runs without hardcoding secrets in vercel.json.
  *
  * Required env vars:
  *   BEEHIIV_API_KEY
  *   BEEHIIV_PUBLICATION_ID
  *   ANTHROPIC_API_KEY
- *   CRON_SECRET      (openssl rand -hex 32)
+ *   CRON_SECRET      (manual trigger secret -- never committed to repo)
+ *   CRON_JOB_TOKEN   (vercel cron token -- value committed in vercel.json path)
  *
  * One-line change required in resorts-national.js -- add at the very bottom:
  *   if (typeof module !== 'undefined') module.exports = { RESORTS };
@@ -825,19 +829,30 @@ async function postBeehiivDraft(subject, previewText, htmlContent) {
 
 module.exports = async function handler(req, res) {
 
-  // Auth: require Authorization: Bearer <CRON_SECRET>.
-  // Set CRON_SECRET in Vercel env — Vercel Cron sends this header automatically.
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) {
-    console.error('[newsletter-generator] CRON_SECRET is not set.');
-    return res.status(500).json({ error: 'Server misconfiguration: CRON_SECRET not set.' });
+  // Auth: ALL callers must supply a valid token. x-vercel-cron is NOT trusted.
+  // Vercel's cron runner does NOT send Authorization headers automatically —
+  // the query param approach is required for scheduled runs.
+  //
+  // Two valid paths:
+  //   ?cron_token=<CRON_JOB_TOKEN>        — Vercel scheduler sends this via vercel.json path
+  //   Authorization: Bearer <CRON_SECRET>  — manual triggers only, never committed to repo
+  const cronJobToken = process.env.CRON_JOB_TOKEN;
+  const cronSecret   = process.env.CRON_SECRET;
+
+  if (!cronJobToken && !cronSecret) {
+    console.error('[newsletter-generator] Neither CRON_JOB_TOKEN nor CRON_SECRET is set.');
+    return res.status(500).json({ error: 'Server misconfiguration: auth tokens not set.' });
   }
 
-  const authHeader = req.headers['authorization'] || '';
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  const queryToken   = req.query?.cron_token || new URL(req.url, 'http://x').searchParams.get('cron_token') || '';
+  const authHeader   = req.headers['authorization'] || '';
+  const isAuthorized = (cronJobToken && queryToken === cronJobToken)
+                    || (cronSecret   && authHeader === `Bearer ${cronSecret}`);
+
+  if (!isAuthorized) {
     return res.status(401).json({
       error: 'Unauthorized',
-      hint:  'Set CRON_SECRET in Vercel and use Authorization: Bearer <CRON_SECRET>.',
+      hint:  'Pass Authorization: Bearer <CRON_SECRET> to trigger manually.',
     });
   }
 
