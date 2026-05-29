@@ -2,6 +2,48 @@
  * /api/recommend  — Vercel serverless function (Node.js)
  */
 
+function buildWriteupPromptFromVerdict(v) {
+  const originStr = v.originLabel ? `from ${v.originLabel}` : '';
+  const driveStr  = v.driveText ? `${v.driveText} away` : 'distance unknown';
+  const histStr   = v.histTotal != null ? `${v.histTotal}" of snow in the last 7 days` : null;
+  const facts = [
+    `${Number(v.tomorrowIn).toFixed(1)}" forecast for your ski day, ${Number(v.stormTotal).toFixed(1)}" in the window`,
+    driveStr !== 'distance unknown' ? driveStr : null,
+    histStr,
+    v.vertical ? `${Number(v.vertical).toLocaleString()}ft vertical` : null,
+    v.passGroup && v.passGroup !== 'Independent' ? `${v.passGroup} pass access` : null,
+  ].filter(Boolean).join('; ');
+  const name  = String(v.resortName || 'this mountain').slice(0, 120);
+  const state = String(v.state || '').slice(0, 40);
+  const tier  = String(v.tier || 'good').slice(0, 20);
+  return `You're texting a friend who skis. In 1–2 short, confident sentences say why ${name} in ${state} is the right call for this ski day${originStr ? ' for someone ' + originStr : ''}. Use only these facts: ${facts}. Internally the model tiers this as "${tier}" · do not say "tier", "score", or any number out of 100. No corporate filler ("leverage", "insights"). Sound like a human on a lift pass.`;
+}
+
+function parseVerdictPayload(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const resortId = String(raw.resortId || '').trim().slice(0, 80);
+  const resortName = String(raw.resortName || '').trim().slice(0, 120);
+  if (!resortId || !resortName) return null;
+  const tomorrowIn = Number(raw.tomorrowIn);
+  const stormTotal = Number(raw.stormTotal);
+  if (!Number.isFinite(tomorrowIn) || !Number.isFinite(stormTotal)) return null;
+  const histTotal = raw.histTotal == null ? null : Number(raw.histTotal);
+  if (histTotal != null && !Number.isFinite(histTotal)) return null;
+  return {
+    resortId,
+    resortName,
+    state: String(raw.state || '').slice(0, 40),
+    tier: String(raw.tier || 'good').slice(0, 20),
+    tomorrowIn,
+    stormTotal,
+    histTotal,
+    driveText: String(raw.driveText || '').slice(0, 80),
+    originLabel: String(raw.originLabel || '').slice(0, 200),
+    vertical: Number(raw.vertical) || 0,
+    passGroup: String(raw.passGroup || '').slice(0, 40),
+  };
+}
+
 module.exports = async function handler(req, res) {
   const { applyCors, applyApiBaselineSecurity, rateLimit, readRawBody, safeJsonParse } = require('./_security');
   const cors = applyCors(req, res, { methods: ['POST', 'OPTIONS'], headers: ['Content-Type'] });
@@ -14,10 +56,6 @@ module.exports = async function handler(req, res) {
   const rl = rateLimit(req, res, { prefix: 'recommend', max: 10, windowMs: 60_000 });
   if (!rl.ok) return res.status(429).json({ error: 'Too many requests' });
 
-  // ── Parse body — always read raw stream ─────────────────────────────────
-  // Vercel sometimes delivers req.body as {} even for JSON POST requests,
-  // which causes downstream destructuring to silently miss all fields.
-  // Always parse from the raw body to be safe.
   let body;
   try {
     const raw = await readRawBody(req, { limitBytes: 120_000 });
@@ -28,13 +66,13 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Could not parse request body' });
   }
 
-  const { resorts, _writeup, prompt: writeupPrompt } = body || {};
+  const { resorts, _writeup, verdict } = body || {};
 
-  // ── Route: AI verdict write-up (Option B) ─────────────────────────────────
-  if (_writeup && writeupPrompt) {
-    if (typeof writeupPrompt !== 'string' || writeupPrompt.length > 4000) {
-      return res.status(400).json({ error: 'Invalid prompt' });
-    }
+  // ── Route: AI verdict write-up (server-built prompt only) ─────────────────
+  if (_writeup) {
+    const v = parseVerdictPayload(verdict);
+    if (!v) return res.status(400).json({ error: 'Invalid verdict payload' });
+    const writeupPrompt = buildWriteupPromptFromVerdict(v);
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
     try {
@@ -46,7 +84,7 @@ module.exports = async function handler(req, res) {
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          model:      'claude-haiku-4-5-20251001', // fast + cheap for short copy
+          model:      'claude-haiku-4-5-20251001',
           max_tokens: 120,
           messages:   [{ role: 'user', content: writeupPrompt }],
         }),
@@ -71,7 +109,6 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' });
 
-  // ── Build prompt ───────────────────────────────────────────────────────────
   const resortList = resorts.map(r => [
     '• ' + r.name + ' (' + r.state + ')',
     r.vertical + 'ft vertical',
@@ -92,7 +129,6 @@ module.exports = async function handler(req, res) {
     "End with one sentence on who the runner-up is best suited for. " +
     "Sign off as '— SkiNE AI 🤖'";
 
-  // ── Call Anthropic ─────────────────────────────────────────────────────────
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -123,5 +159,3 @@ module.exports = async function handler(req, res) {
     return res.status(502).json({ error: 'AI service unavailable' });
   }
 };
-
-// (raw body helper moved to api/_security.js)

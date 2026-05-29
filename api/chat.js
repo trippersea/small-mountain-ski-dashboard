@@ -117,8 +117,27 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: 'AI returned unexpected format — please try again' });
     }
 
+    const aiName = (parsed.resortName || '').trim();
+    if (!aiName) {
+      return res.status(500).json({ error: 'AI returned unexpected format — please try again' });
+    }
+
+    const allowed = resorts.slice(0, 25);
+    const aiLower = aiName.toLowerCase();
+    let matched = allowed.find(r => r.name && r.name.toLowerCase() === aiLower);
+    if (!matched) {
+      matched = allowed.find(r => {
+        const n = (r.name || '').toLowerCase();
+        return n && (n.includes(aiLower) || aiLower.includes(n));
+      }) || null;
+    }
+    if (!matched) {
+      return res.status(500).json({ error: 'AI pick was not in your filtered list — please try again' });
+    }
+
     return res.status(200).json({
-      resortName:  (parsed.resortName  || '').trim(),
+      resortName:  matched.name,
+      resortId:    matched.id || '',
       explanation: (parsed.explanation || '').trim(),
     });
 

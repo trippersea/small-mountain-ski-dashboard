@@ -37,6 +37,18 @@ const esc = s => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;')
   .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+/** Allow only http(s) links in user-facing href attributes */
+function safeHttpUrl(url) {
+  if (url == null || typeof url !== 'string') return null;
+  try {
+    const u = new URL(url.trim());
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+    return u.href;
+  } catch (e) {
+    return null;
+  }
+}
+
 // ─── Cache maps ───────────────────────────────────────────────────────────────
 const historyCache      = new Map();
 const verdictWriteupCache = new Map();

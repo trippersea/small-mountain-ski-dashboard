@@ -271,12 +271,31 @@ function runnerReasonLine(batch, item, idx) {
 }
 
 // ─── localStorage helpers ─────────────────────────────────────────────────────
+const DEFAULT_PAGE_TITLE = 'WhereToSkiNext.com | Find the Best Mountain to Ski Next';
+
 function loadSavedWeights() {
-  try { localStorage.removeItem('ski-planner-weights'); } catch (e) {}
-  // W may not be loaded yet at state-init time · use hardcoded fallback so
-  // the app boots synchronously; weights are refreshed from W after loadWeights() resolves.
-  if (W) return { ...W.DEFAULT_WEIGHTS };
-  return { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 };
+  const fallback = W
+    ? { ...W.DEFAULT_WEIGHTS }
+    : { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 };
+  try {
+    const raw = localStorage.getItem('ski-planner-weights');
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return fallback;
+    const snow  = Number(parsed.snow);
+    const size  = Number(parsed.size);
+    const value = Number(parsed.value);
+    const crowd = Number(parsed.crowd);
+    const drive = Number(parsed.drive);
+    const nums  = [snow, size, value, crowd];
+    if (!nums.every(n => Number.isFinite(n) && n >= 0 && n <= 10)) return fallback;
+    return {
+      snow, size, value, crowd,
+      drive: Number.isFinite(drive) && drive >= 0 && drive <= 10 ? drive : fallback.drive,
+    };
+  } catch (e) {
+    return fallback;
+  }
 }
 function loadSavedPassPreference() { return 'any'; }
 function normalizeOriginForState(o) {
@@ -312,8 +331,24 @@ function isRememberChecked() {
 }
 
 // ─── Sponsor configuration ────────────────────────────────────────────────────
+const SPONSOR_MAX_DRIVE_MINS = 180;
+const SPONSOR_MAX_KM         = 250;
+
 function getSponsor(resortId) {
-  return (typeof getFeaturedPartner === 'function') ? getFeaturedPartner(resortId) : null;
+  const partner = (typeof getFeaturedPartner === 'function') ? getFeaturedPartner(resortId) : null;
+  if (!partner) return null;
+  if (!state.origin) return null;
+  const resort = RESORTS.find(r => r.id === resortId);
+  if (!resort) return null;
+  const mins = getDriveMins(resortId);
+  if (mins != null && mins <= SPONSOR_MAX_DRIVE_MINS) return partner;
+  const km = haversineKm(state.origin.lat, state.origin.lon, resort.lat, resort.lon);
+  if (Number.isFinite(km) && km <= SPONSOR_MAX_KM) return partner;
+  return null;
+}
+
+function sponsorTrackAttrs(name, placement, resortId, statePage) {
+  return `data-sponsor-name="${esc(name)}" data-sponsor-placement="${esc(placement)}" data-sponsor-resort="${esc(resortId || '')}" data-sponsor-state="${esc(statePage || '')}"`;
 }
 
 // ─── Inject sponsor CSS once ──────────────────────────────────────────────────
@@ -538,6 +573,7 @@ function wireHeroSentenceDay() {
   sel.addEventListener('change', () => {
     state.skiDayPreset = sel.value;
     state.targetDate = dayValToDate(sel.value);
+    invalidateWeatherCache();
     updateHeroFilterSegmentsCustom();
     syncHeroDefaultsRow();
     syncHeroPills();
@@ -918,8 +954,27 @@ async function fetchWithTimeout(url, options = {}, ms = 8000) {
 }
 
 // ─── Weather cache ────────────────────────────────────────────────────────────
+function skiDayCacheKey() {
+  if (!(state.targetDate instanceof Date)) return 'default';
+  return state.targetDate.toISOString().slice(0, 10);
+}
+
+function invalidateWeatherCache() {
+  state.weatherCache = {};
+  try {
+    sessionStorage.removeItem('ski-wx-cache');
+    sessionStorage.removeItem('ski-wx-cache-day');
+  } catch (e) {}
+}
+
 function loadWeatherCache() {
   try {
+    const dayKey = skiDayCacheKey();
+    const storedDay = sessionStorage.getItem('ski-wx-cache-day');
+    if (storedDay && storedDay !== dayKey) {
+      sessionStorage.removeItem('ski-wx-cache');
+    }
+    sessionStorage.setItem('ski-wx-cache-day', dayKey);
     const raw = sessionStorage.getItem('ski-wx-cache');
     if (!raw) return;
     const now = Date.now();
@@ -929,7 +984,10 @@ function loadWeatherCache() {
   } catch (e) {}
 }
 function saveWeatherCache() {
-  try { sessionStorage.setItem('ski-wx-cache', JSON.stringify(state.weatherCache)); } catch (e) {}
+  try {
+    sessionStorage.setItem('ski-wx-cache-day', skiDayCacheKey());
+    sessionStorage.setItem('ski-wx-cache', JSON.stringify(state.weatherCache));
+  } catch (e) {}
 }
 
 function historyDateRange() {
@@ -1287,8 +1345,8 @@ function pushReportUrl(resort) {
 function popToRoot() {
   const params = serializeState();
   const qs     = params.toString() ? '?' + params : '';
-  history.replaceState({ reportSlug: null }, 'WhereToSkiNext.com', '/' + qs);
-  document.title = 'WhereToSkiNext.com';
+  history.replaceState({ reportSlug: null }, DEFAULT_PAGE_TITLE, '/' + qs);
+  document.title = DEFAULT_PAGE_TITLE;
 }
 const pushUrlDebounced = debounce(() => {
   const p    = serializeState();
@@ -2042,7 +2100,7 @@ function renderVerdict(resorts) {
         const _backupDiff  = { resort: item.resort, crowd: cf, drive: getDriveMins(item.resort.id) };
         const _diff = esc(runnerDifferentiator(_primaryDiff, _backupDiff, runningItems));
         const _rCtaLabel = _rSponsor?.tagline ? esc(_rSponsor.tagline) : 'Visit partner';
-        const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation();trackSponsorClick('${esc(item.resort.name)}','runner_card','${esc(item.resort.id)}','')">${_rCtaLabel} →</a>` : '';
+        const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta js-sponsor-link" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" ${sponsorTrackAttrs(item.resort.name, 'runner_card', item.resort.id, '')}>${_rCtaLabel} →</a>` : '';
         const _rCallout = _rSponsor
           ? `<div class="hn-runner-partner-callout" role="note">
               <span class="hn-runner-partner-pill">Featured Partner</span>
@@ -2109,7 +2167,22 @@ async function fetchVerdictWriteup(v, origin) {
     const res = await fetch('/api/recommend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _writeup: true, prompt: buildWriteupPrompt(v, origin) }),
+      body: JSON.stringify({
+        _writeup: true,
+        verdict: {
+          resortId:    v.resort.id,
+          resortName:  v.resort.name,
+          state:       v.resort.state,
+          tier:        v.tier,
+          tomorrowIn:  v.tomorrowIn,
+          stormTotal:  v.stormTotal,
+          histTotal:   v.histTotal,
+          driveText:   v.driveText || '',
+          originLabel: origin?.label || '',
+          vertical:    v.resort.vertical,
+          passGroup:   v.resort.passGroup,
+        },
+      }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -2723,8 +2796,8 @@ function renderDetail({ scroll = false } = {}) {
     </div>
     <div class="dhr-actions">
       <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See full report →</a>
-      ${sponsor ? `<a class="dhr-book" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener noreferrer" onclick="trackSponsorClick('${esc(resort.name)}','detail_panel','${esc(resort.id)}','')">Book now →</a>` : ''}
-      ${resort.website ? `<a class="dhr-btn-ghost" href="${esc(resort.website)}" target="_blank" rel="noopener noreferrer">Visit website ↗</a>` : ''}
+      ${sponsor ? `<a class="dhr-book js-sponsor-link" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" ${sponsorTrackAttrs(resort.name, 'detail_panel', resort.id, '')}>Book now →</a>` : ''}
+      ${safeHttpUrl(resort.website) ? `<a class="dhr-btn-ghost" href="${esc(safeHttpUrl(resort.website))}" target="_blank" rel="noopener noreferrer">Visit website ↗</a>` : ''}
     </div>
     <div id="detailConditionsSlot" class="dhr-cond-slot" hidden></div>
   </div>
@@ -2854,8 +2927,14 @@ async function askAI(query) {
     }
     if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
     if (!data || data.error || !data.resortName) throw new Error(data?.error || 'No recommendation returned. Try a simpler question or check back shortly.');
-    const nameLower = data.resortName.toLowerCase();
-    const matched   = RESORTS.find(r => r.name.toLowerCase() === nameLower || r.name.toLowerCase().includes(nameLower) || nameLower.includes(r.name.toLowerCase()));
+    let matched = null;
+    if (data.resortId) {
+      matched = RESORTS.find(r => r.id === data.resortId) || null;
+    }
+    if (!matched) {
+      const nameLower = data.resortName.toLowerCase();
+      matched = RESORTS.find(r => r.name.toLowerCase() === nameLower) || null;
+    }
     const resortLink = matched ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>` : '';
     if (els.aiChatResult) {
       els.aiChatResult.className = 'ai-chat-result ai-chat-success';
@@ -2941,7 +3020,7 @@ function renderMobileCards(decorated, emptyOpts) {
       ? `<div class="mob-featured-banner" role="note">
           <span class="table-featured-pill">Featured Partner</span>
           <span class="mob-featured-hint">Does not change rank or score</span>
-          <a class="mob-partner-cta" href="${esc(_mobSp.bookingUrl)}" target="_blank" rel="noopener sponsored" onclick="event.stopPropagation();trackSponsorClick('${esc(resort.name)}','mobile_card','${esc(resort.id)}','')">${esc(_mobSp.tagline || 'Visit partner')} →</a>
+          <a class="mob-partner-cta js-sponsor-link" href="${esc(_mobSp.bookingUrl)}" target="_blank" rel="noopener sponsored" ${sponsorTrackAttrs(resort.name, 'mobile_card', resort.id, '')}>${esc(_mobSp.tagline || 'Visit partner')} →</a>
         </div>`
       : '';
     return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}${_mobGoldCls}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
@@ -2965,7 +3044,7 @@ function renderMobileCards(decorated, emptyOpts) {
       <div class="mob-card-footer">
         <label class="mob-compare-label"><input type="checkbox" data-compare="${resort.id}" ${state.compareSet.has(resort.id) ? 'checked' : ''} /> Compare</label>
         <div class="mob-card-actions">
-          ${resort.website ? `<a class="mob-website-btn" href="${resort.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Website</a>` : ''}
+          ${safeHttpUrl(resort.website) ? `<a class="mob-website-btn" href="${esc(safeHttpUrl(resort.website))}" target="_blank" rel="noopener noreferrer">Website</a>` : ''}
           <button type="button" class="mob-card-detail-btn" data-mob-detail="${resort.id}">Details →</button>
         </div>
       </div>
@@ -3002,16 +3081,20 @@ function repaintMainUI(resorts) {
   _renderStorm(resorts);
 }
 
-async function renderAsyncPanels(resorts) {
+let _renderGen = 0;
+
+async function renderAsyncPanels(resorts, gen) {
   const candidates = plannerCandidates(resorts);
   await ensureWeather(candidates);
+  if (gen !== _renderGen) return;
   repaintMainUI(resorts);
   ensureHistory(candidates.slice(0, 20)).then(() => {
+    if (gen !== _renderGen) return;
     repaintMainUI(filteredResorts());
   });
 }
 
-function renderAllCards(resorts) {
+function renderAllCards(resorts, gen) {
   const needWx = plannerCandidates(resorts).some(r => !state.weatherCache[r.id]?.data);
   if (needWx) {
     weatherFetchPhase1Done = false;
@@ -3019,12 +3102,13 @@ function renderAllCards(resorts) {
     weatherPhase1Ids = [];
   }
   repaintMainUI(resorts);
-  renderAsyncPanels(resorts);
+  renderAsyncPanels(resorts, gen);
 }
 
 function render() {
+  const gen = ++_renderGen;
   const _fr = filteredResorts();
-  renderAllCards(_fr);
+  renderAllCards(_fr, gen);
 }
 
 const debouncedRender = debounce(render, 50);
@@ -3200,9 +3284,21 @@ function wireEvents() {
   wireHeroPills();
   wireHeroDefaultsRow();
   wireHeroV2();
-  // Weekend lodging strip affiliate tracking
+  // Featured partner / affiliate links (data attributes — no inline onclick)
   document.addEventListener('click', function(e) {
-    if (!btn) return;
+    const sponsorLink = e.target.closest('.js-sponsor-link');
+    if (sponsorLink) {
+      e.stopPropagation();
+      trackSponsorClick(
+        sponsorLink.dataset.sponsorName || '',
+        sponsorLink.dataset.sponsorPlacement || '',
+        sponsorLink.dataset.sponsorResort || '',
+        sponsorLink.dataset.sponsorState || ''
+      );
+      return;
+    }
+    const bookingBtn = e.target.closest('.hn-booking-btn');
+    if (!bookingBtn) return;
     const verdict = computeVerdictStaged(filteredResorts());
     const resortName = verdict && verdict.resort ? verdict.resort.name : '';
     const resortId   = verdict && verdict.resort ? verdict.resort.id   : '';
@@ -3316,6 +3412,7 @@ function wireEvents() {
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     state.skiDayPreset = smartDefaultWhenVal();
     state.targetDate = dayValToDate(state.skiDayPreset);
+    invalidateWeatherCache();
     tableSort = { col: 'planner', dir: 'desc' };
     if (els.passFilter)     els.passFilter.value = 'All';
     els.stateFilter.value = 'All';
@@ -3681,7 +3778,7 @@ function initialize() {
     }
     state.selectedId = null;
     if (els.detailSection) els.detailSection.classList.add('hidden');
-    document.title = 'WhereToSkiNext.com';
+    document.title = DEFAULT_PAGE_TITLE;
     render();
   });
 
