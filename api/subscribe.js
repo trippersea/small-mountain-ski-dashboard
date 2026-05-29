@@ -13,20 +13,39 @@
  *   BEEHIIV_PUBLICATION_ID   — your publication ID (starts with pub_)
  */
 
+const {
+  applyCors,
+  applyApiBaselineSecurity,
+  rateLimit,
+  readRawBody,
+  safeJsonParse,
+} = require('./_security');
+
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // ── CORS — origin allowlist (matches all other API routes) ─────────────────
+  const { allowed } = applyCors(req, res);
+  applyApiBaselineSecurity(res);
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // Reject cross-origin POST requests from disallowed origins
+  if (req.method === 'POST' && req.headers.origin && !allowed) {
+    return res.status(403).json({ error: 'Origin not allowed' });
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // ── Parse body ─────────────────────────────────────────────────────────────
+  // ── Rate limit — 10 signups / min per IP ───────────────────────────────────
+  const rl = rateLimit(req, res, { max: 10, windowMs: 60_000, prefix: 'subscribe' });
+  if (!rl.ok) return res.status(429).json({ error: 'Too many requests. Please try again shortly.' });
+
+  // ── Parse body (100 KB cap) ────────────────────────────────────────────────
   let body;
   try {
-    const raw = await rawBody(req);
-    body = raw ? JSON.parse(raw) : (req.body || {});
+    const raw = await readRawBody(req, { limitBytes: 100_000 });
+    body = safeJsonParse(raw) || (req.body || {});
   } catch (e) {
+    if (e.code === 'BODY_TOO_LARGE') return res.status(413).json({ error: 'Request too large' });
     return res.status(400).json({ error: 'Could not parse request body' });
   }
 
@@ -82,12 +101,3 @@ module.exports = async function handler(req, res) {
   }
 };
 
-// ── Helper: read raw request body as string ────────────────────────────────
-function rawBody(req) {
-  return new Promise((resolve, reject) => {
-    let data = '';
-    req.on('data', chunk => { data += chunk; });
-    req.on('end',  () => resolve(data));
-    req.on('error', reject);
-  });
-}
