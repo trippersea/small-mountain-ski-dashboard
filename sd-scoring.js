@@ -292,7 +292,12 @@ function mountainFitIndex(resort) {
     return Math.max(0, Math.min(1, (vertical - 1400) / 1200)) * 0.75 +
            Math.max(0, Math.min(1, (acres - 250) / 900)) * 0.25;
   }
-  return 0.65 + sizeIdx * 0.35;
+  // Default (no size filter): size is a gentle nudge, not a head start.
+  // Floor 0.80 + spread 0.12 caps the biggest-vs-smallest fit gap at 0.12
+  // (about 3 points of final score) instead of the old 0.35 (about 8 points).
+  // Lets quiet/snowy mid and indie mountains surface on comparable days,
+  // while big mountains still win cleanly on snow, low crowds, or a size filter.
+  return 0.80 + sizeIdx * 0.12;
 }
 
 // ─── Drive score index ────────────────────────────────────────────────────────
