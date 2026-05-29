@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy — WhereToSkiNext.com</title>
-  <meta name="description" content="WhereToSkiNext.com privacy policy. No accounts, no personal data collection. Your location stays in your browser." />
+  <meta name="description" content="WhereToSkiNext.com privacy policy. What data we collect, how it's used, and how to opt out." />
   <link rel="canonical" href="https://www.wheretoskinext.com/privacy/" />
   <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -148,10 +148,10 @@
     <div class="eyebrow">Privacy Policy</div>
     <h1>Your data stays yours.</h1>
     <p class="lead">WhereToSkiNext.com doesn't sell your data, doesn't require an account, and stores as little as possible — most of it never leaves your browser.</p>
-    <p class="last-updated">Last updated: June 2025</p>
+    <p class="last-updated">Last updated: May 2026</p>
 
     <h2>The short version</h2>
-    <p>We don't collect your name, email, or any account information — we don't have accounts. If you type in a location, it's used only to calculate drive times and is optionally saved <strong>in your own browser</strong>, not on our servers. We use Google Analytics to understand how the site is used in aggregate. That's the whole picture.</p>
+    <p>WhereToSkiNext.com doesn't sell your data and doesn't require an account. If you sign up for the newsletter, your email goes to Beehiiv (our email platform). If you use the AI assistant or filters, anonymous usage events are logged to help improve the site. Location data is used only to calculate drive times and is never stored on our servers unless you explicitly share a link. We use Google Analytics for aggregate traffic data. That's the whole picture.</p>
 
     <h2>What we collect and why</h2>
     <div class="table-wrap">
@@ -161,14 +161,14 @@
         </thead>
         <tbody>
           <tr>
-            <td><strong>Location (ZIP or city)</strong></td>
-            <td>Converted to coordinates to calculate drive times and rank nearby mountains. Never logged or stored on our servers.</td>
-            <td>Your browser only. Saved to <code>localStorage</code> if you check "Remember this location" — you can clear it any time.</td>
+            <td><strong>Email address</strong> (if you subscribe)</td>
+            <td>Used to send the weekly newsletter. Only collected if you voluntarily sign up via the newsletter form.</td>
+            <td>Beehiiv (our email platform). You can unsubscribe at any time via the link in any email.</td>
           </tr>
           <tr>
-            <td><strong>GPS coordinates</strong> (optional)</td>
-            <td>Same as above — used only to compute drive distances. Requires your explicit browser permission.</td>
-            <td>Your browser session only. Saved to <code>localStorage</code> only if you check "Remember this location".</td>
+            <td><strong>Location (ZIP, city, or GPS)</strong></td>
+            <td>Converted to coordinates to calculate drive times and rank nearby mountains. Not logged on our servers. GPS requires your explicit browser permission.</td>
+            <td>Your browser only. Saved to <code>localStorage</code> if you check "Remember this location" — you can clear it any time. A coarse origin label (e.g. "Boston, MA") is included in anonymous analytics events if you use location-based features.</td>
           </tr>
           <tr>
             <td><strong>Filter preferences</strong></td>
@@ -181,14 +181,19 @@
             <td>Your browser's <code>sessionStorage</code> only. Expires when you close the tab.</td>
           </tr>
           <tr>
+            <td><strong>Anonymous usage events</strong></td>
+            <td>We log filter changes, resort recommendation clicks, and AI assistant queries to understand how the site is used and improve it. Events are tied to a random session ID, not to your identity.</td>
+            <td>Our analytics database (Supabase). Events include the action type, selected filters, resort IDs, a coarse origin label if location is set, and the text of AI assistant queries. No name, email, or account data is linked to these events.</td>
+          </tr>
+          <tr>
             <td><strong>Page analytics</strong></td>
-            <td>Aggregate usage data to understand how the site is used and improve it.</td>
-            <td>Google Analytics servers. See Google's privacy policy below.</td>
+            <td>Aggregate traffic data — page views, feature usage, traffic sources.</td>
+            <td>Google Analytics / GTM servers. See Google's privacy policy below.</td>
           </tr>
         </tbody>
       </table>
     </div>
-    <p>We do not collect your name, email address, payment information, or any account credentials. There are no accounts.</p>
+    <p>We do not collect your name, payment information, or any account credentials. There are no accounts. Email is only collected if you choose to subscribe to the newsletter.</p>
 
     <h2>Third-party services the app contacts</h2>
     <p>When you use WhereToSkiNext.com, your browser makes requests to the following external services. We do not control their privacy practices and link to their policies where available.</p>
@@ -222,6 +227,16 @@
             <td><strong>OpenStreetMap Nominatim</strong><br /><a href="https://nominatim.org" target="_blank" rel="noopener">nominatim.org</a></td>
             <td>Converts city/address searches to coordinates</td>
             <td>The location text you type in</td>
+          </tr>
+          <tr>
+            <td><strong>Beehiiv</strong><br /><a href="https://www.beehiiv.com/privacy" target="_blank" rel="noopener">beehiiv.com/privacy</a></td>
+            <td>Newsletter delivery platform</td>
+            <td>Your email address, submitted when you sign up for the newsletter. Beehiiv handles storage, delivery, and unsubscribe management.</td>
+          </tr>
+          <tr>
+            <td><strong>Supabase</strong><br /><a href="https://supabase.com/privacy" target="_blank" rel="noopener">supabase.com/privacy</a></td>
+            <td>Analytics event logging</td>
+            <td>Anonymous usage events: filter changes, recommendation clicks, AI assistant queries, and a coarse origin label if location is set. Events are linked to a random session ID only — no name or email.</td>
           </tr>
           <tr>
             <td><strong>Google Analytics &amp; GTM</strong><br /><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com</a></td>
@@ -269,8 +284,6 @@
 
     <p class="contact-note">Questions about this policy?<br />Reach us at <a href="mailto:WhereToSkiNext@gmail.com">WhereToSkiNext@gmail.com</a></p>
   </main>
-
-    <script src="/newsletter-band.js"></script>
 
   <script src="/newsletter-band.js"></script>
 
