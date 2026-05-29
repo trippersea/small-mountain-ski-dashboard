@@ -8,17 +8,17 @@
  * Manual trigger: POST /api/newsletter-generator
  *   with Authorization: Bearer <CRON_SECRET>
  *
- * Cron auth: vercel.json sends Authorization: Bearer <CRON_JOB_TOKEN> on each
- *   scheduled run. CRON_JOB_TOKEN is committed to vercel.json (low blast radius —
- *   can only trigger this endpoint). CRON_SECRET is for manual triggers only and
- *   is never committed to the repo.
+ * Cron auth:
+ *   Vercel scheduled runs:  query param ?cron_token=<CRON_JOB_TOKEN> (set in vercel.json path)
+ *   Manual triggers:        Authorization: Bearer <CRON_SECRET> header
+ *   x-vercel-cron header is NOT trusted -- it is not a secret and can be spoofed.
  *
  * Required env vars:
  *   BEEHIIV_API_KEY
  *   BEEHIIV_PUBLICATION_ID
  *   ANTHROPIC_API_KEY
  *   CRON_SECRET      (manual trigger secret -- never committed to repo)
- *   CRON_JOB_TOKEN   (vercel cron trigger token -- value committed in vercel.json)
+ *   CRON_JOB_TOKEN   (vercel cron token -- value committed in vercel.json path)
  *
  * One-line change required in resorts-national.js -- add at the very bottom:
  *   if (typeof module !== 'undefined') module.exports = { RESORTS };
@@ -827,14 +827,11 @@ async function postBeehiivDraft(subject, previewText, htmlContent) {
 
 module.exports = async function handler(req, res) {
 
-  // Auth: ALL callers must supply a valid Bearer token.
-  // x-vercel-cron header is NOT trusted — it is not a secret and can be spoofed.
+  // Auth: ALL callers must supply a valid token. x-vercel-cron is NOT trusted.
   //
-  // Two valid tokens:
-  //   CRON_JOB_TOKEN — sent by Vercel's cron runner via vercel.json headers.
-  //                    Value is committed in vercel.json (acceptable: can only
-  //                    trigger this endpoint, not access data).
-  //   CRON_SECRET    — for manual triggers only. Never committed to the repo.
+  // Two valid paths:
+  //   ?cron_token=<CRON_JOB_TOKEN>        — Vercel's scheduler sends this via vercel.json path
+  //   Authorization: Bearer <CRON_SECRET>  — manual triggers only, never committed to repo
   const cronJobToken = process.env.CRON_JOB_TOKEN;
   const cronSecret   = process.env.CRON_SECRET;
 
@@ -843,9 +840,10 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Server misconfiguration: auth tokens not set.' });
   }
 
+  const queryToken   = req.query?.cron_token || new URL(req.url, 'http://x').searchParams.get('cron_token') || '';
   const authHeader   = req.headers['authorization'] || '';
-  const isAuthorized = (cronJobToken && authHeader === `Bearer ${cronJobToken}`)
-                    || (cronSecret   && authHeader === `Bearer ${cronSecret}`);
+  const isAuthorized = (cronJobToken && queryToken   === cronJobToken)
+                    || (cronSecret   && authHeader   === `Bearer ${cronSecret}`);
 
   if (!isAuthorized) {
     return res.status(401).json({

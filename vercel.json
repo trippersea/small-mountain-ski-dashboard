@@ -5,11 +5,8 @@
   "trailingSlash": false,
   "crons": [
     {
-      "path": "/api/newsletter-generator",
-      "schedule": "0 23 * * 4",
-      "headers": {
-        "Authorization": "Bearer 116b224f69a441e9308819fa79fb2aedf78bd522af01f4be1f13d74e2cdb0977"
-      }
+      "path": "/api/newsletter-generator?cron_token=116b224f69a441e9308819fa79fb2aedf78bd522af01f4be1f13d74e2cdb0977",
+      "schedule": "0 23 * * 4"
     }
   ],
   "functions": {
