@@ -224,9 +224,9 @@ function buildQuickChips(stateAbbr, resorts) {
 function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   const stateName  = stateFullName(stateAbbr);
   const stateSlug  = slugifyState(stateAbbr);
-  const rankingsUrl = `https://www.wheretoskinext.com/?st=${stateAbbr}#compareSection`;
-  const finderUrl   = `https://www.wheretoskinext.com/?st=${stateAbbr}#searchSection`;
-  const canonUrl   = `https://www.wheretoskinext.com/ski/${stateSlug}/`;
+  const rankingsUrl = `https://wheretoskinext.com/?st=${stateAbbr}#compareSection`;
+  const finderUrl   = `https://wheretoskinext.com/?st=${stateAbbr}#searchSection`;
+  const canonUrl   = `https://wheretoskinext.com/ski/${stateSlug}/`;
   const count      = resorts.length;
   const sorted     = [...resorts].sort((a, b) => b.avgSnowfall - a.avgSnowfall);
   const topNames   = sorted.slice(0, 3).map(r => r.name).join(', ');
@@ -243,7 +243,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext', item: 'https://www.wheretoskinext.com/' },
+        { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext', item: 'https://wheretoskinext.com/' },
         { '@type': 'ListItem', position: 2, name: `Ski mountains in ${stateName}`, item: canonUrl },
       ],
     },
@@ -256,7 +256,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
       numberOfItems: count,
       itemListElement: sorted.map((r, i) => ({
         '@type': 'ListItem', position: i + 1, name: r.name,
-        url: `https://www.wheretoskinext.com/ski-report/${r.id}/`,
+        url: `https://wheretoskinext.com/ski-report/${r.id}/`,
       })),
     },
     ...resorts.map(r => ({
@@ -265,7 +265,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
       name: r.name,
       address: { '@type': 'PostalAddress', addressRegion: r.state, addressCountry: 'US' },
       geo: { '@type': 'GeoCoordinates', latitude: r.lat, longitude: r.lon },
-      url: r.website || `https://www.wheretoskinext.com/ski-report/${r.id}/`,
+      url: r.website || `https://wheretoskinext.com/ski-report/${r.id}/`,
       priceRange: `$${r.price} day ticket`,
     })),
   ];
@@ -279,7 +279,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
       <td>$${r.price}</td>
       <td>${esc(passLabel(r.passGroup))}</td>
       <td>${r.night ? 'Yes' : 'No'}</td>
-      <td><a href="https://www.wheretoskinext.com/?resort=${r.id}" class="sp-live-link">Open live data &rarr;</a></td>
+      <td><a href="https://wheretoskinext.com/?resort=${r.id}" class="sp-live-link">Open live data &rarr;</a></td>
     </tr>`).join('');
 
   const compPage = passCompPage(stateAbbr);
@@ -315,9 +315,14 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   <meta property="og:description" content="${count} mountains in ${stateName}. Top picks: ${topNames}. Stop guessing. Start skiing." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
-  <meta property="og:image" content="https://www.wheretoskinext.com/og-image.png" />
+  <meta property="og:image" content="https://wheretoskinext.com/wtsn-og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
+  <meta name="twitter:title" content="Best Ski Mountains in ${stateName} | WhereToSkiNext.com" />
+  <meta name="twitter:description" content="${count} mountains in ${stateName}. Top picks: ${topNames}. Stop guessing. Start skiing." />
+  <meta name="twitter:image" content="https://wheretoskinext.com/wtsn-og.png" />
+  <link rel="icon" href="/wtsn-favicon.svg" type="image/svg+xml" />
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -340,7 +345,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
       <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
+        <img src="/wtsn-icon.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
         <span class="nav-brand">
           <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
           <span class="nav-brand-tag">Stop guessing. Start skiing.</span>

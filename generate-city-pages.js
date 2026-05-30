@@ -43,63 +43,63 @@ const CITIES = [
     state: 'MA', region: 'New England',
     intro: 'Boston sits at the center of one of the best ski corridors in the country. Vermont, New Hampshire, Maine, and western Massachusetts are all within striking distance — and depending on what you\'re looking for, you\'ve got everything from quick after-work hills to serious destination resorts.',
     driveNote: 'Traffic on I-93 and I-89 can add time on Friday afternoons. Plan to leave by 2pm or after 7pm if you want a clean drive north.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=Boston%2C+MA&lat=42.3601&lon=-71.0589',
+    appUrl: 'https://wheretoskinext.com/?loc=Boston%2C+MA&lat=42.3601&lon=-71.0589',
   },
   {
     name: 'New York City', slug: 'nyc', lat: 40.7128, lon: -74.0060,
     state: 'NY', region: 'Northeast',
     intro: 'New York City skiers have more options than most people realize. The Catskills are under two hours from midtown, Vermont is a committed but rewarding drive, and there are solid day-trip mountains in New Jersey and Pennsylvania that most people overlook.',
     driveNote: 'Getting out of the city is the hardest part. The George Washington Bridge and I-87 north can be brutal on Friday evenings — leaving after 8pm or taking the train to Rhinecliff for Catskill resorts can save an hour or more.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=New+York%2C+NY&lat=40.7128&lon=-74.0060',
+    appUrl: 'https://wheretoskinext.com/?loc=New+York%2C+NY&lat=40.7128&lon=-74.0060',
   },
   {
     name: 'Philadelphia', slug: 'philadelphia', lat: 39.9526, lon: -75.1652,
     state: 'PA', region: 'Mid-Atlantic',
     intro: 'Philadelphia is better positioned for skiing than most people think. The Pocono Mountains start less than 90 minutes away, and with the right pass, you can access some legitimately good terrain. Vermont and upstate New York require a full weekend commitment, but it\'s absolutely worth it when the snow lines up.',
     driveNote: 'The Poconos are easy — I-78 west or I-476 north get you there in 90 minutes flat outside of peak times. Budget an extra hour for Vermont trips versus what Google Maps says on a Friday.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=Philadelphia%2C+PA&lat=39.9526&lon=-75.1652',
+    appUrl: 'https://wheretoskinext.com/?loc=Philadelphia%2C+PA&lat=39.9526&lon=-75.1652',
   },
   {
     name: 'Washington DC', slug: 'washington-dc', lat: 38.9072, lon: -77.0369,
     state: 'DC', region: 'Mid-Atlantic',
     intro: 'Washington DC skiers have to work a little harder than their northeast counterparts, but the options are better than most expect. West Virginia is a solid 2.5 hour drive, Pennsylvania resorts are reachable for a long day, and with a full weekend you can reach Vermont or upstate New York.',
     driveNote: 'Getting out of DC on a Friday is the main battle. I-66 west and I-270 north both suffer. Leave before noon or plan for a Saturday morning start — the mountain will still be there.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=Washington%2C+DC&lat=38.9072&lon=-77.0369',
+    appUrl: 'https://wheretoskinext.com/?loc=Washington%2C+DC&lat=38.9072&lon=-77.0369',
   },
   {
     name: 'Denver', slug: 'denver', lat: 39.7392, lon: -104.9903,
     state: 'CO', region: 'Rocky Mountain',
     intro: 'Denver is one of the best-positioned ski cities in the world. World-class resorts start less than an hour away and keep getting better as you head into the mountains. The challenge isn\'t finding somewhere to ski — it\'s deciding which direction to go.',
     driveNote: 'I-70 west is the main artery and it gets congested on weekends. Chain laws apply during storms. Keystone and Arapahoe Basin are the closest serious options if you want to avoid the I-70 crunch.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=Denver%2C+CO&lat=39.7392&lon=-104.9903',
+    appUrl: 'https://wheretoskinext.com/?loc=Denver%2C+CO&lat=39.7392&lon=-104.9903',
   },
   {
     name: 'Salt Lake City', slug: 'salt-lake-city', lat: 40.7608, lon: -111.8910,
     state: 'UT', region: 'Rocky Mountain',
     intro: 'Salt Lake City has arguably the best ski access of any major US city. Alta, Snowbird, Brighton, and Solitude are all within 30 minutes of downtown. The snow quality — the famous Utah light and dry powder — is consistently among the best in North America.',
     driveNote: 'Little Cottonwood Canyon (Alta, Snowbird) closes during avalanche control — check UDOT before heading up on heavy snow days. Big Cottonwood (Brighton, Solitude) is generally more accessible. Both canyons have chain requirements during storms.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=Salt+Lake+City%2C+UT&lat=40.7608&lon=-111.8910',
+    appUrl: 'https://wheretoskinext.com/?loc=Salt+Lake+City%2C+UT&lat=40.7608&lon=-111.8910',
   },
   {
     name: 'Seattle', slug: 'seattle', lat: 47.6062, lon: -122.3321,
     state: 'WA', region: 'Pacific Northwest',
     intro: 'Seattle skiers have excellent options within a short drive. Snoqualmie Pass is the closest, Crystal Mountain is the most serious, and Stevens Pass splits the difference. The Pacific Northwest snowpack is heavy and wet compared to interior powder — but the mountains are dramatic and the season is long.',
     driveNote: 'Mountain passes can close during heavy snowfall. Check WSDOT pass reports before heading out. Snoqualmie is the most reliable for quick access; Stevens and Crystal require more planning on storm days.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=Seattle%2C+WA&lat=47.6062&lon=-122.3321',
+    appUrl: 'https://wheretoskinext.com/?loc=Seattle%2C+WA&lat=47.6062&lon=-122.3321',
   },
   {
     name: 'Portland', slug: 'portland', lat: 45.5051, lon: -122.6750,
     state: 'OR', region: 'Pacific Northwest',
     intro: 'Portland sits right at the base of Mt. Hood, which means world-class skiing starts less than an hour away. Mt. Hood Meadows, Timberline, and Skibowl offer genuinely different experiences all on the same mountain. When you want more variety, central Oregon mountains are a few hours east.',
     driveNote: 'US-26 east to Mt. Hood is straightforward but can get congested on weekend mornings. Check ODOT for road conditions — the highway closes during severe weather. Timberline is open year-round including summer skiing on Palmer Snowfield.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=Portland%2C+OR&lat=45.5051&lon=-122.6750',
+    appUrl: 'https://wheretoskinext.com/?loc=Portland%2C+OR&lat=45.5051&lon=-122.6750',
   },
   {
     name: 'Chicago', slug: 'chicago', lat: 41.8781, lon: -87.6298,
     state: 'IL', region: 'Midwest',
     intro: 'Chicago skiers have to be honest with themselves: there are no serious mountains within a short drive. The local hills in Wisconsin and Illinois are great for beginners, night skiing, and staying sharp mid-week. But if you want real vertical — Upper Michigan, Minnesota, or a full weekend trip to Colorado — you need to plan for it.',
     driveNote: 'Midwest skiing is a different mindset than mountain skiing. Embrace the local hills for convenience and budget one or two bigger trips per season to real mountains. Denver is a 2-hour flight — often the smartest play.',
-    appUrl: 'https://www.wheretoskinext.com/?loc=Chicago%2C+IL&lat=41.8781&lon=-87.6298',
+    appUrl: 'https://wheretoskinext.com/?loc=Chicago%2C+IL&lat=41.8781&lon=-87.6298',
   },
 ];
 
@@ -180,7 +180,7 @@ function generatePage(city) {
     const tb  = r.terrainBreakdown || {};
     const beg = Math.round((tb.beginner || 0) * 100);
     const adv = Math.round((tb.advanced  || 0) * 100);
-    return `<a href="https://www.wheretoskinext.com/ski-report/${r.id}/" class="sn-resort-card">
+    return `<a href="https://wheretoskinext.com/ski-report/${r.id}/" class="sn-resort-card">
       <div class="sn-rc-name">${r.name}</div>
       <div class="sn-rc-meta">
         ${r.state}
@@ -214,7 +214,7 @@ function generatePage(city) {
     if (!r) return '';
     return `<article class="sn-pick-card">
       <div class="sn-pick-label">${label}</div>
-      <h3 class="sn-pick-name"><a href="https://www.wheretoskinext.com/ski-report/${r.id}/">${r.name}</a></h3>
+      <h3 class="sn-pick-name"><a href="https://wheretoskinext.com/ski-report/${r.id}/">${r.name}</a></h3>
       <p class="sn-pick-reason">${reason}</p>
       <p class="sn-pick-meta">${r.state} · ${formatDrive(r.mins)} · $${r.price} · ${passLabel(r.passGroup)}</p>
     </article>`;
@@ -223,7 +223,7 @@ function generatePage(city) {
   const topNav = `<nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
       <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
+        <img src="/wtsn-icon.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
         <span class="nav-brand">
           <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
           <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
@@ -332,13 +332,20 @@ function generatePage(city) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title}</title>
   <meta name="description" content="${metaDesc}" />
-  <link rel="canonical" href="https://www.wheretoskinext.com/ski-near/${city.slug}/" />
+  <link rel="canonical" href="https://wheretoskinext.com/ski-near/${city.slug}/" />
 
   <meta property="og:title" content="${title}" />
   <meta property="og:description" content="${metaDesc}" />
-  <meta property="og:url" content="https://www.wheretoskinext.com/ski-near/${city.slug}/" />
+  <meta property="og:url" content="https://wheretoskinext.com/ski-near/${city.slug}/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="WhereToSkiNext.com" />
+  <meta property="og:image" content="https://wheretoskinext.com/wtsn-og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${metaDesc}" />
+  <meta name="twitter:image" content="https://wheretoskinext.com/wtsn-og.png" />
 
   <script type="application/ld+json">
   {
@@ -346,14 +353,14 @@ function generatePage(city) {
     "@type": "ItemList",
     "name": "Best Ski Resorts Near ${city.name}",
     "description": "${metaDesc}",
-    "url": "https://www.wheretoskinext.com/ski-near/${city.slug}/",
+    "url": "https://wheretoskinext.com/ski-near/${city.slug}/",
     "numberOfItems": ${total},
     "itemListElement": [
       ${resorts.slice(0, 10).map((r, i) => `{
         "@type": "ListItem",
         "position": ${i + 1},
         "name": "${r.name}",
-        "url": "https://www.wheretoskinext.com/ski-report/${r.id}/"
+        "url": "https://wheretoskinext.com/ski-report/${r.id}/"
       }`).join(',\n      ')}
     ]
   }
@@ -371,7 +378,7 @@ function generatePage(city) {
   <link rel="stylesheet" href="/ski-near/city-page.css" />
   <link rel="stylesheet" href="/newsletter-band.css" />
   <link rel="stylesheet" href="/site-tokens-bridge.css" />
-  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
+  <link rel="icon" href="/wtsn-favicon.svg" type="image/svg+xml" />
 </head>
 <body class="pass-page-body state-page city-page">
 

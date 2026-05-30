@@ -211,7 +211,7 @@ function buildFAQSchema(resort, stateName) {
 
 // ─── JSON-LD schemas ──────────────────────────────────────────────────────────
 function buildSchemas(resort, stateName) {
-  const canonUrl = `https://www.wheretoskinext.com/ski-report/${resort.id}/`;
+  const canonUrl = `https://wheretoskinext.com/ski-report/${resort.id}/`;
 
   const sportsLocation = {
     '@context': 'https://schema.org',
@@ -233,8 +233,8 @@ function buildSchemas(resort, stateName) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext.com', item: 'https://www.wheretoskinext.com' },
-      { '@type': 'ListItem', position: 2, name: `Ski Mountains in ${stateName}`, item: `https://www.wheretoskinext.com/ski/${slugifyState(resort.state)}/` },
+      { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext.com', item: 'https://wheretoskinext.com' },
+      { '@type': 'ListItem', position: 2, name: `Ski Mountains in ${stateName}`, item: `https://wheretoskinext.com/ski/${slugifyState(resort.state)}/` },
       { '@type': 'ListItem', position: 3, name: resort.name, item: canonUrl },
     ],
   };
@@ -339,13 +339,13 @@ function matcherScript(resort) {
       else if (userPass === "indy") q.push("pass=Indy");
       else if (userPass === "independent") q.push("pass=Independent");
       q.push("st=" + encodeURIComponent(stateCode));
-      return "https://www.wheretoskinext.com/?" + q.join("&") + "#compareSection";
+      return "https://wheretoskinext.com/?" + q.join("&") + "#compareSection";
     }
     function valueInStateUrl() {
-      return "https://www.wheretoskinext.com/?st=" + encodeURIComponent(stateCode) + "&sort=price#compareSection";
+      return "https://wheretoskinext.com/?st=" + encodeURIComponent(stateCode) + "&sort=price#compareSection";
     }
     function stateOnlyCompareUrl() {
-      return "https://www.wheretoskinext.com/?st=" + encodeURIComponent(stateCode) + "#compareSection";
+      return "https://wheretoskinext.com/?st=" + encodeURIComponent(stateCode) + "#compareSection";
     }
 
     var passMatches = (pass === resortPass);
@@ -425,9 +425,9 @@ function matcherScript(resort) {
 function generateMountainPage(resort, allResorts) {
   const stateName  = stateFullName(resort.state);
   const stateSlug  = slugifyState(resort.state);
-  const canonUrl   = `https://www.wheretoskinext.com/ski-report/${resort.id}/`;
-  const liveScoreUrl    = `https://www.wheretoskinext.com/?resort=${resort.id}#searchSection`;
-  const compareExploreUrl = `https://www.wheretoskinext.com/?st=${encodeURIComponent(resort.state)}#compareSection`;
+  const canonUrl   = `https://wheretoskinext.com/ski-report/${resort.id}/`;
+  const liveScoreUrl    = `https://wheretoskinext.com/?resort=${resort.id}#searchSection`;
+  const compareExploreUrl = `https://wheretoskinext.com/?st=${encodeURIComponent(resort.state)}#compareSection`;
   const schemas    = buildSchemas(resort, stateName);
   const nearby     = nearbyResorts(resort, allResorts);
   const tb         = resort.terrainBreakdown;
@@ -499,15 +499,17 @@ function generateMountainPage(resort, allResorts) {
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${canonUrl}" />
   <meta property="og:site_name" content="WhereToSkiNext.com" />
-  <meta property="og:image" content="https://www.wheretoskinext.com/og-image.png" />
+  <meta property="og:image" content="https://wheretoskinext.com/wtsn-og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${esc(resort.name)} Ski Conditions | WhereToSkiNext.com" />
   <meta name="twitter:description" content="${esc(metaDesc)}" />
-  <meta name="twitter:image" content="https://www.wheretoskinext.com/og-image.png" />
+  <meta name="twitter:image" content="https://wheretoskinext.com/wtsn-og.png" />
 
-  <link rel="icon" href="/ski-decision-logo.svg" type="image/svg+xml" />
+  <link rel="icon" href="/wtsn-favicon.svg" type="image/svg+xml" />
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -532,7 +534,7 @@ function generateMountainPage(resort, allResorts) {
   <nav class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="top-nav-inner">
       <a href="/" class="nav-brand-link" aria-label="WhereToSkiNext.com home">
-        <img src="/ski-decision-logo.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
+        <img src="/wtsn-icon.svg" alt="WhereToSkiNext.com logo" class="nav-logo" width="30" height="30" />
         <span class="nav-brand">
           <span class="nav-brand-name">WhereToSki<span class="nav-brand-next">Next</span>.com</span>
           <span class="nav-brand-tag">Stop guessing. Start skiing.</span>
@@ -593,7 +595,7 @@ function generateMountainPage(resort, allResorts) {
       <a href="/about/" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
-      <a href="https://www.wheretoskinext.com/#searchSection" class="nav-find-cta">Find my mountain &rarr;</a>
+      <a href="https://wheretoskinext.com/#searchSection" class="nav-find-cta">Find my mountain &rarr;</a>
     </div>
   </nav>
 
@@ -794,7 +796,7 @@ function generateMountainPage(resort, allResorts) {
         <h2 id="sr-product-cta">Compare this mountain with the full list</h2>
         <p>Snow, drive time, pass, and crowds scored together. See if another resort in ${esc(stateName)} or beyond is a better fit today.</p>
       </div>
-      <a href="https://www.wheretoskinext.com/#searchSection" class="pp-btn pp-btn--primary">Find my best mountain &rarr;</a>
+      <a href="https://wheretoskinext.com/#searchSection" class="pp-btn pp-btn--primary">Find my best mountain &rarr;</a>
     </section>
 
     ${nearby.length
@@ -920,28 +922,28 @@ function generateSitemap(resorts) {
   const skiNearSlugs = listSkiNearSlugs();
   // ── Static content pages — add new pages here as you build them ──────────
   const STATIC_PAGES = [
-    { loc: 'https://www.wheretoskinext.com/ski-pass-comparison/',            changefreq: 'monthly', priority: '0.9' },
-    { loc: 'https://www.wheretoskinext.com/epic-vs-ikon-northeast/',         changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://www.wheretoskinext.com/epic-vs-ikon-rockies/',           changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://www.wheretoskinext.com/epic-vs-ikon-california/',        changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://www.wheretoskinext.com/epic-vs-ikon-pacific-northwest/', changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://www.wheretoskinext.com/epic-vs-ikon-midwest/',           changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/ski-pass-comparison/',            changefreq: 'monthly', priority: '0.9' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast/',         changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-rockies/',           changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-california/',        changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-pacific-northwest/', changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-midwest/',           changefreq: 'monthly', priority: '0.8' },
   ];
 
   const urls = [
-    `  <url><loc>https://www.wheretoskinext.com/</loc><changefreq>daily</changefreq><priority>1.0</priority><lastmod>${today}</lastmod></url>`,
-    `  <url><loc>https://www.wheretoskinext.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>${today}</lastmod></url>`,
+    `  <url><loc>https://wheretoskinext.com/</loc><changefreq>daily</changefreq><priority>1.0</priority><lastmod>${today}</lastmod></url>`,
+    `  <url><loc>https://wheretoskinext.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>${today}</lastmod></url>`,
     ...STATIC_PAGES.map(p =>
       `  <url><loc>${p.loc}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority><lastmod>${today}</lastmod></url>`
     ),
     ...skiNearSlugs.map(slug =>
-      `  <url><loc>https://www.wheretoskinext.com/ski-near/${slug}/</loc><changefreq>weekly</changefreq><priority>0.85</priority><lastmod>${today}</lastmod></url>`
+      `  <url><loc>https://wheretoskinext.com/ski-near/${slug}/</loc><changefreq>weekly</changefreq><priority>0.85</priority><lastmod>${today}</lastmod></url>`
     ),
     ...states.map(s =>
-      `  <url><loc>https://www.wheretoskinext.com/ski/${slugifyState(s)}/</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>${today}</lastmod></url>`
+      `  <url><loc>https://wheretoskinext.com/ski/${slugifyState(s)}/</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>${today}</lastmod></url>`
     ),
     ...resorts.map(r =>
-      `  <url><loc>https://www.wheretoskinext.com/ski-report/${r.id}/</loc><changefreq>daily</changefreq><priority>0.9</priority><lastmod>${today}</lastmod></url>`
+      `  <url><loc>https://wheretoskinext.com/ski-report/${r.id}/</loc><changefreq>daily</changefreq><priority>0.9</priority><lastmod>${today}</lastmod></url>`
     ),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;
