@@ -34,8 +34,8 @@
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />
@@ -43,6 +43,203 @@
   <link rel="stylesheet" href="/newsletter-band.css" />
   <link rel="stylesheet" href="/site-tokens-bridge.css" />
 
+    <style>
+      /* Editorial block. Uses site CSS variables so it inherits the design
+         system (Inter, navy palette, brand accent #2b6de9, --radius 16px,
+         --shadow-card). Sits naturally next to .sr-snapshot rather than
+         floating as a separate card. */
+      .sr-editorial {
+        background: var(--surface-white, #fff);
+        border: 1px solid var(--border-light, #dde5ee);
+        border-left: 4px solid var(--accent, #2b6de9);
+        border-radius: var(--radius, 16px);
+        box-shadow: var(--shadow-card, 0 4px 24px rgba(26, 46, 69, 0.07));
+        padding: 28px 32px;
+        margin: 24px 0 28px;
+        font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+      }
+      .sr-ed-kicker {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent, #2b6de9);
+        margin-bottom: 10px;
+      }
+      .sr-ed-hook {
+        font-size: 24px;
+        line-height: 1.3;
+        font-weight: 700;
+        color: var(--text-primary, #2a4158);
+        margin: 0 0 14px;
+        letter-spacing: -0.01em;
+      }
+      .sr-ed-byline {
+        font-size: 13px;
+        color: var(--text-muted, #7f96a9);
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border-light, #dde5ee);
+      }
+      .sr-ed-byline-by { font-weight: 600; color: var(--text-primary, #2a4158); }
+      .sr-ed-byline-title { margin-left: 10px; }
+      .sr-ed-byline-date { margin-left: 10px; }
+      .sr-ed-body {
+        font-size: 16px;
+        line-height: 1.65;
+        color: var(--text-body, #4a6177);
+      }
+      .sr-ed-body p { margin: 0 0 14px; }
+      .sr-ed-body p:last-child { margin-bottom: 0; }
+      .sr-ed-lede {
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--text-primary, #2a4158);
+      }
+      .sr-ed-crowd {
+        margin-top: 22px;
+        background: var(--accent-blue-dim, rgba(43, 109, 233, 0.08));
+        border-left: 3px solid var(--accent, #2b6de9);
+        border-radius: 0 var(--radius-sm, 10px) var(--radius-sm, 10px) 0;
+        padding: 16px 20px;
+      }
+      .sr-ed-crowd-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent, #2b6de9);
+        margin-bottom: 6px;
+      }
+      .sr-ed-crowd p {
+        font-size: 16px;
+        line-height: 1.55;
+        color: var(--text-primary, #2a4158);
+        margin: 0;
+        font-weight: 500;
+      }
+      .sr-ed-alts {
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-light, #dde5ee);
+      }
+      .sr-ed-alts-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted, #7f96a9);
+        margin-bottom: 12px;
+      }
+      .sr-ed-alts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .sr-ed-alt-card {
+        display: block;
+        background: var(--surface-subtle, #f7fafc);
+        border: 1px solid var(--border-light, #dde5ee);
+        border-radius: var(--radius-sm, 10px);
+        padding: 14px 16px;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color .15s, background .15s, transform .15s;
+      }
+      .sr-ed-alt-card:hover {
+        border-color: var(--accent, #2b6de9);
+        background: var(--surface-white, #fff);
+        transform: translateY(-1px);
+      }
+      .sr-ed-alt-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary, #2a4158);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 4px;
+      }
+      .sr-ed-alt-arrow { color: var(--accent, #2b6de9); }
+      .sr-ed-alt-take {
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text-body, #4a6177);
+      }
+      @media (max-width: 640px) {
+        .sr-editorial { padding: 22px 20px; }
+        .sr-ed-hook { font-size: 20px; }
+        .sr-ed-body { font-size: 15px; }
+        .sr-ed-byline { font-size: 12px; }
+        .sr-ed-byline-title { display: block; margin-left: 0; margin-top: 2px; }
+        .sr-ed-byline-date  { display: block; margin-left: 0; margin-top: 2px; }
+      }
+      /* Methodology / sources block */
+      .sr-ed-method {
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid var(--border-light, #dde5ee);
+      }
+      .sr-ed-method-head {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted, #7f96a9);
+        margin-bottom: 12px;
+      }
+      .sr-ed-method-body {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--text-muted, #7f96a9);
+      }
+      .sr-ed-method-body p { margin: 0 0 10px; }
+      .sr-ed-method-body p:last-child { margin-bottom: 0; }
+      .sr-ed-sources-list {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px dashed var(--border-light, #dde5ee);
+      }
+      .sr-ed-sources-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted, #7f96a9);
+        margin-bottom: 8px;
+      }
+      .sr-ed-sources-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-muted, #7f96a9);
+        line-height: 1.55;
+      }
+      .sr-ed-sources-list li {
+        padding: 2px 0;
+      }
+      .sr-ed-sources-list a {
+        color: var(--accent, #2b6de9);
+        text-decoration: none;
+        border-bottom: 1px solid var(--accent-blue-dim, rgba(43, 109, 233, 0.18));
+      }
+      .sr-ed-sources-list a:hover {
+        color: var(--accent-hover, #1a56c4);
+        border-bottom-color: var(--accent, #2b6de9);
+      }
+      .sr-ed-method-stamp {
+        margin: 14px 0 0;
+        font-size: 12px;
+        font-style: italic;
+        color: var(--text-muted, #7f96a9);
+      }
+      @media (max-width: 640px) {
+        .sr-ed-method-body { font-size: 13px; }
+      }
+    </style>
   <script type="application/ld+json">
   [
   {
@@ -147,6 +344,47 @@
         }
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Berkshire East: Western Mass has one mountain that actually looks intimidating from the parking lot.",
+    "description": "Western Mass has one mountain that actually looks intimidating from the parking lot.",
+    "articleBody": "Berkshire East feels like a mountain you have to earn a little. The drive into Charlemont is part of the experience, winding through one of the prettier corners of western Massachusetts before the ski area suddenly appears against the hill. Walk toward the base and Upper Competition and Competition stare right back at you, a broad steep-looking front face that gives the mountain more presence than most Massachusetts ski areas.\n\nIt is a real welcome mat, not in the soft sense, but in the way it tells you this place has more bite than the state line might suggest. The trail layout has enough character to keep stronger skiers honest, the pitches are legitimate, and the groomers ski longer than the vertical reads on paper.\n\nBerkshire East can absolutely get crowded on weekends, especially when the snow is good or families are packing the lodge. The trick is treating it like a real ski day, not a backup plan. Go early, or better yet catch it on a quieter day when the front face is open and you can actually lap the good stuff.\n\nBerkshire East rewards the skier who comes ready to use the mountain. Weekend mornings before the lodge fills, or a midweek day when the front face is open, is when the place skis at its best.",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://wheretoskinext.com/ski-report/berkshire-east/"
+    },
+    "url": "https://wheretoskinext.com/ski-report/berkshire-east/",
+    "image": "https://wheretoskinext.com/wtsn-og.png",
+    "datePublished": "2026-05-31",
+    "dateModified": "2026-05-31",
+    "publisher": {
+      "@type": "Organization",
+      "name": "WhereToSkiNext.com",
+      "url": "https://wheretoskinext.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://wheretoskinext.com/wtsn-icon.svg"
+      }
+    },
+    "about": {
+      "@type": "SportsActivityLocation",
+      "name": "Berkshire East",
+      "url": "https://wheretoskinext.com/ski-report/berkshire-east/"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Trip",
+      "jobTitle": "Founder, WhereToSkiNext.com",
+      "description": "Grew up skiing and racing at Bousquet Mountain in the Berkshires. Now skis with my family across the Northeast and beyond."
+    },
+    "accountablePerson": {
+      "@type": "Person",
+      "name": "Trip",
+      "jobTitle": "Founder, WhereToSkiNext.com",
+      "description": "Grew up skiing and racing at Bousquet Mountain in the Berkshires. Now skis with my family across the Northeast and beyond."
+    }
   }
 ]
   </script>
@@ -289,19 +527,52 @@
     </section>
 
     
-    <article class="sr-snapshot">
-      <h2>Berkshire East at a glance</h2>
-      <p>
-        Berkshire East sits in Massachusetts with 1,180 ft of vertical drop, 46 trails, and 315 skiable acres.
-        Berkshire East is welcoming to all levels with 37% beginner terrain. Night skiing available.
-      </p>
-      <p>
-        The mountain averages 90" of snowfall per season with 15,000 GPM of snowmaking capacity.
-        Lift tickets start around $80; day-of pricing varies. Berkshire East is a <strong>Indy Pass</strong> mountain.
-      </p>
-      <p>
-        Snow conditions update often. Check back before you go. A fresh forecast can change everything.
-      </p>
+    <article class="sr-editorial" itemscope itemtype="https://schema.org/Article">
+      <meta itemprop="headline" content="Berkshire East: Western Mass has one mountain that actually looks intimidating from the parking lot." />
+      <meta itemprop="dateModified" content="2026-05-31" />
+      <span class="sr-ed-kicker">Editor's take</span>
+      <p class="sr-ed-hook">Western Mass has one mountain that actually looks intimidating from the parking lot.</p>
+      
+      <div class="sr-ed-byline">
+        <span class="sr-ed-byline-by">By Trip</span>
+        <span class="sr-ed-byline-title">Founder, WhereToSkiNext.com</span>
+        <span class="sr-ed-byline-date">Updated May 2026</span>
+      </div>
+      <div class="sr-ed-body" itemprop="articleBody">
+        <p class="sr-ed-lede">Berkshire East feels like a mountain you have to earn a little. The drive into Charlemont is part of the experience, winding through one of the prettier corners of western Massachusetts before the ski area suddenly appears against the hill. Walk toward the base and Upper Competition and Competition stare right back at you, a broad steep-looking front face that gives the mountain more presence than most Massachusetts ski areas.</p>
+        <p>It is a real welcome mat, not in the soft sense, but in the way it tells you this place has more bite than the state line might suggest. The trail layout has enough character to keep stronger skiers honest, the pitches are legitimate, and the groomers ski longer than the vertical reads on paper.</p>
+      <p>Berkshire East can absolutely get crowded on weekends, especially when the snow is good or families are packing the lodge. The trick is treating it like a real ski day, not a backup plan. Go early, or better yet catch it on a quieter day when the front face is open and you can actually lap the good stuff.</p>
+      </div>
+      
+      <aside class="sr-ed-crowd" aria-label="Crowd take">
+        <span class="sr-ed-crowd-label">The crowd take</span>
+        <p>Berkshire East rewards the skier who comes ready to use the mountain. Weekend mornings before the lodge fills, or a midweek day when the front face is open, is when the place skis at its best.</p>
+      </aside>
+      
+      <div class="sr-ed-alts" aria-label="Smarter alternatives">
+        <div class="sr-ed-alts-label">If not Berkshire East, then</div>
+        <div class="sr-ed-alts-grid">
+        <a class="sr-ed-alt-card" href="/ski-report/bousquet-ski-area/">
+          <div class="sr-ed-alt-name">Bousquet<span class="sr-ed-alt-arrow">&rarr;</span></div>
+          <div class="sr-ed-alt-take">Smaller, more personal, and better when the goal is a softer Berkshire family day with local-mountain feel.</div>
+        </a>
+        <a class="sr-ed-alt-card" href="/ski-report/jiminy-peak/">
+          <div class="sr-ed-alt-name">Jiminy Peak<span class="sr-ed-alt-arrow">&rarr;</span></div>
+          <div class="sr-ed-alt-take">The bigger Berkshire resort choice when lodging, night skiing, and more developed infrastructure matter.</div>
+        </a>
+        </div>
+      </div>
+      
+      <section class="sr-ed-method" aria-label="Methodology and sources">
+        <div class="sr-ed-method-head">How this review was put together</div>
+        <div class="sr-ed-method-body">
+          <p>Mountain data comes from each resort's own operator materials. That covers trail counts, vertical drop, lift configurations, and ticket pricing. Pass affiliations track Epic, Ikon, and Indy Pass network listings. Historical snowfall averages combine OpenSnow archives, NOAA station data, and Open-Meteo's archive API.</p>
+        <p>Editorial takes draw on ski media coverage (SKI Magazine, Powder, Storm Skiing Journal, regional outlets including NewEnglandSkiIndustry.com and Unofficial Networks), aggregator comparisons (ZRankings, PeakRankings, OnTheSnow) for cross-reference, and skier forums and trip reports for crowd-pattern signal. Live crowd outlook on the main tool is generated by WhereToSkiNext's own pressure model, which is built specifically for the question of when a mountain is likely to feel busy rather than how busy it has been historically.</p>
+        <p>Where I have skied the mountain, that experience anchors the call. Where I have not, the take is synthesized from the sources above. No resort pays for ranking placement or editorial influence on WhereToSkiNext. Reviews are updated as conditions, ownership, or pass affiliations change.</p>
+        </div>
+        
+        <p class="sr-ed-method-stamp">Independent review. No resort paid for placement or editorial influence.</p>
+      </section>
     </article>
 
     
