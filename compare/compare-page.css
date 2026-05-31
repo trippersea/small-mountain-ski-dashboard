@@ -1183,3 +1183,121 @@ body.compare-page-body .site-footer-affiliate {
   .cp-cgt-mtn-name { font-size: 1.2rem; }
   .cp-cgt-score-num { font-size: 20px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Score-explanation bubble (Level 1: directional, no numbers, no weights)
+   Trigger = small "i" next to the WTSN Score. Opens on hover/focus (desktop)
+   and on tap via .cp-explain-open (mobile, toggled in compare-page.js).
+   ═══════════════════════════════════════════════════════════════════════════ */
+.cp-cgt-score-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+.cp-cgt-score-wrap .cp-cgt-score-num { margin-bottom: 0; }
+
+.cp-explain-trigger {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--cp-border-strong);
+  background: transparent;
+  color: var(--cp-text-faint);
+  font-size: 10px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color .12s, border-color .12s;
+}
+.cp-explain-trigger:hover,
+.cp-explain-trigger:focus-visible {
+  color: var(--cp-accent-bright);
+  border-color: var(--cp-accent-bright);
+  outline: none;
+}
+
+.cp-explain-bubble {
+  position: absolute;
+  top: calc(100% + 9px);
+  left: 0;
+  z-index: 40;
+  width: 256px;
+  max-width: 78vw;
+  background: #1b2d44;
+  border: 1px solid var(--cp-border-strong);
+  border-radius: 12px;
+  padding: 13px 15px;
+  box-shadow: var(--cp-shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity .14s ease, transform .14s ease, visibility .14s;
+  text-align: left;
+  pointer-events: none;
+}
+/* Desktop: hover or keyboard focus opens it */
+.cp-cgt-score-wrap:hover .cp-explain-bubble,
+.cp-cgt-score-wrap:focus-within .cp-explain-bubble,
+/* Mobile: tap-toggled class opens it */
+.cp-cgt-score-wrap.cp-explain-open .cp-explain-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.cp-explain-h {
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--cp-text-faint);
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+.cp-explain-h b { color: var(--cp-text); }
+
+.cp-explain-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 5px 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--cp-text);
+}
+.cp-explain-ic {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  margin-top: 1px;
+}
+.cp-explain-help  .cp-explain-ic { background: rgba(34, 179, 138, 0.2);  color: #34d399; }
+.cp-explain-hurt  .cp-explain-ic { background: rgba(248, 113, 113, 0.18); color: #f87171; }
+.cp-explain-mixed .cp-explain-ic { background: rgba(251, 191, 36, 0.18); color: #fbbf24; }
+
+.cp-explain-foot {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid var(--cp-border);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--cp-text-faint);
+  line-height: 1.45;
+}
+
+/* Runner score cells: keep the right-most bubbles from overflowing the table edge */
+.cp-td-runner:last-child .cp-explain-bubble { left: auto; right: 0; }

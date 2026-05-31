@@ -52,6 +52,17 @@
     return map[preset] || 'Today';
   }
 
+  // Derive numeric drive minutes from driveText, e.g. "1h 48m" -> 108, "45m" -> 45.
+  // IIFE-scoped so both buildScoreExplanation and buildCompareTable can use it.
+  function parseDriveMins(text) {
+    if (!text) return null;
+    const hm = text.match(/(\d+)h\s*(\d+)?m?/);
+    if (hm) return parseInt(hm[1]) * 60 + (parseInt(hm[2]) || 0);
+    const m = text.match(/^(\d+)m/);
+    if (m) return parseInt(m[1]);
+    return null;
+  }
+
   // Builds a readable forecast line: "4" tomorrow" or "Dry forecast, 36°F"
   // Uses forecastIndex (from session) so the temperature matches whichever day
   // the ranking engine was evaluating — not always forecast[0].
@@ -124,6 +135,75 @@
     if (cl.includes('quiet') || cl.includes('light')) parts.push('light crowds expected');
     if (r.passGroup && r.passGroup !== 'Independent') parts.push(`${r.passGroup} pass access`);
     return parts.length ? parts.join(' \u00B7 ') + '.' : 'Solid alternative for your search.';
+  }
+
+  // ── Level 1 score explanation: directional, no numbers, no weights ──────────
+  // Reads only the plain summary fields present on each compare row (driveText,
+  // snow, crowdLabel, passGroup, price, vertical) — never weights or formula —
+  // so it explains the score without exposing proprietary scoring logic.
+  // Returns a short ordered list of { dir, text } where dir is help|hurt|mixed.
+  function buildScoreExplanation(r) {
+    if (!r) return [];
+    const items = [];
+
+    // Drive — derive minutes from the same driveText shown on the page.
+    const dMins = parseDriveMins(r.driveText);
+    if (dMins != null) {
+      if (dMins <= 90)       items.push({ dir: 'help',  k: 'drive', text: 'Close drive from your start point' });
+      else if (dMins >= 180) items.push({ dir: 'hurt',  k: 'drive', text: 'Long drive to get there' });
+      else                   items.push({ dir: 'mixed', k: 'drive', text: 'Moderate drive' });
+    }
+
+    // Snow — uses the trip-window total / ski-day inches already on the row.
+    const snow = Math.max(Number(r.stormTotal) || 0, Number(r.tomorrowIn) || 0);
+    if (snow >= 4)        items.push({ dir: 'help',  k: 'snow', text: 'Fresh snow in the forecast' });
+    else if (snow >= 1)   items.push({ dir: 'mixed', k: 'snow', text: 'Some new snow, not a big dump' });
+    else                  items.push({ dir: 'hurt',  k: 'snow', text: 'Dry forecast, little new snow' });
+
+    // Crowds — directional read of the crowd label.
+    const cl = (r.crowdLabel || '').toLowerCase();
+    if (cl.includes('quiet') || cl.includes('light'))      items.push({ dir: 'help',  k: 'crowd', text: 'Light crowds expected' });
+    else if (cl.includes('busy') || cl.includes('avoid') || cl.includes('packed')) items.push({ dir: 'hurt', k: 'crowd', text: 'Crowds likely to build' });
+    else if (cl)                                           items.push({ dir: 'mixed', k: 'crowd', text: 'Moderate crowds expected' });
+
+    // Pass fit — only call it out as a help when it's a major network.
+    if (r.passGroup && r.passGroup !== 'Independent') {
+      items.push({ dir: 'help', k: 'pass', text: r.passGroup + ' pass access' });
+    }
+
+    // Mountain size — vertical as a rough "big mountain" signal.
+    const vert = Number(r.vertical) || 0;
+    if (vert >= 2000)      items.push({ dir: 'help',  k: 'fit', text: 'Big mountain, lots of terrain' });
+    else if (vert > 0 && vert < 1000) items.push({ dir: 'mixed', k: 'fit', text: 'Smaller mountain' });
+
+    // Value — ticket price directional.
+    const price = Number(r.price) || 0;
+    if (price > 0 && price <= 90)   items.push({ dir: 'help', k: 'value', text: 'Good value on the ticket' });
+    else if (price >= 150)          items.push({ dir: 'hurt', k: 'value', text: 'Pricey day ticket' });
+
+    // Order: helpers first (most encouraging), then mixed, then hurts.
+    // Cap at 4 so the bubble stays scannable.
+    const helps = items.filter(i => i.dir === 'help');
+    const hurts = items.filter(i => i.dir === 'hurt');
+    const mixed = items.filter(i => i.dir === 'mixed');
+    return [...helps.slice(0, 2), ...hurts.slice(0, 2), ...mixed.slice(0, 1)].slice(0, 4);
+  }
+
+  function scoreExplainHtml(r, name) {
+    const items = buildScoreExplanation(r);
+    if (!items.length) return '';
+    const icon = { help: '+', hurt: '\u2212', mixed: '~' };
+    const rows = items.map(function (it) {
+      return '<div class="cp-explain-row cp-explain-' + it.dir + '">' +
+        '<span class="cp-explain-ic" aria-hidden="true">' + icon[it.dir] + '</span>' +
+        '<span class="cp-explain-txt">' + esc(it.text) + '</span>' +
+      '</div>';
+    }).join('');
+    return '<div class="cp-explain-bubble" role="tooltip">' +
+      '<div class="cp-explain-h">Why <b>' + esc(name) + '</b> scored here</div>' +
+      rows +
+      '<div class="cp-explain-foot">Based on live forecast, drive time, pass fit, and crowd outlook. No resort pays for placement.</div>' +
+    '</div>';
   }
 
   // Find index of the best numeric value among an array of resort objects
@@ -229,17 +309,6 @@
     const bVert  = bestIdx(runOnly, 'vertical',    true);
     const bSnow  = bestIdx(runOnly, 'avgSnowfall', true);
 
-    // Derive numeric drive minutes from driveText for comparison
-    // e.g. "1h 48m" -> 108
-    function parseDriveMins(text) {
-      if (!text) return null;
-      const hm = text.match(/(\d+)h\s*(\d+)?m?/);
-      if (hm) return parseInt(hm[1]) * 60 + (parseInt(hm[2]) || 0);
-      const m = text.match(/^(\d+)m/);
-      if (m) return parseInt(m[1]);
-      return null;
-    }
-
     // Annotate runners with numeric drive minutes
     runOnly.forEach(function (r) {
       r._driveMins = parseDriveMins(r.driveText);
@@ -288,7 +357,10 @@
     }
 
     // ── Row 1: Why it won ──
-    const pickReason  = pick.headline || pick.detail || 'Top score for your filters right now.';
+    // Winner uses the same directional reason builder as the runners (autoReason).
+    // Previously fell through to pick.detail, which is the snow-conditions label
+    // (e.g. "Poor conditions") — wrong slot, made the winner look self-contradictory.
+    const pickReason  = pick.headline || autoReason(pick) || 'Top score for your filters right now.';
     const reasonRow = row(
       'Why it won',
       '<span class="cp-cgt-reason">' + esc(pickReason) + '</span>',
@@ -304,12 +376,20 @@
     if (hasScore) {
       const pct = Math.min(100, Math.max(0, pick.score || 0));
       const pickScore =
-        '<div class="cp-cgt-score-num">' + (pick.score != null ? Math.round(pick.score) : '\u2014') + '</div>' +
+        '<div class="cp-cgt-score-wrap">' +
+          '<div class="cp-cgt-score-num">' + (pick.score != null ? Math.round(pick.score) : '\u2014') + '</div>' +
+          '<button type="button" class="cp-explain-trigger" aria-label="Why ' + esc(pick.name) + ' scored this">i</button>' +
+          scoreExplainHtml(pick, pick.name) +
+        '</div>' +
         '<div class="cp-cgt-score-bar-track"><div class="cp-cgt-score-bar-fill" style="width:' + pct + '%"></div></div>' +
         '<div class="cp-cgt-sub">out of 100</div>';
       const runnerScores = runOnly.map(function (r) {
         const rPct = Math.min(100, Math.max(0, r.score || 0));
-        return '<div class="cp-cgt-score-num">' + (r.score != null ? Math.round(r.score) : '\u2014') + '</div>' +
+        return '<div class="cp-cgt-score-wrap">' +
+            '<div class="cp-cgt-score-num">' + (r.score != null ? Math.round(r.score) : '\u2014') + '</div>' +
+            '<button type="button" class="cp-explain-trigger" aria-label="Why ' + esc(r.name) + ' scored this">i</button>' +
+            scoreExplainHtml(r, r.name) +
+          '</div>' +
           '<div class="cp-cgt-score-bar-track" style="margin-top:5px"><div class="cp-cgt-score-bar-fill" style="width:' + rPct + '%"></div></div>' +
           '<div class="cp-cgt-sub">out of 100</div>';
       });
@@ -489,5 +569,25 @@
       if (subtitle) subtitle.textContent = 'Compare your mountain options side by side.';
     }
   }
+
+  // ─── Score-explanation bubble: tap to toggle (mobile); CSS handles hover ─────
+  // Desktop opens on hover/focus via :focus-within; this adds tap-toggle for touch
+  // and closes any open bubble when tapping elsewhere.
+  document.addEventListener('click', function (e) {
+    const trigger = e.target.closest('.cp-explain-trigger');
+    const openWraps = document.querySelectorAll('.cp-cgt-score-wrap.cp-explain-open');
+    if (trigger) {
+      const wrap = trigger.closest('.cp-cgt-score-wrap');
+      const wasOpen = wrap && wrap.classList.contains('cp-explain-open');
+      openWraps.forEach(function (w) { w.classList.remove('cp-explain-open'); });
+      if (wrap && !wasOpen) wrap.classList.add('cp-explain-open');
+      e.stopPropagation();
+      return;
+    }
+    // Tap outside any trigger closes open bubbles.
+    if (!e.target.closest('.cp-explain-bubble')) {
+      openWraps.forEach(function (w) { w.classList.remove('cp-explain-open'); });
+    }
+  });
 
 })();
