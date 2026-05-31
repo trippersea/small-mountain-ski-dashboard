@@ -142,6 +142,16 @@ function _bluebirdFactor(wx) {
   if ((fc.snow || 0) > 3) return 0; // snowing = not bluebird
   if ((fc.wind || 0) > 20) return 0;
   if (fc.lo == null || fc.lo < 0 || fc.lo > 38) return 0;
+  // Wet-day guard: a clear-sky demand spike cannot coexist with rain.
+  // Mirrors the rainF condition in crowdForecast so the two are mutually
+  // exclusive (a day is never both "bluebird" and "wet/icy").
+  if (fc.lo > 32 && (fc.snow || 0) < 1 && (fc.wind || 0) > 10) return 0;
+  // WMO weather code is the authoritative signal. Drizzle/rain (51-67) and
+  // rain showers (80-82) disqualify bluebird regardless of the numeric
+  // temp/wind/snow thresholds above. Open-Meteo codes; see _wtpVisibilityConcern.
+  const code = fc.code;
+  if (Number.isFinite(code) &&
+      ((code >= 51 && code <= 67) || (code >= 80 && code <= 82))) return 0;
   return 1;
 }
 
@@ -228,6 +238,11 @@ function crowdForecast(resort, wx = null) {
                    :                              'Low';
 
   // ── Reasons ───────────────────────────────────────────────────────────────
+  // Note on vocabulary: blueF is an internal DEMAND multiplier (clear, calm,
+  // ideal-temp days draw more skiers). The user-facing reason describes that
+  // demand effect, not the sky, so it can never be misread as a weather verdict.
+  // blueF and rainF are already mutually exclusive (see _bluebirdFactor wet
+  // guard), but we also gate the reason push so they can never co-display.
   const reasons = [];
   if (dow === 6)                    reasons.push('Saturday — peak ski day');
   else if (dow === 0)               reasons.push('Sunday — still busy');
@@ -237,8 +252,8 @@ function crowdForecast(resort, wx = null) {
   else if (holidayF >= 0.7)         reasons.push('Holiday weekend — busy');
   if (powderF >= 0.7)               reasons.push('Fresh snow — high demand');
   else if (powderF >= 0.4)          reasons.push('Recent snow drawing extra traffic');
-  if (blueF)                        reasons.push('Bluebird day — peak demand conditions');
-  if (rainF > 0)                    reasons.push('Wet/icy forecast — lighter crowds');
+  if (rainF > 0)                    reasons.push('Wet forecast — lighter crowds');
+  else if (blueF)                   reasons.push('Clear, calm day — draws bigger crowds');
   if (resort.passGroup === 'Epic' || resort.passGroup === 'Ikon')
                                     reasons.push(`${resort.passGroup} pass — large network demand`);
   if (rawTier <= 2)                 reasons.push('Small hill — crowds build quickly');
