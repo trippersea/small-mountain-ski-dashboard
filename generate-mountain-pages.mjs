@@ -651,92 +651,93 @@ function formatEditorialDate(iso) {
 // editorial, so non-editorial pages are byte-identical to their old output.
 const EDITORIAL_CSS = `
     <style>
+      /* Editorial block. Uses site CSS variables so it inherits the design
+         system (Inter, navy palette, brand accent #2b6de9, --radius 16px,
+         --shadow-card). Sits naturally next to .sr-snapshot rather than
+         floating as a separate card. */
       .sr-editorial {
-        background: #fff;
-        border: 1px solid #e3ebf3;
-        border-left: 4px solid #5aaddc;
-        border-radius: 12px;
+        background: var(--surface-white, #fff);
+        border: 1px solid var(--border-light, #dde5ee);
+        border-left: 4px solid var(--accent, #2b6de9);
+        border-radius: var(--radius, 16px);
+        box-shadow: var(--shadow-card, 0 4px 24px rgba(26, 46, 69, 0.07));
         padding: 28px 32px;
         margin: 24px 0 28px;
+        font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
       }
       .sr-ed-kicker {
         display: inline-block;
-        font-family: 'Inter', system-ui, sans-serif;
         font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #5aaddc;
+        color: var(--accent, #2b6de9);
         margin-bottom: 10px;
       }
       .sr-ed-hook {
-        font-family: 'Newsreader', Georgia, serif;
-        font-size: 26px;
-        line-height: 1.25;
-        font-weight: 600;
-        color: #0c2138;
+        font-size: 24px;
+        line-height: 1.3;
+        font-weight: 700;
+        color: var(--text-primary, #2a4158);
         margin: 0 0 14px;
+        letter-spacing: -0.01em;
       }
       .sr-ed-byline {
-        font-family: 'Inter', system-ui, sans-serif;
         font-size: 13px;
-        color: #5a6a85;
+        color: var(--text-muted, #7f96a9);
         margin-bottom: 18px;
         padding-bottom: 14px;
-        border-bottom: 1px solid #eef3f8;
+        border-bottom: 1px solid var(--border-light, #dde5ee);
       }
-      .sr-ed-byline-by { font-weight: 600; color: #1a2030; }
+      .sr-ed-byline-by { font-weight: 600; color: var(--text-primary, #2a4158); }
       .sr-ed-byline-title { margin-left: 10px; }
-      .sr-ed-byline-date { margin-left: 10px; color: #8a9ab5; }
+      .sr-ed-byline-date { margin-left: 10px; }
       .sr-ed-body {
-        font-family: 'Newsreader', Georgia, serif;
-        font-size: 18px;
+        font-size: 16px;
         line-height: 1.65;
-        color: #1f2a3d;
+        color: var(--text-body, #4a6177);
       }
       .sr-ed-body p { margin: 0 0 14px; }
       .sr-ed-body p:last-child { margin-bottom: 0; }
       .sr-ed-lede {
-        font-size: 19px;
+        font-size: 17px;
         line-height: 1.6;
+        color: var(--text-primary, #2a4158);
       }
       .sr-ed-crowd {
         margin-top: 22px;
-        background: #f4f9fd;
-        border-left: 3px solid #5aaddc;
-        border-radius: 0 8px 8px 0;
+        background: var(--accent-blue-dim, rgba(43, 109, 233, 0.08));
+        border-left: 3px solid var(--accent, #2b6de9);
+        border-radius: 0 var(--radius-sm, 10px) var(--radius-sm, 10px) 0;
         padding: 16px 20px;
       }
       .sr-ed-crowd-label {
         display: block;
-        font-family: 'Inter', system-ui, sans-serif;
         font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #3f93c4;
+        color: var(--accent, #2b6de9);
         margin-bottom: 6px;
       }
       .sr-ed-crowd p {
-        font-family: 'Newsreader', Georgia, serif;
-        font-size: 17px;
+        font-size: 16px;
         line-height: 1.55;
-        color: #0c2138;
+        color: var(--text-primary, #2a4158);
         margin: 0;
         font-weight: 500;
       }
       .sr-ed-alts {
         margin-top: 22px;
         padding-top: 20px;
-        border-top: 1px solid #eef3f8;
+        border-top: 1px solid var(--border-light, #dde5ee);
       }
       .sr-ed-alts-label {
-        font-family: 'Inter', system-ui, sans-serif;
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #5a6a85;
+        color: var(--text-muted, #7f96a9);
         margin-bottom: 12px;
       }
       .sr-ed-alts-grid {
@@ -746,40 +747,38 @@ const EDITORIAL_CSS = `
       }
       .sr-ed-alt-card {
         display: block;
-        background: #f8fafd;
-        border: 1px solid #e3ebf3;
-        border-radius: 8px;
+        background: var(--surface-subtle, #f7fafc);
+        border: 1px solid var(--border-light, #dde5ee);
+        border-radius: var(--radius-sm, 10px);
         padding: 14px 16px;
         text-decoration: none;
         color: inherit;
         transition: border-color .15s, background .15s, transform .15s;
       }
       .sr-ed-alt-card:hover {
-        border-color: #5aaddc;
-        background: #fff;
+        border-color: var(--accent, #2b6de9);
+        background: var(--surface-white, #fff);
         transform: translateY(-1px);
       }
       .sr-ed-alt-name {
-        font-family: 'Inter', system-ui, sans-serif;
         font-size: 15px;
         font-weight: 700;
-        color: #0c2138;
+        color: var(--text-primary, #2a4158);
         display: flex;
         justify-content: space-between;
         align-items: baseline;
         margin-bottom: 4px;
       }
-      .sr-ed-alt-arrow { color: #5aaddc; }
+      .sr-ed-alt-arrow { color: var(--accent, #2b6de9); }
       .sr-ed-alt-take {
-        font-family: 'Newsreader', Georgia, serif;
-        font-size: 15px;
-        line-height: 1.45;
-        color: #3a4660;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text-body, #4a6177);
       }
       @media (max-width: 640px) {
         .sr-editorial { padding: 22px 20px; }
-        .sr-ed-hook { font-size: 22px; }
-        .sr-ed-body { font-size: 17px; }
+        .sr-ed-hook { font-size: 20px; }
+        .sr-ed-body { font-size: 15px; }
         .sr-ed-byline { font-size: 12px; }
         .sr-ed-byline-title { display: block; margin-left: 0; margin-top: 2px; }
         .sr-ed-byline-date  { display: block; margin-left: 0; margin-top: 2px; }
@@ -788,35 +787,34 @@ const EDITORIAL_CSS = `
       .sr-ed-method {
         margin-top: 28px;
         padding-top: 22px;
-        border-top: 1px solid #eef3f8;
-        font-family: 'Inter', system-ui, sans-serif;
+        border-top: 1px solid var(--border-light, #dde5ee);
       }
       .sr-ed-method-head {
         font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #5a6a85;
+        color: var(--text-muted, #7f96a9);
         margin-bottom: 12px;
       }
       .sr-ed-method-body {
         font-size: 13.5px;
         line-height: 1.6;
-        color: #5a6a85;
+        color: var(--text-muted, #7f96a9);
       }
       .sr-ed-method-body p { margin: 0 0 10px; }
       .sr-ed-method-body p:last-child { margin-bottom: 0; }
       .sr-ed-sources-list {
         margin-top: 14px;
         padding-top: 12px;
-        border-top: 1px dashed #e3ebf3;
+        border-top: 1px dashed var(--border-light, #dde5ee);
       }
       .sr-ed-sources-label {
         font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #8a9ab5;
+        color: var(--text-muted, #7f96a9);
         margin-bottom: 8px;
       }
       .sr-ed-sources-list ul {
@@ -824,23 +822,26 @@ const EDITORIAL_CSS = `
         padding: 0;
         margin: 0;
         font-size: 13px;
-        color: #5a6a85;
+        color: var(--text-muted, #7f96a9);
         line-height: 1.55;
       }
       .sr-ed-sources-list li {
         padding: 2px 0;
       }
       .sr-ed-sources-list a {
-        color: #3f93c4;
+        color: var(--accent, #2b6de9);
         text-decoration: none;
-        border-bottom: 1px solid #cfe0ee;
+        border-bottom: 1px solid var(--accent-blue-dim, rgba(43, 109, 233, 0.18));
       }
-      .sr-ed-sources-list a:hover { color: #0c2138; border-bottom-color: #5aaddc; }
+      .sr-ed-sources-list a:hover {
+        color: var(--accent-hover, #1a56c4);
+        border-bottom-color: var(--accent, #2b6de9);
+      }
       .sr-ed-method-stamp {
         margin: 14px 0 0;
         font-size: 12px;
         font-style: italic;
-        color: #8a9ab5;
+        color: var(--text-muted, #7f96a9);
       }
       @media (max-width: 640px) {
         .sr-ed-method-body { font-size: 13px; }
@@ -940,8 +941,8 @@ function generateMountainPage(resort, allResorts) {
   <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/ski-pass-comparison/pass-comparison-page.css" />

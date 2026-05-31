@@ -237,6 +237,26 @@ const MOUNTAIN_EDITORIAL = {
 
     lastUpdated: "2026-05-31"
   },
+  'black-mountain': {
+    hook: "If a faster lift would ruin it, you are at the right mountain.",
+
+    lede: "Black Mountain is not trying to compete with the big New Hampshire resorts, and that is exactly why it works. The lifts are slower, the footprint is smaller, and the whole place feels like it belongs to the people who already know why they came. It is not a mountain that rewards efficiency. It is one that rewards spending the day there.",
+
+    body: [
+      "The mid-mountain lodge is the thing that makes Black feel different. Champagne and fondue sounds like something that should be happening in the Alps, not on a modest New Hampshire ski hill, but that is the charm. It gives the mountain a little European apres feel without losing the local, slightly throwback character that makes Black worth protecting.",
+
+      "The terrain is better than the stats suggest. Enough winding groomers, pitch changes, and old-school lines to keep a good skier entertained, especially without rushing. Slower lifts mean fewer laps, but they also keep the pace human, which is part of why the place still feels like a ski area instead of a machine."
+    ],
+
+    crowdTake: "Ski Black when you want the day to feel relaxed, social, and a little different. If the priority is maximum vertical or high-speed lift laps, go somewhere else. If the priority is a mountain with a pulse, stay for the fondue.",
+
+    alternatives: [
+      { id: 'cranmore-mountain-resort', take: "More polished, more convenient to North Conway, and better when the group wants faster lifts and a cleaner family-resort setup." },
+      { id: 'bretton-woods', take: "The safer White Mountains choice when grooming, comfort, and lift infrastructure matter more than old-school character." }
+    ],
+
+    lastUpdated: "2026-05-31"
+  },
   'wildcat-mountain': {
     hook: "Wildcat is the view, the fall line, and the weather gamble all at once.",
 
@@ -357,6 +377,26 @@ const MOUNTAIN_EDITORIAL = {
     alternatives: [
       { id: 'bousquet-ski-area', take: "A more personal Berkshire hill when you want local character instead of pure convenience." },
       { id: 'pats-peak', take: "A New Hampshire step-up that still works well for families and night skiing." }
+    ],
+
+    lastUpdated: "2026-05-31"
+  },
+  'berkshire-east': {
+    hook: "Western Mass has one mountain that actually looks intimidating from the parking lot.",
+
+    lede: "Berkshire East feels like a mountain you have to earn a little. The drive into Charlemont is part of the experience, winding through one of the prettier corners of western Massachusetts before the ski area suddenly appears against the hill. Walk toward the base and Upper Competition and Competition stare right back at you, a broad steep-looking front face that gives the mountain more presence than most Massachusetts ski areas.",
+
+    body: [
+      "It is a real welcome mat, not in the soft sense, but in the way it tells you this place has more bite than the state line might suggest. The trail layout has enough character to keep stronger skiers honest, the pitches are legitimate, and the groomers ski longer than the vertical reads on paper.",
+
+      "Berkshire East can absolutely get crowded on weekends, especially when the snow is good or families are packing the lodge. The trick is treating it like a real ski day, not a backup plan. Go early, or better yet catch it on a quieter day when the front face is open and you can actually lap the good stuff."
+    ],
+
+    crowdTake: "Berkshire East rewards the skier who comes ready to use the mountain. Weekend mornings before the lodge fills, or a midweek day when the front face is open, is when the place skis at its best.",
+
+    alternatives: [
+      { id: 'bousquet-ski-area', take: "Smaller, more personal, and better when the goal is a softer Berkshire family day with local-mountain feel." },
+      { id: 'jiminy-peak', take: "The bigger Berkshire resort choice when lodging, night skiing, and more developed infrastructure matter." }
     ],
 
     lastUpdated: "2026-05-31"
@@ -1066,7 +1106,7 @@ const MOUNTAIN_EDITORIAL_METHODOLOGY = {
 
     "Mountain data comes from each resort's own operator materials. That covers trail counts, vertical drop, lift configurations, and ticket pricing. Pass affiliations track Epic, Ikon, and Indy Pass network listings. Historical snowfall averages combine OpenSnow archives, NOAA station data, and Open-Meteo's archive API.",
 
-    "Editorial takes draw on ski media coverage (SKI Magazine, Powder, Storm Skiing Journal, regional outlets including NewEnglandSkiIndustry.com and Unofficial Networks), aggregator comparisons (ZRankings, PeakRankings, OnTheSnow) for cross-reference, and skier forums and trip reports for crowd-pattern signal. Live crowd outlook on the main tool runs through WhereToSkiNext's own pressure model, which weights metro gravity, pass-network pull, destination draw, capacity tier, day of week, and weather.",
+    "Editorial takes draw on ski media coverage (SKI Magazine, Powder, Storm Skiing Journal, regional outlets including NewEnglandSkiIndustry.com and Unofficial Networks), aggregator comparisons (ZRankings, PeakRankings, OnTheSnow) for cross-reference, and skier forums and trip reports for crowd-pattern signal. Live crowd outlook on the main tool is generated by WhereToSkiNext's own pressure model, which is built specifically for the question of when a mountain is likely to feel busy rather than how busy it has been historically.",
 
     "Where I have skied the mountain, that experience anchors the call. Where I have not, the take is synthesized from the sources above. No resort pays for ranking placement or editorial influence on WhereToSkiNext. Reviews are updated as conditions, ownership, or pass affiliations change."
 
