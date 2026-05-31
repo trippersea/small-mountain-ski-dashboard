@@ -231,7 +231,6 @@ function buildCrowdExplainerHtml(crowd) {
   return `<div class="vcard-crowd-explainer ${levelCls}">
     <div class="crowd-expl-header">
       <span class="crowd-expl-tag">Crowd outlook</span>
-      <span class="crowd-expl-level">${esc(crowd.label)}</span>
     </div>
     <p class="crowd-expl-factors">${esc(factorsStr)}</p>
     <p class="crowd-expl-tip">${esc(tip)}</p>
@@ -1966,9 +1965,7 @@ function renderVerdict(resorts) {
         <button type="button" class="vcard-name-dash vcard-name-dash--pick" id="verdictPickBtn">${esc(resort.name)}</button>
         <p class="vcard-verdict-line">${esc(_verdictPhrase)}</p>
         <p class="vcard-story-one">${esc(_storyOneLine)}</p>
-        <div class="vcard-utility-row" role="group" aria-label="Vibe, drive, and crowds">
-          <span class="vcard-utility-vibe">${esc(_narrative.vibe)}</span>
-          <span class="vcard-utility-sep" aria-hidden="true"></span>
+        <div class="vcard-utility-row" role="group" aria-label="Drive and crowds">
           <span>${esc(_utilityDrive)}</span>
           <span class="vcard-utility-sep" aria-hidden="true"></span>
           <span class="crowd-color--${crowdLbl.toLowerCase()}" aria-label="Crowd forecast: ${esc(_utilityCrowd)}">${esc(_utilityCrowd)}</span>
