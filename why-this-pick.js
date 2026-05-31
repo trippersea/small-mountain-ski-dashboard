@@ -78,6 +78,81 @@ function _wtpTripMode() {
   return 'any';
 }
 
+/** True when the winner has the shortest (or tied) drive among ranked candidates. */
+function _wtpWinnerIsClosest(ranked, winnerId) {
+  const drives = ranked.map(x => getDriveMins(x.resort.id)).filter(m => m != null);
+  if (!drives.length) return true;
+  const wDrive = getDriveMins(winnerId);
+  if (wDrive == null) return true;
+  return wDrive <= Math.min(...drives) + 5;
+}
+
+/** Drop travel labels that mislead when a closer resort scored in the pool. */
+function _wtpSanitizeWhyLabels(labels, ranked, winnerId) {
+  const winnerIsClosest = _wtpWinnerIsClosest(ranked, winnerId);
+  const travelMisleading = /^closest decent option$|^best nearby|^best day-trip fit$/i;
+  const out = [];
+  for (const label of labels) {
+    if (!winnerIsClosest && travelMisleading.test(label)) continue;
+    if (!out.includes(label)) out.push(label);
+  }
+  return out;
+}
+
+/**
+ * One-line hero callout when #1 is materially farther than a runner-up.
+ * @returns {string|null}
+ */
+function buildVerdictOverNearbyCallout(resorts, winnerId, runnerItems) {
+  if (!state.origin || !runnerItems?.length) return null;
+  const ranked = _wtpRankedCandidates(resorts);
+  const winnerEntry = ranked.find(x => x.resort.id === winnerId);
+  if (!winnerEntry) return null;
+
+  const winnerDrive = getDriveMins(winnerId);
+  if (winnerDrive == null) return null;
+
+  const closerRunners = runnerItems
+    .map(x => x.resort)
+    .filter(r => {
+      const d = getDriveMins(r.id);
+      return d != null && d + 20 <= winnerDrive;
+    });
+  if (!closerRunners.length) return null;
+
+  const closest = closerRunners.reduce((best, r) => {
+    const d = getDriveMins(r.id);
+    const bd = getDriveMins(best.id);
+    return d != null && bd != null && d < bd ? r : best;
+  }, closerRunners[0]);
+
+  const winner = winnerEntry.resort;
+  const wSnow = tripWindowSnow(winnerEntry.wx?.forecast || []);
+  const cWx = state.weatherCache[closest.id]?.data;
+  const cSnow = cWx ? tripWindowSnow(cWx.forecast || []) : null;
+  const shortName = closest.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
+
+  if (state.passFilter !== 'All') {
+    if (winner.passGroup === state.passFilter && closest.passGroup !== state.passFilter) {
+      return `${shortName} is closer, but ${winner.name.split(' ')[0]} is your best ${state.passFilter} option today`;
+    }
+  }
+
+  if (cSnow != null && wSnow != null && wSnow >= cSnow + 1) {
+    const diff = (wSnow - cSnow).toFixed(1).replace(/\.0$/, '');
+    return `Beats ${shortName} on snow — +${diff}" in your forecast window`;
+  }
+
+  const avgTop5Cond = ranked.slice(0, 5).reduce((s, x) => s + _wtpCondScore(x), 0) / Math.max(1, Math.min(5, ranked.length));
+  const weakWeather = avgTop5Cond < 0.45 || _wtpCondScore(winnerEntry) < 0.5;
+  if (weakWeather) {
+    return `Outscores ${shortName} on groomed conditions — worth the extra drive today`;
+  }
+
+  const closestDrive = formatDriveMins(getDriveMins(closest.id), isDriveEstimated(closest.id));
+  return `Ranked ahead of ${shortName} (${closestDrive} away) for your filters`;
+}
+
 /**
  * @param {Array} resorts - filtered resort list used for verdict
  * @param {string} tier - great|good|marginal|bad
@@ -304,20 +379,44 @@ function buildWhyThisPickReasons(resorts, tier) {
 
   let labels = picked.map(p => p.label);
 
-  // Weak + day trip: prefer honest trio when factors support it
+  // Weak + day trip: honest trio — only claim "closest" when drive data supports it
+  const winnerIsClosest = _wtpWinnerIsClosest(ranked, winner.resort.id);
   if (weakMode && tripMode === 'day') {
-    const hasClosest = sorted.some(s => s.id === 'closest_decent');
-    if (hasClosest) {
-      labels = ['Closest decent option', resolvedSkiLabel, 'Manageable crowds'];
+    if (winnerIsClosest && sorted.some(s => s.id === 'closest_decent')) {
+      labels = ['Closest decent option', resolvedSkiLabel, 'Best fit for your filters'];
+    } else if (!winnerIsClosest) {
+      const honest = [];
+      if (state.passFilter !== 'All' && _wtpPassMatchesFilter(winner.resort)) {
+        honest.push('Best on your pass');
+      }
+      if (snowInW - (snowInR || 0) >= 0.5) {
+        honest.push(snowInW >= 2 ? 'More snow forecast' : 'Better snow nearby');
+      } else if (sorted.some(s => s.bucket === 'snow')) {
+        honest.push('Best snow nearby');
+      }
+      honest.push(resolvedSkiLabel);
+      honest.push('Best fit for your filters');
+      labels = [...new Set(honest)].slice(0, 3);
     }
   }
 
   if (weakMode && tripMode === 'weekend') {
     const hasNear = sorted.some(s => s.id === 'wknd_nearby');
-    const hasGroom = sorted.some(s => s.id === 'better_groomer');
+    const hasGroom = resolvedSki.id === 'better_groomer';
     const hasCrowd = sorted.some(s => s.id === 'lighter_crowds');
-    if (hasNear && hasGroom && hasCrowd) {
-      labels = ['Best nearby weekend option', 'Better groomer setup', 'Lighter crowds'];
+    if (winnerIsClosest && hasNear && hasGroom) {
+      labels = ['Best nearby weekend option', resolvedSkiLabel, hasCrowd ? 'Lighter crowds' : 'Best fit for your filters'];
+    } else if (!winnerIsClosest) {
+      const honest = [];
+      if (state.passFilter !== 'All' && _wtpPassMatchesFilter(winner.resort)) {
+        honest.push('Best on your pass');
+      }
+      if (winnerFarther && weekendPayoffGap > 0.35) {
+        honest.push('Worth the extra drive');
+      }
+      honest.push(resolvedSkiLabel);
+      honest.push('Best fit for your filters');
+      labels = [...new Set(honest)].slice(0, 3);
     }
   }
 
@@ -331,6 +430,14 @@ function buildWhyThisPickReasons(resorts, tier) {
   while (labels.length < 3 && fb < fallbacks.length) {
     const f = fallbacks[fb++];
     if (!labels.includes(f)) labels.push(f);
+  }
+  labels = _wtpSanitizeWhyLabels(labels, ranked, winner.resort.id);
+  fb = 0;
+  while (labels.length < 3 && fb < fallbacks.length) {
+    const f = fallbacks[fb++];
+    if (labels.includes(f)) continue;
+    if (/^closest decent option$|^best nearby/i.test(f) && !_wtpWinnerIsClosest(ranked, winner.resort.id)) continue;
+    labels.push(f);
   }
   return labels.slice(0, 3);
 }

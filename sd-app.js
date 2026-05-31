@@ -178,9 +178,10 @@ function topPickVerdictPhrase(tier, scoreNum) {
   }
   if (tier === 'marginal') {
     if (s >= 58) return 'Better later in the day';
+    if (s >= 40) return 'Best of a rough day — keep it short';
     return 'Decent if you keep expectations in check';
   }
-  if (s >= 40) return 'Fine for a few laps, not much more';
+  if (s >= 40) return 'Best of a rough day — keep it short';
   if (s >= 34) return 'Probably not worth the drive';
   return 'Probably skip this weekend';
 }
@@ -1830,7 +1831,14 @@ function renderVerdict(resorts) {
 
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
   const _fromCity = _cityEw || 'your location';
-  const _eyebrow  = esc(`Top Pick • From ${_fromCity}`);
+  const _utilityDrive  = driveUtilitySegment(resort.id);
+  const _driveMins = getDriveMins(resort.id);
+  const _eyebrowTier = (tier === 'bad' || tier === 'marginal') ? 'Best Today' : 'Top Pick';
+  const _eyebrowMain = esc(`${_eyebrowTier} • From ${_fromCity}`);
+  const _driveEyebrowHtml = state.origin && _driveMins != null
+    ? `<span class="vcard-eyebrow-drive"><svg class="vcard-eyebrow-drive-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 17h2l1.5-4.5M19 17h-8M19 17l-2-5.5M7 17l2-6h6l2 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor"/></svg>${esc(_utilityDrive)}</span>`
+    : '';
+  const _eyebrow = `<span class="vcard-eyebrow-main">${_eyebrowMain}</span>${_driveEyebrowHtml}`;
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
 
   const scoreNum = breakdown ? Math.round(breakdown.score) : 0;
@@ -1883,7 +1891,8 @@ function renderVerdict(resorts) {
 
   const _fitWord = fitLabel(scoreNum);
   const primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full forecast</button>`;
-  const secondaryBtn = `<button type="button" class="vcard-detail-btn" id="verdictSeeAllRunnersBtn">Compare Mountains</button>`;
+  const secondaryBtn = `<button type="button" class="vcard-detail-btn vcard-compare-btn" id="verdictSeeAllRunnersBtn">Compare Mountains</button>`;
+  const shareBtn = `<button type="button" class="vcard-share-btn vcard-share-btn--icon" id="verdictShareBtn" aria-label="Share this pick" title="Share this pick"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2"/></svg></button>`;
 
   const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
   const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock' : '';
@@ -1927,8 +1936,12 @@ function renderVerdict(resorts) {
 
   const _verdictPhrase = topPickVerdictPhrase(tier, scoreNum);
   const _storyOneLine  = cardStoryOneLine(_narrative.story);
-  const _utilityCrowd  = crowdUtilityShort(crowdLbl);
-  const _utilityDrive  = driveUtilitySegment(resort.id);
+  const _overNearbyCallout = (typeof buildVerdictOverNearbyCallout === 'function')
+    ? buildVerdictOverNearbyCallout(resorts, resort.id, runningItems)
+    : null;
+  const _decisionCalloutHtml = _overNearbyCallout
+    ? `<p class="vcard-decision-callout" role="note">${esc(_overNearbyCallout)}</p>`
+    : '';
 
   // ── Runner-up mini strip · always-on teaser inside the verdict card ─────────
   const runnerStripHtml = runningItems.length > 0 ? (() => {
@@ -1941,12 +1954,16 @@ function renderVerdict(resorts) {
       const _rGold = _rNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
       const _primaryDiff = { resort, crowd: _crowd, drive: getDriveMins(resort.id) };
       const _backupDiff  = { resort: item.resort, crowd: cf, drive: getDriveMins(item.resort.id) };
-      const _rReason = esc(runnerDifferentiator(_primaryDiff, _backupDiff, runningItems));
+      let _rReason = runnerDifferentiator(_primaryDiff, _backupDiff, runningItems);
+      if (state.passFilter !== 'All' && item.resort.passGroup !== state.passFilter) {
+        _rReason = `Not on your ${state.passFilter} pass`;
+      }
+      const _rReasonEsc = esc(_rReason);
       const _rCrowdU = esc(crowdUtilityShort(cf.label));
       const _rDriveU = esc(driveUtilitySegment(item.resort.id));
       return `<button type="button" class="vcard-mini-runner${_rGold}" data-mini-runner-id="${esc(item.resort.id)}">
         <span class="vmr-name">${esc(item.resort.name)}</span>
-        <p class="vmr-reason">${_rReason}</p>
+        <p class="vmr-reason">${_rReasonEsc}</p>
         <div class="vmr-meta" aria-label="Drive and crowds">${_rDriveU} · ${_rCrowdU}</div>
       </button>`;
     }).join('');
@@ -1964,11 +1981,9 @@ function renderVerdict(resorts) {
         <div class="vcard-top-pill vcard-eyebrow">${_eyebrow}</div>
         ${zipNudgeHtml}
         <button type="button" class="vcard-name-dash vcard-name-dash--pick" id="verdictPickBtn">${esc(resort.name)}</button>
+        ${_decisionCalloutHtml}
         <p class="vcard-verdict-line">${esc(_verdictPhrase)}</p>
         <p class="vcard-story-one">${esc(_storyOneLine)}</p>
-        <div class="vcard-utility-row" role="group" aria-label="Drive time">
-          <span>${esc(_utilityDrive)}</span>
-        </div>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         ${_histChipHtml}
@@ -1981,10 +1996,7 @@ function renderVerdict(resorts) {
         <div class="vcard-actions vcard-actions-dash">
           ${primaryBtn}
           ${secondaryBtn}
-          <button type="button" class="vcard-detail-btn vcard-share-btn" id="verdictShareBtn" aria-label="Share this pick">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px;flex-shrink:0"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2"/></svg>
-            Share this pick
-          </button>
+          ${shareBtn}
         </div>
         ${guidanceInsetHtml}
         ${runnerStripHtml}
