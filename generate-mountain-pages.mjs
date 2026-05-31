@@ -36,6 +36,37 @@ function loadFeaturedPartners() {
 }
 const FEATURED_PARTNERS = loadFeaturedPartners();
 
+// ─── Load mountain editorial copy ─────────────────────────────────────────────
+function loadMountainEditorial() {
+  const editorialPath = path.join(__dirname, 'mountain-editorial.js');
+  if (!fs.existsSync(editorialPath)) {
+    console.log('Note: mountain-editorial.js not found. All pages will use templated copy.');
+    return { entries: {}, author: null, methodology: null };
+  }
+  try {
+    const ctx = {};
+    const code = fs.readFileSync(editorialPath, 'utf8');
+    vm.runInNewContext(
+      code + '\nglobalThis.__editorial = MOUNTAIN_EDITORIAL;' +
+             '\nglobalThis.__author = typeof MOUNTAIN_EDITORIAL_AUTHOR !== "undefined" ? MOUNTAIN_EDITORIAL_AUTHOR : null;' +
+             '\nglobalThis.__methodology = typeof MOUNTAIN_EDITORIAL_METHODOLOGY !== "undefined" ? MOUNTAIN_EDITORIAL_METHODOLOGY : null;',
+      ctx
+    );
+    return {
+      entries:     ctx.__editorial   || {},
+      author:      ctx.__author      || null,
+      methodology: ctx.__methodology || null
+    };
+  } catch (e) {
+    console.warn('Warning: could not load mountain-editorial.js:', e.message);
+    return { entries: {}, author: null, methodology: null };
+  }
+}
+const _EDITORIAL = loadMountainEditorial();
+const MOUNTAIN_EDITORIAL = _EDITORIAL.entries;
+const EDITORIAL_AUTHOR   = _EDITORIAL.author;
+const EDITORIAL_METHODOLOGY = _EDITORIAL.methodology;
+
 // ─── Load resort data ──────────────────────────────────────────────────────────
 import { createRequire } from 'module';
 const _require = createRequire(import.meta.url);
@@ -210,7 +241,7 @@ function buildFAQSchema(resort, stateName) {
 }
 
 // ─── JSON-LD schemas ──────────────────────────────────────────────────────────
-function buildSchemas(resort, stateName) {
+function buildSchemas(resort, stateName, editorial) {
   const canonUrl = `https://wheretoskinext.com/ski-report/${resort.id}/`;
 
   const sportsLocation = {
@@ -240,7 +271,73 @@ function buildSchemas(resort, stateName) {
   };
 
   const faq = buildFAQSchema(resort, stateName);
-  return [sportsLocation, breadcrumb, faq];
+
+  const out = [sportsLocation, breadcrumb, faq];
+
+  // Article schema is the strongest signal we can send Google that this page
+  // is substantive original content, not a templated database printout. Only
+  // emit it when there's actual editorial to back it up.
+  if (editorial) {
+    const articleBody = [
+      editorial.lede || '',
+      ...(Array.isArray(editorial.body) ? editorial.body : []),
+      editorial.crowdTake || ''
+    ].filter(Boolean).join('\n\n');
+
+    const article = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: `${resort.name}: ${editorial.hook || ''}`.trim().replace(/:\s*$/, ''),
+      description: editorial.hook || '',
+      articleBody,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonUrl },
+      url: canonUrl,
+      image: 'https://wheretoskinext.com/wtsn-og.png',
+      datePublished: editorial.lastUpdated || undefined,
+      dateModified:  editorial.lastUpdated || undefined,
+      publisher: {
+        '@type': 'Organization',
+        name: 'WhereToSkiNext.com',
+        url: 'https://wheretoskinext.com',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://wheretoskinext.com/wtsn-icon.svg'
+        }
+      },
+      about: { '@type': 'SportsActivityLocation', name: resort.name, url: canonUrl }
+    };
+
+    if (EDITORIAL_AUTHOR) {
+      article.author = {
+        '@type': 'Person',
+        name: EDITORIAL_AUTHOR.name,
+        ...(EDITORIAL_AUTHOR.title ? { jobTitle: EDITORIAL_AUTHOR.title } : {}),
+        ...(EDITORIAL_AUTHOR.bio   ? { description: EDITORIAL_AUTHOR.bio } : {})
+      };
+      // accountablePerson is a separate E-E-A-T signal — it tells Google a
+      // named human is responsible for this content, not a content farm.
+      article.accountablePerson = article.author;
+    }
+
+    // citation: per-mountain sources elevated into structured data. Each entry
+    // becomes a CreativeWork. This is the strongest "research-based" signal
+    // we can emit in schema. Only present when the editorial entry defined it.
+    if (Array.isArray(editorial.sources) && editorial.sources.length > 0) {
+      article.citation = editorial.sources.map(s => {
+        if (typeof s === 'string') {
+          return { '@type': 'CreativeWork', name: s };
+        }
+        const cw = { '@type': 'CreativeWork' };
+        if (s.label) cw.name = s.label;
+        if (s.url)   cw.url  = s.url;
+        return cw;
+      });
+    }
+
+    out.push(article);
+  }
+
+  return out;
 }
 
 // ─── Terrain bar HTML ─────────────────────────────────────────────────────────
@@ -421,14 +518,344 @@ function matcherScript(resort) {
 </script>`;
 }
 
+// ─── Editorial render helpers ─────────────────────────────────────────────────
+function renderEditorial(resort, editorial, allResorts) {
+  if (!editorial) return '';
+
+  const ledePara = `<p class="sr-ed-lede">${esc(editorial.lede || '')}</p>`;
+  const bodyParas = Array.isArray(editorial.body)
+    ? editorial.body.map(p => `<p>${esc(p)}</p>`).join('\n      ')
+    : '';
+
+  const crowdBlock = editorial.crowdTake
+    ? `
+      <aside class="sr-ed-crowd" aria-label="Crowd take">
+        <span class="sr-ed-crowd-label">The crowd take</span>
+        <p>${esc(editorial.crowdTake)}</p>
+      </aside>`
+    : '';
+
+  // Alternatives: cross-link to other mountain pages with editor's commentary.
+  let altsBlock = '';
+  if (Array.isArray(editorial.alternatives) && editorial.alternatives.length > 0) {
+    const cards = editorial.alternatives.map(alt => {
+      const target = allResorts.find(r => r.id === alt.id);
+      if (!target) {
+        console.warn(`  ↳ editorial alternative "${alt.id}" referenced from "${resort.id}" not found in resorts.`);
+        return '';
+      }
+      return `
+        <a class="sr-ed-alt-card" href="/ski-report/${target.id}/">
+          <div class="sr-ed-alt-name">${esc(target.name)}<span class="sr-ed-alt-arrow">&rarr;</span></div>
+          <div class="sr-ed-alt-take">${esc(alt.take || '')}</div>
+        </a>`;
+    }).filter(Boolean).join('');
+    if (cards) {
+      altsBlock = `
+      <div class="sr-ed-alts" aria-label="Smarter alternatives">
+        <div class="sr-ed-alts-label">If not ${esc(resort.name)}, then</div>
+        <div class="sr-ed-alts-grid">${cards}
+        </div>
+      </div>`;
+    }
+  }
+
+  const byline = EDITORIAL_AUTHOR
+    ? `
+      <div class="sr-ed-byline">
+        <span class="sr-ed-byline-by">By ${esc(EDITORIAL_AUTHOR.name)}</span>
+        ${EDITORIAL_AUTHOR.title ? `<span class="sr-ed-byline-title">${esc(EDITORIAL_AUTHOR.title)}</span>` : ''}
+        ${editorial.lastUpdated ? `<span class="sr-ed-byline-date">Updated ${esc(formatEditorialDate(editorial.lastUpdated))}</span>` : ''}
+      </div>`
+    : '';
+
+  // Methodology / sources disclosure. Appended to every editorial article.
+  // The duplicate boilerplate across pages is fine — it's a small fraction of
+  // each page's prose, and the transparency signal (named sources, honest
+  // experience disclosure) is real E-E-A-T value Google rewards.
+  const methodologyBlock = renderMethodology(editorial);
+
+  return `
+    <article class="sr-editorial" itemscope itemtype="https://schema.org/Article">
+      <meta itemprop="headline" content="${esc(resort.name)}: ${esc(editorial.hook || '')}" />
+      ${editorial.lastUpdated ? `<meta itemprop="dateModified" content="${esc(editorial.lastUpdated)}" />` : ''}
+      <span class="sr-ed-kicker">Editor's take</span>
+      <p class="sr-ed-hook">${esc(editorial.hook || '')}</p>
+      ${byline}
+      <div class="sr-ed-body" itemprop="articleBody">
+        ${ledePara}
+        ${bodyParas}
+      </div>
+      ${crowdBlock}
+      ${altsBlock}
+      ${methodologyBlock}
+    </article>`;
+}
+
+function renderMethodology(editorial) {
+  if (!EDITORIAL_METHODOLOGY) return '';
+
+  const m = EDITORIAL_METHODOLOGY;
+  const heading = esc(m.heading || 'How this review was put together');
+  const paras = (Array.isArray(m.paragraphs) ? m.paragraphs : [])
+    .map(p => `<p>${esc(p)}</p>`).join('\n        ');
+
+  // Per-mountain sources, if the editorial entry provided any. Strings render
+  // as a bulleted list; objects with {label, url} render as links.
+  let perMountain = '';
+  if (Array.isArray(editorial.sources) && editorial.sources.length > 0) {
+    const items = editorial.sources.map(s => {
+      if (typeof s === 'string') return `<li>${esc(s)}</li>`;
+      if (s && s.url && s.label) {
+        return `<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a></li>`;
+      }
+      if (s && s.label) return `<li>${esc(s.label)}</li>`;
+      return '';
+    }).filter(Boolean).join('\n          ');
+    if (items) {
+      perMountain = `
+      <div class="sr-ed-sources-list">
+        <div class="sr-ed-sources-label">${esc(m.sourcesLabel || 'Additional sources for this mountain')}</div>
+        <ul>
+          ${items}
+        </ul>
+      </div>`;
+    }
+  }
+
+  const stamp = m.integrityStamp
+    ? `<p class="sr-ed-method-stamp">${esc(m.integrityStamp)}</p>`
+    : '';
+
+  return `
+      <section class="sr-ed-method" aria-label="Methodology and sources">
+        <div class="sr-ed-method-head">${heading}</div>
+        <div class="sr-ed-method-body">
+          ${paras}
+        </div>
+        ${perMountain}
+        ${stamp}
+      </section>`;
+}
+
+function formatEditorialDate(iso) {
+  // "2026-05-31" -> "May 2026"
+  if (!iso || typeof iso !== 'string') return '';
+  const m = iso.match(/^(\d{4})-(\d{2})-/);
+  if (!m) return iso;
+  const months = ['Jan','Feb','Mar','Apr','May','June','July','Aug','Sept','Oct','Nov','Dec'];
+  return `${months[parseInt(m[2], 10) - 1]} ${m[1]}`;
+}
+
+// CSS scoped to editorial sections. Emitted in <head> only on pages with
+// editorial, so non-editorial pages are byte-identical to their old output.
+const EDITORIAL_CSS = `
+    <style>
+      .sr-editorial {
+        background: #fff;
+        border: 1px solid #e3ebf3;
+        border-left: 4px solid #5aaddc;
+        border-radius: 12px;
+        padding: 28px 32px;
+        margin: 24px 0 28px;
+      }
+      .sr-ed-kicker {
+        display: inline-block;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #5aaddc;
+        margin-bottom: 10px;
+      }
+      .sr-ed-hook {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 26px;
+        line-height: 1.25;
+        font-weight: 600;
+        color: #0c2138;
+        margin: 0 0 14px;
+      }
+      .sr-ed-byline {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 13px;
+        color: #5a6a85;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #eef3f8;
+      }
+      .sr-ed-byline-by { font-weight: 600; color: #1a2030; }
+      .sr-ed-byline-title { margin-left: 10px; }
+      .sr-ed-byline-date { margin-left: 10px; color: #8a9ab5; }
+      .sr-ed-body {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 18px;
+        line-height: 1.65;
+        color: #1f2a3d;
+      }
+      .sr-ed-body p { margin: 0 0 14px; }
+      .sr-ed-body p:last-child { margin-bottom: 0; }
+      .sr-ed-lede {
+        font-size: 19px;
+        line-height: 1.6;
+      }
+      .sr-ed-crowd {
+        margin-top: 22px;
+        background: #f4f9fd;
+        border-left: 3px solid #5aaddc;
+        border-radius: 0 8px 8px 0;
+        padding: 16px 20px;
+      }
+      .sr-ed-crowd-label {
+        display: block;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #3f93c4;
+        margin-bottom: 6px;
+      }
+      .sr-ed-crowd p {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 17px;
+        line-height: 1.55;
+        color: #0c2138;
+        margin: 0;
+        font-weight: 500;
+      }
+      .sr-ed-alts {
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 1px solid #eef3f8;
+      }
+      .sr-ed-alts-label {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #5a6a85;
+        margin-bottom: 12px;
+      }
+      .sr-ed-alts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .sr-ed-alt-card {
+        display: block;
+        background: #f8fafd;
+        border: 1px solid #e3ebf3;
+        border-radius: 8px;
+        padding: 14px 16px;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color .15s, background .15s, transform .15s;
+      }
+      .sr-ed-alt-card:hover {
+        border-color: #5aaddc;
+        background: #fff;
+        transform: translateY(-1px);
+      }
+      .sr-ed-alt-name {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        color: #0c2138;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 4px;
+      }
+      .sr-ed-alt-arrow { color: #5aaddc; }
+      .sr-ed-alt-take {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 15px;
+        line-height: 1.45;
+        color: #3a4660;
+      }
+      @media (max-width: 640px) {
+        .sr-editorial { padding: 22px 20px; }
+        .sr-ed-hook { font-size: 22px; }
+        .sr-ed-body { font-size: 17px; }
+        .sr-ed-byline { font-size: 12px; }
+        .sr-ed-byline-title { display: block; margin-left: 0; margin-top: 2px; }
+        .sr-ed-byline-date  { display: block; margin-left: 0; margin-top: 2px; }
+      }
+      /* Methodology / sources block */
+      .sr-ed-method {
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid #eef3f8;
+        font-family: 'Inter', system-ui, sans-serif;
+      }
+      .sr-ed-method-head {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #5a6a85;
+        margin-bottom: 12px;
+      }
+      .sr-ed-method-body {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: #5a6a85;
+      }
+      .sr-ed-method-body p { margin: 0 0 10px; }
+      .sr-ed-method-body p:last-child { margin-bottom: 0; }
+      .sr-ed-sources-list {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px dashed #e3ebf3;
+      }
+      .sr-ed-sources-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #8a9ab5;
+        margin-bottom: 8px;
+      }
+      .sr-ed-sources-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 13px;
+        color: #5a6a85;
+        line-height: 1.55;
+      }
+      .sr-ed-sources-list li {
+        padding: 2px 0;
+      }
+      .sr-ed-sources-list a {
+        color: #3f93c4;
+        text-decoration: none;
+        border-bottom: 1px solid #cfe0ee;
+      }
+      .sr-ed-sources-list a:hover { color: #0c2138; border-bottom-color: #5aaddc; }
+      .sr-ed-method-stamp {
+        margin: 14px 0 0;
+        font-size: 12px;
+        font-style: italic;
+        color: #8a9ab5;
+      }
+      @media (max-width: 640px) {
+        .sr-ed-method-body { font-size: 13px; }
+      }
+    </style>`;
+
 // ─── Generate HTML for one mountain page ──────────────────────────────────────
 function generateMountainPage(resort, allResorts) {
   const stateName  = stateFullName(resort.state);
   const stateSlug  = slugifyState(resort.state);
+  const editorial  = MOUNTAIN_EDITORIAL[resort.id] || null;
   const canonUrl   = `https://wheretoskinext.com/ski-report/${resort.id}/`;
   const liveScoreUrl    = `https://wheretoskinext.com/?resort=${resort.id}#searchSection`;
   const compareExploreUrl = `https://wheretoskinext.com/?st=${encodeURIComponent(resort.state)}#compareSection`;
-  const schemas    = buildSchemas(resort, stateName);
+  const schemas    = buildSchemas(resort, stateName, editorial);
   const nearby     = nearbyResorts(resort, allResorts);
   const tb         = resort.terrainBreakdown;
   const year       = new Date().getFullYear();
@@ -521,7 +948,7 @@ function generateMountainPage(resort, allResorts) {
   <link rel="stylesheet" href="/ski-report/ski-report-page.css" />
   <link rel="stylesheet" href="/newsletter-band.css" />
   <link rel="stylesheet" href="/site-tokens-bridge.css" />
-
+${editorial ? EDITORIAL_CSS : ''}
   <script type="application/ld+json">
   ${JSON.stringify(schemas, null, 2)}
   </script>
@@ -657,6 +1084,7 @@ function generateMountainPage(resort, allResorts) {
 
     ${highlightsBlock}
 
+    ${editorial ? renderEditorial(resort, editorial, allResorts) : `
     <article class="sr-snapshot">
       <h2>${esc(resort.name)} at a glance</h2>
       <p>
@@ -670,7 +1098,7 @@ function generateMountainPage(resort, allResorts) {
       <p>
         Snow conditions update often. Check back before you go. A fresh forecast can change everything.
       </p>
-    </article>
+    </article>`}
 
     ${(resort.passGroup === "Epic" || resort.passGroup === "Ikon") && passComparisonPage(resort.state)
       ? `
@@ -953,6 +1381,20 @@ function generateSitemap(resorts) {
 async function main() {
   const resorts = loadResorts();
   console.log(`Loaded ${resorts.length} resorts`);
+
+  // Validate editorial entries against actual resort IDs. A typo here would
+  // silently fail (page falls back to template), so we warn loudly at build.
+  const editorialIds = Object.keys(MOUNTAIN_EDITORIAL);
+  if (editorialIds.length > 0) {
+    const validIds = new Set(resorts.map(r => r.id));
+    const unmatched = editorialIds.filter(id => !validIds.has(id));
+    const matched   = editorialIds.length - unmatched.length;
+    console.log(`Loaded editorial for ${matched}/${editorialIds.length} mountains`);
+    if (unmatched.length > 0) {
+      console.warn('  ⚠ Editorial entries with no matching resort.id (rename in mountain-editorial.js):');
+      for (const id of unmatched) console.warn(`     - "${id}"`);
+    }
+  }
 
   const outBase = path.join(__dirname, 'ski-report');
   fs.mkdirSync(outBase, { recursive: true });
