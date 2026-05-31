@@ -297,6 +297,26 @@ const MOUNTAIN_EDITORIAL = {
 
     lastUpdated: "2026-05-31"
   },
+  'mount-sunapee': {
+    hook: "On Epic and an hour from Boston, which is the entire pitch and the entire problem.",
+
+    lede: "Mount Sunapee is one of those mountains that makes a lot of sense on paper and still works in real life, as long as you know what kind of day you are signing up for. It is close enough to Boston to be a realistic day trip, it is on Epic, and it has the kind of terrain that works for families, intermediates, and mixed-ability groups. That same convenience is also the problem. On a winter weekend, you are not the only person who noticed it.",
+
+    body: [
+      "The move at Sunapee is to get there early and ski with purpose. If you can get good laps in before 10:30 or so, the mountain can feel like a win before the busiest part of the day even starts. After that, the lift lines and base-area traffic tend to build, especially on Epic-heavy weekends when skiers from all over eastern Massachusetts and southern New Hampshire are making the same calculation.",
+
+      "Sunapee is not the place you pick for solitude. It is the place you pick when the group wants a dependable family ski day, manageable terrain, and enough vertical to feel like you actually went skiing. The reward, when the weather is clear, is the view over Lake Sunapee. It gives the whole place a little more drama than the trail map suggests."
+    ],
+
+    crowdTake: "Ski Sunapee like a morning mountain. Get the early laps, enjoy the lake view, and accept that the middle of the day may be more about company than vertical. If the group is relaxed about that, Sunapee can still be a great family day.",
+
+    alternatives: [
+      { id: 'pats-peak', take: "Smaller and less dramatic, but often the easier family play when the goal is a simpler southern New Hampshire ski day." },
+      { id: 'ragged-mountain-resort', take: "A better choice when the day calls for more breathing room and a more independent New Hampshire feel." }
+    ],
+
+    lastUpdated: "2026-05-31"
+  },
 
   // Maine
   'sunday-river': {
