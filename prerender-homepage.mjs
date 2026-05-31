@@ -39,9 +39,10 @@ const esc = s => String(s ?? '')
   .replace(/"/g, '&quot;');
 
 // ─── Static table rows (match compare table in index.html: 9 columns) ─────
-function awinBookingSearchHref(r) {
-  const dest = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(`${r.name}, ${r.state}`)}`;
-  return `https://www.awin1.com/cread.php?awinmid=6776&awinaffid=2816032&ued=${encodeURIComponent(dest)}`;
+// Lodging search URL. Plain Booking.com link for now; will be swapped to
+// a new affiliate program when wired in. Centralize here so the swap is one edit.
+function bookingSearchHref(r) {
+  return `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(`${r.name}, ${r.state}`)}`;
 }
 
 function buildTableRows(resorts) {
@@ -62,7 +63,7 @@ function buildTableRows(resorts) {
       <td>—</td>
       <td>$${r.price}</td>
       <td>
-        <a class="table-lodging-link" href="${esc(awinBookingSearchHref(r))}" target="_blank" rel="noopener sponsored">Find a place →</a>
+        <a class="table-lodging-link" href="${esc(bookingSearchHref(r))}" target="_blank" rel="noopener sponsored">Find a place →</a>
       </td>
     </tr>`).join('\n');
 }
