@@ -43,6 +43,202 @@
   <link rel="stylesheet" href="/newsletter-band.css" />
   <link rel="stylesheet" href="/site-tokens-bridge.css" />
 
+    <style>
+      .sr-editorial {
+        background: #fff;
+        border: 1px solid #e3ebf3;
+        border-left: 4px solid #5aaddc;
+        border-radius: 12px;
+        padding: 28px 32px;
+        margin: 24px 0 28px;
+      }
+      .sr-ed-kicker {
+        display: inline-block;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #5aaddc;
+        margin-bottom: 10px;
+      }
+      .sr-ed-hook {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 26px;
+        line-height: 1.25;
+        font-weight: 600;
+        color: #0c2138;
+        margin: 0 0 14px;
+      }
+      .sr-ed-byline {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 13px;
+        color: #5a6a85;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #eef3f8;
+      }
+      .sr-ed-byline-by { font-weight: 600; color: #1a2030; }
+      .sr-ed-byline-title { margin-left: 10px; }
+      .sr-ed-byline-date { margin-left: 10px; color: #8a9ab5; }
+      .sr-ed-body {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 18px;
+        line-height: 1.65;
+        color: #1f2a3d;
+      }
+      .sr-ed-body p { margin: 0 0 14px; }
+      .sr-ed-body p:last-child { margin-bottom: 0; }
+      .sr-ed-lede {
+        font-size: 19px;
+        line-height: 1.6;
+      }
+      .sr-ed-crowd {
+        margin-top: 22px;
+        background: #f4f9fd;
+        border-left: 3px solid #5aaddc;
+        border-radius: 0 8px 8px 0;
+        padding: 16px 20px;
+      }
+      .sr-ed-crowd-label {
+        display: block;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #3f93c4;
+        margin-bottom: 6px;
+      }
+      .sr-ed-crowd p {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 17px;
+        line-height: 1.55;
+        color: #0c2138;
+        margin: 0;
+        font-weight: 500;
+      }
+      .sr-ed-alts {
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 1px solid #eef3f8;
+      }
+      .sr-ed-alts-label {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #5a6a85;
+        margin-bottom: 12px;
+      }
+      .sr-ed-alts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .sr-ed-alt-card {
+        display: block;
+        background: #f8fafd;
+        border: 1px solid #e3ebf3;
+        border-radius: 8px;
+        padding: 14px 16px;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color .15s, background .15s, transform .15s;
+      }
+      .sr-ed-alt-card:hover {
+        border-color: #5aaddc;
+        background: #fff;
+        transform: translateY(-1px);
+      }
+      .sr-ed-alt-name {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        color: #0c2138;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 4px;
+      }
+      .sr-ed-alt-arrow { color: #5aaddc; }
+      .sr-ed-alt-take {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 15px;
+        line-height: 1.45;
+        color: #3a4660;
+      }
+      @media (max-width: 640px) {
+        .sr-editorial { padding: 22px 20px; }
+        .sr-ed-hook { font-size: 22px; }
+        .sr-ed-body { font-size: 17px; }
+        .sr-ed-byline { font-size: 12px; }
+        .sr-ed-byline-title { display: block; margin-left: 0; margin-top: 2px; }
+        .sr-ed-byline-date  { display: block; margin-left: 0; margin-top: 2px; }
+      }
+      /* Methodology / sources block */
+      .sr-ed-method {
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid #eef3f8;
+        font-family: 'Inter', system-ui, sans-serif;
+      }
+      .sr-ed-method-head {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #5a6a85;
+        margin-bottom: 12px;
+      }
+      .sr-ed-method-body {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: #5a6a85;
+      }
+      .sr-ed-method-body p { margin: 0 0 10px; }
+      .sr-ed-method-body p:last-child { margin-bottom: 0; }
+      .sr-ed-sources-list {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px dashed #e3ebf3;
+      }
+      .sr-ed-sources-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #8a9ab5;
+        margin-bottom: 8px;
+      }
+      .sr-ed-sources-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 13px;
+        color: #5a6a85;
+        line-height: 1.55;
+      }
+      .sr-ed-sources-list li {
+        padding: 2px 0;
+      }
+      .sr-ed-sources-list a {
+        color: #3f93c4;
+        text-decoration: none;
+        border-bottom: 1px solid #cfe0ee;
+      }
+      .sr-ed-sources-list a:hover { color: #0c2138; border-bottom-color: #5aaddc; }
+      .sr-ed-method-stamp {
+        margin: 14px 0 0;
+        font-size: 12px;
+        font-style: italic;
+        color: #8a9ab5;
+      }
+      @media (max-width: 640px) {
+        .sr-ed-method-body { font-size: 13px; }
+      }
+    </style>
   <script type="application/ld+json">
   [
   {
@@ -147,6 +343,47 @@
         }
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Breckenridge: Breckenridge is the Colorado default, which is useful until it becomes too obvious.",
+    "description": "Breckenridge is the Colorado default, which is useful until it becomes too obvious.",
+    "articleBody": "Breckenridge works for a lot of people. The town is real, the terrain is broad, the high-alpine story is strong, and the name recognition makes planning easier. It is also one of the easiest Colorado resorts to choose without thinking hard enough about crowds, altitude, and what kind of skiing your group actually wants.\n\nThe strength is range. Beginners, intermediates, advanced skiers, park riders, and people who care about the town can all make a case. Few resorts solve that many group problems at once, which is why Breck stays so popular.\n\nThe downside is that popularity follows you everywhere. Lift lines, busy base areas, and altitude fatigue can all shape the trip. Breckenridge is best when the group wants Colorado energy and can handle the scale of the scene.\n\nBreck is the easy Colorado group pick. If the skiers in the group want a sharper, simpler, more mountain-first day nearby, Arapahoe Basin is the better contrast.",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://wheretoskinext.com/ski-report/breckenridge/"
+    },
+    "url": "https://wheretoskinext.com/ski-report/breckenridge/",
+    "image": "https://wheretoskinext.com/wtsn-og.png",
+    "datePublished": "2026-05-31",
+    "dateModified": "2026-05-31",
+    "publisher": {
+      "@type": "Organization",
+      "name": "WhereToSkiNext.com",
+      "url": "https://wheretoskinext.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://wheretoskinext.com/wtsn-icon.svg"
+      }
+    },
+    "about": {
+      "@type": "SportsActivityLocation",
+      "name": "Breckenridge",
+      "url": "https://wheretoskinext.com/ski-report/breckenridge/"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Trip",
+      "jobTitle": "Founder, WhereToSkiNext.com",
+      "description": "Grew up skiing and racing at Bousquet Mountain in the Berkshires. Now skis with my family across the Northeast and beyond."
+    },
+    "accountablePerson": {
+      "@type": "Person",
+      "name": "Trip",
+      "jobTitle": "Founder, WhereToSkiNext.com",
+      "description": "Grew up skiing and racing at Bousquet Mountain in the Berkshires. Now skis with my family across the Northeast and beyond."
+    }
   }
 ]
   </script>
@@ -288,19 +525,53 @@
       </ul>
     </section>
 
-    <article class="sr-snapshot">
-      <h2>Breckenridge at a glance</h2>
-      <p>
-        Breckenridge sits in Colorado with 3,398 ft of vertical drop, 187 trails, and 2,908 skiable acres.
-        Breckenridge skews toward experienced skiers. About 55% of the mountain is advanced terrain. Terrain park on site.
-      </p>
-      <p>
-        The mountain averages 300" of snowfall per season with 600 GPM of snowmaking capacity.
-        Lift tickets start around $259; day-of pricing varies. Breckenridge is a <strong>Epic Pass</strong> mountain.
-      </p>
-      <p>
-        Snow conditions update often. Check back before you go. A fresh forecast can change everything.
-      </p>
+    
+    <article class="sr-editorial" itemscope itemtype="https://schema.org/Article">
+      <meta itemprop="headline" content="Breckenridge: Breckenridge is the Colorado default, which is useful until it becomes too obvious." />
+      <meta itemprop="dateModified" content="2026-05-31" />
+      <span class="sr-ed-kicker">Editor's take</span>
+      <p class="sr-ed-hook">Breckenridge is the Colorado default, which is useful until it becomes too obvious.</p>
+      
+      <div class="sr-ed-byline">
+        <span class="sr-ed-byline-by">By Trip</span>
+        <span class="sr-ed-byline-title">Founder, WhereToSkiNext.com</span>
+        <span class="sr-ed-byline-date">Updated May 2026</span>
+      </div>
+      <div class="sr-ed-body" itemprop="articleBody">
+        <p class="sr-ed-lede">Breckenridge works for a lot of people. The town is real, the terrain is broad, the high-alpine story is strong, and the name recognition makes planning easier. It is also one of the easiest Colorado resorts to choose without thinking hard enough about crowds, altitude, and what kind of skiing your group actually wants.</p>
+        <p>The strength is range. Beginners, intermediates, advanced skiers, park riders, and people who care about the town can all make a case. Few resorts solve that many group problems at once, which is why Breck stays so popular.</p>
+      <p>The downside is that popularity follows you everywhere. Lift lines, busy base areas, and altitude fatigue can all shape the trip. Breckenridge is best when the group wants Colorado energy and can handle the scale of the scene.</p>
+      </div>
+      
+      <aside class="sr-ed-crowd" aria-label="Crowd take">
+        <span class="sr-ed-crowd-label">The crowd take</span>
+        <p>Breck is the easy Colorado group pick. If the skiers in the group want a sharper, simpler, more mountain-first day nearby, Arapahoe Basin is the better contrast.</p>
+      </aside>
+      
+      <div class="sr-ed-alts" aria-label="Smarter alternatives">
+        <div class="sr-ed-alts-label">If not Breckenridge, then</div>
+        <div class="sr-ed-alts-grid">
+        <a class="sr-ed-alt-card" href="/ski-report/arapahoe-basin/">
+          <div class="sr-ed-alt-name">Arapahoe Basin<span class="sr-ed-alt-arrow">&rarr;</span></div>
+          <div class="sr-ed-alt-take">The high, exposed, skier-first counterpoint without the full town-resort machine.</div>
+        </a>
+        <a class="sr-ed-alt-card" href="/ski-report/vail/">
+          <div class="sr-ed-alt-name">Vail<span class="sr-ed-alt-arrow">&rarr;</span></div>
+          <div class="sr-ed-alt-take">The bigger Epic destination when acreage and resort scale matter most.</div>
+        </a>
+        </div>
+      </div>
+      
+      <section class="sr-ed-method" aria-label="Methodology and sources">
+        <div class="sr-ed-method-head">How this review was put together</div>
+        <div class="sr-ed-method-body">
+          <p>Mountain data comes from each resort's own operator materials. That covers trail counts, vertical drop, lift configurations, and ticket pricing. Pass affiliations track Epic, Ikon, and Indy Pass network listings. Historical snowfall averages combine OpenSnow archives, NOAA station data, and Open-Meteo's archive API.</p>
+        <p>Editorial takes draw on ski media coverage (SKI Magazine, Powder, Storm Skiing Journal, regional outlets including NewEnglandSkiIndustry.com and Unofficial Networks), aggregator comparisons (ZRankings, PeakRankings, OnTheSnow) for cross-reference, and skier forums and trip reports for crowd-pattern signal. Live crowd outlook on the main tool runs through WhereToSkiNext's own pressure model, which weights metro gravity, pass-network pull, destination draw, capacity tier, day of week, and weather.</p>
+        <p>Where I have skied the mountain, that experience anchors the call. Where I have not, the take is synthesized from the sources above. No resort pays for ranking placement or editorial influence on WhereToSkiNext. Reviews are updated as conditions, ownership, or pass affiliations change.</p>
+        </div>
+        
+        <p class="sr-ed-method-stamp">Independent review. No resort paid for placement or editorial influence.</p>
+      </section>
     </article>
 
     
