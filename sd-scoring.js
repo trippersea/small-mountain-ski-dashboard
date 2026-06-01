@@ -309,16 +309,13 @@ function mountainSizeIndex(resort) {
   return v * 0.50 + a * 0.35 + l * 0.15;
 }
 
-/** Mon–Thu trip (hero “Weekday” chip) — terrain should beat proximity when crowds are light. */
+/** Target ski day is Mon–Thu (terrain over drive). Default chip uses tomorrow; weekend chips opt out. */
 function isWeekdaySkiTrip() {
   const preset = state.skiDayPreset;
-  if (preset === 'weekday') return true;
   if (preset === 'friday' || preset === 'saturday' || preset === 'sunday') return false;
-  if (state.targetDate instanceof Date) {
-    const dow = state.targetDate.getDay();
-    return dow >= 1 && dow <= 4;
-  }
-  return false;
+  if (!(state.targetDate instanceof Date)) return false;
+  const dow = state.targetDate.getDay();
+  return dow >= 1 && dow <= 4;
 }
 
 // ─── Mountain fit index ───────────────────────────────────────────────────────

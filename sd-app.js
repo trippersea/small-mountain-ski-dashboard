@@ -500,15 +500,16 @@ const state = Object.seal({
   skiDayPreset:   'weekday',
 });
 
-// ─── Hero “When” bar · maps chip value → next occurrence Date (local) ────────
+// ─── Hero “When” bar · maps chip value → ski Date (local, midnight) ───────────
+// Default “weekday” chip = tomorrow’s forecast (Mon→Tue, Fri→Sat, Sun→Mon).
+// Explicit Friday / Saturday / Sunday chips = next calendar match for that day.
 function dayValToDate(val) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const dow = today.getDay();
   const d = new Date(today);
   if (val === 'weekday') {
-    if (dow === 0) d.setDate(d.getDate() + 1);
-    else if (dow === 6) d.setDate(d.getDate() + 2);
+    d.setDate(d.getDate() + 1);
     return d;
   }
   if (val === 'friday') {
@@ -526,12 +527,8 @@ function dayValToDate(val) {
   return today;
 }
 
+/** Default When chip on load: always “weekday” (tomorrow via dayValToDate). */
 function smartDefaultWhenVal() {
-  const dow = new Date().getDay(); // 0=Sun … 6=Sat
-  if (dow === 0) return 'weekday';    // Sun → Mon (next open weekday)
-  if (dow === 6) return 'saturday';  // Sat → today
-  if (dow === 5) return 'friday';    // Fri → today
-  if (dow >= 1 && dow <= 4) return 'weekday'; // Mon–Thu → today (midweek trip)
   return 'weekday';
 }
 
@@ -604,6 +601,16 @@ function updateHeroFilterSegmentsCustom() {}
 const HERO_DAY_LABELS = { weekday: 'Weekday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
 const HERO_PRIORITY_LABELS = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow', 15: 'Powder day' };
 
+/** Hero / freshness copy: default chip shows tomorrow’s day name (e.g. Tuesday). */
+function heroSkiDayDisplayLabel() {
+  const preset = state.skiDayPreset || smartDefaultWhenVal();
+  const d = state.targetDate instanceof Date ? state.targetDate : dayValToDate(preset);
+  if (preset === 'weekday') {
+    return d.toLocaleDateString('en-US', { weekday: 'long' });
+  }
+  return HERO_DAY_LABELS[preset] || String(preset);
+}
+
 function heroPriorityLabelFromSnowWeight(v) {
   const n = Number(v);
   if (Number.isFinite(n) && HERO_PRIORITY_LABELS[n]) return HERO_PRIORITY_LABELS[n];
@@ -618,9 +625,7 @@ function syncHeroDefaultsRow() {
   const prLblEl  = document.getElementById('heroDefaultPriorityLabel');
   if (!dayLblEl || !prLblEl) return;
 
-  const dayVal = state.skiDayPreset || smartDefaultWhenVal();
-  const dayLbl = HERO_DAY_LABELS[dayVal] || String(dayVal);
-  dayLblEl.textContent = `Ski day: ${dayLbl}`;
+  dayLblEl.textContent = `Ski day: ${heroSkiDayDisplayLabel()}`;
 
   const snowVal = (state.weights && state.weights.snow != null) ? state.weights.snow : 1;
   const prLbl = heroPriorityLabelFromSnowWeight(snowVal);
@@ -690,11 +695,10 @@ function syncHeroV2UI() {
     btn.classList.toggle('is-active', btn.dataset.trip === String(state.howFar ?? 0));
   });
 
-  // Compact summary: "Friday • Best fit"
+  // Compact summary: "Tuesday • Best fit" (default chip = tomorrow’s forecast day)
   const summaryEl = document.getElementById('heroV2SummaryLabel');
   if (summaryEl) {
-    const v = state.skiDayPreset || smartDefaultWhenVal();
-    const lab = (HERO_DAY_LABELS[v] || String(v));
+    const lab = heroSkiDayDisplayLabel();
     const snowVal = (state.weights && state.weights.snow != null) ? state.weights.snow : 1;
     const prLab = (HERO_PRIORITY_LABELS[Number(snowVal)] || heroPriorityLabelFromSnowWeight(snowVal));
     summaryEl.textContent = `${lab} \u2022 ${prLab}`;
@@ -1676,6 +1680,9 @@ function saveCompareSession(v, runningItems, resorts) {
     passFilter:   state.passFilter,
     howFar:       state.howFar,
     skiDayPreset: state.skiDayPreset,
+    targetDate: state.targetDate instanceof Date
+      ? state.targetDate.toISOString().slice(0, 10)
+      : null,
     forecastIndex: fi,
     rankingTotal: rankedWithWeather,
     fullRankings,
@@ -1989,7 +1996,9 @@ function renderVerdict(resorts) {
     return `${Math.round(mins / 60)}h ago`;
   })() : null;
   const _forecastDayStr = (() => {
-    const d = dayValToDate(state.skiDayPreset || smartDefaultWhenVal());
+    const d = state.targetDate instanceof Date
+      ? state.targetDate
+      : dayValToDate(state.skiDayPreset || smartDefaultWhenVal());
     return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   })();
   const _freshnessHtml = _agoStr

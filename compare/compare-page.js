@@ -50,7 +50,13 @@
     return 'Day trip';
   }
 
-  function dayLabel(preset) {
+  function dayLabel(preset, targetDateIso) {
+    if (preset === 'weekday' && targetDateIso) {
+      const d = new Date(targetDateIso + 'T12:00:00');
+      if (!Number.isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-US', { weekday: 'long' });
+      }
+    }
     const map = { weekday: 'Weekday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
     return map[preset] || 'Today';
   }
@@ -129,7 +135,7 @@
     const parts = [];
     // Use the session's ski day label so "tomorrow" isn't hardcoded for a Saturday trip.
     const daySnowLabel = skiDayPreset && skiDayPreset !== 'weekday'
-      ? (dayLabel(skiDayPreset) + ' forecast')
+      ? (dayLabel(skiDayPreset, targetDateIso) + ' forecast')
       : 'forecast';
     if (r.driveText)                         parts.push(r.driveText + ' away');
     if (r.stormTotal >= 4)                   parts.push(`${Math.round(r.stormTotal)}\u2033 of snow ${daySnowLabel}`);
@@ -247,7 +253,8 @@
 
   // ─── Hydrate page ──────────────────────────────────────────────────────────
   const {
-    origin, passFilter, howFar, skiDayPreset, forecastIndex = 0,
+    origin, passFilter, howFar, skiDayPreset, targetDate: targetDateIso = null,
+    forecastIndex = 0,
     topPick, runners = [], fullRankings = [], rankingTotal = 0,
   } = session;
   const city = cityName(origin.label);
@@ -272,7 +279,7 @@
   if (ctxDiv) {
     const chips = [
       tripLabel(howFar),
-      dayLabel(skiDayPreset),
+      dayLabel(skiDayPreset, targetDateIso),
       (passFilter && passFilter !== 'All') ? `${passFilter} pass` : null,
       `From ${origin.label || city}`,
     ].filter(Boolean);
