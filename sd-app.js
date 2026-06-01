@@ -1519,6 +1519,51 @@ function populateStateFilterSelects() {
   if (plannerSel) plannerSel.innerHTML = html;
 }
 
+/** Action-oriented copy for the verdict-card refine nudge (no “conditions look tight”). */
+function verdictRefineGuidanceCopy() {
+  const snowW = Number(state.weights?.snow ?? 1);
+  const hints = [];
+
+  if (state.howFar === 0) hints.push('extended drive (3h+)');
+  else if (state.howFar === 1) hints.push('any distance');
+
+  if (snowW >= 15) hints.push('Any snow');
+  else if (snowW >= 10) hints.push('6″+ storm or less');
+  else if (snowW >= 5) hints.push('Any snow');
+
+  if (state.stateFilter !== 'All') {
+    const st = (typeof STATE_FILTER_LABELS !== 'undefined' && STATE_FILTER_LABELS[state.stateFilter])
+      || state.stateFilter;
+    hints.push(`all states (not just ${st})`);
+  }
+  if (state.passFilter !== 'All') hints.push('any pass');
+  if (Number(state.weights?.crowd ?? 1) >= 10) hints.push('relaxed crowd setting');
+
+  let action = 'Open filter options';
+  if (state.howFar === 0 && snowW >= 5) action = 'Widen drive or ease snow';
+  else if (state.howFar === 0) action = 'Widen drive range';
+  else if (state.howFar === 1 && snowW >= 5) action = 'Try any distance or ease snow';
+  else if (snowW >= 5) action = 'Ease snow filter';
+  else if (state.stateFilter !== 'All') action = 'Expand state filter';
+
+  const detail = hints.length
+    ? hints.slice(0, 2).join(' · ')
+    : 'Distance, snow, pass, state, and crowd';
+
+  return { action, detail };
+}
+
+function buildVerdictRefineGuidanceHtml() {
+  const { action, detail } = verdictRefineGuidanceCopy();
+  return `<button type="button" class="vcard-refine-nudge" id="verdictRefineGuidanceBtn">
+    <span class="vcard-refine-nudge__body">
+      <span class="vcard-refine-nudge__action">${esc(action)}</span>
+      <span class="vcard-refine-nudge__detail">${esc(detail)}</span>
+    </span>
+    <span class="vcard-refine-nudge__arrow" aria-hidden="true">&#8594;</span>
+  </button>`;
+}
+
 function syncPlannerControls() {
   const plannerRoot = document.getElementById('plannerDetails');
 
@@ -1952,17 +1997,7 @@ function renderVerdict(resorts) {
   const showVerdictGuidance = tier === 'bad'
     || tier === 'marginal'
     || (breakdown && scoreNum < 48 && tier !== 'great');
-  const _widenSuggestion = state.howFar === 0
-    ? 'Widen distance or ease snow filter'
-    : state.howFar === 1
-    ? 'Try any distance or ease snow'
-    : 'Ease snow or pass filter';
-  const guidanceInsetHtml = showVerdictGuidance
-    ? `<p class="vcard-refine-hint vcard-refine-hint--option2" role="note">
-        <span class="vcard-refine-hint-ico" aria-hidden="true"></span>
-        <span class="vcard-refine-hint-inline"><span class="vcard-refine-hint-line">Conditions look tight. </span><button type="button" class="vcard-refine-hint-link" id="verdictRefineGuidanceBtn">${esc(_widenSuggestion)}</button></span>
-      </p>`
-    : '';
+  const guidanceInsetHtml = showVerdictGuidance ? buildVerdictRefineGuidanceHtml() : '';
   const _wxVerdict = state.weatherCache[resort.id]?.data;
   const _narrative = getMountainNarrative(buildNarrativeMountainPayload(resort, _wxVerdict));
   const _pureGoldCls = _narrative.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
@@ -2168,8 +2203,9 @@ function renderVerdict(resorts) {
       const titleEl = document.getElementById('hnRefinePromptTitle');
       const subEl   = document.getElementById('hnRefinePromptSub');
       if (isUrgent) {
-        if (titleEl) titleEl.textContent = 'Conditions are rough right now.';
-        if (subEl)   subEl.textContent   = 'Try widening your distance, easing the snow filter, or picking a different pass.';
+        const g = verdictRefineGuidanceCopy();
+        if (titleEl) titleEl.textContent = 'Want a stronger match?';
+        if (subEl)   subEl.textContent   = `${g.action} — ${g.detail}.`;
       } else {
         if (titleEl) titleEl.textContent = 'Not seeing the right mountain?';
         if (subEl)   subEl.textContent   = 'Adjust snow, crowds, ticket price or distance to find a better match.';
