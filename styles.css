@@ -8761,11 +8761,17 @@ button.vcard-detail-btn:hover,
 
 /* ── Sponsored row ──────────────────────────────────────────────────────── */
 #compareSection .comparison-table tbody tr.sponsored-row {
-  background: linear-gradient(90deg, rgba(43, 109, 233, 0.14) 0%, transparent 60%);
-  outline-color: rgba(43, 109, 233, 0.4);
+  background: linear-gradient(90deg, rgba(43, 109, 233, 0.18) 0%, rgba(43, 109, 233, 0.06) 55%, transparent 100%);
+  outline: 2px solid rgba(69, 162, 255, 0.42);
+  outline-offset: -1px;
 }
 #compareSection .comparison-table tbody tr.sponsored-row:hover {
-  background: linear-gradient(90deg, rgba(43, 109, 233, 0.22) 0%, rgba(255,255,255,0.04) 60%);
+  background: linear-gradient(90deg, rgba(43, 109, 233, 0.26) 0%, rgba(43, 109, 233, 0.1) 55%, rgba(255, 255, 255, 0.04) 100%);
+}
+#compareSection .table-featured-pill {
+  color: #e0f2fe;
+  background: rgba(43, 109, 233, 0.38);
+  border-color: rgba(147, 197, 253, 0.45);
 }
 
 /* ── Lodging link ───────────────────────────────────────────────────────── */

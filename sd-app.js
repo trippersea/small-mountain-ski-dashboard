@@ -352,7 +352,7 @@ function sponsorTrackAttrs(name, placement, resortId, statePage) {
 (function injectSponsorCSS() {
   const style = document.createElement('style');
   style.textContent = `
-    .sponsored-row { outline: 2px solid #2b6de9; outline-offset: -1px; background: linear-gradient(90deg, #e8f4fc 0%, #f0f4f8 100%) !important; }
+    .sponsored-row { outline: 2px solid #2b6de9; outline-offset: -1px; background: linear-gradient(90deg, #e8f4fc 0%, #f0f4f8 100%); }
     .mob-card-sponsored { border: 2px solid #2b6de9 !important; background: linear-gradient(165deg, #e8f4fc 0%, #f7fafc 55%, #ffffff 100%) !important; box-shadow: 0 4px 20px rgba(43, 109, 233, 0.12) !important; }
     .detail-header-rebuilt { padding: 14px 18px 10px; }
     .detail-header-rebuilt .dhr-eyebrow { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #7a92a8; margin-bottom: 4px; }
