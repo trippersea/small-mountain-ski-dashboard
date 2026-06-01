@@ -302,6 +302,18 @@ function mountainSizeIndex(resort) {
   return v * 0.50 + a * 0.35 + l * 0.15;
 }
 
+/** Mon–Thu trip (hero “Weekday” chip) — terrain should beat proximity when crowds are light. */
+function isWeekdaySkiTrip() {
+  const preset = state.skiDayPreset;
+  if (preset === 'weekday') return true;
+  if (preset === 'friday' || preset === 'saturday' || preset === 'sunday') return false;
+  if (state.targetDate instanceof Date) {
+    const dow = state.targetDate.getDay();
+    return dow >= 1 && dow <= 4;
+  }
+  return false;
+}
+
 // ─── Mountain fit index ───────────────────────────────────────────────────────
 function mountainFitIndex(resort) {
   const sizeIdx  = Math.sqrt(Math.max(0, mountainSizeIndex(resort)));
@@ -320,11 +332,11 @@ function mountainFitIndex(resort) {
     return Math.max(0, Math.min(1, (vertical - 1400) / 1200)) * 0.75 +
            Math.max(0, Math.min(1, (acres - 250) / 900)) * 0.25;
   }
-  // Default (no size filter): size is a gentle nudge, not a head start.
-  // Floor 0.80 + spread 0.12 caps the biggest-vs-smallest fit gap at 0.12
-  // (about 3 points of final score) instead of the old 0.35 (about 8 points).
-  // Lets quiet/snowy mid and indie mountains surface on comparable days,
-  // while big mountains still win cleanly on snow, low crowds, or a size filter.
+  if (isWeekdaySkiTrip()) {
+    // Weekday: rank for the best ski, not the closest hill — widen terrain spread (~9 pts on 100).
+    return 0.68 + sizeIdx * 0.30;
+  }
+  // Weekend / Fri–Sun: gentle size nudge so drive + snow still decide tight calls.
   return 0.80 + sizeIdx * 0.12;
 }
 
@@ -388,12 +400,13 @@ function normalizedWeights() {
   const valueW = { 0: 0.05, 1: 0.06, 5: 0.11, 10: 0.17 }[valuePref]  ?? 0.10;
 
   const remaining = Math.max(0.1, 1 - snowW - crowdW - valueW);
+  const weekday   = isWeekdaySkiTrip();
 
   return {
     snow:       snowW,
     skiability: remaining * 0.46,
-    fit:        remaining * 0.36,
-    drive:      remaining * 0.18,
+    fit:        remaining * (weekday ? 0.44 : 0.36),
+    drive:      remaining * (weekday ? 0.10 : 0.18),
     value:      valueW,
     crowd:      crowdW,
   };
