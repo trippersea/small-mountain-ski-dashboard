@@ -341,7 +341,10 @@ function mountainFitIndex(resort) {
   }
   if (isWeekdaySkiTrip()) {
     // Weekday: rank for the best ski, not the closest hill — widen terrain spread (~9 pts on 100).
-    return 0.68 + sizeIdx * 0.30;
+    let fit = 0.68 + sizeIdx * 0.30;
+    // Micro hills (<500 ft) should not beat real mountains on a midweek “best mountain” pick.
+    if (vertical > 0 && vertical < 500) fit *= 0.88;
+    return fit;
   }
   // Weekend / Fri–Sun: gentle size nudge so drive + snow still decide tight calls.
   return 0.80 + sizeIdx * 0.12;

@@ -512,29 +512,27 @@ function dayValToDate(val) {
     return d;
   }
   if (val === 'friday') {
-    const du = (5 - dow + 7) % 7 || 7;
-    d.setDate(d.getDate() + du);
+    d.setDate(d.getDate() + ((5 - dow + 7) % 7));
     return d;
   }
   if (val === 'saturday') {
-    const du = (6 - dow + 7) % 7 || 7;
-    d.setDate(d.getDate() + du);
+    d.setDate(d.getDate() + ((6 - dow + 7) % 7));
     return d;
   }
   if (val === 'sunday') {
-    const du = (7 - dow) % 7 || 7;
-    d.setDate(d.getDate() + du);
+    d.setDate(d.getDate() + ((0 - dow + 7) % 7));
     return d;
   }
   return today;
 }
 
 function smartDefaultWhenVal() {
-  const dow = new Date().getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-  if (dow === 5) return 'saturday';  // Friday  → next day is Saturday
-  if (dow === 6) return 'sunday';    // Saturday → next day is Sunday
-  if (dow === 0) return 'weekday';   // Sunday   → next day is a weekday
-  return 'friday';                   // Mon–Thu  → next ski day is Friday
+  const dow = new Date().getDay(); // 0=Sun … 6=Sat
+  if (dow === 0) return 'weekday';    // Sun → Mon (next open weekday)
+  if (dow === 6) return 'saturday';  // Sat → today
+  if (dow === 5) return 'friday';    // Fri → today
+  if (dow >= 1 && dow <= 4) return 'weekday'; // Mon–Thu → today (midweek trip)
+  return 'weekday';
 }
 
 /** Ski-day preset to pair with a trip/distance tier (null = leave unchanged). */
