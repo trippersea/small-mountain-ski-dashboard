@@ -1519,36 +1519,33 @@ function populateStateFilterSelects() {
   if (plannerSel) plannerSel.innerHTML = html;
 }
 
-/** Action-oriented copy for the verdict-card refine nudge (no “conditions look tight”). */
+/**
+ * Copy for the verdict-card refine nudge. The title is a stable doorway label
+ * ("Refine your results") so it always reads as "opens the full filter set,"
+ * not a single action. The detail line leads with the most relevant contextual
+ * tweak when there is one, then always names the full filter set (including
+ * state) so every option behind the panel is discoverable.
+ */
 function verdictRefineGuidanceCopy() {
   const snowW = Number(state.weights?.snow ?? 1);
-  const hints = [];
 
-  if (state.howFar === 0) hints.push('extended drive (3h+)');
-  else if (state.howFar === 1) hints.push('any distance');
-
-  if (snowW >= 15) hints.push('Any snow');
-  else if (snowW >= 10) hints.push('6″+ storm or less');
-  else if (snowW >= 5) hints.push('Any snow');
-
-  if (state.stateFilter !== 'All') {
+  // Most relevant single nudge for the current setup (lead-in only, optional).
+  let lead = '';
+  if (state.howFar === 0 && snowW >= 5)       lead = 'Widen drive or ease snow';
+  else if (state.howFar === 0)                lead = 'Try a longer drive';
+  else if (state.howFar === 1 && snowW >= 5)  lead = 'Go any distance or ease snow';
+  else if (snowW >= 5)                         lead = 'Ease the snow filter';
+  else if (state.stateFilter !== 'All') {
     const st = (typeof STATE_FILTER_LABELS !== 'undefined' && STATE_FILTER_LABELS[state.stateFilter])
       || state.stateFilter;
-    hints.push(`all states (not just ${st})`);
-  }
-  if (state.passFilter !== 'All') hints.push('any pass');
-  if (Number(state.weights?.crowd ?? 1) >= 10) hints.push('relaxed crowd setting');
+    lead = `Look beyond ${st}`;
+  } else if (state.passFilter !== 'All')       lead = 'Open up your pass';
 
-  let action = 'Open filter options';
-  if (state.howFar === 0 && snowW >= 5) action = 'Widen drive or ease snow';
-  else if (state.howFar === 0) action = 'Widen drive range';
-  else if (state.howFar === 1 && snowW >= 5) action = 'Try any distance or ease snow';
-  else if (snowW >= 5) action = 'Ease snow filter';
-  else if (state.stateFilter !== 'All') action = 'Expand state filter';
-
-  const detail = hints.length
-    ? hints.slice(0, 2).join(' · ')
-    : 'Distance, snow, pass, state, and crowd';
+  // Title is always the doorway. Detail always communicates breadth so the
+  // state filter (and the rest) are visible even when a lead-in is shown.
+  const action = 'Refine your results';
+  const filterSet = 'Drive, pass, state, snow, and crowds';
+  const detail = lead ? `${lead} · ${filterSet}` : filterSet;
 
   return { action, detail };
 }
@@ -2205,7 +2202,7 @@ function renderVerdict(resorts) {
       if (isUrgent) {
         const g = verdictRefineGuidanceCopy();
         if (titleEl) titleEl.textContent = 'Want a stronger match?';
-        if (subEl)   subEl.textContent   = `${g.action} — ${g.detail}.`;
+        if (subEl)   subEl.textContent   = `${g.detail}.`;
       } else {
         if (titleEl) titleEl.textContent = 'Not seeing the right mountain?';
         if (subEl)   subEl.textContent   = 'Adjust snow, crowds, ticket price or distance to find a better match.';
