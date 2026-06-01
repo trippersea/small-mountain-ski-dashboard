@@ -35,6 +35,24 @@ let aiLastCallTime = 0; // rate limiting
 const UNIQUE_STATES = Object.freeze(['All', ...new Set(RESORTS.map(r => r.state))].sort());
 const UNIQUE_PASSES = Object.freeze(['All', 'Epic', 'Ikon', 'Indy', 'Independent']);
 
+/** Human labels for state filter dropdowns (uses resort `region` names). */
+const STATE_FILTER_LABELS = Object.freeze(
+  UNIQUE_STATES.reduce((acc, code) => {
+    if (code === 'All') acc[code] = 'All states';
+    else {
+      const sample = RESORTS.find(r => r.state === code);
+      acc[code] = sample?.region || code;
+    }
+    return acc;
+  }, {}),
+);
+
+function stateFilterOptionsHtml() {
+  return UNIQUE_STATES.map(code =>
+    `<option value="${esc(code)}">${esc(STATE_FILTER_LABELS[code] || code)}</option>`,
+  ).join('');
+}
+
 // ─── DOM helper ───────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 

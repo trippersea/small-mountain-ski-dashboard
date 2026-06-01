@@ -775,7 +775,8 @@
         <p class="planner-subtitle">Change a filter and we will reshuffle the list. Your top pick stays <strong>above</strong> &mdash; tap <strong>See top pick</strong> when you want to jump back up.</p>
       </div>
       <div id="plannerDetails" class="planner-details">
-        <div class="score-grid">
+        <div class="score-grid score-grid--refine">
+          <!-- Column 1 -->
           <div class="score-control">
             <div class="score-control-label">Drive time</div>
             <div class="priority-btns priority-btns--compact" data-key="howfar">
@@ -785,6 +786,7 @@
             </div>
             <div class="slider-hint">From your starting location when set; otherwise all mountains stay in play.</div>
           </div>
+          <!-- Column 2 -->
           <div class="score-control">
             <div class="score-control-label">Fresh Snow</div>
             <div class="priority-btns" data-key="snow">
@@ -795,36 +797,13 @@
             </div>
             <div class="slider-hint">How much new snow do you need to get excited?</div>
           </div>
+          <!-- Column 1 -->
           <div class="score-control">
-            <div class="score-control-label">Temperature</div>
-            <div class="priority-btns" data-key="temp">
-              <button class="priority-btn active" data-val="any">Any Temp</button>
-              <button class="priority-btn" data-val="ideal">0&deg;&ndash;32&deg; Sweet Spot</button>
-              <button class="priority-btn" data-val="spring">33&deg;+ Spring Day</button>
-              <button class="priority-btn" data-val="cold">Below 0&deg; Cold Snap</button>
-            </div>
-            <div class="slider-hint">Filters to mountains matching tomorrow&rsquo;s forecast temp.</div>
+            <label class="score-control-label" for="plannerStateFilter">State</label>
+            <select id="plannerStateFilter" class="fp-select planner-state-select" aria-label="Filter by state"></select>
+            <div class="slider-hint">Only mountains in this state are ranked. All states keeps every region.</div>
           </div>
-          <div class="score-control">
-            <div class="score-control-label">Wind</div>
-            <div class="priority-btns" data-key="wind">
-              <button class="priority-btn active" data-val="any">Any Wind</button>
-              <button class="priority-btn" data-val="light">Calm (0&ndash;15 mph)</button>
-              <button class="priority-btn" data-val="breezy">Breezy (16&ndash;25 mph)</button>
-              <button class="priority-btn" data-val="holds">Gusty (25+ mph)</button>
-            </div>
-            <div class="slider-hint">Filters to mountains matching tomorrow&rsquo;s wind forecast.</div>
-          </div>
-          <div class="score-control">
-            <div class="score-control-label">Mountain Size</div>
-            <div class="priority-btns" data-key="size">
-              <button class="priority-btn active" data-val="any">Any Size</button>
-              <button class="priority-btn" data-val="small">Local Hill</button>
-              <button class="priority-btn" data-val="mid">Mid-Size</button>
-              <button class="priority-btn" data-val="big">Big Mountain</button>
-            </div>
-            <div class="slider-hint">Filters and ranks by vertical drop and acreage.</div>
-          </div>
+          <!-- Column 2 -->
           <div class="score-control">
             <div class="score-control-label">Ticket Price</div>
             <div class="priority-btns" data-key="value">
@@ -835,6 +814,29 @@
             </div>
             <div class="slider-hint">Sets a hard price ceiling &mdash; mountains above it are hidden.</div>
           </div>
+          <!-- Column 1 -->
+          <div class="score-control">
+            <div class="score-control-label">Mountain Size</div>
+            <div class="priority-btns" data-key="size">
+              <button class="priority-btn active" data-val="any">Any Size</button>
+              <button class="priority-btn" data-val="small">Local Hill</button>
+              <button class="priority-btn" data-val="mid">Mid-Size</button>
+              <button class="priority-btn" data-val="big">Big Mountain</button>
+            </div>
+            <div class="slider-hint">Filters and ranks by vertical drop and acreage.</div>
+          </div>
+          <!-- Column 2 -->
+          <div class="score-control">
+            <div class="score-control-label">Temperature</div>
+            <div class="priority-btns" data-key="temp">
+              <button class="priority-btn active" data-val="any">Any Temp</button>
+              <button class="priority-btn" data-val="ideal">0&deg;&ndash;32&deg; Sweet Spot</button>
+              <button class="priority-btn" data-val="spring">33&deg;+ Spring Day</button>
+              <button class="priority-btn" data-val="cold">Below 0&deg; Cold Snap</button>
+            </div>
+            <div class="slider-hint">Filters to mountains matching your ski day&rsquo;s forecast temp.</div>
+          </div>
+          <!-- Column 1 -->
           <div class="score-control">
             <div class="score-control-label">Crowd Level</div>
             <div class="priority-btns" data-key="crowd">
@@ -843,6 +845,17 @@
               <button class="priority-btn" data-val="10">Quiet Slopes</button>
             </div>
             <div class="slider-hint">Ranks quieter mountains higher. High = crowds filtered out.</div>
+          </div>
+          <!-- Column 2 -->
+          <div class="score-control">
+            <div class="score-control-label">Wind</div>
+            <div class="priority-btns" data-key="wind">
+              <button class="priority-btn active" data-val="any">Any Wind</button>
+              <button class="priority-btn" data-val="light">Calm (0&ndash;15 mph)</button>
+              <button class="priority-btn" data-val="breezy">Breezy (16&ndash;25 mph)</button>
+              <button class="priority-btn" data-val="holds">Gusty (25+ mph)</button>
+            </div>
+            <div class="slider-hint">Filters to mountains matching your ski day&rsquo;s wind forecast.</div>
           </div>
         </div>
       </div>

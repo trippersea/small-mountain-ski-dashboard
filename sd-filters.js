@@ -25,7 +25,11 @@ function activeFilters() {
   if (state.windBucket !== 'any') filters.push(`Wind: ${{light:'Calm', breezy:'Breezy', holds:'Gusty'}[state.windBucket] || state.windBucket}`);
   if (state.priceRange > 0)       filters.push(`Ticket: ${PRICE_RANGES[state.priceRange]?.label ?? ''}`);
   if (state.passFilter !== 'All') filters.push(`Pass: ${esc(state.passFilter)}`);
-  if (state.stateFilter !== 'All') filters.push(`State: ${esc(state.stateFilter)}`);
+  if (state.stateFilter !== 'All') {
+    const stLab = (typeof STATE_FILTER_LABELS !== 'undefined' && STATE_FILTER_LABELS[state.stateFilter])
+      || state.stateFilter;
+    filters.push(`State: ${esc(stLab)}`);
+  }
   if (state.nightOnly)            filters.push('Night only');
   return filters;
 }

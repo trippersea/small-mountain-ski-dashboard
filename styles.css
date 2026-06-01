@@ -5328,10 +5328,32 @@ tr:focus-within .story-text--table {
   flex-direction: column;
   min-height: 0;
 }
-.hn-refine-panel .score-grid {
+.hn-refine-panel .score-grid,
+.hn-refine-panel .score-grid--refine {
   grid-template-columns: 1fr 1fr;
   gap: 12px 16px;
   align-content: start;
+}
+.hn-refine-panel .planner-state-select {
+  width: 100%;
+  margin-top: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #f0f6fc;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 28px 9px 11px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23aac4de' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.hn-refine-panel .planner-state-select:focus {
+  outline: none;
+  border-color: #5aaddc;
+  box-shadow: 0 0 0 3px rgba(90, 173, 220, 0.2);
+}
+.hn-refine-panel .planner-state-select option {
+  background: #152538;
+  color: #f0f6fc;
 }
 .hn-refine-panel .score-control {
   padding: 14px 15px 12px;

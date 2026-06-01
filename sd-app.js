@@ -1503,6 +1503,22 @@ function updatePlannerOriginLabel() {
   if (els.plannerEditLocation) els.plannerEditLocation.hidden = !state.origin;
 }
 
+/** Keep compare-table and Refine-panel state dropdowns in sync. */
+function setStateFilter(val) {
+  const code = UNIQUE_STATES.includes(val) ? val : 'All';
+  state.stateFilter = code;
+  if (els.stateFilter) els.stateFilter.value = code;
+  const plannerSel = document.getElementById('plannerStateFilter');
+  if (plannerSel) plannerSel.value = code;
+}
+
+function populateStateFilterSelects() {
+  const html = typeof stateFilterOptionsHtml === 'function' ? stateFilterOptionsHtml() : '';
+  if (els.stateFilter) els.stateFilter.innerHTML = html;
+  const plannerSel = document.getElementById('plannerStateFilter');
+  if (plannerSel) plannerSel.innerHTML = html;
+}
+
 function syncPlannerControls() {
   const plannerRoot = document.getElementById('plannerDetails');
 
@@ -1520,6 +1536,10 @@ function syncPlannerControls() {
   if (windGroup) windGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.windBucket));
   const howfarGroup = plannerRoot?.querySelector('.priority-btns[data-key="howfar"]');
   if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
+
+  const plannerState = document.getElementById('plannerStateFilter');
+  if (plannerState && plannerState.value !== state.stateFilter) plannerState.value = state.stateFilter;
+  if (els.stateFilter && els.stateFilter.value !== state.stateFilter) els.stateFilter.value = state.stateFilter;
 
   const plannerPass = state.passFilter === 'All' ? 'any' : state.passFilter;
   document.querySelectorAll('.pass-pref-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.pass === plannerPass));
@@ -3476,12 +3496,29 @@ function wireEvents() {
     trackEvent('pass_selected', { pass_type: String(state.passFilter), source: 'compare_filter' });
     savePlannerState(); syncPlannerControls(); pushUrlDebounced(); render();
   });
-  els.stateFilter.addEventListener('change', e => {
-    state.stateFilter = e.target.value;
-    trackEvent('filter_applied', { filter_type: 'state', filter_value: String(e.target.value) });
-    trackFilterEvent('planner_state', String(e.target.value));
-    pushUrlDebounced(); render();
-  });
+  if (els.stateFilter) {
+    els.stateFilter.addEventListener('change', e => {
+      setStateFilter(e.target.value);
+      trackEvent('filter_applied', { filter_type: 'state', filter_value: String(state.stateFilter) });
+      trackFilterEvent('planner_state', String(state.stateFilter));
+      savePlannerState();
+      syncPlannerControls();
+      pushUrlDebounced();
+      debouncedRender();
+    });
+  }
+  const _plannerStateEl = document.getElementById('plannerStateFilter');
+  if (_plannerStateEl) {
+    _plannerStateEl.addEventListener('change', e => {
+      setStateFilter(e.target.value);
+      trackEvent('filter_applied', { filter_type: 'state', filter_value: String(state.stateFilter), source: 'refine_panel' });
+      trackFilterEvent('planner_state', String(state.stateFilter));
+      savePlannerState();
+      syncPlannerControls();
+      pushUrlDebounced();
+      debouncedRender();
+    });
+  }
 
   const _howFarEl = document.getElementById('howFarFilter');
   if (_howFarEl) _howFarEl.addEventListener('change', e => {
@@ -3534,7 +3571,7 @@ function wireEvents() {
     invalidateWeatherCache();
     tableSort = { col: 'planner', dir: 'desc' };
     if (els.passFilter)     els.passFilter.value = 'All';
-    els.stateFilter.value = 'All';
+    setStateFilter('All');
     const _hff = document.getElementById('howFarFilter'); if (_hff) _hff.value = '0';
     if (els.maxPriceFilter) els.maxPriceFilter.value = '0';
     if (els.heroPassSelect) els.heroPassSelect.value = 'All';
@@ -3772,7 +3809,7 @@ function initialize() {
       return `<option value="${v}">${lab}</option>`;
     }).join('');
   }
-  els.stateFilter.innerHTML = UNIQUE_STATES.map(v => `<option value="${v}">${v}</option>`).join('');
+  populateStateFilterSelects();
 
   loadWeatherCache();
   loadHistoryCache();
@@ -3811,7 +3848,7 @@ function initialize() {
 
   if (hadUrlState) {
     if (els.passFilter)     els.passFilter.value = state.passFilter;
-    els.stateFilter.value   = state.stateFilter;
+    setStateFilter(state.stateFilter);
     els.sortBy.value        = state.sortBy;
     const _hfSync = document.getElementById('howFarFilter'); if (_hfSync) _hfSync.value = String(state.howFar);
     if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.priceRange);
