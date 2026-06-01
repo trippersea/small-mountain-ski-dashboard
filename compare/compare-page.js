@@ -42,7 +42,7 @@
   }
 
   function tripLabel(howFar) {
-    if (howFar === 1) return '\uD83C\uDFD4 Weekend';
+    if (howFar === 1) return '\uD83C\uDFD4 Extended drive';
     if (howFar === 2) return '\u2708 Any distance';
     return '\uD83D\uDE97 Day trip';
   }

@@ -534,6 +534,23 @@ function smartDefaultWhenVal() {
   return 'friday';                   // Mon–Thu  → next ski day is Friday
 }
 
+/** Ski-day preset to pair with a trip/distance tier (null = leave unchanged). */
+function skiDayPresetForTripMode(howFar) {
+  if (howFar === 1) return 'saturday';
+  if (howFar === 0) return smartDefaultWhenVal();
+  return null;
+}
+
+/** Keep When in sync when Trip / drive-time changes (all control paths). */
+function syncSkiDayToTripMode(howFar) {
+  const preset = skiDayPresetForTripMode(howFar);
+  if (preset == null) return;
+  const daySel = document.getElementById('heroSentenceDay');
+  if (!daySel || daySel.value === preset) return;
+  daySel.value = preset;
+  daySel.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
 /** Baseline “When” chip from first load (for custom segment styling) */
 let heroWhenDefaultVal = null;
 
@@ -1512,6 +1529,7 @@ function commitPlannerPriorityChange(key, btn) {
   });
   trackFilterEvent('planner_' + key, btn.textContent.trim() || btn.dataset.val || '');
   savePlannerState();
+  if (key === 'howfar') syncSkiDayToTripMode(state.howFar);
   syncPlannerControls();
   pushUrlDebounced();
   if (key === 'howfar') {
@@ -1768,7 +1786,7 @@ function renderVerdict(resorts) {
     );
     if (filtersTightenEmpty) {
       const driveHint = state.origin && state.howFar < 2
-        ? 'If nothing is within day-trip distance, try <strong>Weekend</strong> or <strong>All distances</strong>, or adjust your starting location.'
+        ? 'If nothing is within day-trip distance, try <strong>Extended drive</strong> or <strong>All distances</strong>, or adjust your starting location.'
         : 'Try expanding your distance range, easing the ticket or snow filters, or choosing a different pass.';
       els.verdictCard.innerHTML = `<div class="vcard-placeholder">
         <div class="vcard-placeholder-icon">🔍</div>
@@ -3181,7 +3199,7 @@ var _lastRecommendedKey     = null;
 
 function trackRecommendation(resortId, resortName) {
   const passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
-  const tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
+  const tripMap     = { 0: tripModeShortLabel(0), 1: tripModeShortLabel(1), 2: tripModeShortLabel(2) };
   const priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
   const snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
 
@@ -3251,7 +3269,7 @@ function trackFilterEvent(filterType, filterValue) {
 // ─── Log all current filter state on Find My Mountain click ──────────────────
 function logCurrentFilters() {
   var passMap     = { All: 'Any', Epic: 'Epic', Ikon: 'Ikon', Indy: 'Indy' };
-  var tripMap     = { 0: 'Day trip', 1: 'Weekend', 2: 'Any distance' };
+  var tripMap     = { 0: tripModeShortLabel(0), 1: tripModeShortLabel(1), 2: tripModeShortLabel(2) };
   var priorityMap = { 1: 'Best fit', 5: 'Quiet slopes', 10: 'Fresh snow' };
   var snowVal     = (state.weights && state.weights.snow) ? state.weights.snow : 1;
 
@@ -3280,7 +3298,7 @@ function wireHeroPills() {
         targetEl.dispatchEvent(new Event('change', { bubbles: true }));
         // Map raw data-values to human-readable labels before logging
         const _pillLabelMap = {
-          heroSentenceTrip: { '0': 'Day trip', '1': 'Weekend', '2': 'Any distance' },
+          heroSentenceTrip: { '0': tripModeShortLabel(0), '1': tripModeShortLabel(1), '2': tripModeShortLabel(2) },
           heroSnowSelect:   { '1': 'Best fit', '5': 'Quiet slopes', '10': 'Fresh snow' },
           heroSentenceDay:  { 'weekday': 'Weekday', 'friday': 'Friday', 'saturday': 'Saturday', 'sunday': 'Sunday' },
           heroPassSelect:   { 'All': 'Any', 'Epic': 'Epic', 'Ikon': 'Ikon', 'Indy': 'Indy' },
@@ -3397,10 +3415,11 @@ function wireEvents() {
   const _howFarEl = document.getElementById('howFarFilter');
   if (_howFarEl) _howFarEl.addEventListener('change', e => {
     state.howFar = Number(e.target.value);
-    const _distLabel = Number(e.target.value) === 0 ? 'Day trip' : Number(e.target.value) === 1 ? 'Weekend' : 'Any distance';
+    const _distLabel = tripModeShortLabel(state.howFar);
     trackEvent('filter_applied', { filter_type: 'distance', filter_value: String(e.target.value) });
     trackFilterEvent('planner_distance', _distLabel);
     if (state.howFar < 2 && !state.origin) showToast('Add your starting location to activate distance filtering', 4000);
+    syncSkiDayToTripMode(state.howFar);
     savePlannerState(); pushUrlDebounced(); syncPlannerControls(); render();
   });
 
@@ -3510,20 +3529,6 @@ function wireEvents() {
       if (hf) {
         hf.value = v;
         hf.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-      // Auto-flip forecast day to match trip type
-      const daySel = document.getElementById('heroSentenceDay');
-      if (daySel) {
-        if (v === '1') {
-          // Weekend -> Saturday
-          daySel.value = 'saturday';
-          daySel.dispatchEvent(new Event('change', { bubbles: true }));
-        } else if (v === '0') {
-          // Day trip -> next available ski day
-          daySel.value = smartDefaultWhenVal();
-          daySel.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-        // Any distance (v === '2'): leave the day as-is
       }
     });
   }
@@ -3747,6 +3752,7 @@ function initialize() {
   syncVerdictVisibility();
   wireEvents();
   wireHeroSentenceDay();
+  syncSkiDayToTripMode(state.howFar);
   updateHeroHeadline();
   syncHeroV2UI();
   render();

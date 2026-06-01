@@ -3,10 +3,16 @@
 // This file provides HOW_FAR_TIERS, PRICE_RANGES, PASS_PRICES, caches, and helpers.
 
 const HOW_FAR_TIERS = Object.freeze([
-  { label: 'Day Trip',  floor: 0,   cap: 180,      hint: '≤3h drive'      },
-  { label: 'Weekend',   floor: 180, cap: 360,      hint: '3h–6h drive'    },
-  { label: 'All',       floor: 0,   cap: Infinity, hint: 'any distance'   },
+  { label: 'Day Trip',       shortLabel: 'Day trip',       floor: 0,   cap: 180,      hint: '≤3h drive'      },
+  { label: 'Extended drive', shortLabel: 'Extended drive', floor: 180, cap: 360,      hint: '3h–6h drive'    },
+  { label: 'All',            shortLabel: 'Any distance',   floor: 0,   cap: Infinity, hint: 'any distance'   },
 ]);
+
+/** User-facing trip/distance label for hero chips, analytics, etc. */
+function tripModeShortLabel(howFar) {
+  const tier = HOW_FAR_TIERS[howFar];
+  return tier ? (tier.shortLabel || tier.label) : String(howFar);
+}
 const PRICE_RANGES = Object.freeze([
   { label: 'Any price',      min: 0,   max: Infinity },
   { label: 'Under $100',     min: 0,   max: 99       },
