@@ -64,7 +64,7 @@ function targetForecastIndex() {
 // ─── Trip-mode snow window ────────────────────────────────────────────────────
 // Returns the snow total that matches what the ranking engine scored on.
 // Day trip (howFar=0): only the target forecast day, so rank and story agree.
-// Weekend (howFar=1) or All (howFar=2): full 3-day sum — the whole window matters.
+// Extended drive (howFar=1) or All (howFar=2): full 3-day sum — the whole window matters.
 function tripWindowSnow(forecast) {
   if (state.howFar === 0) {
     const fi = targetForecastIndex();
@@ -211,7 +211,14 @@ function crowdForecast(resort, wx = null) {
   const blueF    = wxAvail ? _bluebirdFactor(wx)       : 0;
   const fc       = wx?.forecast?.[targetForecastIndex()] || null;
   const rainF    = (fc && fc.lo > 32 && (fc.snow || 0) < 1 && (fc.wind || 0) > 10) ? 0.6 : 0;
-  const Mweather = 1 + 0.40*powderF + 0.15*blueF - 0.25*rainF;
+  // Midweek trips: powder/bluebird demand spikes are softer when most people are at work.
+  let wxPowder = powderF;
+  let wxBlue   = blueF;
+  if (isWeekdaySkiTrip()) {
+    wxPowder *= 0.50;
+    wxBlue   *= 0.65;
+  }
+  const Mweather = 1 + 0.40*wxPowder + 0.15*wxBlue - 0.25*rainF;
 
   // Soft clamp: tanh preserves differentiation at the top end
   const Draw = Dbase * Mday * Mweather;
@@ -482,7 +489,7 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
 // card (computeVerdict) and the detail panel (renderDetail).
 //
 // Snow window: uses tripWindowSnow() so the story matches what the ranking saw.
-// Day trip → target day only. Weekend/All → 3-day sum.
+// Day trip → target day only. Extended drive / All → 3-day sum.
 // Copy avoids "3 days" language for day-trippers who only care about their day.
 function verdictFromBreakdown(resort, wx, breakdown) {
   const forecast   = wx?.forecast || [];
@@ -501,10 +508,10 @@ function verdictFromBreakdown(resort, wx, breakdown) {
   const target  = snowPreferenceTarget();
   const snowMet = target === 0 || stormTotal >= target;
 
-  // Copy helpers: day trip vs weekend framing so "3 days" never describes a 1-day trip.
-  const isWeekend  = state.howFar >= 1;
-  const inWindow   = isWeekend ? 'in the forecast this weekend' : 'in the forecast';
-  const overWindow = isWeekend ? 'over the weekend'            : 'forecast';
+  // Copy helpers: day trip vs multi-day window so "3 days" never describes a 1-day trip.
+  const multiDayWindow = state.howFar >= 1;
+  const inWindow   = multiDayWindow ? 'in your forecast window' : 'in the forecast';
+  const overWindow = multiDayWindow ? 'in your window'            : 'forecast';
 
   let tier, label, detail, subPoints = [];
 

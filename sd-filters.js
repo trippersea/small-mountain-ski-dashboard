@@ -162,6 +162,28 @@ function nearestCandidates(resorts, n = 20) {
     .slice(0, n);
 }
 
+/** Phase-1 weather batch: day trip = nearest 20; extended/all = full drive tier (capped). */
+function phase1WeatherCandidates(resorts) {
+  const DAY_TRIP_N = 20;
+  const EXTENDED_N = 45;
+  const ANY_N      = 50;
+
+  if (!state.origin) {
+    const n = state.howFar === 0 ? DAY_TRIP_N : state.howFar === 1 ? EXTENDED_N : ANY_N;
+    return nearestCandidates(resorts, n);
+  }
+
+  if (state.howFar === 0) {
+    return nearestCandidates(resorts, DAY_TRIP_N);
+  }
+
+  const cap = state.howFar === 1 ? EXTENDED_N : ANY_N;
+  return [...resorts]
+    .filter(r => resortMatchesDriveTier(r.id) && getDriveMins(r.id) !== null)
+    .sort((a, b) => (getDriveMins(a.id) ?? 9999) - (getDriveMins(b.id) ?? 9999))
+    .slice(0, cap);
+}
+
 // ─── Decision brief (context + scored top5) ────────────────────────────────
 function buildDecisionBrief(resorts) {
   const context = getDecisionContext();

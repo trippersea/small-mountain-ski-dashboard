@@ -291,9 +291,8 @@
   }
 
   // ── snowWindowLabel: trip-mode aware sub-label for snow forecast cells ───────
-  // Day trip = "forecast", Weekend = "weekend forecast", All = "3-day forecast".
-  // Used in both the comparison table and the full rankings table.
-  const snowWindowLabel = howFar === 0 ? 'forecast' : howFar === 1 ? 'weekend forecast' : '3-day forecast';
+  // Day trip = "forecast", Extended drive / All = "3-day forecast".
+  const snowWindowLabel = howFar === 0 ? 'forecast' : '3-day forecast';
 
   // ════════════════════════════════════════════════════════════════
   // BUILD AMAZON-STYLE COMPARISON TABLE

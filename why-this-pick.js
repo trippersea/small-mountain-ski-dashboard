@@ -74,7 +74,7 @@ function _wtpNextPassRunner(ranked, winnerId) {
 
 function _wtpTripMode() {
   if (state.howFar === 0) return 'day';
-  if (state.howFar === 1) return 'weekend';
+  if (state.howFar === 1) return 'extended';
   return 'any';
 }
 
@@ -283,19 +283,19 @@ function buildWhyThisPickReasons(resorts, tier) {
     candidates.push({ id, bucket, label, reasonScore, contribution, gap, confidence, preferenceMatch });
   };
 
-  // Travel / drive — explicit trip modes: day | weekend | any distance
+  // Travel / drive — explicit trip modes: day | extended drive | any distance
   if (tripMode === 'day') {
     push('day_trip_fit', 'travel', 'Best day-trip fit', comp('drive'), driveMinGap, dConf, 1.0);
     push('closest_decent', 'travel', 'Closest decent option', comp('drive'), driveMinGap, dConf, weakMode ? 1.0 : 0.35);
-  } else if (tripMode === 'weekend') {
-    push('weekend_fit', 'travel_wknd', 'Best weekend fit',
+  } else if (tripMode === 'extended') {
+    push('weekend_fit', 'travel_wknd', 'Best extended-drive fit',
       _wtpClamp01((comp('drive') + comp('fit')) / 2), weekendPayoffGap, dConf, 1.0);
     push('worth_drive', 'travel_payoff', 'Worth the extra drive',
       _wtpClamp01((comp('snow') + comp('fit')) / 2),
       weekendPayoffGap,
       dConf,
       winnerFarther ? 1.0 : 0.35);
-    push('wknd_nearby', 'travel_near', 'Best nearby weekend option',
+    push('wknd_nearby', 'travel_near', 'Best nearby in range',
       comp('drive'), _wtpClamp01(1 - driveMinGap + 0.15), dConf, weakMode ? 1.0 : 0.45);
   } else {
     push('any_fit', 'travel', 'Best fit for your setup',
@@ -309,8 +309,8 @@ function buildWhyThisPickReasons(resorts, tier) {
   if (tripMode === 'day') {
     push('best_snow_day', 'snow', 'Best snow nearby',
       comp('snow'), Math.max(gapOn('snow'), snowInchGap), snowConf, prefSnow);
-  } else if (tripMode === 'weekend') {
-    push('best_snow_weekend', 'snow', 'Best snow in weekend range',
+  } else if (tripMode === 'extended') {
+    push('best_snow_weekend', 'snow', 'Best snow in your range',
       comp('snow'), Math.max(gapOn('snow'), snowInchGap), snowConf, prefSnow);
     push('better_snow_drive', 'snow_drive', 'Better snow for the drive',
       comp('snow'), _wtpClamp01(snowInchGap * 0.85 + scoreGap * 0.15), snowConf, prefSnow);
@@ -339,8 +339,8 @@ function buildWhyThisPickReasons(resorts, tier) {
 
   push('better_value', 'value', 'Better value today', comp('value'), gapOn('value'), priceConf, prefValue);
 
-  if (tripMode === 'weekend') {
-    push('more_mountain', 'fit_size', 'More mountain for the trip', comp('fit'), gapOn('fit'), 0.72, prefVertical);
+  if (tripMode === 'extended') {
+    push('more_mountain', 'fit_size', 'More mountain for the drive', comp('fit'), gapOn('fit'), 0.72, prefVertical);
   }
 
   push('best_filters', 'fit_overall', 'Best fit for your filters', _wtpClamp01(W.score / 100), scoreGap, 0.8, 0.8);
@@ -357,7 +357,7 @@ function buildWhyThisPickReasons(resorts, tier) {
   const modeAllow = c => {
     if (tripMode === 'day') {
       if (['weekend_fit', 'worth_drive', 'wknd_nearby', 'better_snow_drive', 'more_mountain', 'best_snow_weekend', 'best_snow_neutral', 'any_fit', 'any_nearby'].includes(c.id)) return false;
-    } else if (tripMode === 'weekend') {
+    } else if (tripMode === 'extended') {
       if (['day_trip_fit', 'closest_decent', 'any_fit', 'any_nearby', 'best_snow_day', 'best_snow_neutral'].includes(c.id)) return false;
     } else {
       if (['day_trip_fit', 'closest_decent', 'weekend_fit', 'worth_drive', 'wknd_nearby', 'better_snow_drive', 'more_mountain', 'best_snow_day', 'best_snow_weekend'].includes(c.id)) return false;
@@ -400,12 +400,12 @@ function buildWhyThisPickReasons(resorts, tier) {
     }
   }
 
-  if (weakMode && tripMode === 'weekend') {
+  if (weakMode && tripMode === 'extended') {
     const hasNear = sorted.some(s => s.id === 'wknd_nearby');
     const hasGroom = resolvedSki.id === 'better_groomer';
     const hasCrowd = sorted.some(s => s.id === 'lighter_crowds');
     if (winnerIsClosest && hasNear && hasGroom) {
-      labels = ['Best nearby weekend option', resolvedSkiLabel, hasCrowd ? 'Lighter crowds' : 'Best fit for your filters'];
+      labels = ['Best nearby in range', resolvedSkiLabel, hasCrowd ? 'Lighter crowds' : 'Best fit for your filters'];
     } else if (!winnerIsClosest) {
       const honest = [];
       if (state.passFilter !== 'All' && _wtpPassMatchesFilter(winner.resort)) {
@@ -422,8 +422,8 @@ function buildWhyThisPickReasons(resorts, tier) {
 
   const fallbacks = tripMode === 'day'
     ? ['Best fit for your filters', 'Closest decent option', 'Manageable crowds']
-    : tripMode === 'weekend'
-      ? ['Best fit for your filters', 'Best nearby weekend option', 'Lighter crowds']
+    : tripMode === 'extended'
+      ? ['Best fit for your filters', 'Best nearby in range', 'Lighter crowds']
       : ['Best fit for your setup', 'Best nearby option', 'Better snow nearby'];
 
   let fb = 0;

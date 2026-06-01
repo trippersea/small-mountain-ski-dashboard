@@ -1157,7 +1157,7 @@ async function injectConditionsBadge(resortId, slotId) {
 }
 
 async function ensureWeather(resorts) {
-  const near = nearestCandidates(resorts, 20);
+  const near = phase1WeatherCandidates(resorts);
   const rest  = resorts.filter(r => !near.find(n => n.id === r.id));
   weatherPhase1Ids = near.map(r => r.id);
 
