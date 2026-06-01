@@ -185,7 +185,7 @@ function toSlug(resort) {
 
 function resortUrl(resort, utmContent) {
   const slug = toSlug(resort);
-  return `https://www.wheretoskinext.com/ski-report/${slug}/?utm_source=newsletter&utm_medium=email&utm_campaign=weekly-pick&utm_content=${utmContent}`;
+  return `https://wheretoskinext.com/ski-report/${slug}/?utm_source=newsletter&utm_medium=email&utm_campaign=weekly-pick&utm_content=${utmContent}`;
 }
 
 
@@ -750,7 +750,7 @@ ${items}
 // FULL EMAIL HTML
 // ============================================================================
 
-function buildEmailHtml(regionResults, generatedAt) {
+function buildEmailHtml(regionResults, generatedAt, weekendLabel) {
   const blocks = regionResults.map(r => buildRegionBlock(r)).join('\n');
   const regionNav = buildRegionNav(regionResults);
 
@@ -814,10 +814,10 @@ Review copy, then send.
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#0f1c2e">
     <tr>
       <td align="center" style="padding:16px 28px 14px;background:#0f1c2e;" class="section-pad">
-        <a href="https://www.wheretoskinext.com/?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=weekly-pick&amp;utm_content=header-logo" style="display:inline-block;font-size:24px;font-weight:800;color:#f0f6fc;margin:0;line-height:1.15;letter-spacing:-0.02em;text-decoration:none;">
+        <a href="https://wheretoskinext.com/?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=weekly-pick&amp;utm_content=header-logo" style="display:inline-block;font-size:24px;font-weight:800;color:#f0f6fc;margin:0;line-height:1.15;letter-spacing:-0.02em;text-decoration:none;">
           WhereToSki<span style="color:#2b6de9;">Next</span>.com
         </a>
-        <p class="mono" style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:rgba(240,246,252,0.62);margin:6px 0 0;">Week of [DATE]</p>
+        <p class="mono" style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:rgba(240,246,252,0.62);margin:6px 0 0;">Week of ${weekendLabel}</p>
       </td>
     </tr>
   </table>
@@ -839,7 +839,7 @@ Review copy, then send.
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
             <td align="center">
-              <a href="https://www.wheretoskinext.com/?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=weekly-pick&amp;utm_content=hero-cta" style="display:inline-block;background:#2b6de9;color:#ffffff;border-radius:999px;padding:16px 32px;font-size:16px;font-weight:800;line-height:1;text-decoration:none;white-space:nowrap;">
+              <a href="https://wheretoskinext.com/?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=weekly-pick&amp;utm_content=hero-cta" style="display:inline-block;background:#2b6de9;color:#ffffff;border-radius:999px;padding:16px 32px;font-size:16px;font-weight:800;line-height:1;text-decoration:none;white-space:nowrap;">
                 Find My Mountain
               </a>
             </td>
@@ -933,6 +933,18 @@ module.exports = async function handler(req, res) {
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
     hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
   });
+
+  // "Week of <upcoming Saturday>" for the email header. The newsletter sends
+  // Thursday night / Friday and covers the coming weekend, so anchor to the
+  // next Saturday (or today if it already is Saturday).
+  const weekendLabel = (() => {
+    const now = new Date();
+    const day = now.getDay();            // 0 Sun ... 6 Sat
+    const daysUntilSat = (6 - day + 7) % 7; // 0 if today is Saturday
+    const sat = new Date(now);
+    sat.setDate(now.getDate() + daysUntilSat);
+    return sat.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  })();
 
   // Load resort data
   let allResorts;
@@ -1031,7 +1043,7 @@ module.exports = async function handler(req, res) {
     .map(r => `${r.region.label}: ${r.pick.resort.name} (${r.pick.scores.newSnow72hIn}" new)`)
     .join(' | ');
 
-  const emailHtml = buildEmailHtml(regionResults, generatedAt);
+  const emailHtml = buildEmailHtml(regionResults, generatedAt, weekendLabel);
 
   let beehiivData;
   try {
