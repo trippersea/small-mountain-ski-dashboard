@@ -94,7 +94,7 @@ function buildItemListSchema(resorts) {
       '@type': 'ListItem',
       position: i + 1,
       name: r.name,
-      url: `https://www.wheretoskinext.com/ski-report/${r.id}/`,
+      url: `https://wheretoskinext.com/ski-report/${r.id}/`,
       description: `${r.name} — ${r.vertical.toLocaleString()} ft vertical, ${r.trails} trails, ${r.passGroup} pass, ${r.state}. Avg snowfall: ${r.avgSnowfall}".`,
     })),
   }, null, 2);
