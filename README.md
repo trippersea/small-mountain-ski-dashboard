@@ -38,7 +38,7 @@ Open `/` for the planner. `/compare/` reads `localStorage['wtsn-compare']` writt
 | Variable | Purpose |
 |----------|---------|
 | `ANTHROPIC_API_KEY` | Optional — powers “Describe your ideal day” (`/api/chat`) |
-| `CRON_SECRET` / `CRON_JOB_TOKEN` | Newsletter cron (`api/newsletter-generator.js`) |
+| `CRON_SECRET` | Newsletter cron (`api/newsletter-generator.js`) — Vercel sends `Authorization: Bearer` automatically |
 | `ALLOWED_ORIGINS` | CORS allowlist for API routes (comma-separated) |
 
 See `vercel.json` for security headers and rewrites.

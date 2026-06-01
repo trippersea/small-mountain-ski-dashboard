@@ -9,18 +9,15 @@
  *   with Authorization: Bearer <CRON_SECRET>
  *
  * Cron auth:
- *   Vercel scheduled runs:  query param ?cron_token=<CRON_JOB_TOKEN> (set in vercel.json path)
- *   Manual triggers:        Authorization: Bearer <CRON_SECRET> header
+ *   Vercel cron and manual triggers: Authorization: Bearer <CRON_SECRET>
+ *   Vercel sends that header automatically when CRON_SECRET is set in project env.
  *   x-vercel-cron header is NOT trusted -- it is not a secret and can be spoofed.
- *   NOTE: Vercel cron does NOT send headers automatically -- query param is the only
- *   reliable way to authenticate scheduled runs without hardcoding secrets in vercel.json.
  *
  * Required env vars:
  *   BEEHIIV_API_KEY
  *   BEEHIIV_PUBLICATION_ID
  *   ANTHROPIC_API_KEY
- *   CRON_SECRET      (manual trigger secret -- never committed to repo)
- *   CRON_JOB_TOKEN   (vercel cron token -- value committed in vercel.json path)
+ *   CRON_SECRET      (never committed to repo -- set in Vercel dashboard only)
  *
  * One-line change required in resorts-national.js -- add at the very bottom:
  *   if (typeof module !== 'undefined') module.exports = { RESORTS };
@@ -913,25 +910,17 @@ async function postBeehiivDraft(subject, previewText, htmlContent) {
 
 module.exports = async function handler(req, res) {
 
-  // Auth: ALL callers must supply a valid token. x-vercel-cron is NOT trusted.
-  // Vercel's cron runner does NOT send Authorization headers automatically, so
-  // the query param approach is required for scheduled runs.
-  //
-  // Two valid paths:
-  //   ?cron_token=<CRON_JOB_TOKEN>        Vercel scheduler sends this via vercel.json path
-  //   Authorization: Bearer <CRON_SECRET>  manual triggers only, never committed to repo
-  const cronJobToken = process.env.CRON_JOB_TOKEN;
-  const cronSecret   = process.env.CRON_SECRET;
+  // Auth: Bearer CRON_SECRET only (Vercel cron sends it when CRON_SECRET is set in project env).
+  // x-vercel-cron is NOT trusted.
+  const cronSecret = process.env.CRON_SECRET;
 
-  if (!cronJobToken && !cronSecret) {
-    console.error('[newsletter-generator] Neither CRON_JOB_TOKEN nor CRON_SECRET is set.');
+  if (!cronSecret) {
+    console.error('[newsletter-generator] CRON_SECRET is not set.');
     return res.status(500).json({ error: 'Server misconfiguration: auth tokens not set.' });
   }
 
-  const queryToken   = req.query?.cron_token || new URL(req.url, 'http://x').searchParams.get('cron_token') || '';
-  const authHeader   = req.headers['authorization'] || '';
-  const isAuthorized = (cronJobToken && queryToken === cronJobToken)
-                    || (cronSecret   && authHeader === `Bearer ${cronSecret}`);
+  const authHeader = req.headers['authorization'] || '';
+  const isAuthorized = authHeader === `Bearer ${cronSecret}`;
 
   if (!isAuthorized) {
     return res.status(401).json({
