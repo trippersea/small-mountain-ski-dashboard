@@ -14,6 +14,18 @@ function summitTempF(baseTempF, baseElevFt, summitElevFt) {
   return baseTempF - ((summitElevFt - baseElevFt) / 1000) * 3.5;
 }
 
+/** Grid/base forecast temp → estimated summit °F (single lapse-rate pass). */
+function resortSummitTempF(resort, gridTempF) {
+  const t = Number(gridTempF);
+  if (!Number.isFinite(t)) return null;
+  const base = resort?.baseElevation;
+  const summit = resort?.summitElevation;
+  if (base != null && summit != null && summit > base) {
+    return summitTempF(t, base, summit);
+  }
+  return t;
+}
+
 // ─── Snow preference helpers ──────────────────────────────────────────────────
 function snowPreferenceTarget() {
   const snow = Number(state.weights?.snow || 1);
@@ -268,10 +280,11 @@ function crowdOutlookIndex(crowd) {
 }
 
 // ─── Skiability index (temp × wind tomorrow) ──────────────────────────────────
-function skiabilityIndex(wx = null, forecastIndex = null) {
+function skiabilityIndex(resort, wx = null, forecastIndex = null) {
   const fc = forecastIndex === null ? tomorrowForecast(wx) : (wx?.forecast?.[forecastIndex] || null);
   if (!fc) return 0.55;
-  return tempScoreIndex(fc.lo) * 0.55 + windScoreIndex(fc.wind) * 0.45;
+  const lo = resort ? (resortSummitTempF(resort, fc.lo) ?? fc.lo) : fc.lo;
+  return tempScoreIndex(lo) * 0.55 + windScoreIndex(fc.wind) * 0.45;
 }
 
 // ─── Recent snow index (7-day history vs historical avg) ──────────────────────
@@ -396,7 +409,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
 
   const normalized = {
     snow:       snowQualityIndex(resort, snowTotal, weather, forecastIndex),
-    skiability: skiabilityIndex(weather, forecastIndex),
+    skiability: skiabilityIndex(resort, weather, forecastIndex),
     fit:        mountainFitIndex(resort),
     value:      valueIndex(resort),
     crowd:      crowdOutlookIndex(crowd),
@@ -467,7 +480,7 @@ function verdictFromBreakdown(resort, wx, breakdown) {
   const histTotal  = hist?.total ?? null;
 
   const baseLo      = forecast[fi]?.lo ?? 30;
-  const sLo         = summitTempF(baseLo, resort.baseElevation, resort.summitElevation);
+  const sLo         = resortSummitTempF(resort, baseLo) ?? baseLo;
   const rainLikely  = sLo > 34;
   const warmCaution = sLo > 28 && !rainLikely;
   const coldSnow    = sLo <= 24;

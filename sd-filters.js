@@ -81,7 +81,7 @@ function filteredResorts() {
     const fi = targetForecastIndex();
     const fc = wx?.forecast?.[fi] ?? tomorrowForecast(wx);
     if (fc) {
-      if (!tempBucketMatches(fc.lo))   return false;
+      if (!tempBucketMatches(resortSummitTempF(r, fc.lo) ?? fc.lo))   return false;
       if (!windBucketMatches(fc.wind)) return false;
       const target = snowPreferenceTarget();
       if (target > 0 && (fc.snow || 0) < target) return false;

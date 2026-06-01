@@ -61,7 +61,8 @@ function daysSinceMeasurableSnow(hist) {
  *   forecast (string for keyword checks), altitude, name, wasWarmYesterday, rainedYesterday
  *
  * Open-Meteo cache shape: { temp, code, wind, humidity?, forecast: [{ day, code, hi, lo, snow, wind }] }
- * Engine expects narrative keywords in `forecast` (clear/sun/cloud/rain/snow/showers/overcast).
+ * Daily hi/lo are grid-level (no elevation= on the API request). Narrative uses these directly;
+ * scoring applies resortSummitTempF() once where on-mountain cold matters.
  */
 function buildNarrativeMountainPayload(resort, wx) {
   if (!resort) {
@@ -112,13 +113,8 @@ function buildNarrativeMountainPayload(resort, wx) {
   if (!Number.isFinite(hi)) hi = Number(wx.temp) || 32;
   if (!Number.isFinite(lo)) lo = hi;
 
-  const baseEl = resort.baseElevation;
-  const sumEl = resort.summitElevation;
-  if (typeof summitTempF === 'function' && baseEl != null && sumEl != null && sumEl > baseEl) {
-    hi = Math.round(summitTempF(hi, baseEl, sumEl));
-    lo = Math.round(summitTempF(lo, baseEl, sumEl));
-  }
-
+  // Narrative copy uses grid-level daily hi/lo (matches what users see on weather apps).
+  // Scoring applies resortSummitTempF() separately where on-mountain cold matters.
   const mid = Math.round((hi + lo) / 2);
   const fcWind = fc?.wind != null ? Number(fc.wind) : NaN;
   const curWind = wx.wind != null ? Number(wx.wind) : 0;
@@ -1027,9 +1023,9 @@ async function fetchHistory(resort) {
   try {
     const { start, end } = historyDateRange();
     const url = `https://archive-api.open-meteo.com/v1/archive?` +
-      `latitude=${resort.lat}&longitude=${resort.lon}&elevation=${resort.summitElevation || resort.baseElevation}` +
+      `latitude=${resort.lat}&longitude=${resort.lon}` +
       `&start_date=${start}&end_date=${end}` +
-      `&daily=snowfall_sum&timezone=America%2FNew_York`;
+      `&daily=snowfall_sum&timezone=auto`;
     const res  = await fetchWithTimeout(url, {}, 10000);
     const data = await res.json();
     const days  = (data.daily?.time || []).map((date, i) => ({
@@ -1076,11 +1072,13 @@ async function fetchWeather(resort) {
   const cached = state.weatherCache[resort.id];
   if (cached && Date.now() - cached.ts < WX_TTL) return cached.data;
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&elevation=${resort.summitElevation || resort.baseElevation}` +
+    // Do NOT pass elevation= — Open-Meteo returns unrealistic cold above ~8k ft at this API
+    // (e.g. -40°F lows for Snowbasin in late May). Grid temps + resortSummitTempF() in scoring.
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}` +
       `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m` +
       `&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum,windspeed_10m_max` +
       `&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4` +
-      `&timezone=America%2FNew_York&models=best_match`;
+      `&timezone=auto&models=best_match`;
     const res  = await fetchWithTimeout(url);
     if (!res.ok) return null;
     const data = await res.json();
