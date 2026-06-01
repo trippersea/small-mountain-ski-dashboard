@@ -1,7 +1,6 @@
 # Data Stack Setup
 
-Builds `resort-sources.js` -- the authoritative mapping of every resort to its
-NWS weather station, SNOTEL station, and Liftie slug.
+Builds `resort-sources.js` — the authoritative mapping of every resort to its NWS weather station, SNOTEL station, and Liftie slug.
 
 Run this once. Re-run if you add resorts or want to refresh station data.
 
@@ -9,23 +8,20 @@ Run this once. Re-run if you add resorts or want to refresh station data.
 
 ## Prerequisites
 
-Node 18+ with internet access. No npm installs required -- all built-in.
+Node 18+ with internet access. No npm installs required for the lookup scripts — all built-in.
 
 ---
 
-## Step 1: Fix Open-Meteo elevation now (no scripts required)
+## Step 1: Open-Meteo weather (already configured)
 
-In `sd-app.js`, find your Open-Meteo forecast fetch and add the elevation param:
+**Do not** pass `elevation=` to Open-Meteo forecast or history URLs. Summit elevation in the API produced unrealistic cold (e.g. late-season absurd lows at 9,000+ ft).
 
-```
-// Before
-`...forecast?latitude=${r.lat}&longitude=${r.lon}&...`
+Current approach in `sd-app.js`:
 
-// After
-`...forecast?latitude=${r.lat}&longitude=${r.lon}&elevation=${r.summitElevation}&...`
-```
+- Fetch grid-level forecast/history (`timezone=auto`, no elevation param).
+- Apply a single lapse-rate adjustment in scoring via `resortSummitTempF()` in `sd-scoring.js` when needed for narrative/scoring copy.
 
-Do the same for your historical archive fetch. Deploy. Done.
+No change required unless you are debugging a specific resort’s temperature display.
 
 ---
 
@@ -40,6 +36,7 @@ node scripts/match-liftie-slugs.mjs
 ```
 
 Output files land in `scripts/output/`:
+
 - `nws-station-lookup.json`
 - `snotel-station-lookup.json`
 - `liftie-slug-lookup.json`
@@ -51,34 +48,26 @@ Output files land in `scripts/output/`:
 Open each JSON file and look for:
 
 **NWS (`nws-station-lookup.json`)**
-- Filter by `"confidence": "low"` -- these are the stations far away or at wrong elevation
-- Note which resorts they are -- the scoring engine should weight Open-Meteo
-  more heavily for these (implementation note for later)
-- Eastern mountain valley airport stations are expected to be low confidence --
-  that's the reality of NWS coverage in New England
+
+- Filter by `"confidence": "low"` — stations far away or at wrong elevation.
+- Eastern valley airport stations are often low confidence; scoring may lean more on Open-Meteo for those resorts.
 
 **SNOTEL (`snotel-station-lookup.json`)**
-- Review anything flagged `"matchConfidence": "low"` or `"matchConfidence": null`
-- A SNOTEL station matched across a major ridge or drainage is worse than no
-  SNOTEL at all -- mark those as null manually in the seed file
-- Concentrate review on Colorado, Utah, Wyoming where SNOTEL matters most
+
+- Review `"matchConfidence": "low"` or `null`.
+- A bad SNOTEL match is worse than no SNOTEL — mark as `null` in the seed file.
 
 **Liftie (`liftie-slug-lookup.json`)**
-- Review everything flagged `"needsReview": true`
-- For `fuzzy_weak` matches: visit liftie.info, search the resort name, confirm
-  or correct the slug
-- For `no_match`: the resort is not on Liftie -- set `liftieSlug: null` and
-  accept that you won't have lift status data for it (usually small local hills)
+
+- Review `"needsReview": true` entries.
+- Set `liftieSlug: null` when the resort is not on Liftie.
 
 ---
 
 ## Step 4: Apply manual corrections
 
-Open `resort-sources-seed.js`. This file has pre-populated entries for most
-resorts. If a lookup result was wrong for a specific resort, add or update
-its entry in the seed -- seed values override lookup values.
+Open `resort-sources-seed.js`. Seed values override lookup values.
 
-Format:
 ```js
 'resort-id': {
   nwsStationId:  'KXXX',
@@ -96,37 +85,10 @@ Format:
 node scripts/merge-sources.mjs
 ```
 
-This reads the three JSON outputs plus the seed file and writes `resort-sources.js`
-to the repo root. Review the output, then commit.
+This writes `resort-sources.js` to the repo root. Review and commit.
 
 ---
 
-## Full run sequence
+## Step 6: Wire into the app (when ready)
 
-```bash
-node scripts/find-nws-stations.mjs      # ~3-4 minutes
-node scripts/find-snotel-stations.mjs   # ~2-3 minutes
-node scripts/match-liftie-slugs.mjs     # ~1 minute
-# Review output files and update resort-sources-seed.js as needed
-node scripts/merge-sources.mjs          # ~5 seconds
-# Review resort-sources.js
-git add resort-sources.js resort-sources-seed.js
-git commit -m "feat: add resort data source mapping"
-```
-
----
-
-## Files produced
-
-| File | Purpose |
-|---|---|
-| `resort-sources.js` | Final mapping -- used by the data collector in v2 |
-| `resort-sources-seed.js` | Your hand-curated overrides -- commit and maintain |
-| `scripts/output/*.json` | Lookup output -- commit for reference, re-run to refresh |
-
----
-
-## Re-running
-
-The scripts are safe to re-run any time. The merge script is non-destructive.
-If you add new resorts to `resorts-data.js`, just re-run the full sequence.
+`resort-sources.js` is used by server-side condition fetches and future scoring enhancements. The live homepage ranking already uses Open-Meteo + `metro_gravity_final.js` + `lift_capacity_tiers_final.js` loaded before `sd-scoring.js`.

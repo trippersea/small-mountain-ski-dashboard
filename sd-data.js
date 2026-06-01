@@ -4,7 +4,7 @@
 
 const HOW_FAR_TIERS = Object.freeze([
   { label: 'Day Trip',       shortLabel: 'Day trip',       floor: 0,   cap: 180,      hint: '≤3h drive'      },
-  { label: 'Extended drive', shortLabel: 'Extended drive', floor: 180, cap: 360,      hint: '3h–6h drive'    },
+  { label: 'Extended drive (3h+)', shortLabel: 'Extended drive (3h+)', floor: 180, cap: 360, hint: '3–6h drive' },
   { label: 'All',            shortLabel: 'Any distance',   floor: 0,   cap: Infinity, hint: 'any distance'   },
 ]);
 

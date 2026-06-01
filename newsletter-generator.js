@@ -207,13 +207,10 @@ function resortLocation(resort) {
 // ============================================================================
 
 async function fetchWeather(resort) {
-  const elevFt = resort.summitElevation || resort.baseElevation || 5000;
-  const elevM  = Math.round(elevFt * 0.3048);
-
+  // Grid elevation only — elevation= summit returns unrealistic cold on this API.
   const url = new URL('https://api.open-meteo.com/v1/forecast');
   url.searchParams.set('latitude',      resort.lat);
   url.searchParams.set('longitude',     resort.lon);
-  url.searchParams.set('elevation',     elevM);
   url.searchParams.set('hourly',        'snowfall,snow_depth');
   url.searchParams.set('past_days',     '3');
   url.searchParams.set('forecast_days', '3');

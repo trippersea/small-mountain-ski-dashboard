@@ -106,12 +106,15 @@ function buildNarrativeMountainPayload(resort, wx) {
   const fi = targetForecastIndex();
   const fc = wx.forecast?.[fi] || wx.forecast?.[0];
   const rows = wx.forecast || [];
-  const stormTotal = rows.reduce((s, f) => s + (Number(f.snow) || 0), 0);
+  const stormTotal = typeof tripWindowSnow === 'function'
+    ? tripWindowSnow(rows)
+    : rows.reduce((s, f) => s + (Number(f.snow) || 0), 0);
 
   let hi = fc?.hi != null ? Number(fc.hi) : Number(wx.temp);
   let lo = fc?.lo != null ? Number(fc.lo) : hi;
   if (!Number.isFinite(hi)) hi = Number(wx.temp) || 32;
   if (!Number.isFinite(lo)) lo = hi;
+  ({ hi, lo } = sanitizeGridDailyTempsF(hi, lo, resort));
 
   // Narrative copy uses grid-level daily hi/lo (matches what users see on weather apps).
   // Scoring applies resortSummitTempF() separately where on-mountain cold matters.
@@ -991,28 +994,59 @@ async function fetchWithTimeout(url, options = {}, ms = 8000) {
 }
 
 // ─── Weather cache ────────────────────────────────────────────────────────────
+// v2: grid-level Open-Meteo only (no elevation=); busts bad summit-elevation cache.
+const WX_CACHE_KEY = 'ski-wx-cache-v2';
+const WX_CACHE_DAY_KEY = 'ski-wx-cache-day-v2';
+const WX_CACHE_LEGACY_KEYS = ['ski-wx-cache', 'ski-wx-cache-day'];
+
 function skiDayCacheKey() {
   if (!(state.targetDate instanceof Date)) return 'default';
   return state.targetDate.toISOString().slice(0, 10);
 }
 
+/** Reject absurd daily grid temps (e.g. cached summit-elevation API lows). */
+function sanitizeGridDailyTempsF(hi, lo, resort) {
+  let h = Math.round(Number(hi));
+  let l = Math.round(Number(lo));
+  if (!Number.isFinite(h)) h = 32;
+  if (!Number.isFinite(l)) l = h;
+  const lat = resort?.lat ?? 45;
+  const ref = state.targetDate instanceof Date ? state.targetDate : new Date();
+  const springSummer = ref.getMonth() >= 3 && ref.getMonth() <= 9;
+  if (springSummer && lat < 52 && l < -10 && h > l + 25) {
+    l = Math.min(l, h - 12);
+  }
+  if (l < -35) l = Math.max(-25, h - 20);
+  if (h > 115) h = 115;
+  if (l < -30) l = -30;
+  return { hi: h, lo: l };
+}
+
+function clearLegacyWeatherCacheStorage() {
+  try {
+    WX_CACHE_LEGACY_KEYS.forEach(k => sessionStorage.removeItem(k));
+  } catch (e) {}
+}
+
 function invalidateWeatherCache() {
   state.weatherCache = {};
   try {
-    sessionStorage.removeItem('ski-wx-cache');
-    sessionStorage.removeItem('ski-wx-cache-day');
+    sessionStorage.removeItem(WX_CACHE_KEY);
+    sessionStorage.removeItem(WX_CACHE_DAY_KEY);
+    clearLegacyWeatherCacheStorage();
   } catch (e) {}
 }
 
 function loadWeatherCache() {
   try {
+    clearLegacyWeatherCacheStorage();
     const dayKey = skiDayCacheKey();
-    const storedDay = sessionStorage.getItem('ski-wx-cache-day');
+    const storedDay = sessionStorage.getItem(WX_CACHE_DAY_KEY);
     if (storedDay && storedDay !== dayKey) {
-      sessionStorage.removeItem('ski-wx-cache');
+      sessionStorage.removeItem(WX_CACHE_KEY);
     }
-    sessionStorage.setItem('ski-wx-cache-day', dayKey);
-    const raw = sessionStorage.getItem('ski-wx-cache');
+    sessionStorage.setItem(WX_CACHE_DAY_KEY, dayKey);
+    const raw = sessionStorage.getItem(WX_CACHE_KEY);
     if (!raw) return;
     const now = Date.now();
     Object.entries(JSON.parse(raw)).forEach(([id, entry]) => {
@@ -1022,8 +1056,8 @@ function loadWeatherCache() {
 }
 function saveWeatherCache() {
   try {
-    sessionStorage.setItem('ski-wx-cache-day', skiDayCacheKey());
-    sessionStorage.setItem('ski-wx-cache', JSON.stringify(state.weatherCache));
+    sessionStorage.setItem(WX_CACHE_DAY_KEY, skiDayCacheKey());
+    sessionStorage.setItem(WX_CACHE_KEY, JSON.stringify(state.weatherCache));
   } catch (e) {}
 }
 
@@ -1107,14 +1141,21 @@ async function fetchWeather(resort) {
       humidity: data.current.relativehumidity_2m != null
         ? Math.round(data.current.relativehumidity_2m)
         : undefined,
-      forecast: data.daily.time.slice(1, 4).map((date, i) => ({
-        day:  new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
-        code: data.daily.weathercode[i + 1],
-        hi:   Math.round(data.daily.temperature_2m_max[i + 1]),
-        lo:   Math.round(data.daily.temperature_2m_min[i + 1]),
-        snow: Math.round((data.daily.snowfall_sum?.[i + 1] || 0) * 10) / 10,
-        wind: Math.round(data.daily.windspeed_10m_max?.[i + 1] || 0),
-      })),
+      forecast: data.daily.time.slice(1, 4).map((date, i) => {
+        const raw = sanitizeGridDailyTempsF(
+          data.daily.temperature_2m_max[i + 1],
+          data.daily.temperature_2m_min[i + 1],
+          resort,
+        );
+        return {
+          day:  new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
+          code: data.daily.weathercode[i + 1],
+          hi:   raw.hi,
+          lo:   raw.lo,
+          snow: Math.round((data.daily.snowfall_sum?.[i + 1] || 0) * 10) / 10,
+          wind: Math.round(data.daily.windspeed_10m_max?.[i + 1] || 0),
+        };
+      }),
     };
     state.weatherCache[resort.id] = { ts: Date.now(), data: wx };
     return wx;
@@ -1565,23 +1606,71 @@ function scrollToResultsAfterLocationSet() {
 }
 
 // ─── Compare page session writer ─────────────────────────────────────────────
-// Serializes the current verdict + runners into localStorage so compare/index.html
-// can read and render them without re-running the scoring engine.
-function saveCompareSession(v, runningItems) {
-  if (!v || !state.origin) return;
-  const { tier, headline, detail, resort, driveText, drive, tomorrowIn, stormTotal, breakdown } = v;
-  const wxVerdict = state.weatherCache[resort.id]?.data;
-  const crowdV    = crowdForecast(resort, wxVerdict);
+const COMPARE_FULL_RANKING_LIMIT = 25;
 
-  // Recompute the top pick's score from the current weather cache so it is
-  // always on the same data footing as the runners (which are scored fresh
-  // via collectRunnerUpItems). This prevents the "lower score won" display
-  // artifact that occurs when weather finishes loading after the initial
-  // verdict render but before the session is saved.
+/** One resort row for /compare/ (trip-mode snow totals match scoring). */
+function resortToCompareSessionRow(resort, wx, breakdown, extras = {}) {
+  const fi = targetForecastIndex();
+  const forecast = wx?.forecast || [];
+  const stormTotal = tripWindowSnow(forecast);
+  const tomorrowIn = forecast[fi]?.snow || 0;
+  const crowdV = crowdForecast(resort, wx);
+  const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
+  return {
+    id:           resort.id,
+    name:         resort.name,
+    state:        resort.state,
+    passGroup:    resort.passGroup || 'Independent',
+    price:        resort.price || null,
+    vertical:     resort.vertical || null,
+    trails:       resort.trails || null,
+    avgSnowfall:  resort.avgSnowfall || null,
+    tier:         extras.tier ?? vd?.tier ?? null,
+    headline:     extras.headline ?? vd?.label ?? null,
+    detail:       extras.detail ?? vd?.detail ?? null,
+    driveText:    getDriveMins(resort.id) ? formatDrive(resort.id) : null,
+    driveMins:    getDriveMins(resort.id),
+    tomorrowIn:   Math.round(tomorrowIn * 10) / 10,
+    stormTotal:   Math.round(stormTotal * 10) / 10,
+    score:        breakdown ? Math.round(breakdown.score) : null,
+    crowdLabel:   crowdV.label,
+    wxForecast:   forecast,
+  };
+}
+
+/** Top N scored resorts in the current filter set (for compare page full table). */
+function buildFullCompareRankings(resorts) {
+  const w = normalizedWeights();
+  const pool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
+  return pool
+    .filter(r => state.weatherCache[r.id]?.data)
+    .map(r => {
+      const wx = state.weatherCache[r.id].data;
+      const breakdown = plannerScoreBreakdown(r, wx, targetForecastIndex(), w);
+      return { resort: r, wx, breakdown };
+    })
+    .sort((a, b) => b.breakdown.score - a.breakdown.score)
+    .slice(0, COMPARE_FULL_RANKING_LIMIT)
+    .map(({ resort, wx, breakdown }) => resortToCompareSessionRow(resort, wx, breakdown));
+}
+
+// Serializes verdict, runners, and full ranking into localStorage for /compare/.
+function saveCompareSession(v, runningItems, resorts) {
+  if (!v || !state.origin) return;
+  const { tier, headline, detail, resort, driveText, drive, breakdown } = v;
+  const wxVerdict = state.weatherCache[resort.id]?.data;
+  const pool = resorts || filteredResorts();
+  const fi = targetForecastIndex();
+  const pickStorm = tripWindowSnow(wxVerdict?.forecast || []);
+  const pickTomorrow = wxVerdict?.forecast?.[fi]?.snow || 0;
+
   const freshPickBreakdown = wxVerdict
-    ? plannerScoreBreakdown(resort, wxVerdict, targetForecastIndex(), normalizedWeights())
+    ? plannerScoreBreakdown(resort, wxVerdict, fi, normalizedWeights())
     : breakdown;
   const freshPickScore = freshPickBreakdown ? Math.round(freshPickBreakdown.score) : null;
+
+  const fullRankings = buildFullCompareRankings(pool);
+  const rankedWithWeather = pool.filter(r => state.weatherCache[r.id]?.data).length;
 
   const session = {
     ts:           Date.now(),
@@ -1589,6 +1678,9 @@ function saveCompareSession(v, runningItems) {
     passFilter:   state.passFilter,
     howFar:       state.howFar,
     skiDayPreset: state.skiDayPreset,
+    forecastIndex: fi,
+    rankingTotal: rankedWithWeather,
+    fullRankings,
     topPick: {
       id:           resort.id,
       name:         resort.name,
@@ -1603,34 +1695,15 @@ function saveCompareSession(v, runningItems) {
       detail,
       driveText:    driveText || '—',
       driveMins:    drive,
-      tomorrowIn,
-      stormTotal,
+      tomorrowIn:   Math.round(pickTomorrow * 10) / 10,
+      stormTotal:   Math.round(pickStorm * 10) / 10,
       score:        freshPickScore,
-      crowdLabel:   crowdV.label,
+      crowdLabel:   crowdForecast(resort, wxVerdict).label,
       wxForecast:   wxVerdict?.forecast || [],
     },
     runners: (runningItems || []).map(item => {
-      const rWx    = state.weatherCache[item.resort.id]?.data;
-      const rCrowd = crowdForecast(item.resort, rWx);
-      const rStorm = (rWx?.forecast || []).reduce((s, f) => s + (f.snow || 0), 0);
-      const rTomIn = rWx?.forecast?.[0]?.snow || 0;
-      return {
-        id:           item.resort.id,
-        name:         item.resort.name,
-        state:        item.resort.state,
-        passGroup:    item.resort.passGroup || 'Independent',
-        price:        item.resort.price || null,
-        vertical:     item.resort.vertical || null,
-        trails:       item.resort.trails || null,
-        avgSnowfall:  item.resort.avgSnowfall || null,
-        driveText:    getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null,
-        driveMins:    getDriveMins(item.resort.id),
-        score:        item.breakdown ? Math.round(item.breakdown.score) : null,
-        crowdLabel:   rCrowd.label,
-        stormTotal:   Math.round(rStorm * 10) / 10,
-        tomorrowIn:   Math.round(rTomIn * 10) / 10,
-        wxForecast:   rWx?.forecast || [],
-      };
+      const rWx = state.weatherCache[item.resort.id]?.data;
+      return resortToCompareSessionRow(item.resort, rWx, item.breakdown);
     }),
   };
 
@@ -1786,10 +1859,9 @@ function renderVerdict(resorts) {
     );
     if (filtersTightenEmpty) {
       const driveHint = state.origin && state.howFar < 2
-        ? 'If nothing is within day-trip distance, try <strong>Extended drive</strong> or <strong>All distances</strong>, or adjust your starting location.'
+        ? 'If nothing is within day-trip distance, try <strong>Extended drive (3h+)</strong> or <strong>All distances</strong>, or adjust your starting location.'
         : 'Try expanding your distance range, easing the ticket or snow filters, or choosing a different pass.';
       els.verdictCard.innerHTML = `<div class="vcard-placeholder">
-        <div class="vcard-placeholder-icon">🔍</div>
         <div class="vcard-placeholder-title">No mountains match your filters</div>
         <div class="vcard-placeholder-sub">${driveHint}</div>
         <button type="button" class="vcard-placeholder-btn" id="verdictEmptyReset">Clear filters &amp; try again</button>
@@ -1800,38 +1872,32 @@ function renderVerdict(resorts) {
       const anyWx = pool.some(r => state.weatherCache[r.id]?.data);
       if (pool.length === 0) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
-          <div class="vcard-placeholder-icon">🚗</div>
           <div class="vcard-placeholder-title">No mountains in this drive window</div>
           <div class="vcard-placeholder-sub">Your list is empty for the selected range. Widen <strong>Drive time</strong> under Refine results or pick a different starting point.</div>
         </div>`;
       } else if (!anyWx && !weatherFetchPhase1Done) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
-          <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
           <div class="vcard-placeholder-title">Loading live forecasts…</div>
           <div class="vcard-placeholder-sub">We're still pulling forecasts and snow totals · your pick will show up as soon as the numbers land.</div>
         </div>`;
       } else if (!anyWx && weatherFetchPhase1Done && weatherFetchPhase2Done) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
-          <div class="vcard-placeholder-icon">☁</div>
           <div class="vcard-placeholder-title">Forecast data unavailable</div>
           <div class="vcard-placeholder-sub">We could not load weather from our data provider. Drive times and the mountain list below still work · try refreshing the page in a minute.</div>
         </div>`;
       } else if (!anyWx) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
-          <div class="vcard-placeholder-icon vcard-loading-pulse">⛷</div>
           <div class="vcard-placeholder-title">Still loading forecasts…</div>
           <div class="vcard-placeholder-sub">Still filling in snow for more mountains · the list below may refresh first for places near you.</div>
         </div>`;
       } else {
-        els.verdictCard.innerHTML = `<div class="vcard-placeholder">
-          <div class="vcard-placeholder-icon">⛷</div>
+        els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
           <div class="vcard-placeholder-title">Almost ready</div>
           <div class="vcard-placeholder-sub">Almost there · we're recalculating after the latest forecast.</div>
         </div>`;
       }
     } else {
-      els.verdictCard.innerHTML = `<div class="vcard-placeholder">
-        <div class="vcard-placeholder-icon">⛷</div>
+      els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
         <div class="vcard-placeholder-title">Loading your top pick…</div>
         <div class="vcard-placeholder-sub">Fetching live forecast data for your mountains.</div>
       </div>`;
@@ -1841,7 +1907,7 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn, histTotal } = v;
   const runningItems = collectRunnerUpItems(resorts, resort.id, 3);
-  saveCompareSession(v, runningItems);
+  saveCompareSession(v, runningItems, resorts);
   trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
 
@@ -1852,7 +1918,7 @@ function renderVerdict(resorts) {
   const _eyebrowTier = (tier === 'bad' || tier === 'marginal') ? 'Best Today' : 'Top Pick';
   const _eyebrowMain = esc(`${_eyebrowTier} • From ${_fromCity}`);
   const _driveEyebrowHtml = state.origin && _driveMins != null
-    ? `<span class="vcard-eyebrow-drive"><svg class="vcard-eyebrow-drive-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 17h2l1.5-4.5M19 17h-8M19 17l-2-5.5M7 17l2-6h6l2 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor"/></svg>${esc(_utilityDrive)}</span>`
+    ? `<span class="vcard-eyebrow-drive">${esc(_utilityDrive)}</span>`
     : '';
   const _eyebrow = `<span class="vcard-eyebrow-main">${_eyebrowMain}</span>${_driveEyebrowHtml}`;
   const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
@@ -2038,7 +2104,7 @@ function renderVerdict(resorts) {
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_name_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
-    saveCompareSession(v, runningItems); // ensure freshest data on click
+    saveCompareSession(v, runningItems, resorts); // ensure freshest data on click
     trackFilterEvent('engagement', 'compare_mountains_click');
     window.location.href = '/compare/';
   });
@@ -2537,7 +2603,6 @@ function renderCompareTable(resorts) {
     els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
       <tr><td colspan="7" class="compare-empty-state">
-        <div class="ces-icon">🎿</div>
         <div class="ces-title">${title}</div>
         <div class="ces-sub">${sub}
           <button type="button" class="ces-reset-link" id="emptyStateReset">${qActive ? 'Clear search' : 'Clear all filters'}</button>
@@ -3023,7 +3088,7 @@ function renderMobileCards(decorated, emptyOpts) {
         : (emptyOpts.resortsLen === 0
           ? 'Nothing matches your filters. Loosen a preference or reset filters below.'
           : 'Nothing to show in this view.');
-      els.mobileCardGrid.innerHTML = `<div class="mob-grid-empty" role="status"><div class="mob-grid-empty-icon">🎿</div><p class="mob-grid-empty-title">${qActive ? 'No search results' : 'No mountains here'}</p><p class="mob-grid-empty-sub">${longMsg}</p></div>`;
+      els.mobileCardGrid.innerHTML = `<div class="mob-grid-empty" role="status"><p class="mob-grid-empty-title">${qActive ? 'No search results' : 'No mountains here'}</p><p class="mob-grid-empty-sub">${longMsg}</p></div>`;
     } else els.mobileCardGrid.innerHTML = '';
     return;
   }
@@ -3031,7 +3096,6 @@ function renderMobileCards(decorated, emptyOpts) {
   const noOriginMobile = !state.origin && state.sortBy === 'planner';
   const nudgeHtml = noOriginMobile ? `
     <div class="mob-location-nudge">
-      <span aria-hidden="true">📍</span>
       <span>Add your start location to rank by live snow and drive time.</span>
       <button type="button" onclick="document.getElementById('originInput')?.focus();window.scrollTo({top:0,behavior:'smooth'})">Set location</button>
     </div>` : '';

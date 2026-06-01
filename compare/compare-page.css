@@ -1299,5 +1299,19 @@ body.compare-page-body .site-footer-affiliate {
   line-height: 1.45;
 }
 
+.compare-page-table tbody tr.cp-rank-row--pick {
+  background: rgba(43, 109, 233, 0.12);
+}
+.cp-rank-pick-tag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #93c5fd;
+  vertical-align: middle;
+}
+
 /* Runner score cells: keep the right-most bubbles from overflowing the table edge */
 .cp-td-runner:last-child .cp-explain-bubble { left: auto; right: 0; }

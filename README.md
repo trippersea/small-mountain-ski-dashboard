@@ -1,83 +1,84 @@
-# New England Ski Mountain Guide
+# WhereToSkiNext.com
 
-A static, GitHub Pages-ready ski planning dashboard for 24 New England ski mountains — no backend, no API keys, no build step. Drop the three files in a repo, enable Pages, done.
+A ski trip planner that ranks **~300 U.S. ski areas** from your location, pass, drive window, and preferences — with live forecast snow, drive times, and a crowd outlook model.
 
-## Live data (all free, no keys required)
+**Production:** [wheretoskinext.com](https://wheretoskinext.com) (Vercel)
 
-| Source | Used for |
-|---|---|
-| Open-Meteo | Current weather, 3-day forecast, **past 48h snowfall** (powder alerts) |
-| OSRM | Drive time routing |
-| Nominatim | City / address geocoding |
-| Zippopotam | ZIP code lookup |
-| Leaflet + OpenStreetMap | Interactive map |
+---
 
-Weather is cached for 30 minutes per resort so repeated interactions don't hammer the API.
+## Stack
 
-## Features
+| Layer | Technology |
+|--------|------------|
+| Frontend | Static HTML/CSS + vanilla JS (`sd-app.js`, `sd-scoring.js`, `sd-filters.js`, `resorts.js`) |
+| Deploy | Vercel — build runs `obfuscate-scoring.mjs` + `prerender-homepage.mjs` |
+| Weather | [Open-Meteo](https://open-meteo.com/) (grid temps; no summit `elevation=` param) |
+| Drive times | [OSRM](https://router.project-osrm.org/) + haversine fallback |
+| Geocoding | Nominatim, Zippopotam.us |
+| APIs | Vercel serverless (`api/chat.js`, newsletter, subscribe, analytics) |
 
-- **Powder alerts** — past 48h snowfall badge on every resort (sidebar + detail card)
-- **Snow quality label** — translates current temp to skiing conditions (Prime powder / Good groomed / Warm — go early / etc.)
-- **Wind warning** — flags when wind may close upper lifts (≥25 mph advisory, ≥35 mph closure warning)
-- **Season status** — green / amber / grey dot on every resort showing Open / Soon / Closed
-- **Best Mountain Today** — scored ranking across all filtered resorts
-- **Weekend Planner** — dynamically finds the correct upcoming Saturday/Sunday forecast (not hardcoded offsets)
-- **Snow Outlook** — 6-card ranked forecast view
-- **Pass Value Calculator** — Indy Pass break-even math, adjustable ski-day count
-- **Quick filters** — Beginners, Steeps, Night, Natural snow, Terrain park, Budget (all wired and working)
-- **Compare table** — best value per column highlighted in teal; sticky header inside scrollable container
-- **Side-by-side compare** — includes cost-per-vertical-foot row
-- **Drive-time map** — colour-coded markers by drive radius; all markers update when filters change
-- **URL share / deep-link** — Share button copies `#resort-id` link; opening that URL auto-selects the resort
-- **Favorites + notes** — persisted to localStorage
-- **Surprise Me** — random resort from current filtered list
+---
 
-## Deploy to GitHub Pages
+## Local development
 
-1. Create a new repo (can be private with Pages enabled on a paid plan, or public)
-2. Push `index.html`, `styles.css`, `resorts.js`, and `README.md`
-3. Settings → Pages → Source: Deploy from branch → `main` / `root`
-4. Done — no build step needed
+```bash
+npm install          # devDeps: sharp, javascript-obfuscator
+npm test             # sd-safe-url.test.cjs
+npx serve .          # or any static server at repo root
+```
+
+Open `/` for the planner. `/compare/` reads `localStorage['wtsn-compare']` written after you set a location and get a top pick on the homepage.
+
+**Do not run `node obfuscate-scoring.mjs` locally** unless you intend to overwrite `sd-app.js` / `sd-scoring.js` in place (Vercel build only).
+
+---
+
+## Environment variables (Vercel)
+
+| Variable | Purpose |
+|----------|---------|
+| `ANTHROPIC_API_KEY` | Optional — powers “Describe your ideal day” (`/api/chat`) |
+| `CRON_SECRET` / `CRON_JOB_TOKEN` | Newsletter cron (`api/newsletter-generator.js`) |
+| `ALLOWED_ORIGINS` | CORS allowlist for API routes (comma-separated) |
+
+See `vercel.json` for security headers and rewrites.
+
+---
+
+## Key product flows
+
+1. **Homepage** — ZIP/city → ranked table (top 10, expandable), verdict card, refine filters.
+2. **Compare** (`/compare/`) — Side-by-side top pick + 3 runners; **full rankings table** (top 25 from same scoring session).
+3. **SEO** — `/ski/:state/`, `/ski-near/:city/`, `/ski-report/:slug/` static pages.
+
+### Trip / drive modes
+
+| `howFar` | Label | Drive band |
+|----------|--------|------------|
+| `0` | Day trip | ≤3 hours |
+| `1` | Extended drive (3h+) | 3–6 hours |
+| `2` | Any distance | No cap |
+
+---
 
 ## Adding or updating resorts
 
-Edit the `RESORTS` array at the top of `resorts.js`. Required fields per resort:
+Edit `resorts.js` (master `RESORTS` array). Required fields include `id`, `name`, `state`, `passGroup`, `lat`, `lon`, `vertical`, `price`, etc. Regenerate SEO/report pages with the project’s generator scripts when adding many resorts.
 
-```js
-{
-  id:           'unique-slug',        // used in URLs and localStorage
-  name:         'Resort Name',
-  state:        'VT',
-  pass:         'Indy',               // or 'Independent', 'Ikon', etc.
-  owner:        'Independent',
-  vertical:     1500,                 // feet
-  trails:       51,
-  lifts:        5,
-  acres:        285,
-  snowfall:     120,                  // avg annual inches
-  snowmaking:   45,                   // % coverage
-  night:        false,
-  longestRun:   3.0,                  // miles
-  lat:          43.1964,
-  lon:          -72.8243,
-  difficulty:   { beginner:0.14, intermediate:0.32, advanced:0.34, expert:0.20 },
-  liftsBreakdown: [['Quad',1],['Double',3],['Surface',1]],
-  website:      'https://...',
-  webcamPage:   '',
-  trailMapImage:'',                   // direct image URL or leave empty
-  trailMapPage: 'https://...',
-  price:        79,                   // directional day ticket estimate
-  terrainPark:  false,
-  seasonOpen:   'Dec',
-  seasonClose:  'Apr',
-  notes:        'One-line honest description.',
-  tags:         ['Soul skiing','Steeps'],
-  bestFor:      ['steeps','budget'],
-}
+Optional station mapping: see `DATA-STACK-README.md` and `scripts/` for NWS / SNOTEL / Liftie merges into `resort-sources.js`.
+
+---
+
+## Tests
+
+```bash
+npm test
 ```
 
-## Notes
+Covers URL param sanitization (`sd-safe-url.js`). Scoring is not unit-tested in CI (logic lives in `sd-scoring.js`).
 
-Ticket prices are directional estimates and vary by date, demand, age, and promotions. Confirm with the mountain before booking.
+---
 
-Drive times are calculated under normal road conditions via OSRM. Winter travel on mountain roads typically adds 20–50% to estimate.
+## Disclaimers
+
+Ticket prices and drive times are estimates. Crowd scores are modeled, not live lift-line data. Confirm conditions and pricing with the mountain before you go.

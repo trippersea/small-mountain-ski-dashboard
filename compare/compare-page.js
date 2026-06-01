@@ -18,7 +18,9 @@
 //                    tomorrowIn, wxForecast, crowdLabel, price, vertical,
 //                    trails, avgSnowfall, headline, detail,
 //                    baseElevation?, summitElevation?, score? },
-//   runners:       [ /* same shape, up to 3, may lack headline/detail */ ]
+//   runners:       [ /* same shape, up to 3 */ ],
+//   fullRankings:  [ /* top 25 scored rows, trip-mode snow totals */ ],
+//   rankingTotal:  <count with weather in filter pool>,
 // }
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -27,6 +29,7 @@
 
   const SESSION_KEY = 'wtsn-compare';
   const SESSION_TTL = 4 * 60 * 60 * 1000; // 4 hours in ms
+  const COMPARE_FULL_RANKING_LIMIT = 25;
 
   // ─── Tiny helpers ──────────────────────────────────────────────────────────
   function esc(s) {
@@ -42,9 +45,9 @@
   }
 
   function tripLabel(howFar) {
-    if (howFar === 1) return '\uD83C\uDFD4 Extended drive';
-    if (howFar === 2) return '\u2708 Any distance';
-    return '\uD83D\uDE97 Day trip';
+    if (howFar === 1) return 'Extended drive (3h+)';
+    if (howFar === 2) return 'Any distance';
+    return 'Day trip';
   }
 
   function dayLabel(preset) {
@@ -243,7 +246,10 @@
   }
 
   // ─── Hydrate page ──────────────────────────────────────────────────────────
-  const { origin, passFilter, howFar, skiDayPreset, forecastIndex = 0, topPick, runners = [] } = session;
+  const {
+    origin, passFilter, howFar, skiDayPreset, forecastIndex = 0,
+    topPick, runners = [], fullRankings = [], rankingTotal = 0,
+  } = session;
   const city = cityName(origin.label);
 
   // Page title
@@ -267,8 +273,8 @@
     const chips = [
       tripLabel(howFar),
       dayLabel(skiDayPreset),
-      (passFilter && passFilter !== 'All') ? `\uD83C\uDFAB ${passFilter} Pass` : null,
-      `\uD83D\uDCCD From ${origin.label || city}`,
+      (passFilter && passFilter !== 'All') ? `${passFilter} pass` : null,
+      `From ${origin.label || city}`,
     ].filter(Boolean);
     const changeLink = '<a href="/">Change</a>';
     ctxDiv.innerHTML = chips.map(c => `<span>${esc(c)}</span>`).join('') + changeLink;
@@ -526,24 +532,45 @@
     }
   }
 
-  // ── Full rankings table ──────────────────────────────────────────────────
+  // ── Full rankings table (top 25 from homepage scoring; same filters) ───────
   const tbody = document.getElementById('compareTableBody');
+  const rankingsHead = document.querySelector('#full-rankings .compare-page-section__head div > p:not(.compare-page-eyebrow)');
+  const rankingRows = (fullRankings && fullRankings.length)
+    ? fullRankings
+    : [topPick, ...runners];
+
+  if (rankingsHead && rankingTotal > COMPARE_FULL_RANKING_LIMIT) {
+    rankingsHead.textContent =
+      `Top ${rankingRows.length} of ${rankingTotal} mountains with live forecast — same scoring as the homepage.`;
+  } else if (rankingsHead && rankingRows.length) {
+    rankingsHead.textContent =
+      `${rankingRows.length} mountain${rankingRows.length !== 1 ? 's' : ''} ranked for your search — same scoring as the homepage.`;
+  }
+
+  const snowColLabel = howFar === 0 ? 'Forecast' : '3-day snow';
+  const snowTh = document.querySelector('#full-rankings .compare-page-table thead th:nth-child(3)');
+  if (snowTh) snowTh.textContent = snowColLabel;
+
   if (tbody) {
-    const allResorts = [topPick, ...runners];
-    tbody.innerHTML = allResorts.map(function (r, i) {
-      // stormTotal is already trip-mode aware (written by saveCompareSession using tripWindowSnow).
+    tbody.innerHTML = rankingRows.map(function (r, i) {
       const snowText  = r.stormTotal >= 0.5 ? `${r.stormTotal.toFixed(1)}\u2033 ${snowWindowLabel}` : 'Dry forecast';
       const priceText = r.price ? `$${r.price}` : '\u2014';
       const driveText = r.driveText || '\u2014';
       const crowdText = crowdTopLabel(r.crowdLabel) || '\u2014';
-      return `<tr>
+      const scoreText = r.score != null ? String(Math.round(r.score)) : '\u2014';
+      const isPick = r.id === topPick.id;
+      const nameCell = isPick
+        ? `<strong>${esc(r.name)}</strong> <span class="cp-rank-pick-tag">Top pick</span>`
+        : esc(r.name);
+      return `<tr class="${isPick ? 'cp-rank-row--pick' : ''}">
         <td>${i + 1}</td>
-        <td><a href="/ski-report/${esc(r.id)}/">${esc(r.name)}</a></td>
+        <td><a href="/ski-report/${esc(r.id)}/">${nameCell}</a></td>
         <td>${esc(snowText)}</td>
         <td>${esc(driveText)}</td>
         <td>${esc(r.passGroup)}</td>
         <td>${esc(crowdText)}</td>
         <td>${esc(priceText)}</td>
+        <td>${esc(scoreText)}</td>
       </tr>`;
     }).join('');
   }
@@ -554,7 +581,6 @@
     if (container) {
       container.innerHTML =
         '<div class="cp-cgt-empty">' +
-          '<div class="cp-cgt-empty-icon">\u26F7\uFE0F</div>' +
           '<h2>No comparison loaded yet</h2>' +
           '<p>Run a search on the homepage first. We stash your trip so this page can show your top pick, nearby options, and the full score breakdown.</p>' +
           '<a href="/" class="compare-page-btn compare-page-btn--primary">Find my mountain \u2192</a>' +
