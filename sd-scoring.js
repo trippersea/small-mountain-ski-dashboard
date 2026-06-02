@@ -387,8 +387,13 @@ function snowQualityIndex(resort, snowTotal, wx = null, forecastIndex = null) {
   } else if (liveSnow < target) {
     live = 0.15 * Math.min(1, liveSnow / Math.max(1, target));
   } else {
-    const cap = Math.max(target + 4, target === 12 ? 18 : W.SCORING.SNOW_SCALE + target);
-    live = Math.min(1, (liveSnow - target) / Math.max(1, cap - target));
+    // Meeting the target IS the win the user asked for, so it anchors high (0.8);
+    // exceeding it climbs the rest of the way to 1.0 at the cap. Previously this
+    // scored (liveSnow-target)/(cap-target), which gave ~0 for merely meeting the
+    // target — so a 12" day at "Powder Day" priority scored near nothing.
+    const cap   = Math.max(target + 4, target === 12 ? 18 : W.SCORING.SNOW_SCALE + target);
+    const over  = Math.min(1, (liveSnow - target) / Math.max(1, cap - target));
+    live = 0.8 + 0.2 * over;
   }
 
   return live * 0.72 + recent * 0.18 + reliability * 0.10;
