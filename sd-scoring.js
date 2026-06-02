@@ -601,10 +601,29 @@ function pickSleeperFromRanked(ranked, pickEntry, localEntry) {
   };
 }
 
+function stripResortSuffix(name) {
+  const raw = String(name || '').trim();
+  const lower = raw.toLowerCase();
+
+  const suffixes = [
+    ' ski resort',
+    ' ski area',
+    ' mountain',
+    ' resort',
+  ];
+
+  for (const suffix of suffixes) {
+    if (lower.endsWith(suffix)) {
+      return raw.slice(0, -suffix.length).trim();
+    }
+  }
+
+  return raw;
+}
+
 /** User-facing copy for the SLEEPER role card. */
 function sleeperRoleExplanation(sleeperEntry, pickResort, refResort) {
-  const refShort = (refResort?.name || 'the big-name option')
-    .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
+  const refShort = stripResortSuffix(refResort?.name || 'the big-name option');
   if (sleeperEntry?.tier === 'marginal') {
     return `Quieter alternative if ${refShort}'s lift lines worry you — fair conditions, less circus.`;
   }
