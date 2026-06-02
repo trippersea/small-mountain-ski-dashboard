@@ -165,3 +165,84 @@ test('[SPEC] Tenney on a real powder Saturday beats a closer dry mountain', () =
   assert.ok(tenney > wach,
     `Tenney powder (${tenney}) should beat closer dry Wachusett (${wach})`);
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [PROTECT] Verdict pick gate (pickTopPickFromRanked — same logic as computeVerdict)
+// Manual UI check: Boston origin, extended/any drive, bluebird; ?debug=1 on detail.
+// ─────────────────────────────────────────────────────────────────────────────
+function rankedEntry(id, wx) {
+  const resort = byId[id];
+  const breakdown = api.plannerScoreBreakdown(resort, wx, 0, null);
+  return { resort, wx, breakdown };
+}
+
+test('[PROTECT] pickTopPickFromRanked chooses Loon over Blue Hills when floor active', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('loon-mountain', 140);
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('blue-hills-ski-area', wx),
+    rankedEntry('loon-mountain', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  assert.strictEqual(ranked[0].resort.id, 'loon-mountain',
+    `expected Loon to outscore Blue Hills before pick gate; got ${ranked[0].resort.id}`);
+  const result = api.pickTopPickFromRanked(ranked);
+  assert.ok(result);
+  assert.strictEqual(result.pick.resort.id, 'loon-mountain');
+  assert.strictEqual(result.topPickIsFallback, false);
+  assert.strictEqual(ranked.find(e => e.resort.id === 'blue-hills-ski-area').breakdown.topPickEligible, false);
+});
+
+test('[PROTECT] pickTopPickFromRanked skips ineligible leader when BH scores highest', () => {
+  resetState();
+  const wx = h.bluebird();
+  const bh = rankedEntry('blue-hills-ski-area', wx);
+  const ln = rankedEntry('loon-mountain', wx);
+  bh.breakdown = { ...bh.breakdown, score: 99, topPickEligible: false, topPickEligibilityReason: 'below_destination_floor' };
+  ln.breakdown = { ...ln.breakdown, score: 55, topPickEligible: true, topPickEligibilityReason: 'eligible' };
+  const ranked = [bh, ln];
+  const result = api.pickTopPickFromRanked(ranked);
+  assert.strictEqual(result.pick.resort.id, 'loon-mountain');
+  assert.strictEqual(result.topPickIsFallback, false);
+});
+
+test('[PROTECT] pickTopPickFromRanked uses raw leader when local intent disables floor', () => {
+  resetState();
+  state.verticalFilter = 'small';
+  const wx = h.bluebird();
+  const bh = rankedEntry('blue-hills-ski-area', wx);
+  const ln = rankedEntry('loon-mountain', wx);
+  bh.breakdown = { ...bh.breakdown, score: 70, topPickEligible: true, topPickEligibilityReason: 'local_intent_override' };
+  ln.breakdown = { ...ln.breakdown, score: 55, topPickEligible: true, topPickEligibilityReason: 'local_intent_override' };
+  const ranked = [bh, ln];
+  const result = api.pickTopPickFromRanked(ranked);
+  assert.strictEqual(result.pick.resort.id, 'blue-hills-ski-area');
+  assert.strictEqual(result.topPickFloorActive, false);
+});
+
+test('[PROTECT] filterRunnerUpCandidates drops ineligible locals on broad search', () => {
+  resetState();
+  const wx = h.bluebird();
+  const scored = [
+    rankedEntry('blue-hills-ski-area', wx),
+    rankedEntry('loon-mountain', wx),
+    rankedEntry('pats-peak', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const runners = api.filterRunnerUpCandidates(scored);
+  assert.ok(!runners.some(e => e.resort.id === 'blue-hills-ski-area'));
+  assert.ok(runners.some(e => e.resort.id === 'loon-mountain'));
+});
+
+test('[PROTECT] pickTopPickFromRanked fallback when no eligible destination', () => {
+  resetState();
+  const wx = h.bluebird();
+  const bh = rankedEntry('blue-hills-ski-area', wx);
+  const ranked = [bh];
+  const result = api.pickTopPickFromRanked(ranked);
+  assert.strictEqual(result.pick.resort.id, 'blue-hills-ski-area');
+  assert.strictEqual(result.topPickIsFallback, true);
+  assert.strictEqual(result.topPickFallbackReason, 'no_eligible_destination');
+});

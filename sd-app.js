@@ -1767,6 +1767,10 @@ function saveCompareSession(v, runningItems, resorts) {
       score:        freshPickScore,
       crowdLabel:   crowdForecast(resort, wxVerdict).label,
       wxForecast:   wxVerdict?.forecast || [],
+      topPickEligible: breakdown?.topPickEligible ?? null,
+      topPickEligibilityReason: breakdown?.topPickEligibilityReason ?? null,
+      topPickIsFallback: v.topPickIsFallback ?? false,
+      topPickFallbackReason: v.topPickFallbackReason ?? null,
     },
     runners: (runningItems || []).map(item => {
       const rWx = state.weatherCache[item.resort.id]?.data;
@@ -1778,6 +1782,15 @@ function saveCompareSession(v, runningItems, resorts) {
 }
 
 // ─── Verdict engine ───────────────────────────────────────────────────────────
+function isWtsnQaMode() {
+  try {
+    if (new URLSearchParams(window.location.search).get('debug') === '1') return true;
+    return localStorage.getItem('wtsn-debug') === '1';
+  } catch (e) {
+    return false;
+  }
+}
+
 function computeVerdict(resorts) {
   const verdictPool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
   const withWx = verdictPool.filter(r => state.weatherCache[r.id]?.data);
@@ -1789,8 +1802,12 @@ function computeVerdict(resorts) {
     return { resort: r, wx, breakdown: plannerScoreBreakdown(r, wx, targetForecastIndex(), w), history: historyCache.get(r.id) || null };
   }).sort((a, b) => b.breakdown.score - a.breakdown.score);
 
-  const { resort, wx, breakdown, history } = ranked[0];
+  const pickResult = pickTopPickFromRanked(ranked);
+  if (!pickResult?.pick) return null;
+
+  const { resort, wx, breakdown, history } = pickResult.pick;
   const histDays = history?.days ?? null;
+  const rawTop = ranked[0];
 
   const drive     = getDriveMins(resort.id);
   const driveText = drive !== null ? formatDrive(resort.id) : '';
@@ -1800,7 +1817,17 @@ function computeVerdict(resorts) {
   const vd = verdictFromBreakdown(resort, wx, breakdown);
   const { tier, label: headline, detail, subPoints, stormTotal, tomorrowIn, histTotal } = vd;
 
-  return { tier, headline, detail, subPoints, resort, breakdown, drive, driveText, tomorrowIn, stormTotal, histTotal, histDays };
+  return {
+    tier, headline, detail, subPoints, resort, breakdown, drive, driveText,
+    tomorrowIn, stormTotal, histTotal, histDays,
+    topPickEligible: breakdown.topPickEligible,
+    topPickEligibilityReason: breakdown.topPickEligibilityReason,
+    topPickFloorActive: pickResult.topPickFloorActive,
+    topPickIsFallback: pickResult.topPickIsFallback,
+    topPickFallbackReason: pickResult.topPickFallbackReason,
+    rawTopScorerId: rawTop?.resort?.id ?? null,
+    rawTopScorerScore: rawTop?.breakdown?.score ?? null,
+  };
 }
 
 function computeVerdictPhase1(resorts) {
@@ -1844,29 +1871,8 @@ function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
       return { resort: r, wx, breakdown: plannerScoreBreakdown(r, wx, targetForecastIndex(), w) };
     })
     .sort((a, b) => b.breakdown.score - a.breakdown.score);
-  const out = scored.slice(0, limit);
-  if (out.length >= limit) return out;
-  const used = new Set([excludeResortId, ...out.map(x => x.resort.id)]);
-  const rest = pool
-    .filter(r => !used.has(r.id))
-    .sort((a, b) => {
-      const wa = state.weatherCache[a.id]?.data;
-      const wb = state.weatherCache[b.id]?.data;
-      const sa = wa ? plannerScoreBreakdown(a, wa, targetForecastIndex(), w).score : -Infinity;
-      const sb = wb ? plannerScoreBreakdown(b, wb, targetForecastIndex(), w).score : -Infinity;
-      if (sa !== sb) return sb - sa;
-      return (getDriveMins(a.id) ?? 9999) - (getDriveMins(b.id) ?? 9999);
-    });
-  for (const r of rest) {
-    if (out.length >= limit) break;
-    const wx = state.weatherCache[r.id]?.data;
-    out.push({
-      resort: r,
-      wx,
-      breakdown: wx ? plannerScoreBreakdown(r, wx, targetForecastIndex(), w) : null,
-    });
-  }
-  return out;
+  const runnerPool = filterRunnerUpCandidates(scored);
+  return runnerPool.slice(0, limit);
 }
 
 function updateHeroVerdictEmptyState() {
@@ -2015,7 +2021,12 @@ function renderVerdict(resorts) {
       value:      +c.value.toFixed(1),
       crowd:      +c.crowd.toFixed(1),
     });
-    return `data-bd="${btoa(bd)}"`;
+    const pickQa = [
+      `data-top-pick-eligible="${breakdown.topPickEligible === true ? '1' : '0'}"`,
+      `data-top-pick-reason="${esc(breakdown.topPickEligibilityReason || '')}"`,
+      v.topPickIsFallback ? 'data-top-pick-fallback="1"' : '',
+    ].filter(Boolean).join(' ');
+    return `data-bd="${btoa(bd)}" ${pickQa}`;
   })() : '';
 
   const verdictBadgeText = tier === 'great' ? 'Go: strong forecast'
@@ -2062,7 +2073,7 @@ function renderVerdict(resorts) {
     : '';
 
   const _whyPickLabels = (typeof buildWhyThisPickReasons === 'function')
-    ? buildWhyThisPickReasons(resorts, tier)
+    ? buildWhyThisPickReasons(resorts, tier, resort.id)
     : ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
   // Filter out crowd-related pills · the crowd explainer block now covers that
   const _whyPickFiltered = _whyPickLabels.filter(t => !/crowd/i.test(t));
@@ -2868,9 +2879,9 @@ function renderDetail({ scroll = false } = {}) {
   const hist  = historyCache.get(resort.id);
   const reportSlug = resort.id;
   const sponsor = getSponsor(resort.id);
-  const detailBdAttr = skis ? (() => {
+  const detailBdAttr = skis && bd ? (() => {
     const f = skis.factors;
-    const bd = JSON.stringify({
+    const factorsJson = JSON.stringify({
       snow:       +f.snow.toFixed(1),
       skiability: +f.skiability.toFixed(1),
       fit:        +f.fit.toFixed(1),
@@ -2878,7 +2889,13 @@ function renderDetail({ scroll = false } = {}) {
       value:      +f.value.toFixed(1),
       crowd:      +f.crowd.toFixed(1),
     });
-    return `data-bd="${btoa(bd)}"`;
+    const pickQa = [
+      `data-top-pick-eligible="${bd.topPickEligible === true ? '1' : '0'}"`,
+      `data-top-pick-reason="${esc(bd.topPickEligibilityReason || '')}"`,
+      `data-destination-class="${esc(bd.destinationClass || '')}"`,
+      `data-destination-suitability="${bd.destinationSuitabilityScore ?? ''}"`,
+    ].join(' ');
+    return `data-bd="${btoa(factorsJson)}" ${pickQa}`;
   })() : '';
 
   const dhrDrivePart = getDriveMins(resort.id) ? `${formatDrive(resort.id)} away` : null;
@@ -3019,6 +3036,14 @@ function renderDetail({ scroll = false } = {}) {
       </div>`).join('')}
       <div style="padding:9px 0;font-size:12px;color:var(--muted)">*Prices vary by date and promotions.</div>
     </div>
+
+    ${bd && isWtsnQaMode() ? `<div class="detail-body-block detail-qa-eligibility" style="font-size:12px;color:var(--muted);line-height:1.5">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">QA · Top Pick eligibility</div>
+      <div>eligible: <strong style="color:var(--text)">${bd.topPickEligible ? 'yes' : 'no'}</strong></div>
+      <div>reason: <strong style="color:var(--text)">${esc(bd.topPickEligibilityReason || '—')}</strong></div>
+      <div>destination: <strong style="color:var(--text)">${esc(bd.destinationClass || '—')}</strong> (${bd.destinationSuitabilityScore ?? '—'})</div>
+      <div>floor active: <strong style="color:var(--text)">${isTopPickFloorActive() ? 'yes' : 'no'}</strong></div>
+    </div>` : ''}
 
     <div class="detail-body-block detail-body-block--last">
       <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Terrain breakdown</div>

@@ -158,14 +158,16 @@ function buildVerdictOverNearbyCallout(resorts, winnerId, runnerItems) {
  * @param {string} tier - great|good|marginal|bad
  * @returns {string[]} exactly 3 chip labels
  */
-function buildWhyThisPickReasons(resorts, tier) {
+function buildWhyThisPickReasons(resorts, tier, winnerId) {
   const ranked = _wtpRankedCandidates(resorts);
   if (!ranked.length) {
     return ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
   }
 
-  const winner = ranked[0];
-  const runner = ranked[1] || null;
+  const winner = (winnerId && ranked.find(x => x.resort.id === winnerId))
+    || (typeof pickTopPickFromRanked === 'function' ? pickTopPickFromRanked(ranked)?.pick : null)
+    || ranked[0];
+  const runner = ranked.find(x => x.resort.id !== winner.resort.id) || null;
   const top5 = ranked.slice(0, 5);
   const w = normalizedWeights();
   const tripMode = _wtpTripMode();

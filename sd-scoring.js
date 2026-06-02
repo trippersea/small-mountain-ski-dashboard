@@ -364,6 +364,45 @@ function topPickEligibility(resort) {
   return { topPickEligible: true, topPickEligibilityReason: 'eligible' };
 }
 
+/**
+ * Choose Top Pick from score-sorted verdict entries when the eligibility floor may apply.
+ * @param {Array<{resort: object, wx: object, breakdown: object, history?: object}>} ranked
+ *   Descending by breakdown.score.
+ */
+function pickTopPickFromRanked(ranked) {
+  if (!ranked?.length) return null;
+  const floorActive = isTopPickFloorActive();
+  if (!floorActive) {
+    return {
+      pick: ranked[0],
+      topPickIsFallback: false,
+      topPickFallbackReason: null,
+      topPickFloorActive: false,
+    };
+  }
+  const eligible = ranked.find(e => e.breakdown?.topPickEligible === true);
+  if (eligible) {
+    return {
+      pick: eligible,
+      topPickIsFallback: false,
+      topPickFallbackReason: null,
+      topPickFloorActive: true,
+    };
+  }
+  return {
+    pick: ranked[0],
+    topPickIsFallback: true,
+    topPickFallbackReason: 'no_eligible_destination',
+    topPickFloorActive: true,
+  };
+}
+
+/** Runner-up pool for broad search: omit ineligible locals when the floor is on. */
+function filterRunnerUpCandidates(scored) {
+  if (!isTopPickFloorActive()) return scored;
+  return scored.filter(e => e.breakdown?.topPickEligible === true);
+}
+
 /** Layer-2 fit: identity on broad/willing-to-drive; mountainFit for local intent & size chips. */
 function plannerFitIndex(resort) {
   if (state.verticalFilter !== 'any' || hasLocalIntent()) {

@@ -80,7 +80,7 @@ vm.createContext(sandbox);
 
 // Load the real scoring code into the sandbox.
 const scoringSrc = fs.readFileSync(path.join(__dirname, '..', 'sd-scoring.js'), 'utf8');
-vm.runInContext(scoringSrc + '\n;globalThis.__exports = { crowdForecast, plannerScoreBreakdown, skiScoreBreakdown, verdictFromBreakdown, tripWindowSnow, targetForecastIndex, _bluebirdFactor };', sandbox);
+vm.runInContext(scoringSrc + '\n;globalThis.__exports = { crowdForecast, plannerScoreBreakdown, skiScoreBreakdown, verdictFromBreakdown, tripWindowSnow, targetForecastIndex, _bluebirdFactor, pickTopPickFromRanked, filterRunnerUpCandidates, isTopPickFloorActive, hasLocalIntent };', sandbox);
 
 // Weather builders for precise scenarios.
 function dayFc({ code=0, hi=28, lo=18, snow=0, wind=8 }={}) { return { code, hi, lo, snow, wind }; }
