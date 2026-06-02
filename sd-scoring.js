@@ -339,6 +339,39 @@ function destinationClass(resort) {
   return 'destination';
 }
 
+// ─── Top Pick eligibility floor (Option B: suitability class) ─────────────────
+// Floor ON for day trip, extended drive, and any-distance unless local intent.
+function hasLocalIntent() {
+  if (state.localIntent === true) return true;
+  if (state.verticalFilter === 'small') return true;
+  const drivePref = Number(state.weights?.drive);
+  if (Number.isFinite(drivePref) && drivePref >= 10) return true;
+  return false;
+}
+
+function isTopPickFloorActive() {
+  return !hasLocalIntent();
+}
+
+function topPickEligibility(resort) {
+  const destClass = destinationClass(resort);
+  if (!isTopPickFloorActive()) {
+    return { topPickEligible: true, topPickEligibilityReason: 'local_intent_override' };
+  }
+  if (destClass === 'local') {
+    return { topPickEligible: false, topPickEligibilityReason: 'below_destination_floor' };
+  }
+  return { topPickEligible: true, topPickEligibilityReason: 'eligible' };
+}
+
+/** Layer-2 fit: identity on broad/willing-to-drive; mountainFit for local intent & size chips. */
+function plannerFitIndex(resort) {
+  if (state.verticalFilter !== 'any' || hasLocalIntent()) {
+    return mountainFitIndex(resort);
+  }
+  return destinationSuitabilityIndex(resort);
+}
+
 /** Target ski day is Mon–Thu (terrain over drive). Default chip uses tomorrow; weekend chips opt out. */
 function isWeekdaySkiTrip() {
   const preset = state.skiDayPreset;
@@ -465,7 +498,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
   const normalized = {
     snow:       snowQualityIndex(resort, snowTotal, weather, forecastIndex),
     skiability: skiabilityIndex(resort, weather, forecastIndex),
-    fit:        mountainFitIndex(resort),
+    fit:        plannerFitIndex(resort),
     value:      valueIndex(resort),
     crowd:      crowdOutlookIndex(crowd),
     drive:      driveScoreIndex(getDriveMins(resort.id)),
@@ -487,6 +520,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     destinationSuitabilityScore: destinationSuitabilityScore(resort),
     destinationClass:            destinationClass(resort),
   };
+  const pickGate = topPickEligibility(resort);
 
   return {
     score: baseScore,
@@ -501,6 +535,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     condIdx:   null,
     condBonus: 0,
     ...identity,
+    ...pickGate,
   };
 }
 

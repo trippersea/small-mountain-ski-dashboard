@@ -126,7 +126,7 @@ test('[SPEC] destination class ordering: Blue Hills < Pats Peak < Loon', () => {
 // [SPEC] The Blue Hills bug — the headline behavior. Expected RED now.
 // Spec A2.1 + A1.1. Currently Blue Hills (69) OUTSCORES Loon (65) on bluebird.
 // ─────────────────────────────────────────────────────────────────────────────
-test('[SPEC] Blue Hills must NOT outscore Loon on a willing-to-drive bluebird weekday', { todo: true }, () => {
+test('[SPEC] Blue Hills must NOT outscore Loon on a willing-to-drive bluebird weekday', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 }; // Scituate-ish
   state.howFar = 1;                      // willing to drive (extended)
@@ -140,7 +140,7 @@ test('[SPEC] Blue Hills must NOT outscore Loon on a willing-to-drive bluebird we
 // ─────────────────────────────────────────────────────────────────────────────
 // [SPEC] 700-ft eligibility floor on willing-to-drive (A1.1). Expected RED now.
 // ─────────────────────────────────────────────────────────────────────────────
-test('[SPEC] sub-700ft mountain cannot be flagged Top-Pick-eligible on willing-to-drive', { todo: true }, () => {
+test('[SPEC] sub-700ft mountain cannot be flagged Top-Pick-eligible on willing-to-drive', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
