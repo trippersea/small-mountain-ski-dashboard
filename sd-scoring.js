@@ -407,22 +407,26 @@ function filterRunnerUpCandidates(scored) {
   return scored.filter(e => e.breakdown?.topPickEligible === true);
 }
 
-const LOCAL_DRIVE_SAVINGS_MIN = 30;
+const LOCAL_MAX_DRIVE_MINS = 45;
 /** When daily scores are within this band, prefer the shorter drive among local candidates. */
 const LOCAL_SCORE_CLOSE_BAND = 5;
+/** Score band for "Another Smart Play" when no mountain is within LOCAL_MAX_DRIVE_MINS. */
+const LOCAL_FALLBACK_SCORE_BAND = 15;
+
+function isWeatherPoorForRoles(entry) {
+  if (!entry?.resort || !entry?.wx) return true;
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  return vd.tier === 'bad';
+}
 
 function isCredibleLocalCandidate(entry, pickEntry) {
   if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort) return false;
   if (entry.resort.id === pickEntry.resort.id) return false;
   if (entry.breakdown.destinationClass !== 'local') return false;
+  if (isWeatherPoorForRoles(entry)) return false;
 
-  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
-  if (vd.tier === 'bad') return false;
-
-  const pickDrive  = getDriveMins(pickEntry.resort.id);
   const localDrive = getDriveMins(entry.resort.id);
-  if (pickDrive == null || localDrive == null) return false;
-  if (pickDrive - localDrive < LOCAL_DRIVE_SAVINGS_MIN) return false;
+  if (localDrive == null || localDrive > LOCAL_MAX_DRIVE_MINS) return false;
 
   return true;
 }
@@ -449,24 +453,72 @@ function pickLocalFromRanked(ranked, pickEntry) {
 
   const entry = candidates[0];
   const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
-  const pickDrive  = getDriveMins(pickEntry.resort.id);
   const localDrive = getDriveMins(entry.resort.id);
   return {
     ...entry,
     tier: vd.tier,
+    roleVariant: 'nearby',
     driveMins: localDrive,
-    driveSavingsMins: pickDrive - localDrive,
   };
 }
 
-/** User-facing copy for the LOCAL role card (ski-advisor tone, not score-heavy). */
+function isCredibleLocalFallbackCandidate(entry, pickEntry, usedIds) {
+  if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort) return false;
+  if (usedIds.has(entry.resort.id)) return false;
+  if (entry.resort.id === pickEntry.resort.id) return false;
+  const cls = entry.breakdown.destinationClass ?? destinationClass(entry.resort);
+  if (cls === 'local') return false;
+  if (isWeatherPoorForRoles(entry)) return false;
+  if (isTopPickFloorActive() && entry.breakdown.topPickEligible !== true) return false;
+  const pickScore = pickEntry.breakdown?.score ?? -Infinity;
+  const candScore = entry.breakdown?.score ?? -Infinity;
+  if (pickScore - candScore > LOCAL_FALLBACK_SCORE_BAND) return false;
+  // Reserve obvious crowd magnets for Crowd Watch — fallback is a regional smart play.
+  if (_hasHighMountainQuality(entry) && _hasHighDemand(entry) && _hasHighCrowdRisk(entry)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * When no credible mountain is within 45 minutes, fill the local slot with a
+ * regional/destination alternative labeled "Another Smart Play" (not nearby).
+ */
+function pickLocalFallbackFromRanked(ranked, pickEntry, usedIds) {
+  const pool = filterRunnerUpCandidates(ranked).filter(e => e.resort?.id && !usedIds.has(e.resort.id));
+  const candidates = pool
+    .filter(e => isCredibleLocalFallbackCandidate(e, pickEntry, usedIds))
+    .sort((a, b) => (b.breakdown?.score ?? -Infinity) - (a.breakdown?.score ?? -Infinity));
+  if (!candidates.length) return null;
+
+  const entry = candidates[0];
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  return {
+    ...entry,
+    tier: vd.tier,
+    roleVariant: 'another_smart_play',
+  };
+}
+
+/** User-facing copy for the LOCAL / Another Smart Play slot. */
 function localRoleExplanation(localEntry, pickResort) {
+  if (localEntry?.roleVariant === 'another_smart_play') {
+    const pickShort = (pickResort?.name || 'the top pick')
+      .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
+    return `Another credible regional option if ${pickShort} doesn't fit your plan — worth a look for conditions or convenience.`;
+  }
   const pickShort = (pickResort?.name || 'the top pick')
     .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
   if (localEntry?.tier === 'marginal') {
-    return `Nearby option if you want to skip the longer drive to ${pickShort} — fair conditions, not a destination day.`;
+    return `Quick local turns if you don't want the drive to ${pickShort} — fair conditions, mostly about convenience.`;
   }
-  return `Shorter drive if you don't want the haul to ${pickShort} — convenient, not your best overall ski day.`;
+  return `Quick local turns if you don't want the drive to ${pickShort} — a nearby option when convenience matters.`;
+}
+
+function localRoleLabel(localEntry) {
+  return localEntry?.roleVariant === 'another_smart_play'
+    ? 'Another Smart Play'
+    : 'Best Nearby Option';
 }
 
 const SLEEPER_SCORE_CLOSE_BAND = 12;
@@ -530,12 +582,11 @@ function isPickAlreadyQuietPlay(pickEntry, refEntry) {
 }
 
 function isCredibleSleeperCandidate(entry, pickEntry, refEntry, usedIds) {
-  if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort || !refEntry?.resort) return false;
+  if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort) return false;
   if (usedIds.has(entry.resort.id)) return false;
+  if (entry.resort.id === pickEntry.resort.id) return false;
   if (entry.breakdown.destinationClass === 'local') return false;
-
-  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
-  if (vd.tier === 'bad') return false;
+  if (isWeatherPoorForRoles(entry)) return false;
 
   if (isTopPickFloorActive() && entry.breakdown.topPickEligible !== true) return false;
 
@@ -543,17 +594,7 @@ function isCredibleSleeperCandidate(entry, pickEntry, refEntry, usedIds) {
   const candScore = entry.breakdown?.score ?? -Infinity;
   if (pickScore - candScore > SLEEPER_SCORE_CLOSE_BAND) return false;
 
-  const refCrowd = crowdForecast(refEntry.resort, refEntry.wx);
-  const candCrowd = crowdForecast(entry.resort, entry.wx);
-  if (!_isMeaningfullyQuieterThan(candCrowd, refCrowd)) return false;
-
-  const refMG = _metroGravity(refEntry.resort);
-  const candMG = _metroGravity(entry.resort);
-  const refPass = refEntry.resort.passGroup === 'Epic' || refEntry.resort.passGroup === 'Ikon';
-  const candPass = entry.resort.passGroup === 'Epic' || entry.resort.passGroup === 'Ikon';
-  const cls = entry.breakdown.destinationClass ?? destinationClass(entry.resort);
-  const overlooked = candMG < refMG * 0.92 || (refPass && !candPass) || cls === 'regional';
-  return overlooked;
+  return true;
 }
 
 function compareSleeperCandidates(a, b) {
@@ -571,15 +612,15 @@ function compareSleeperCandidates(a, b) {
  * Credibility uses topPickEligible + destinationClass (not a national vertical floor).
  * Uses filterRunnerUpCandidates for pool alignment on broad search.
  */
-function pickSleeperFromRanked(ranked, pickEntry, localEntry) {
+function pickSleeperFromRanked(ranked, pickEntry, localEntry, trapEntry) {
   if (!pickEntry?.resort) return null;
 
   const usedIds = new Set([pickEntry.resort.id]);
   if (localEntry?.resort?.id) usedIds.add(localEntry.resort.id);
+  if (trapEntry?.resort?.id) usedIds.add(trapEntry.resort.id);
 
   const ref = obviousBigMountainReference(ranked, pickEntry);
-  if (!ref) return null;
-  if (isPickAlreadyQuietPlay(pickEntry, ref)) return null;
+  if (ref && isPickAlreadyQuietPlay(pickEntry, ref)) return null;
 
   const pool = filterRunnerUpCandidates(ranked).filter(e => e.resort?.id && !usedIds.has(e.resort.id));
   const candidates = pool
@@ -589,15 +630,15 @@ function pickSleeperFromRanked(ranked, pickEntry, localEntry) {
 
   const entry = candidates[0];
   const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
-  const refCrowd = crowdForecast(ref.resort, ref.wx);
+  const refCrowd = ref ? crowdForecast(ref.resort, ref.wx) : null;
   const candCrowd = crowdForecast(entry.resort, entry.wx);
   return {
     ...entry,
     tier: vd.tier,
-    refResortId: ref.resort.id,
-    refCrowdLabel: refCrowd.label,
+    refResortId: ref?.resort?.id ?? null,
+    refCrowdLabel: refCrowd?.label ?? null,
     crowdLabel: candCrowd.label,
-    crowdGap: refCrowd.score - candCrowd.score,
+    crowdGap: refCrowd ? refCrowd.score - candCrowd.score : null,
   };
 }
 
@@ -662,9 +703,7 @@ function isCredibleTrapCandidate(entry, usedIds) {
   if (!entry?.resort || !entry?.wx || !entry?.breakdown) return false;
   if (usedIds.has(entry.resort.id)) return false;
   if (entry.breakdown.destinationClass === 'local') return false;
-
-  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
-  if (vd.tier === 'bad') return false;
+  if (isWeatherPoorForRoles(entry)) return false;
 
   if (isTopPickFloorActive() && entry.breakdown.topPickEligible !== true) return false;
 
@@ -682,6 +721,14 @@ function compareTrapCandidates(a, b) {
   return sb - sa;
 }
 
+function pickQualifiesForCrowdWarning(pickEntry) {
+  if (!pickEntry?.resort || !pickEntry?.wx) return false;
+  if (isWeatherPoorForRoles(pickEntry)) return false;
+  if (!_hasHighMountainQuality(pickEntry) || !_hasHighDemand(pickEntry)) return false;
+  const crowd = crowdForecast(pickEntry.resort, pickEntry.wx);
+  return _crowdIsLoud(crowd.label);
+}
+
 /**
  * Best credible TRAP: crowd magnet with real quality + demand, excluding used roles.
  * When the pick is also an obvious trap, pickCrowdWarning is set and the slot passes
@@ -693,9 +740,7 @@ function pickTrapFromRanked(ranked, pickEntry, localEntry, sleeperEntry) {
   if (localEntry?.resort?.id) usedIds.add(localEntry.resort.id);
   if (sleeperEntry?.resort?.id) usedIds.add(sleeperEntry.resort.id);
 
-  const pickCrowdWarning = pickEntry?.resort
-    ? isCredibleTrapCandidate(pickEntry, new Set())
-    : false;
+  const pickCrowdWarning = pickQualifiesForCrowdWarning(pickEntry);
 
   const pool = filterRunnerUpCandidates(ranked).filter(e => e.resort?.id && !usedIds.has(e.resort.id));
   const candidates = pool
@@ -750,12 +795,19 @@ function buildRecommendationRolesFromRanked(ranked) {
   };
 
   let local = null;
-  if (pickResult.topPickFloorActive && pick.breakdown?.destinationClass !== 'local') {
+  if (!hasLocalIntent() && pick.breakdown?.destinationClass !== 'local') {
     local = pickLocalFromRanked(ranked, pickResult.pick);
   }
 
-  const sleeper = pickSleeperFromRanked(ranked, pickResult.pick, local);
-  const trapResult = pickTrapFromRanked(ranked, pickResult.pick, local, sleeper);
+  const trapResult = pickTrapFromRanked(ranked, pickResult.pick, local, null);
+  const sleeper = pickSleeperFromRanked(ranked, pickResult.pick, local, trapResult.trap);
+
+  if (!local && !hasLocalIntent() && pick.breakdown?.destinationClass !== 'local') {
+    const usedIds = new Set([pickResult.pick.resort.id]);
+    if (sleeper?.resort?.id) usedIds.add(sleeper.resort.id);
+    if (trapResult.trap?.resort?.id) usedIds.add(trapResult.trap.resort.id);
+    local = pickLocalFallbackFromRanked(ranked, pickResult.pick, usedIds);
+  }
 
   if (trapResult.pickCrowdWarning) {
     pick = {
@@ -980,9 +1032,16 @@ function verdictFromBreakdown(resort, wx, breakdown) {
 
   const baseLo      = forecast[fi]?.lo ?? 30;
   const sLo         = resortSummitTempF(resort, baseLo) ?? baseLo;
-  const rainLikely  = sLo > 34;
+  const fcDay       = forecast[fi] || {};
+  const wxCode      = fcDay.code ?? 0;
+  const rainCodes   = new Set([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]);
+  const freezingRainCodes = new Set([56, 57, 66, 67]);
+  const rainLikely  = freezingRainCodes.has(wxCode)
+    || sLo > 34
+    || (rainCodes.has(wxCode) && baseLo >= 32);
   const warmCaution = sLo > 28 && !rainLikely;
   const coldSnow    = sLo <= 24;
+  const severeWind  = (fcDay.wind ?? 0) > 35;
 
   const target  = snowPreferenceTarget();
   const snowMet = target === 0 || stormTotal >= target;
@@ -994,10 +1053,12 @@ function verdictFromBreakdown(resort, wx, breakdown) {
 
   let tier, label, detail, subPoints = [];
 
-  if (rainLikely) {
+  if (rainLikely || severeWind) {
     tier  = 'bad';
-    label = 'Skip — rain likely';
-    detail = `Temperatures look too warm — rain likely above ${resort.baseElevation.toLocaleString()} ft.`;
+    label = rainLikely ? 'Skip — rain likely' : 'Poor conditions';
+    detail = rainLikely
+      ? `Temperatures look too warm — rain likely above ${resort.baseElevation.toLocaleString()} ft.`
+      : 'High winds may shut down or hold lifts — check the mountain before you go.';
   } else if (target >= 6 && !snowMet) {
     // User wants storm snow or powder but the window falls short.
     tier  = 'marginal';
@@ -1025,9 +1086,23 @@ function verdictFromBreakdown(resort, wx, breakdown) {
     detail = `Only ${stormTotal.toFixed(1)}" ${inWindow}. Mostly working with the existing base — groomed runs will be fine.`;
     subPoints.push('Stick to groomed trails, get out early, avoid south-facing terrain');
   } else {
-    tier  = 'bad';
-    label = 'Poor conditions';
-    detail = 'Less than half an inch forecast and limited recent snowfall.';
+    const wind = fcDay.wind ?? 0;
+    if (wind > 35) {
+      tier  = 'bad';
+      label = 'Poor conditions';
+      detail = 'High winds may shut down or hold lifts — check the mountain before you go.';
+    } else if (warmCaution) {
+      tier  = 'marginal';
+      label = 'Fair conditions';
+      detail = 'Dry and firm — groomed runs will ski best. No fresh snow in the forecast.';
+      subPoints.push('Get out early before surfaces soften');
+    } else {
+      tier  = 'good';
+      label = 'Good conditions';
+      detail = histTotal != null && histTotal >= 3
+        ? `Clear and dry — ${histTotal}" recent snow supports a solid base.`
+        : 'Clear and dry — expect firm groomers and good visibility. No fresh snow in the forecast.';
+    }
   }
 
   return { tier, label, detail, subPoints, rainLikely, stormTotal, tomorrowIn, histTotal };

@@ -1766,7 +1766,11 @@ function saveCompareSession(v, resorts) {
   const localRow = localEntry
     ? {
         ...resortToCompareSessionRow(localEntry.resort, localEntry.wx, localEntry.breakdown, { tier: localEntry.tier }),
-        role: 'local',
+        role: localEntry.roleVariant === 'another_smart_play' ? 'local_fallback' : 'local',
+        roleVariant: localEntry.roleVariant ?? 'nearby',
+        localLabel: typeof localRoleLabel === 'function'
+          ? localRoleLabel(localEntry)
+          : 'Best Nearby Option',
         driveSavingsMins: localEntry.driveSavingsMins ?? null,
         localExplanation: typeof localRoleExplanation === 'function'
           ? localRoleExplanation(localEntry, resort)
@@ -1905,6 +1909,17 @@ function mergeFullPoolRoles(stableVerdict, fullVerdict) {
   return { ...stableVerdict, roles: fullVerdict.roles };
 }
 
+/** Rebuild role slots from the full ranked pool when staged verdict has none yet. */
+function resolveVerdictRoles(verdict, resorts) {
+  const roles = verdict?.roles;
+  if (!roles) return null;
+  if (roles.local || roles.sleeper || roles.trap) return roles;
+  if (!weatherFetchPhase2Done) return roles;
+  const full = computeVerdict(resorts);
+  if (!full?.roles || full.resort?.id !== verdict.resort?.id) return roles;
+  return full.roles;
+}
+
 function computeVerdictStaged(resorts) {
   if (!state.origin) return null;
   if (!weatherFetchPhase1Done) return null;
@@ -2026,14 +2041,17 @@ function renderVerdict(resorts) {
     return;
   }
 
-  const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn, histTotal, roles } = v;
+  const resolvedRoles = resolveVerdictRoles(v, resorts) ?? v.roles;
+  const vWithRoles = resolvedRoles !== v.roles ? { ...v, roles: resolvedRoles } : v;
+  const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn, histTotal } = vWithRoles;
+  const roles = resolvedRoles;
   const localEntry = roles?.local ?? null;
   const sleeperEntry = roles?.sleeper ?? null;
   const trapEntry = roles?.trap ?? null;
   const pickCrowdWarningHtml = roles?.pick?.pickCrowdWarning && roles.pick.pickCrowdWarningCopy
     ? `<p class="vcard-pick-crowd-warning" role="note">${esc(roles.pick.pickCrowdWarningCopy)}</p>`
     : '';
-  saveCompareSession(v, resorts);
+  saveCompareSession(vWithRoles, resorts);
   trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
 
@@ -2158,9 +2176,15 @@ function renderVerdict(resorts) {
     const _lDriveU = esc(driveUtilitySegment(localEntry.resort.id));
     const _lCrowdU = esc(crowdUtilityShort(_lCrowd.label));
     const _lMarginalCls = localEntry.tier === 'marginal' ? ' vcard-local-card--marginal' : '';
-    return `<div class="vcard-role-card vcard-local-zone" data-role-local="${esc(localEntry.resort.id)}">
-      <div class="vcard-runners-heading">Best Nearby Option</div>
-      <button type="button" class="vcard-mini-runner vcard-local-card${_lMarginalCls}" id="verdictLocalBtn" data-local-id="${esc(localEntry.resort.id)}">
+    const _lHeading = typeof localRoleLabel === 'function'
+      ? localRoleLabel(localEntry)
+      : 'Best Nearby Option';
+    const _lCardCls = localEntry.roleVariant === 'another_smart_play'
+      ? ' vcard-local-fallback-card'
+      : '';
+    return `<div class="vcard-role-card vcard-local-zone${localEntry.roleVariant === 'another_smart_play' ? ' vcard-local-fallback-zone' : ''}" data-role-local="${esc(localEntry.resort.id)}">
+      <div class="vcard-runners-heading">${esc(_lHeading)}</div>
+      <button type="button" class="vcard-mini-runner vcard-local-card${_lMarginalCls}${_lCardCls}" id="verdictLocalBtn" data-local-id="${esc(localEntry.resort.id)}">
         <span class="vmr-name">${esc(localEntry.resort.name)}</span>
         <p class="vmr-reason">${esc(_lCopy)}</p>
         <div class="vmr-meta" aria-label="Drive and crowds">${_lDriveU} · ${_lCrowdU}</div>
@@ -2181,7 +2205,7 @@ function renderVerdict(resorts) {
     const _sCrowdU = esc(crowdUtilityShort(_sCrowd.label));
     const _sMarginalCls = sleeperEntry.tier === 'marginal' ? ' vcard-sleeper-card--marginal' : '';
     return `<div class="vcard-role-card vcard-sleeper-zone" data-role-sleeper="${esc(sleeperEntry.resort.id)}">
-      <div class="vcard-runners-heading">Smart Quieter Play</div>
+      <div class="vcard-runners-heading">Smart Play</div>
       <button type="button" class="vcard-mini-runner vcard-sleeper-card${_sMarginalCls}" id="verdictSleeperBtn" data-sleeper-id="${esc(sleeperEntry.resort.id)}">
         <span class="vmr-name">${esc(sleeperEntry.resort.name)}</span>
         <p class="vmr-reason">${esc(_sCopy)}</p>
@@ -2217,6 +2241,9 @@ function renderVerdict(resorts) {
         <div class="vcard-other-smart-calls-grid">${roleCardsInner}</div>
       </section>`
     : '';
+  const rolesEmptyNudgeHtml = !roleCardsInner && (tier === 'bad' || tier === 'marginal')
+    ? `<p class="vcard-roles-empty-nudge" role="note">Rough forecast — we are not surfacing alternative picks today. Use Compare Mountains for the full ranked list.</p>`
+    : '';
 
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}"
@@ -2247,6 +2274,7 @@ function renderVerdict(resorts) {
           ${shareBtn}
         </div>
         ${otherSmartCallsHtml}
+        ${rolesEmptyNudgeHtml}
         ${guidanceInsetHtml}
       </div>
        </div>`;
@@ -2270,7 +2298,7 @@ function renderVerdict(resorts) {
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_name_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
-    saveCompareSession(v, resorts);
+    saveCompareSession(vWithRoles, resorts);
     trackFilterEvent('engagement', 'compare_mountains_click');
     window.location.href = '/compare/';
   });

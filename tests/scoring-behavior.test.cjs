@@ -266,7 +266,7 @@ function bostonExtendedRanked(wx) {
   ].sort((a, b) => b.breakdown.score - a.breakdown.score);
 }
 
-test('[PROTECT] LOCAL null on dry bluebird when local hill has bad tier (no recent base)', () => {
+test('[PROTECT] Blue Hills LOCAL on dry bluebird without recent base (skiable, not bad)', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
@@ -277,9 +277,14 @@ test('[PROTECT] LOCAL null on dry bluebird when local hill has bad tier (no rece
     rankedEntry('blue-hills-ski-area', wx),
     rankedEntry('loon-mountain', wx),
   ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const bhTier = api.verdictFromBreakdown(
+    byId['blue-hills-ski-area'], wx, ranked.find(e => e.resort.id === 'blue-hills-ski-area').breakdown,
+  ).tier;
+  assert.notStrictEqual(bhTier, 'bad', 'dry bluebird should not be bad tier');
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
-  assert.strictEqual(roles.local, null);
+  assert.strictEqual(roles.local?.resort?.id, 'blue-hills-ski-area');
+  assert.strictEqual(roles.local.roleVariant, 'nearby');
 });
 
 test('[PROTECT] Loon PICK and Blue Hills LOCAL on Boston extended bluebird', () => {
@@ -318,11 +323,11 @@ test('[PROTECT] LOCAL null when no credible local-class option in pool', () => {
   assert.strictEqual(roles.local, null);
 });
 
-test('[PROTECT] LOCAL null when drive savings under 30 minutes', () => {
+test('[PROTECT] LOCAL null when local drive exceeds 45 minutes', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
-  h.setDrive('blue-hills-ski-area', 35);
-  h.setDrive('loon-mountain', 50);
+  h.setDrive('blue-hills-ski-area', 50);
+  h.setDrive('loon-mountain', 140);
   const wx = h.bluebird();
   const ranked = [
     rankedEntry('blue-hills-ski-area', wx),
@@ -392,7 +397,7 @@ test('[PROTECT] LOCAL picks best among all local-class candidates in pool', () =
   state.howFar = 1;
   h.setDrive('loon-mountain', 140);
   h.setDrive('blue-hills-ski-area', 38);
-  h.setDrive('nashoba-valley', 52);
+  h.setDrive('nashoba-valley', 42);
   h.sandbox.historyCache.set('blue-hills-ski-area', { total: 8, days: [] });
   h.sandbox.historyCache.set('nashoba-valley', { total: 8, days: [] });
   const wx = h.bluebird();
@@ -414,7 +419,7 @@ test('[PROTECT] LOCAL prefers higher score when local candidates differ by more 
   state.howFar = 1;
   h.setDrive('loon-mountain', 140);
   h.setDrive('blue-hills-ski-area', 38);
-  h.setDrive('nashoba-valley', 52);
+  h.setDrive('nashoba-valley', 42);
   h.sandbox.historyCache.set('blue-hills-ski-area', { total: 8, days: [] });
   h.sandbox.historyCache.set('nashoba-valley', { total: 8, days: [] });
   const wx = h.bluebird();
@@ -493,8 +498,22 @@ test('[PROTECT] SLEEPER null when pick is already the quiet smart call', () => {
   assert.strictEqual(roles.sleeper, null);
 });
 
-test('[PROTECT] SLEEPER null when candidate tier is bad', () => {
-  const ranked = crowdedSaturdayRanked(['killington-resort', 'wildcat-mountain'], h.bluebird());
+test('[PROTECT] SLEEPER null when candidate has bad weather tier', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  state.skiDayPreset = 'saturday';
+  h.setDrive('killington-resort', 180);
+  h.setDrive('wildcat-mountain', 155);
+  const ranked = [
+    rankedEntry('killington-resort', h.bluebird()),
+    rankedEntry('wildcat-mountain', h.wetDay()),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const wcTier = api.verdictFromBreakdown(
+    byId['wildcat-mountain'], h.wetDay(),
+    ranked.find(e => e.resort.id === 'wildcat-mountain').breakdown,
+  ).tier;
+  assert.strictEqual(wcTier, 'bad');
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
   assert.strictEqual(roles.sleeper, null);
@@ -566,9 +585,22 @@ test('[PROTECT] TRAP null when only one crowd-magnet in pool (Boston extended bl
   assert.strictEqual(roles.trap, null);
 });
 
-test('[PROTECT] pickCrowdWarning false when pick is not a credible trap', () => {
-  const ranked = bostonExtendedRanked(h.bluebird());
+test('[PROTECT] pickCrowdWarning false when pick is not crowded on a weekday', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  state.skiDayPreset = 'weekday';
+  state.targetDate = new Date('2026-01-14T12:00:00');
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('loon-mountain', 140);
+  h.sandbox.historyCache.set('blue-hills-ski-area', { total: 8, days: [] });
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('blue-hills-ski-area', wx),
+    rankedEntry('loon-mountain', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
   const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
   assert.notStrictEqual(roles.pick?.pickCrowdWarning, true);
 });
 
@@ -593,4 +625,105 @@ test('[PROTECT] trapRoleExplanation mentions crowd timing', () => {
   assert.ok(roles.trap?.resort?.id, 'expected a TRAP role');
   const copy = api.trapRoleExplanation(roles.trap);
   assert.match(copy, /bad timing|lift-line/i);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [PROTECT] Product v1 — dry bluebird, rain, Boston day trip, Sunapee powder
+// ─────────────────────────────────────────────────────────────────────────────
+test('[PROTECT] dry bluebird tier is good not bad (no fresh snow)', () => {
+  const vd = api.verdictFromBreakdown(byId['killington-resort'], h.bluebird(), api.plannerScoreBreakdown(byId['killington-resort'], h.bluebird()));
+  assert.strictEqual(vd.tier, 'good');
+});
+
+test('[PROTECT] rainy day tier is bad', () => {
+  const vd = api.verdictFromBreakdown(byId['killington-resort'], h.wetDay(), api.plannerScoreBreakdown(byId['killington-resort'], h.wetDay()));
+  assert.strictEqual(vd.tier, 'bad');
+});
+
+function bostonDayTripBluebirdRanked(ids) {
+  resetState();
+  state.origin = { lat: 42.3601, lon: -71.0589 };
+  state.howFar = 0;
+  state.skiDayPreset = 'saturday';
+  state.targetDate = new Date('2026-01-17T12:00:00');
+  const drives = {
+    'killington-resort': 249,
+    'loon-mountain': 140,
+    'wildcat-mountain': 155,
+    'blue-hills-ski-area': 38,
+    'nashoba-valley': 42,
+  };
+  ids.forEach((id) => h.setDrive(id, drives[id] ?? 120));
+  const wx = h.bluebird();
+  return ids.map((id) => rankedEntry(id, wx)).sort((a, b) => b.breakdown.score - a.breakdown.score);
+}
+
+test('[PROTECT] Boston day trip bluebird fills Pick + Local + Sleeper + Crowd Watch', () => {
+  const ranked = bostonDayTripBluebirdRanked([
+    'killington-resort', 'loon-mountain', 'wildcat-mountain', 'blue-hills-ski-area',
+  ]);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
+  assert.strictEqual(roles.local?.resort?.id, 'blue-hills-ski-area');
+  assert.ok(roles.sleeper?.resort?.id);
+  assert.strictEqual(roles.trap?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.pick.pickCrowdWarning, true);
+  const ids = [roles.pick, roles.local, roles.sleeper, roles.trap].map(r => r?.resort?.id).filter(Boolean);
+  assert.strictEqual(new Set(ids).size, ids.length, 'no duplicate roles');
+});
+
+test('[PROTECT] Sunapee 18 inches can beat Loon 0 as Top Pick on powder day', () => {
+  resetState();
+  state.origin = { lat: 42.3601, lon: -71.0589 };
+  state.howFar = 0;
+  h.setDrive('mount-sunapee', 110);
+  h.setDrive('loon-mountain', 140);
+  const sunWx = h.powder(18);
+  const loonWx = h.bluebird();
+  const ranked = [
+    rankedEntry('mount-sunapee', sunWx),
+    rankedEntry('loon-mountain', loonWx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'mount-sunapee');
+});
+
+test('[PROTECT] no local within 45 min uses Another Smart Play fallback', () => {
+  resetState();
+  state.origin = { lat: 44.5, lon: -72.5 };
+  state.howFar = 1;
+  state.skiDayPreset = 'saturday';
+  h.setDrive('killington-resort', 90);
+  h.setDrive('wildcat-mountain', 120);
+  h.setDrive('loon-mountain', 100);
+  h.setDrive('tenney-mountain', 165);
+  const wx = h.bluebird();
+  const ranked = ['killington-resort', 'wildcat-mountain', 'loon-mountain', 'tenney-mountain']
+    .map((id) => rankedEntry(id, wx))
+    .sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
+  assert.ok(roles.local?.resort?.id);
+  assert.strictEqual(roles.local.roleVariant, 'another_smart_play');
+  assert.strictEqual(api.localRoleLabel(roles.local), 'Another Smart Play');
+  assert.notStrictEqual(roles.local.resort.id, roles.sleeper?.resort?.id);
+  assert.notStrictEqual(roles.local.resort.id, roles.trap?.resort?.id);
+});
+
+test('[PROTECT] rain suppresses Crowd Watch and Smart Play roles', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  state.skiDayPreset = 'saturday';
+  h.setDrive('killington-resort', 180);
+  h.setDrive('wildcat-mountain', 155);
+  h.setDrive('loon-mountain', 140);
+  const ranked = [
+    rankedEntry('killington-resort', h.wetDay()),
+    rankedEntry('loon-mountain', h.wetDay()),
+    rankedEntry('wildcat-mountain', h.wetDay()),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.sleeper, null);
+  assert.strictEqual(roles.trap, null);
 });

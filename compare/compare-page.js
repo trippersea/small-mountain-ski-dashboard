@@ -147,25 +147,31 @@
     return parts.length ? parts.join(' \u00B7 ') + '.' : 'Solid alternative for your search.';
   }
 
+  /** Label for the LOCAL / Another Smart Play column header. */
+  function localCompareLabel(localR) {
+    if (localR.localLabel) return localR.localLabel;
+    if (localR.roleVariant === 'another_smart_play') return 'Another Smart Play';
+    return 'Best Nearby Option';
+  }
+
   /** Copy for the LOCAL role column — matches homepage when localExplanation is persisted. */
   function localCompareReason(localR, pickR) {
     if (localR.localExplanation) return localR.localExplanation;
+    if (localR.roleVariant === 'another_smart_play') {
+      return 'Another credible regional option — worth a look if the top pick does not fit your plan.';
+    }
     const pickShort = (pickR?.name || 'your top pick')
       .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
     if (localR.tier === 'marginal') {
-      return `Nearby option if you want to skip the longer drive to ${pickShort} — fair conditions, not a destination day.`;
+      return `Quick local turns if you don't want the drive to ${pickShort} — fair conditions, mostly about convenience.`;
     }
-    const savings = localR.driveSavingsMins;
-    if (savings != null && savings >= 30) {
-      return `About ${Math.round(savings)} minutes closer than ${pickShort} — convenient, not your best overall ski day.`;
-    }
-    return `Shorter drive if you don't want the haul to ${pickShort}.`;
+    return `Quick local turns if you don't want the drive to ${pickShort} — a nearby option when convenience matters.`;
   }
 
   /** Copy for the SLEEPER role column — matches homepage when sleeperExplanation is persisted. */
   function sleeperCompareReason(sleeperR) {
     if (sleeperR.sleeperExplanation) return sleeperR.sleeperExplanation;
-    return 'Quieter alternative in a similar score band — worth it if lift lines are a concern.';
+    return 'Credible regional alternative in a similar score band — worth comparing before you commit.';
   }
 
   /** Copy for the TRAP role column — matches homepage when trapExplanation is persisted. */
@@ -404,7 +410,7 @@
       if (col.kind === 'local') {
         headCells +=
           '<th class="cp-cgt-hd-local" scope="col" data-compare-role="local">' +
-            '<div class="cp-cgt-local-badge">Best Nearby Option</div>' +
+            '<div class="cp-cgt-local-badge">' + esc(localCompareLabel(r)) + '</div>' +
             '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
             '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
@@ -412,7 +418,7 @@
       } else if (col.kind === 'sleeper') {
         headCells +=
           '<th class="cp-cgt-hd-sleeper" scope="col" data-compare-role="sleeper">' +
-            '<div class="cp-cgt-sleeper-badge">Smart Quieter Play</div>' +
+            '<div class="cp-cgt-sleeper-badge">Smart Play</div>' +
             '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
             '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
@@ -656,9 +662,9 @@
       if (isPick) {
         nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-pick-tag">Top pick</span>`;
       } else if (isLocal) {
-        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-local-tag">Best nearby</span>`;
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-local-tag">${esc(localRow.localLabel || (localRow.roleVariant === 'another_smart_play' ? 'Smart play alt' : 'Best nearby'))}</span>`;
       } else if (isSleeper) {
-        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-sleeper-tag">Quieter play</span>`;
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-sleeper-tag">Smart play</span>`;
       } else if (isTrap) {
         nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-trap-tag">Crowd watch</span>`;
       } else {
