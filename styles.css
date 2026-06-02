@@ -7635,6 +7635,49 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard-sleeper-card--marginal .vmr-reason {
   color: rgba(170, 210, 195, 0.72);
 }
+
+/* TRAP role card — crowd-trap amber accent */
+.hn-hero-verdict-dock .vcard-trap-card {
+  background: rgba(180, 83, 9, 0.12);
+  border-color: rgba(253, 230, 138, 0.28);
+}
+.hn-hero-verdict-dock .vcard-trap-card .vmr-name {
+  color: rgba(254, 243, 199, 0.94);
+}
+.hn-hero-verdict-dock .vcard-trap-card .vmr-reason {
+  color: rgba(253, 230, 138, 0.82);
+}
+.hn-hero-verdict-dock .vcard-trap-card .vmr-meta {
+  color: rgba(251, 191, 36, 0.68);
+}
+.hn-hero-verdict-dock .vcard-trap-card:hover {
+  background: rgba(180, 83, 9, 0.18);
+  border-color: rgba(253, 230, 138, 0.38);
+}
+.hn-hero-verdict-dock .vcard-trap-card--marginal {
+  background: rgba(180, 83, 9, 0.08);
+  border-color: rgba(253, 230, 138, 0.18);
+}
+.hn-hero-verdict-dock .vcard-trap-card--marginal .vmr-name {
+  color: rgba(254, 240, 200, 0.86);
+}
+.hn-hero-verdict-dock .vcard-trap-card--marginal .vmr-reason {
+  color: rgba(251, 191, 36, 0.72);
+}
+
+/* Top Pick crowd warning when pick is also an obvious trap */
+.hn-hero-verdict-dock .vcard-pick-crowd-warning {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: rgba(254, 243, 199, 0.9);
+  background: rgba(180, 83, 9, 0.14);
+  border: 1px solid rgba(253, 230, 138, 0.22);
+}
+
 .hn-hero-verdict-dock .vcard-runners-zone + .vcard-runners-zone {
   margin-top: 18px;
 }

@@ -1790,6 +1790,19 @@ function saveCompareSession(v, resorts) {
       }
     : null;
 
+  const trapEntry = roles?.trap ?? null;
+  const trapRow = trapEntry
+    ? {
+        ...resortToCompareSessionRow(trapEntry.resort, trapEntry.wx, trapEntry.breakdown, { tier: trapEntry.tier }),
+        role: 'trap',
+        crowdLabel: trapEntry.crowdLabel ?? null,
+        crowdScore: trapEntry.crowdScore ?? null,
+        trapExplanation: typeof trapRoleExplanation === 'function'
+          ? trapRoleExplanation(trapEntry)
+          : null,
+      }
+    : null;
+
   const session = {
     ts:           Date.now(),
     origin:       { ...state.origin },
@@ -1805,7 +1818,7 @@ function saveCompareSession(v, resorts) {
     pick:         pickRow,
     local:        localRow,
     sleeper:      sleeperRow,
-    trap:         null,
+    trap:         trapRow,
     runners:      [],
     topPick:      pickRow,
   };
@@ -2005,6 +2018,10 @@ function renderVerdict(resorts) {
   const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn, histTotal, roles } = v;
   const localEntry = roles?.local ?? null;
   const sleeperEntry = roles?.sleeper ?? null;
+  const trapEntry = roles?.trap ?? null;
+  const pickCrowdWarningHtml = roles?.pick?.pickCrowdWarning && roles.pick.pickCrowdWarningCopy
+    ? `<p class="vcard-pick-crowd-warning" role="note">${esc(roles.pick.pickCrowdWarningCopy)}</p>`
+    : '';
   saveCompareSession(v, resorts);
   trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
@@ -2167,6 +2184,28 @@ function renderVerdict(resorts) {
     </div>`;
   })() : '';
 
+  // ── TRAP role card (crowd magnet with real quality; not score-ranked runners) ──
+  const trapCardHtml = trapEntry ? (() => {
+    const _tWx = trapEntry.wx;
+    const _tCrowd = crowdForecast(trapEntry.resort, _tWx);
+    const _tCopy = typeof trapRoleExplanation === 'function'
+      ? trapRoleExplanation(trapEntry)
+      : 'Great mountain, bad timing — crowds may be the real problem.';
+    const _tDriveU = esc(driveUtilitySegment(trapEntry.resort.id));
+    const _tCrowdU = esc(crowdUtilityShort(_tCrowd.label));
+    const _tMarginalCls = trapEntry.tier === 'marginal' ? ' vcard-trap-card--marginal' : '';
+    return `<div class="vcard-runners-zone vcard-trap-zone">
+      <div class="vcard-runners-heading">Crowd Watch</div>
+      <div class="vcard-runners-row">
+        <button type="button" class="vcard-mini-runner vcard-trap-card${_tMarginalCls}" id="verdictTrapBtn" data-trap-id="${esc(trapEntry.resort.id)}">
+          <span class="vmr-name">${esc(trapEntry.resort.name)}</span>
+          <p class="vmr-reason">${esc(_tCopy)}</p>
+          <div class="vmr-meta" aria-label="Drive and crowds">${_tDriveU} · ${_tCrowdU}</div>
+        </button>
+      </div>
+    </div>`;
+  })() : '';
+
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
@@ -2175,6 +2214,7 @@ function renderVerdict(resorts) {
         <button type="button" class="vcard-name-dash vcard-name-dash--pick" id="verdictPickBtn">${esc(resort.name)}</button>
         ${_decisionCalloutHtml}
         <p class="vcard-verdict-line">${esc(_verdictPhrase)}</p>
+        ${pickCrowdWarningHtml}
         <p class="vcard-story-one">${esc(_storyOneLine)}</p>
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
@@ -2193,6 +2233,7 @@ function renderVerdict(resorts) {
         ${guidanceInsetHtml}
         ${localCardHtml}
         ${sleeperCardHtml}
+        ${trapCardHtml}
       </div>
        </div>`;
 
@@ -2237,6 +2278,12 @@ function renderVerdict(resorts) {
     trackResortView(sleeperEntry.resort.id, sleeperEntry.resort.name, 'sleeper_role_click', sleeperEntry.resort.passGroup || '');
     renderDetail({ scroll: true });
   });
+  $('verdictTrapBtn')?.addEventListener('click', () => {
+    if (!trapEntry) return;
+    state.selectedId = trapEntry.resort.id;
+    trackResortView(trapEntry.resort.id, trapEntry.resort.name, 'trap_role_click', trapEntry.resort.passGroup || '');
+    renderDetail({ scroll: true });
+  });
   $('verdictRefineGuidanceBtn')?.addEventListener('click', () => {
     const panel = els.plannerSection;
     if (!panel) return;
@@ -2266,7 +2313,7 @@ function renderVerdict(resorts) {
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
 
-  // Generic score-ranked runner-up grid hidden until TRAP role ships.
+  // Generic score-ranked runner-up grid stays hidden (role cards replace it).
   const _hnSection = document.getElementById('hnRunnerUpSection');
   const _hnGrid    = document.getElementById('hnRunnersGrid');
   if (_hnSection && _hnGrid) {

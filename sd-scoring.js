@@ -398,7 +398,7 @@ function pickTopPickFromRanked(ranked) {
 }
 
 /**
- * Deferred for SLEEPER/TRAP: filters the ranked pool before picking alternative roles
+ * Filters the ranked pool before picking SLEEPER/TRAP alternative roles
  * on broad search (drops ineligible locals when the top-pick floor is active).
  * Not wired to hero UI in v1 — LOCAL uses pickLocalFromRanked instead.
  */
@@ -633,8 +633,108 @@ function sleeperRoleExplanation(sleeperEntry, pickResort, refResort) {
   return `Overlooked option in the same score band — worth it if you hate busy lift lines.`;
 }
 
+const TRAP_QUALITY_MIN_SUIT = 40;
+const TRAP_CROWD_SCORE_MIN = 62;
+const TRAP_DEMAND_METRO_MIN = 550;
+
+function _hasHighMountainQuality(entry) {
+  if (!entry?.resort) return false;
+  const cls = entry.breakdown?.destinationClass ?? destinationClass(entry.resort);
+  if (cls === 'destination') return true;
+  const suit = entry.breakdown?.destinationSuitabilityScore ?? destinationSuitabilityScore(entry.resort);
+  return suit >= TRAP_QUALITY_MIN_SUIT;
+}
+
+function _hasHighDemand(entry) {
+  if (!entry?.resort) return false;
+  const cls = entry.breakdown?.destinationClass ?? destinationClass(entry.resort);
+  const pass = entry.resort.passGroup === 'Epic' || entry.resort.passGroup === 'Ikon';
+  const mg = _metroGravity(entry.resort);
+  return cls === 'destination' || pass || mg >= TRAP_DEMAND_METRO_MIN;
+}
+
+function _hasHighCrowdRisk(entry) {
+  const crowd = crowdForecast(entry.resort, entry.wx);
+  return _crowdIsLoud(crowd.label) || crowd.score >= TRAP_CROWD_SCORE_MIN;
+}
+
+function isCredibleTrapCandidate(entry, usedIds) {
+  if (!entry?.resort || !entry?.wx || !entry?.breakdown) return false;
+  if (usedIds.has(entry.resort.id)) return false;
+  if (entry.breakdown.destinationClass === 'local') return false;
+
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  if (vd.tier === 'bad') return false;
+
+  if (isTopPickFloorActive() && entry.breakdown.topPickEligible !== true) return false;
+
+  return _hasHighMountainQuality(entry)
+    && _hasHighCrowdRisk(entry)
+    && _hasHighDemand(entry);
+}
+
+function compareTrapCandidates(a, b) {
+  const ca = crowdForecast(a.resort, a.wx).score;
+  const cb = crowdForecast(b.resort, b.wx).score;
+  if (cb !== ca) return cb - ca;
+  const sa = a.breakdown?.score ?? -Infinity;
+  const sb = b.breakdown?.score ?? -Infinity;
+  return sb - sa;
+}
+
 /**
- * PICK + LOCAL recommendation roles from a score-sorted verdict pool.
+ * Best credible TRAP: crowd magnet with real quality + demand, excluding used roles.
+ * When the pick is also an obvious trap, pickCrowdWarning is set and the slot passes
+ * to the next qualifying crowd-magnet (spec A4.6).
+ */
+function pickTrapFromRanked(ranked, pickEntry, localEntry, sleeperEntry) {
+  const usedIds = new Set();
+  if (pickEntry?.resort?.id) usedIds.add(pickEntry.resort.id);
+  if (localEntry?.resort?.id) usedIds.add(localEntry.resort.id);
+  if (sleeperEntry?.resort?.id) usedIds.add(sleeperEntry.resort.id);
+
+  const pickCrowdWarning = pickEntry?.resort
+    ? isCredibleTrapCandidate(pickEntry, new Set())
+    : false;
+
+  const pool = filterRunnerUpCandidates(ranked).filter(e => e.resort?.id && !usedIds.has(e.resort.id));
+  const candidates = pool
+    .filter(e => isCredibleTrapCandidate(e, usedIds))
+    .sort(compareTrapCandidates);
+  if (!candidates.length) {
+    return { trap: null, pickCrowdWarning };
+  }
+
+  const entry = candidates[0];
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  const crowd = crowdForecast(entry.resort, entry.wx);
+  return {
+    trap: {
+      ...entry,
+      tier: vd.tier,
+      crowdLabel: crowd.label,
+      crowdScore: crowd.score,
+    },
+    pickCrowdWarning,
+  };
+}
+
+/** Copy when the Top Pick is also an obvious crowd trap (spec A4.6). */
+function pickCrowdWarningCopy() {
+  return 'Best skiing, but expect crowds — lift lines may run long at peak.';
+}
+
+/** User-facing copy for the TRAP role card. */
+function trapRoleExplanation(trapEntry) {
+  const crowdShort = (trapEntry?.crowdLabel || 'busy').toLowerCase();
+  if (trapEntry?.tier === 'marginal') {
+    return `Great mountain on paper, but ${crowdShort} timing — fair conditions, real lift-line risk.`;
+  }
+  return `Great mountain, bad timing — ski quality may hold up, but ${crowdShort} crowds may mean long lift lines.`;
+}
+
+/**
+ * PICK + LOCAL + SLEEPER + TRAP recommendation roles from a score-sorted verdict pool.
  * @param {Array<{resort: object, wx: object, breakdown: object, history?: object}>} ranked
  */
 function buildRecommendationRolesFromRanked(ranked) {
@@ -642,7 +742,7 @@ function buildRecommendationRolesFromRanked(ranked) {
   const pickResult = pickTopPickFromRanked(ranked);
   if (!pickResult?.pick) return empty;
 
-  const pick = {
+  let pick = {
     ...pickResult.pick,
     topPickIsFallback: pickResult.topPickIsFallback,
     topPickFallbackReason: pickResult.topPickFallbackReason,
@@ -655,8 +755,17 @@ function buildRecommendationRolesFromRanked(ranked) {
   }
 
   const sleeper = pickSleeperFromRanked(ranked, pickResult.pick, local);
+  const trapResult = pickTrapFromRanked(ranked, pickResult.pick, local, sleeper);
 
-  return { pick, local, sleeper, trap: null };
+  if (trapResult.pickCrowdWarning) {
+    pick = {
+      ...pick,
+      pickCrowdWarning: true,
+      pickCrowdWarningCopy: pickCrowdWarningCopy(),
+    };
+  }
+
+  return { pick, local, sleeper, trap: trapResult.trap };
 }
 
 /** Layer-2 fit: identity on broad/willing-to-drive; mountainFit for local intent & size chips. */
