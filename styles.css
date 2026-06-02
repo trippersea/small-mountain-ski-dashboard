@@ -7681,6 +7681,41 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard-runners-zone + .vcard-runners-zone {
   margin-top: 18px;
 }
+
+/* Other smart calls — grouped role cards below hero actions */
+.hn-hero-verdict-dock .vcard-other-smart-calls {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.hn-hero-verdict-dock .vcard-other-smart-calls-heading {
+  margin: 0 0 6px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(232, 240, 250, 0.92);
+}
+.hn-hero-verdict-dock .vcard-other-smart-calls-helper {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(186, 200, 218, 0.72);
+  max-width: 36rem;
+}
+.hn-hero-verdict-dock .vcard-other-smart-calls-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.hn-hero-verdict-dock .vcard-role-card {
+  margin: 0;
+  padding: 0;
+}
+.hn-hero-verdict-dock .vcard-role-card .vcard-runners-heading {
+  color: rgba(196, 210, 228, 0.78);
+  margin-bottom: 8px;
+}
 .hn-hero-verdict-dock .vcard-runners-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -392,7 +392,7 @@
 
     // ── Header row ──
     let headCells = '<th class="cp-lbl" scope="col"></th>' +
-      '<th class="cp-cgt-hd-pick" scope="col">' +
+      '<th class="cp-cgt-hd-pick" scope="col" data-compare-role="pick">' +
         '<div class="cp-cgt-pick-badge">Top Pick</div>' +
         '<div class="cp-cgt-mtn-name">' + esc(pick.name) + '</div>' +
         '<div class="cp-cgt-mtn-state">' + esc(pick.state) + '</div>' +
@@ -403,7 +403,7 @@
       const r = col.row;
       if (col.kind === 'local') {
         headCells +=
-          '<th class="cp-cgt-hd-local" scope="col">' +
+          '<th class="cp-cgt-hd-local" scope="col" data-compare-role="local">' +
             '<div class="cp-cgt-local-badge">Best Nearby Option</div>' +
             '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
@@ -411,7 +411,7 @@
           '</th>';
       } else if (col.kind === 'sleeper') {
         headCells +=
-          '<th class="cp-cgt-hd-sleeper" scope="col">' +
+          '<th class="cp-cgt-hd-sleeper" scope="col" data-compare-role="sleeper">' +
             '<div class="cp-cgt-sleeper-badge">Smart Quieter Play</div>' +
             '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
@@ -419,7 +419,7 @@
           '</th>';
       } else if (col.kind === 'trap') {
         headCells +=
-          '<th class="cp-cgt-hd-trap" scope="col">' +
+          '<th class="cp-cgt-hd-trap" scope="col" data-compare-role="trap">' +
             '<div class="cp-cgt-trap-badge">Crowd Watch</div>' +
             '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +

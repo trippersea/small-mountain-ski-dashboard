@@ -1821,6 +1821,7 @@ function saveCompareSession(v, resorts) {
     trap:         trapRow,
     runners:      [],
     topPick:      pickRow,
+    roleSchemaVersion: 1,
   };
 
   try { localStorage.setItem('wtsn-compare', JSON.stringify(session)); } catch (e) {}
@@ -1894,6 +1895,16 @@ function computeVerdictPhase1(resorts) {
   return computeVerdict(phasePool);
 }
 
+/**
+ * When phase-1 keeps the displayed pick stable, still attach role cards from the
+ * full ranked pool (LOCAL / SLEEPER / TRAP need candidates that may load in phase 2).
+ */
+function mergeFullPoolRoles(stableVerdict, fullVerdict) {
+  if (!stableVerdict || !fullVerdict?.roles) return stableVerdict;
+  if (stableVerdict.resort?.id !== fullVerdict.resort?.id) return stableVerdict;
+  return { ...stableVerdict, roles: fullVerdict.roles };
+}
+
 function computeVerdictStaged(resorts) {
   if (!state.origin) return null;
   if (!weatherFetchPhase1Done) return null;
@@ -1909,7 +1920,7 @@ function computeVerdictStaged(resorts) {
   const p1 = phase1Verdict.breakdown?.score;
   const p2 = finalVerdict.breakdown?.score;
   if (Number.isFinite(p1) && Number.isFinite(p2) && (p2 - p1) >= VERDICT_UPGRADE_DELTA) return finalVerdict;
-  return phase1Verdict;
+  return mergeFullPoolRoles(phase1Verdict, finalVerdict) || phase1Verdict;
 }
 
 function updateHeroVerdictEmptyState() {
@@ -2137,7 +2148,7 @@ function renderVerdict(resorts) {
     ? `<p class="vcard-decision-callout" role="note">${esc(_overNearbyCallout)}</p>`
     : '';
 
-  // ── LOCAL role card (nearby convenience option; no generic score-ranked runners) ──
+  // ── Role cards: LOCAL / SLEEPER / TRAP (grouped under “Other smart calls”) ──
   const localCardHtml = localEntry ? (() => {
     const _lWx = localEntry.wx;
     const _lCrowd = crowdForecast(localEntry.resort, _lWx);
@@ -2147,19 +2158,16 @@ function renderVerdict(resorts) {
     const _lDriveU = esc(driveUtilitySegment(localEntry.resort.id));
     const _lCrowdU = esc(crowdUtilityShort(_lCrowd.label));
     const _lMarginalCls = localEntry.tier === 'marginal' ? ' vcard-local-card--marginal' : '';
-    return `<div class="vcard-runners-zone vcard-local-zone">
+    return `<div class="vcard-role-card vcard-local-zone" data-role-local="${esc(localEntry.resort.id)}">
       <div class="vcard-runners-heading">Best Nearby Option</div>
-      <div class="vcard-runners-row">
-        <button type="button" class="vcard-mini-runner vcard-local-card${_lMarginalCls}" id="verdictLocalBtn" data-local-id="${esc(localEntry.resort.id)}">
-          <span class="vmr-name">${esc(localEntry.resort.name)}</span>
-          <p class="vmr-reason">${esc(_lCopy)}</p>
-          <div class="vmr-meta" aria-label="Drive and crowds">${_lDriveU} · ${_lCrowdU}</div>
-        </button>
-      </div>
+      <button type="button" class="vcard-mini-runner vcard-local-card${_lMarginalCls}" id="verdictLocalBtn" data-local-id="${esc(localEntry.resort.id)}">
+        <span class="vmr-name">${esc(localEntry.resort.name)}</span>
+        <p class="vmr-reason">${esc(_lCopy)}</p>
+        <div class="vmr-meta" aria-label="Drive and crowds">${_lDriveU} · ${_lCrowdU}</div>
+      </button>
     </div>`;
   })() : '';
 
-  // ── SLEEPER role card (quieter overlooked alternative; not score-ranked runners) ──
   const sleeperCardHtml = sleeperEntry ? (() => {
     const _sWx = sleeperEntry.wx;
     const _sCrowd = crowdForecast(sleeperEntry.resort, _sWx);
@@ -2172,19 +2180,16 @@ function renderVerdict(resorts) {
     const _sDriveU = esc(driveUtilitySegment(sleeperEntry.resort.id));
     const _sCrowdU = esc(crowdUtilityShort(_sCrowd.label));
     const _sMarginalCls = sleeperEntry.tier === 'marginal' ? ' vcard-sleeper-card--marginal' : '';
-    return `<div class="vcard-runners-zone vcard-sleeper-zone">
+    return `<div class="vcard-role-card vcard-sleeper-zone" data-role-sleeper="${esc(sleeperEntry.resort.id)}">
       <div class="vcard-runners-heading">Smart Quieter Play</div>
-      <div class="vcard-runners-row">
-        <button type="button" class="vcard-mini-runner vcard-sleeper-card${_sMarginalCls}" id="verdictSleeperBtn" data-sleeper-id="${esc(sleeperEntry.resort.id)}">
-          <span class="vmr-name">${esc(sleeperEntry.resort.name)}</span>
-          <p class="vmr-reason">${esc(_sCopy)}</p>
-          <div class="vmr-meta" aria-label="Drive and crowds">${_sDriveU} · ${_sCrowdU}</div>
-        </button>
-      </div>
+      <button type="button" class="vcard-mini-runner vcard-sleeper-card${_sMarginalCls}" id="verdictSleeperBtn" data-sleeper-id="${esc(sleeperEntry.resort.id)}">
+        <span class="vmr-name">${esc(sleeperEntry.resort.name)}</span>
+        <p class="vmr-reason">${esc(_sCopy)}</p>
+        <div class="vmr-meta" aria-label="Drive and crowds">${_sDriveU} · ${_sCrowdU}</div>
+      </button>
     </div>`;
   })() : '';
 
-  // ── TRAP role card (crowd magnet with real quality; not score-ranked runners) ──
   const trapCardHtml = trapEntry ? (() => {
     const _tWx = trapEntry.wx;
     const _tCrowd = crowdForecast(trapEntry.resort, _tWx);
@@ -2194,24 +2199,31 @@ function renderVerdict(resorts) {
     const _tDriveU = esc(driveUtilitySegment(trapEntry.resort.id));
     const _tCrowdU = esc(crowdUtilityShort(_tCrowd.label));
     const _tMarginalCls = trapEntry.tier === 'marginal' ? ' vcard-trap-card--marginal' : '';
-    return `<div class="vcard-runners-zone vcard-trap-zone">
+    return `<div class="vcard-role-card vcard-trap-zone" data-role-trap="${esc(trapEntry.resort.id)}">
       <div class="vcard-runners-heading">Crowd Watch</div>
-      <div class="vcard-runners-row">
-        <button type="button" class="vcard-mini-runner vcard-trap-card${_tMarginalCls}" id="verdictTrapBtn" data-trap-id="${esc(trapEntry.resort.id)}">
-          <span class="vmr-name">${esc(trapEntry.resort.name)}</span>
-          <p class="vmr-reason">${esc(_tCopy)}</p>
-          <div class="vmr-meta" aria-label="Drive and crowds">${_tDriveU} · ${_tCrowdU}</div>
-        </button>
-      </div>
+      <button type="button" class="vcard-mini-runner vcard-trap-card${_tMarginalCls}" id="verdictTrapBtn" data-trap-id="${esc(trapEntry.resort.id)}">
+        <span class="vmr-name">${esc(trapEntry.resort.name)}</span>
+        <p class="vmr-reason">${esc(_tCopy)}</p>
+        <div class="vmr-meta" aria-label="Drive and crowds">${_tDriveU} · ${_tCrowdU}</div>
+      </button>
     </div>`;
   })() : '';
+
+  const roleCardsInner = [localCardHtml, sleeperCardHtml, trapCardHtml].filter(Boolean).join('');
+  const otherSmartCallsHtml = roleCardsInner
+    ? `<section class="vcard-other-smart-calls" aria-labelledby="verdictOtherSmartCallsHeading">
+        <h3 class="vcard-other-smart-calls-heading" id="verdictOtherSmartCallsHeading">Other smart calls</h3>
+        <p class="vcard-other-smart-calls-helper">Different ways to play the day depending on drive, crowds, and convenience.</p>
+        <div class="vcard-other-smart-calls-grid">${roleCardsInner}</div>
+      </section>`
+    : '';
 
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
         <div class="vcard-top-pill vcard-eyebrow">${_eyebrow}</div>
         ${zipNudgeHtml}
-        <button type="button" class="vcard-name-dash vcard-name-dash--pick" id="verdictPickBtn">${esc(resort.name)}</button>
+        <button type="button" class="vcard-name-dash vcard-name-dash--pick" id="verdictPickBtn" data-role-pick="${esc(resort.id)}">${esc(resort.name)}</button>
         ${_decisionCalloutHtml}
         <p class="vcard-verdict-line">${esc(_verdictPhrase)}</p>
         ${pickCrowdWarningHtml}
@@ -2231,9 +2243,7 @@ function renderVerdict(resorts) {
           ${shareBtn}
         </div>
         ${guidanceInsetHtml}
-        ${localCardHtml}
-        ${sleeperCardHtml}
-        ${trapCardHtml}
+        ${otherSmartCallsHtml}
       </div>
        </div>`;
 
