@@ -17,7 +17,7 @@
 //   pick:          { /* same shape as topPick */, role: 'pick' },
 //   local:         { /* same shape */, role: 'local', driveSavingsMins?, localExplanation? } | null,
 //   sleeper:       null,
-//   trap:          null,
+//   trap:          { /* same shape */, role: 'trap', trapExplanation? } | null,
 //   topPick:       { /* backward-compatible alias for pick */ },
 //   runners:       [ /* legacy score-ranked runners; empty in v1 */ ],
 //   fullRankings:  [ /* top 25 scored rows, trip-mode snow totals */ ],
@@ -168,8 +168,14 @@
     return 'Quieter alternative in a similar score band — worth it if lift lines are a concern.';
   }
 
-  /** Side columns: LOCAL, then SLEEPER, then legacy score-ranked runners (old sessions). */
-  function buildSideColumns(pick, localRow, sleeperRow, legacyRunners) {
+  /** Copy for the TRAP role column — matches homepage when trapExplanation is persisted. */
+  function trapCompareReason(trapR) {
+    if (trapR.trapExplanation) return trapR.trapExplanation;
+    return 'Great mountain, bad timing — conditions may hold, but crowds may mean long lift lines.';
+  }
+
+  /** Side columns: LOCAL, SLEEPER, TRAP, then legacy score-ranked runners (old sessions). */
+  function buildSideColumns(pick, localRow, sleeperRow, trapRow, legacyRunners) {
     const cols = [];
     if (localRow && localRow.id && localRow.id !== pick.id) {
       cols.push({ row: localRow, kind: 'local' });
@@ -177,6 +183,10 @@
     if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id
         && !cols.some(function (c) { return c.row.id === sleeperRow.id; })) {
       cols.push({ row: sleeperRow, kind: 'sleeper' });
+    }
+    if (trapRow && trapRow.id && trapRow.id !== pick.id
+        && !cols.some(function (c) { return c.row.id === trapRow.id; })) {
+      cols.push({ row: trapRow, kind: 'trap' });
     }
     let legacyRank = 2;
     (legacyRunners || []).slice(0, 3).forEach(function (r) {
@@ -297,10 +307,10 @@
   const {
     origin, passFilter, howFar, skiDayPreset, targetDate: targetDateIso = null,
     forecastIndex = 0,
-    topPick, local: localRow = null, sleeper: sleeperRow = null, runners = [], fullRankings = [], rankingTotal = 0,
+    topPick, local: localRow = null, sleeper: sleeperRow = null, trap: trapRow = null, runners = [], fullRankings = [], rankingTotal = 0,
   } = session;
   const city = cityName(origin.label);
-  const sideCols = buildSideColumns(topPick, localRow, sleeperRow, runners);
+  const sideCols = buildSideColumns(topPick, localRow, sleeperRow, trapRow, runners);
 
   // Page title
   document.title = `Compare Near ${city} | WhereToSkiNext.com`;
@@ -375,6 +385,7 @@
     sideColsArr.forEach(function (c) {
       cols += c.kind === 'local' ? '<col class="cp-col-local">'
         : c.kind === 'sleeper' ? '<col class="cp-col-sleeper">'
+        : c.kind === 'trap' ? '<col class="cp-col-trap">'
         : '<col class="cp-col-runner">';
     });
     cols += '</colgroup>';
@@ -406,6 +417,14 @@
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
             '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
           '</th>';
+      } else if (col.kind === 'trap') {
+        headCells +=
+          '<th class="cp-cgt-hd-trap" scope="col">' +
+            '<div class="cp-cgt-trap-badge">Crowd Watch</div>' +
+            '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
+            '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
+            '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
+          '</th>';
       } else {
         headCells +=
           '<th class="cp-cgt-hd-runner" scope="col">' +
@@ -427,6 +446,7 @@
         const kind = sideColsArr[i]?.kind || 'runner';
         const tdCls = kind === 'local' ? 'cp-td-local'
           : kind === 'sleeper' ? 'cp-td-sleeper'
+          : kind === 'trap' ? 'cp-td-trap'
           : 'cp-td-runner';
         tr += '<td class="' + tdCls + '">' + cell + '</td>';
       });
@@ -443,7 +463,9 @@
           ? localCompareReason(col.row, pick)
           : col.kind === 'sleeper'
             ? sleeperCompareReason(col.row)
-            : (col.row.headline || autoReason(col.row));
+            : col.kind === 'trap'
+              ? trapCompareReason(col.row)
+              : (col.row.headline || autoReason(col.row));
         return '<span class="cp-cgt-reason">' + esc(txt) + '</span>';
       })
     );
@@ -629,6 +651,7 @@
       const isPick = r.id === topPick.id;
       const isLocal = localRow && r.id === localRow.id;
       const isSleeper = sleeperRow && r.id === sleeperRow.id;
+      const isTrap = trapRow && r.id === trapRow.id;
       let nameCell;
       if (isPick) {
         nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-pick-tag">Top pick</span>`;
@@ -636,12 +659,15 @@
         nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-local-tag">Best nearby</span>`;
       } else if (isSleeper) {
         nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-sleeper-tag">Quieter play</span>`;
+      } else if (isTrap) {
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-trap-tag">Crowd watch</span>`;
       } else {
         nameCell = esc(r.name);
       }
       const rowCls = isPick ? 'cp-rank-row--pick'
         : isLocal ? 'cp-rank-row--local'
         : isSleeper ? 'cp-rank-row--sleeper'
+        : isTrap ? 'cp-rank-row--trap'
         : '';
       return `<tr class="${rowCls}">
         <td>${i + 1}</td>

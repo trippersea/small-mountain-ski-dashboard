@@ -1069,6 +1069,57 @@ body.compare-page-body .site-footer-affiliate {
   color: rgba(196, 245, 220, 0.88);
 }
 
+/* ── TRAP role column (Crowd Watch) ── */
+.cp-cgt col.cp-col-trap { width: 196px; }
+
+.cp-cgt-hd-trap {
+  background: rgba(42, 26, 8, 0.92) !important;
+  border-left: 2px solid rgba(253, 230, 138, 0.32) !important;
+}
+
+.cp-cgt .cp-td-trap {
+  background: rgba(42, 26, 8, 0.55);
+  border-left: 2px solid rgba(253, 230, 138, 0.2);
+}
+.cp-cgt tbody tr:nth-child(even) .cp-td-trap {
+  background: rgba(48, 30, 10, 0.65);
+}
+
+.cp-cgt-trap-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(180, 83, 9, 0.16);
+  color: rgba(254, 243, 199, 0.92);
+  border: 1px solid rgba(253, 230, 138, 0.28);
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 10px;
+  line-height: 1.25;
+  max-width: 11rem;
+}
+
+.cp-cgt-hd-trap .cp-cgt-head-cta {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(254, 243, 199, 0.88);
+  border: 1px solid rgba(253, 230, 138, 0.22);
+}
+.cp-cgt-hd-trap .cp-cgt-head-cta:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fffbeb;
+}
+
+.cp-td-trap .cp-cgt-score-bar-fill {
+  background: linear-gradient(90deg, rgba(180, 83, 9, 0.75), rgba(253, 230, 138, 0.65));
+}
+.cp-td-trap .cp-cgt-score-num {
+  color: rgba(254, 243, 199, 0.88);
+}
+
 /* ── Mountain name + state in header ── */
 .cp-cgt-mtn-name {
   font-family: "Newsreader", Georgia, serif;
@@ -1445,7 +1496,23 @@ body.compare-page-body .site-footer-affiliate {
   background: rgba(34, 179, 138, 0.06);
 }
 
+.cp-rank-trap-tag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(253, 230, 138, 0.82);
+  vertical-align: middle;
+}
+
+.compare-page-table tbody tr.cp-rank-row--trap {
+  background: rgba(180, 83, 9, 0.06);
+}
+
 /* Runner score cells: keep the right-most bubbles from overflowing the table edge */
 .cp-td-runner:last-child .cp-explain-bubble,
 .cp-td-local:last-child .cp-explain-bubble,
-.cp-td-sleeper:last-child .cp-explain-bubble { left: auto; right: 0; }
+.cp-td-sleeper:last-child .cp-explain-bubble,
+.cp-td-trap:last-child .cp-explain-bubble { left: auto; right: 0; }

@@ -452,17 +452,20 @@ function crowdedSaturdayRanked(ids, wx, opts = {}) {
     .sort((a, b) => b.breakdown.score - a.breakdown.score);
 }
 
-test('[PROTECT] Wildcat SLEEPER when Killington is PICK on crowded Saturday', () => {
+test('[PROTECT] Loon TRAP when Killington is PICK + Wildcat SLEEPER on crowded Saturday', () => {
   const ranked = crowdedSaturdayRanked(
     ['killington-resort', 'loon-mountain', 'wildcat-mountain'],
     h.bluebird(),
-    { historyIds: ['wildcat-mountain'] },
+    { historyIds: ['killington-resort', 'loon-mountain', 'wildcat-mountain'] },
   );
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
   assert.strictEqual(roles.sleeper?.resort?.id, 'wildcat-mountain');
-  assert.strictEqual(roles.trap, null);
+  assert.strictEqual(roles.trap?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.pick.pickCrowdWarning, true);
+  assert.ok(roles.pick.pickCrowdWarningCopy);
   assert.notStrictEqual(roles.pick.resort.id, roles.sleeper.resort.id);
+  assert.notStrictEqual(roles.pick.resort.id, roles.trap.resort.id);
 });
 
 test('[PROTECT] SLEEPER null when pool has only PICK + LOCAL (no contrived sleeper)', () => {
@@ -551,4 +554,43 @@ test('[PROTECT] local-class sub-700 ft resort cannot qualify as SLEEPER', () => 
   assert.strictEqual(wilmot.breakdown.topPickEligible, false);
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.notStrictEqual(roles.sleeper?.resort?.id, 'wilmot-mountain');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [PROTECT] Recommendation roles — TRAP (v1)
+// ─────────────────────────────────────────────────────────────────────────────
+test('[PROTECT] TRAP null when only one crowd-magnet in pool (Boston extended bluebird)', () => {
+  const ranked = bostonExtendedRanked(h.bluebird());
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.trap, null);
+});
+
+test('[PROTECT] pickCrowdWarning false when pick is not a credible trap', () => {
+  const ranked = bostonExtendedRanked(h.bluebird());
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.notStrictEqual(roles.pick?.pickCrowdWarning, true);
+});
+
+test('[PROTECT] TRAP prefers higher crowd score among qualifying magnets', () => {
+  const ranked = crowdedSaturdayRanked(
+    ['killington-resort', 'loon-mountain', 'tenney-mountain'],
+    h.bluebird(),
+    { historyIds: ['killington-resort', 'loon-mountain', 'tenney-mountain'] },
+  );
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
+  assert.strictEqual(roles.trap?.resort?.id, 'loon-mountain');
+});
+
+test('[PROTECT] trapRoleExplanation mentions crowd timing', () => {
+  const ranked = crowdedSaturdayRanked(
+    ['killington-resort', 'loon-mountain', 'wildcat-mountain'],
+    h.bluebird(),
+    { historyIds: ['killington-resort', 'loon-mountain', 'wildcat-mountain'] },
+  );
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.ok(roles.trap?.resort?.id, 'expected a TRAP role');
+  const copy = api.trapRoleExplanation(roles.trap);
+  assert.match(copy, /bad timing|lift-line/i);
 });
