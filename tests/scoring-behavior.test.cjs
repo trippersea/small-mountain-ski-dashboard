@@ -427,3 +427,128 @@ test('[PROTECT] LOCAL prefers higher score when local candidates differ by more 
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.local?.resort?.id, 'nashoba-valley');
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [PROTECT] Recommendation roles — SLEEPER (v1)
+// ─────────────────────────────────────────────────────────────────────────────
+function crowdedSaturdayRanked(ids, wx, opts = {}) {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  state.skiDayPreset = 'saturday';
+  state.targetDate = new Date('2026-01-17T12:00:00');
+  (opts.historyIds || []).forEach((id) => {
+    h.sandbox.historyCache.set(id, { total: 10, days: [] });
+  });
+  const drives = {
+    'killington-resort': 180,
+    'loon-mountain': 140,
+    'wildcat-mountain': 155,
+    'tenney-mountain': 165,
+  };
+  ids.forEach((id) => h.setDrive(id, drives[id] ?? 120));
+  return ids
+    .map((id) => rankedEntry(id, wx))
+    .sort((a, b) => b.breakdown.score - a.breakdown.score);
+}
+
+test('[PROTECT] Wildcat SLEEPER when Killington is PICK on crowded Saturday', () => {
+  const ranked = crowdedSaturdayRanked(
+    ['killington-resort', 'loon-mountain', 'wildcat-mountain'],
+    h.bluebird(),
+    { historyIds: ['wildcat-mountain'] },
+  );
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
+  assert.strictEqual(roles.sleeper?.resort?.id, 'wildcat-mountain');
+  assert.strictEqual(roles.trap, null);
+  assert.notStrictEqual(roles.pick.resort.id, roles.sleeper.resort.id);
+});
+
+test('[PROTECT] SLEEPER null when pool has only PICK + LOCAL (no contrived sleeper)', () => {
+  const ranked = bostonExtendedRanked(h.bluebird());
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local?.resort?.id, 'blue-hills-ski-area');
+  assert.strictEqual(roles.sleeper, null);
+});
+
+test('[PROTECT] SLEEPER null when pick is already the quiet smart call', () => {
+  const ranked = crowdedSaturdayRanked(
+    ['wildcat-mountain', 'loon-mountain'],
+    h.bluebird(),
+    { historyIds: ['wildcat-mountain'] },
+  );
+  const wc = ranked.find((e) => e.resort.id === 'wildcat-mountain');
+  const ln = ranked.find((e) => e.resort.id === 'loon-mountain');
+  if (wc.breakdown.score <= ln.breakdown.score) {
+    wc.breakdown = { ...wc.breakdown, score: ln.breakdown.score + 1 };
+  }
+  ranked.sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'wildcat-mountain');
+  assert.strictEqual(roles.sleeper, null);
+});
+
+test('[PROTECT] SLEEPER null when candidate tier is bad', () => {
+  const ranked = crowdedSaturdayRanked(['killington-resort', 'wildcat-mountain'], h.bluebird());
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
+  assert.strictEqual(roles.sleeper, null);
+});
+
+test('[PROTECT] SLEEPER null when score gap exceeds close band', () => {
+  const ranked = crowdedSaturdayRanked(
+    ['killington-resort', 'wildcat-mountain'],
+    h.bluebird(),
+    { historyIds: ['wildcat-mountain'] },
+  );
+  const wc = ranked.find((e) => e.resort.id === 'wildcat-mountain');
+  wc.breakdown = { ...wc.breakdown, score: (ranked[0].breakdown.score - 20) };
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
+  assert.strictEqual(roles.sleeper, null);
+});
+
+test('[PROTECT] sub-700 ft regional resort may qualify as SLEEPER when eligible (Midwest)', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -83 };
+  state.howFar = 1;
+  state.skiDayPreset = 'saturday';
+  state.targetDate = new Date('2026-01-17T12:00:00');
+  h.setDrive('boyne-mountain', 180);
+  h.setDrive('crystal-mountain-mi', 240);
+  h.sandbox.historyCache.set('crystal-mountain-mi', { total: 10, days: [] });
+  h.sandbox.historyCache.set('boyne-mountain', { total: 10, days: [] });
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('boyne-mountain', wx),
+    rankedEntry('crystal-mountain-mi', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const crystal = ranked.find((e) => e.resort.id === 'crystal-mountain-mi');
+  assert.ok(crystal.resort.vertical < 700, 'Crystal should be sub-700 ft');
+  assert.strictEqual(crystal.breakdown.destinationClass, 'regional');
+  assert.strictEqual(crystal.breakdown.topPickEligible, true);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'boyne-mountain');
+  assert.strictEqual(roles.sleeper?.resort?.id, 'crystal-mountain-mi');
+});
+
+test('[PROTECT] local-class sub-700 ft resort cannot qualify as SLEEPER', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -87 };
+  state.howFar = 0;
+  h.setDrive('wilmot-mountain', 45);
+  h.setDrive('crystal-mountain-mi', 240);
+  h.sandbox.historyCache.set('crystal-mountain-mi', { total: 10, days: [] });
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('crystal-mountain-mi', wx),
+    rankedEntry('wilmot-mountain', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const wilmot = ranked.find((e) => e.resort.id === 'wilmot-mountain');
+  assert.strictEqual(wilmot.breakdown.destinationClass, 'local');
+  assert.strictEqual(wilmot.breakdown.topPickEligible, false);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.notStrictEqual(roles.sleeper?.resort?.id, 'wilmot-mountain');
+});

@@ -469,6 +469,170 @@ function localRoleExplanation(localEntry, pickResort) {
   return `Shorter drive if you don't want the haul to ${pickShort} — convenient, not your best overall ski day.`;
 }
 
+const SLEEPER_SCORE_CLOSE_BAND = 12;
+const SLEEPER_CROWD_GAP_MIN = 10;
+
+function _crowdIsLoud(label) {
+  return label === 'Busy' || label === 'Avoid';
+}
+
+function _crowdIsQuieter(label) {
+  return label === 'Quiet' || label === 'Moderate';
+}
+
+function _isMeaningfullyQuieterThan(candCrowd, refCrowd) {
+  const gap = refCrowd.score - candCrowd.score;
+  if (gap >= SLEEPER_CROWD_GAP_MIN) return true;
+  return _crowdIsLoud(refCrowd.label) && _crowdIsQuieter(candCrowd.label) && gap >= 8;
+}
+
+function _metroGravity(resort) {
+  return (typeof METRO_GRAVITY !== 'undefined' ? METRO_GRAVITY[resort.id] : null) ?? 500;
+}
+
+function _isBigMountainEntry(entry) {
+  if (!entry?.resort) return false;
+  const cls = entry.breakdown?.destinationClass ?? destinationClass(entry.resort);
+  if (cls === 'destination') return true;
+  return safeNum(entry.resort.vertical, 0) >= 1800;
+}
+
+/** Busiest crowd magnet in the pool — destination-class when present, else best eligible regional. */
+function obviousBigMountainReference(ranked, pickEntry) {
+  const eligible = ranked.filter((e) => {
+    if (!e?.resort || !e?.breakdown) return false;
+    if (e.breakdown.destinationClass === 'local') return false;
+    if (isTopPickFloorActive() && e.breakdown.topPickEligible !== true) return false;
+    return true;
+  });
+  if (!eligible.length) return _isBigMountainEntry(pickEntry) ? pickEntry : null;
+
+  const big = eligible.filter(_isBigMountainEntry);
+  const pool = big.length ? big : eligible;
+
+  return pool.reduce((best, e) => {
+    const cs = crowdForecast(e.resort, e.wx).score;
+    const bs = crowdForecast(best.resort, best.wx).score;
+    return cs > bs ? e : best;
+  });
+}
+
+/** When the pick is already the quiet smart call vs the obvious crowd magnet, skip SLEEPER. */
+function isPickAlreadyQuietPlay(pickEntry, refEntry) {
+  if (!pickEntry?.resort || !refEntry?.resort) return false;
+  if (pickEntry.resort.id === refEntry.resort.id) return false;
+  const pickCrowd = crowdForecast(pickEntry.resort, pickEntry.wx);
+  const refCrowd = crowdForecast(refEntry.resort, refEntry.wx);
+  if (pickCrowd.score < refCrowd.score && _crowdIsQuieter(pickCrowd.label) && _crowdIsLoud(refCrowd.label)) {
+    return true;
+  }
+  return _isMeaningfullyQuieterThan(pickCrowd, refCrowd);
+}
+
+function isCredibleSleeperCandidate(entry, pickEntry, refEntry, usedIds) {
+  if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort || !refEntry?.resort) return false;
+  if (usedIds.has(entry.resort.id)) return false;
+  if (entry.breakdown.destinationClass === 'local') return false;
+
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  if (vd.tier === 'bad') return false;
+
+  if (isTopPickFloorActive() && entry.breakdown.topPickEligible !== true) return false;
+
+  const pickScore = pickEntry.breakdown?.score ?? -Infinity;
+  const candScore = entry.breakdown?.score ?? -Infinity;
+  if (pickScore - candScore > SLEEPER_SCORE_CLOSE_BAND) return false;
+
+  const refCrowd = crowdForecast(refEntry.resort, refEntry.wx);
+  const candCrowd = crowdForecast(entry.resort, entry.wx);
+  if (!_isMeaningfullyQuieterThan(candCrowd, refCrowd)) return false;
+
+  const refMG = _metroGravity(refEntry.resort);
+  const candMG = _metroGravity(entry.resort);
+  const refPass = refEntry.resort.passGroup === 'Epic' || refEntry.resort.passGroup === 'Ikon';
+  const candPass = entry.resort.passGroup === 'Epic' || entry.resort.passGroup === 'Ikon';
+  const cls = entry.breakdown.destinationClass ?? destinationClass(entry.resort);
+  const overlooked = candMG < refMG * 0.92 || (refPass && !candPass) || cls === 'regional';
+  return overlooked;
+}
+
+function compareSleeperCandidates(a, b) {
+  const sa = a.breakdown?.score ?? -Infinity;
+  const sb = b.breakdown?.score ?? -Infinity;
+  if (Math.abs(sb - sa) > 2) return sb - sa;
+  const ca = crowdForecast(a.resort, a.wx).score;
+  const cb = crowdForecast(b.resort, b.wx).score;
+  if (ca !== cb) return ca - cb;
+  return sb - sa;
+}
+
+/**
+ * Best credible SLEEPER: quieter overlooked alternative close in score to the pick.
+ * Credibility uses topPickEligible + destinationClass (not a national vertical floor).
+ * Uses filterRunnerUpCandidates for pool alignment on broad search.
+ */
+function pickSleeperFromRanked(ranked, pickEntry, localEntry) {
+  if (!pickEntry?.resort) return null;
+
+  const usedIds = new Set([pickEntry.resort.id]);
+  if (localEntry?.resort?.id) usedIds.add(localEntry.resort.id);
+
+  const ref = obviousBigMountainReference(ranked, pickEntry);
+  if (!ref) return null;
+  if (isPickAlreadyQuietPlay(pickEntry, ref)) return null;
+
+  const pool = filterRunnerUpCandidates(ranked).filter(e => e.resort?.id && !usedIds.has(e.resort.id));
+  const candidates = pool
+    .filter(e => isCredibleSleeperCandidate(e, pickEntry, ref, usedIds))
+    .sort(compareSleeperCandidates);
+  if (!candidates.length) return null;
+
+  const entry = candidates[0];
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  const refCrowd = crowdForecast(ref.resort, ref.wx);
+  const candCrowd = crowdForecast(entry.resort, entry.wx);
+  return {
+    ...entry,
+    tier: vd.tier,
+    refResortId: ref.resort.id,
+    refCrowdLabel: refCrowd.label,
+    crowdLabel: candCrowd.label,
+    crowdGap: refCrowd.score - candCrowd.score,
+  };
+}
+
+function stripResortSuffix(name) {
+  const raw = String(name || '').trim();
+  const lower = raw.toLowerCase();
+
+  const suffixes = [
+    ' ski resort',
+    ' ski area',
+    ' mountain',
+    ' resort',
+  ];
+
+  for (const suffix of suffixes) {
+    if (lower.endsWith(suffix)) {
+      return raw.slice(0, -suffix.length).trim();
+    }
+  }
+
+  return raw;
+}
+
+/** User-facing copy for the SLEEPER role card. */
+function sleeperRoleExplanation(sleeperEntry, pickResort, refResort) {
+  const refShort = stripResortSuffix(refResort?.name || 'the big-name option');
+  if (sleeperEntry?.tier === 'marginal') {
+    return `Quieter alternative if ${refShort}'s lift lines worry you — fair conditions, less circus.`;
+  }
+  if (refResort?.id && refResort.id !== pickResort?.id) {
+    return `Smart quieter play vs ${refShort} — similar forecast window, lighter crowds.`;
+  }
+  return `Overlooked option in the same score band — worth it if you hate busy lift lines.`;
+}
+
 /**
  * PICK + LOCAL recommendation roles from a score-sorted verdict pool.
  * @param {Array<{resort: object, wx: object, breakdown: object, history?: object}>} ranked
@@ -490,7 +654,9 @@ function buildRecommendationRolesFromRanked(ranked) {
     local = pickLocalFromRanked(ranked, pickResult.pick);
   }
 
-  return { pick, local, sleeper: null, trap: null };
+  const sleeper = pickSleeperFromRanked(ranked, pickResult.pick, local);
+
+  return { pick, local, sleeper, trap: null };
 }
 
 /** Layer-2 fit: identity on broad/willing-to-drive; mountainFit for local intent & size chips. */
