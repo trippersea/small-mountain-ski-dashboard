@@ -25,7 +25,9 @@ function resetState() {
   state.skiDayPreset = 'saturday';
   state.weights = { snow: 1, crowd: 1, value: 1, size: 5 };
   state.weatherCache = {};
+  state.localIntent = false;
   h.clearDrive();
+  h.sandbox.historyCache.clear();
 }
 
 function score(id, wx, fi = 0) {
@@ -245,4 +247,183 @@ test('[PROTECT] pickTopPickFromRanked fallback when no eligible destination', ()
   assert.strictEqual(result.pick.resort.id, 'blue-hills-ski-area');
   assert.strictEqual(result.topPickIsFallback, true);
   assert.strictEqual(result.topPickFallbackReason, 'no_eligible_destination');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [PROTECT] Recommendation roles — PICK + LOCAL (v1)
+// ─────────────────────────────────────────────────────────────────────────────
+function bostonExtendedRanked(wx) {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('loon-mountain', 140);
+  // Recent base keeps Blue Hills out of tier "bad" on a dry bluebird (credible LOCAL).
+  h.sandbox.historyCache.set('blue-hills-ski-area', { total: 8, days: [] });
+  return [
+    rankedEntry('blue-hills-ski-area', wx),
+    rankedEntry('loon-mountain', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+}
+
+test('[PROTECT] LOCAL null on dry bluebird when local hill has bad tier (no recent base)', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('loon-mountain', 140);
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('blue-hills-ski-area', wx),
+    rankedEntry('loon-mountain', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local, null);
+});
+
+test('[PROTECT] Loon PICK and Blue Hills LOCAL on Boston extended bluebird', () => {
+  const ranked = bostonExtendedRanked(h.bluebird());
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local?.resort?.id, 'blue-hills-ski-area');
+  assert.strictEqual(roles.sleeper, null);
+  assert.strictEqual(roles.trap, null);
+  assert.notStrictEqual(roles.pick.resort.id, roles.local.resort.id);
+});
+
+test('[PROTECT] LOCAL null when local intent active and Blue Hills wins PICK', () => {
+  resetState();
+  state.verticalFilter = 'small';
+  state.origin = { lat: 42, lon: -71 };
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('loon-mountain', 140);
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('blue-hills-ski-area', wx),
+    rankedEntry('loon-mountain', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'blue-hills-ski-area');
+  assert.strictEqual(roles.local, null);
+});
+
+test('[PROTECT] LOCAL null when no credible local-class option in pool', () => {
+  resetState();
+  const wx = h.bluebird();
+  h.setDrive('loon-mountain', 140);
+  const ranked = [rankedEntry('loon-mountain', wx)];
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local, null);
+});
+
+test('[PROTECT] LOCAL null when drive savings under 30 minutes', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  h.setDrive('blue-hills-ski-area', 35);
+  h.setDrive('loon-mountain', 50);
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('blue-hills-ski-area', wx),
+    rankedEntry('loon-mountain', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local, null);
+});
+
+test('[PROTECT] LOCAL null when local drive time is unknown', () => {
+  const ranked = bostonExtendedRanked(h.bluebird());
+  h.clearDrive();
+  h.setDrive('loon-mountain', 140);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local, null);
+});
+
+test('[PROTECT] LOCAL null when local candidate tier is bad', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('loon-mountain', 140);
+  const ranked = [
+    rankedEntry('blue-hills-ski-area', h.wetDay()),
+    rankedEntry('loon-mountain', h.bluebird()),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const bhTier = api.verdictFromBreakdown(
+    byId['blue-hills-ski-area'],
+    h.wetDay(),
+    ranked.find(e => e.resort.id === 'blue-hills-ski-area').breakdown
+  ).tier;
+  assert.strictEqual(bhTier, 'bad');
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local, null);
+});
+
+test('[PROTECT] LOCAL may render when local candidate tier is marginal', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  state.weights.snow = 15;
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('loon-mountain', 140);
+  const ranked = [
+    rankedEntry('blue-hills-ski-area', h.bluebird()),
+    rankedEntry('loon-mountain', h.bluebird()),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const bhTier = api.verdictFromBreakdown(
+    byId['blue-hills-ski-area'],
+    h.bluebird(),
+    ranked.find(e => e.resort.id === 'blue-hills-ski-area').breakdown
+  ).tier;
+  assert.strictEqual(bhTier, 'marginal');
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local?.resort?.id, 'blue-hills-ski-area');
+  assert.strictEqual(roles.local.tier, 'marginal');
+});
+
+test('[PROTECT] LOCAL picks best among all local-class candidates in pool', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  h.setDrive('loon-mountain', 140);
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('nashoba-valley', 52);
+  h.sandbox.historyCache.set('blue-hills-ski-area', { total: 8, days: [] });
+  h.sandbox.historyCache.set('nashoba-valley', { total: 8, days: [] });
+  const wx = h.bluebird();
+  const bh = rankedEntry('blue-hills-ski-area', wx);
+  const nv = rankedEntry('nashoba-valley', wx);
+  const ln = rankedEntry('loon-mountain', wx);
+  // Scores within 5 pts — shorter drive (Blue Hills) should win over Nashoba.
+  bh.breakdown = { ...bh.breakdown, score: 50 };
+  nv.breakdown = { ...nv.breakdown, score: 52 };
+  const ranked = [ln, nv, bh].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
+  assert.strictEqual(roles.local?.resort?.id, 'blue-hills-ski-area');
+});
+
+test('[PROTECT] LOCAL prefers higher score when local candidates differ by more than 5 points', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  h.setDrive('loon-mountain', 140);
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('nashoba-valley', 52);
+  h.sandbox.historyCache.set('blue-hills-ski-area', { total: 8, days: [] });
+  h.sandbox.historyCache.set('nashoba-valley', { total: 8, days: [] });
+  const wx = h.bluebird();
+  const bh = rankedEntry('blue-hills-ski-area', wx);
+  const nv = rankedEntry('nashoba-valley', wx);
+  const ln = rankedEntry('loon-mountain', wx);
+  bh.breakdown = { ...bh.breakdown, score: 48 };
+  nv.breakdown = { ...nv.breakdown, score: 55 };
+  const ranked = [ln, nv, bh].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.local?.resort?.id, 'nashoba-valley');
 });

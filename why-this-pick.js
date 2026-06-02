@@ -103,7 +103,8 @@ function _wtpSanitizeWhyLabels(labels, ranked, winnerId) {
  * One-line hero callout when #1 is materially farther than a runner-up.
  * @returns {string|null}
  */
-function buildVerdictOverNearbyCallout(resorts, winnerId, runnerItems) {
+function buildVerdictOverNearbyCallout(resorts, winnerId, runnerItems, localRoleId) {
+  if (localRoleId) return null;
   if (!state.origin || !runnerItems?.length) return null;
   const ranked = _wtpRankedCandidates(resorts);
   const winnerEntry = ranked.find(x => x.resort.id === winnerId);
@@ -158,7 +159,7 @@ function buildVerdictOverNearbyCallout(resorts, winnerId, runnerItems) {
  * @param {string} tier - great|good|marginal|bad
  * @returns {string[]} exactly 3 chip labels
  */
-function buildWhyThisPickReasons(resorts, tier, winnerId) {
+function buildWhyThisPickReasons(resorts, tier, winnerId, suppressLocalResortId) {
   const ranked = _wtpRankedCandidates(resorts);
   if (!ranked.length) {
     return ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
@@ -440,6 +441,15 @@ function buildWhyThisPickReasons(resorts, tier, winnerId) {
     if (labels.includes(f)) continue;
     if (/^closest decent option$|^best nearby/i.test(f) && !_wtpWinnerIsClosest(ranked, winner.resort.id)) continue;
     labels.push(f);
+  }
+  if (suppressLocalResortId) {
+    labels = labels.filter(t => !/^closest decent option$/i.test(t) && !/^best nearby/i.test(t));
+    const localResort = ranked.find(x => x.resort.id === suppressLocalResortId)?.resort;
+    if (localResort) {
+      const shortName = localResort.name
+        .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
+      labels = labels.filter(t => !t.toLowerCase().includes(shortName.toLowerCase()));
+    }
   }
   return labels.slice(0, 3);
 }

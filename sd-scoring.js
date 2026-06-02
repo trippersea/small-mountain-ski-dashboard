@@ -403,6 +403,92 @@ function filterRunnerUpCandidates(scored) {
   return scored.filter(e => e.breakdown?.topPickEligible === true);
 }
 
+const LOCAL_DRIVE_SAVINGS_MIN = 30;
+/** When daily scores are within this band, prefer the shorter drive among local candidates. */
+const LOCAL_SCORE_CLOSE_BAND = 5;
+
+function isCredibleLocalCandidate(entry, pickEntry) {
+  if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort) return false;
+  if (entry.resort.id === pickEntry.resort.id) return false;
+  if (entry.breakdown.destinationClass !== 'local') return false;
+
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  if (vd.tier === 'bad') return false;
+
+  const pickDrive  = getDriveMins(pickEntry.resort.id);
+  const localDrive = getDriveMins(entry.resort.id);
+  if (pickDrive == null || localDrive == null) return false;
+  if (pickDrive - localDrive < LOCAL_DRIVE_SAVINGS_MIN) return false;
+
+  return true;
+}
+
+/** Compare two credible local candidates: score first, shorter drive when scores are close. */
+function compareLocalCandidates(a, b) {
+  const sa = a.breakdown?.score ?? -Infinity;
+  const sb = b.breakdown?.score ?? -Infinity;
+  if (Math.abs(sb - sa) > LOCAL_SCORE_CLOSE_BAND) return sb - sa;
+  const da = getDriveMins(a.resort.id) ?? 9999;
+  const db = getDriveMins(b.resort.id) ?? 9999;
+  return da - db;
+}
+
+/**
+ * Best credible local-class option for the LOCAL card (not the pick).
+ * Evaluates every destinationClass === "local" entry in ranked (not region-specific).
+ */
+function pickLocalFromRanked(ranked, pickEntry) {
+  const candidates = ranked
+    .filter(e => isCredibleLocalCandidate(e, pickEntry))
+    .sort(compareLocalCandidates);
+  if (!candidates.length) return null;
+
+  const entry = candidates[0];
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  const pickDrive  = getDriveMins(pickEntry.resort.id);
+  const localDrive = getDriveMins(entry.resort.id);
+  return {
+    ...entry,
+    tier: vd.tier,
+    driveMins: localDrive,
+    driveSavingsMins: pickDrive - localDrive,
+  };
+}
+
+/** User-facing copy for the LOCAL role card (ski-advisor tone, not score-heavy). */
+function localRoleExplanation(localEntry, pickResort) {
+  const pickShort = (pickResort?.name || 'the top pick')
+    .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
+  if (localEntry?.tier === 'marginal') {
+    return `Nearby option if you want to skip the longer drive to ${pickShort} — fair conditions, not a destination day.`;
+  }
+  return `Shorter drive if you don't want the haul to ${pickShort} — convenient, not your best overall ski day.`;
+}
+
+/**
+ * PICK + LOCAL recommendation roles from a score-sorted verdict pool.
+ * @param {Array<{resort: object, wx: object, breakdown: object, history?: object}>} ranked
+ */
+function buildRecommendationRolesFromRanked(ranked) {
+  const empty = { pick: null, local: null, sleeper: null, trap: null };
+  const pickResult = pickTopPickFromRanked(ranked);
+  if (!pickResult?.pick) return empty;
+
+  const pick = {
+    ...pickResult.pick,
+    topPickIsFallback: pickResult.topPickIsFallback,
+    topPickFallbackReason: pickResult.topPickFallbackReason,
+    topPickFloorActive: pickResult.topPickFloorActive,
+  };
+
+  let local = null;
+  if (pickResult.topPickFloorActive && pick.breakdown?.destinationClass !== 'local') {
+    local = pickLocalFromRanked(ranked, pickResult.pick);
+  }
+
+  return { pick, local, sleeper: null, trap: null };
+}
+
 /** Layer-2 fit: identity on broad/willing-to-drive; mountainFit for local intent & size chips. */
 function plannerFitIndex(resort) {
   if (state.verticalFilter !== 'any' || hasLocalIntent()) {

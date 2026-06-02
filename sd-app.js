@@ -1718,10 +1718,10 @@ function buildFullCompareRankings(resorts) {
     .map(({ resort, wx, breakdown }) => resortToCompareSessionRow(resort, wx, breakdown));
 }
 
-// Serializes verdict, runners, and full ranking into localStorage for /compare/.
-function saveCompareSession(v, runningItems, resorts) {
+// Serializes verdict roles and full ranking into localStorage for /compare/.
+function saveCompareSession(v, resorts) {
   if (!v || !state.origin) return;
-  const { tier, headline, detail, resort, driveText, drive, breakdown } = v;
+  const { tier, headline, detail, resort, driveText, drive, breakdown, roles } = v;
   const wxVerdict = state.weatherCache[resort.id]?.data;
   const pool = resorts || filteredResorts();
   const fi = targetForecastIndex();
@@ -1736,6 +1736,41 @@ function saveCompareSession(v, runningItems, resorts) {
   const fullRankings = buildFullCompareRankings(pool);
   const rankedWithWeather = pool.filter(r => state.weatherCache[r.id]?.data).length;
 
+  const pickRow = {
+    id:           resort.id,
+    name:         resort.name,
+    state:        resort.state,
+    passGroup:    resort.passGroup || 'Independent',
+    price:        resort.price || null,
+    vertical:     resort.vertical || null,
+    trails:       resort.trails || null,
+    avgSnowfall:  resort.avgSnowfall || null,
+    tier,
+    headline,
+    detail,
+    driveText:    driveText || '—',
+    driveMins:    drive,
+    tomorrowIn:   Math.round(pickTomorrow * 10) / 10,
+    stormTotal:   Math.round(pickStorm * 10) / 10,
+    score:        freshPickScore,
+    crowdLabel:   crowdForecast(resort, wxVerdict).label,
+    wxForecast:   wxVerdict?.forecast || [],
+    topPickEligible: breakdown?.topPickEligible ?? null,
+    topPickEligibilityReason: breakdown?.topPickEligibilityReason ?? null,
+    topPickIsFallback: v.topPickIsFallback ?? false,
+    topPickFallbackReason: v.topPickFallbackReason ?? null,
+    role: 'pick',
+  };
+
+  const localEntry = roles?.local ?? null;
+  const localRow = localEntry
+    ? {
+        ...resortToCompareSessionRow(localEntry.resort, localEntry.wx, localEntry.breakdown, { tier: localEntry.tier }),
+        role: 'local',
+        driveSavingsMins: localEntry.driveSavingsMins ?? null,
+      }
+    : null;
+
   const session = {
     ts:           Date.now(),
     origin:       { ...state.origin },
@@ -1748,34 +1783,12 @@ function saveCompareSession(v, runningItems, resorts) {
     forecastIndex: fi,
     rankingTotal: rankedWithWeather,
     fullRankings,
-    topPick: {
-      id:           resort.id,
-      name:         resort.name,
-      state:        resort.state,
-      passGroup:    resort.passGroup || 'Independent',
-      price:        resort.price || null,
-      vertical:     resort.vertical || null,
-      trails:       resort.trails || null,
-      avgSnowfall:  resort.avgSnowfall || null,
-      tier,
-      headline,
-      detail,
-      driveText:    driveText || '—',
-      driveMins:    drive,
-      tomorrowIn:   Math.round(pickTomorrow * 10) / 10,
-      stormTotal:   Math.round(pickStorm * 10) / 10,
-      score:        freshPickScore,
-      crowdLabel:   crowdForecast(resort, wxVerdict).label,
-      wxForecast:   wxVerdict?.forecast || [],
-      topPickEligible: breakdown?.topPickEligible ?? null,
-      topPickEligibilityReason: breakdown?.topPickEligibilityReason ?? null,
-      topPickIsFallback: v.topPickIsFallback ?? false,
-      topPickFallbackReason: v.topPickFallbackReason ?? null,
-    },
-    runners: (runningItems || []).map(item => {
-      const rWx = state.weatherCache[item.resort.id]?.data;
-      return resortToCompareSessionRow(item.resort, rWx, item.breakdown);
-    }),
+    pick:         pickRow,
+    local:        localRow,
+    sleeper:      null,
+    trap:         null,
+    runners:      [],
+    topPick:      pickRow,
   };
 
   try { localStorage.setItem('wtsn-compare', JSON.stringify(session)); } catch (e) {}
@@ -1802,10 +1815,17 @@ function computeVerdict(resorts) {
     return { resort: r, wx, breakdown: plannerScoreBreakdown(r, wx, targetForecastIndex(), w), history: historyCache.get(r.id) || null };
   }).sort((a, b) => b.breakdown.score - a.breakdown.score);
 
-  const pickResult = pickTopPickFromRanked(ranked);
-  if (!pickResult?.pick) return null;
+  const roles = buildRecommendationRolesFromRanked(ranked);
+  if (!roles.pick) return null;
 
-  const { resort, wx, breakdown, history } = pickResult.pick;
+  const pickResult = {
+    pick: roles.pick,
+    topPickIsFallback: roles.pick.topPickIsFallback,
+    topPickFallbackReason: roles.pick.topPickFallbackReason,
+    topPickFloorActive: roles.pick.topPickFloorActive,
+  };
+
+  const { resort, wx, breakdown, history } = roles.pick;
   const histDays = history?.days ?? null;
   const rawTop = ranked[0];
 
@@ -1820,6 +1840,7 @@ function computeVerdict(resorts) {
   return {
     tier, headline, detail, subPoints, resort, breakdown, drive, driveText,
     tomorrowIn, stormTotal, histTotal, histDays,
+    roles,
     topPickEligible: breakdown.topPickEligible,
     topPickEligibilityReason: breakdown.topPickEligibilityReason,
     topPickFloorActive: pickResult.topPickFloorActive,
@@ -1857,22 +1878,6 @@ function computeVerdictStaged(resorts) {
   const p2 = finalVerdict.breakdown?.score;
   if (Number.isFinite(p1) && Number.isFinite(p2) && (p2 - p1) >= VERDICT_UPGRADE_DELTA) return finalVerdict;
   return phase1Verdict;
-}
-
-function collectRunnerUpItems(filteredResorts, excludeResortId, limit = 3) {
-  const w = normalizedWeights();
-  const pool = state.origin
-    ? filteredResorts.filter(r => resortMatchesDriveTier(r.id))
-    : filteredResorts;
-  const scored = pool
-    .filter(r => r.id !== excludeResortId && state.weatherCache[r.id]?.data)
-    .map(r => {
-      const wx = state.weatherCache[r.id].data;
-      return { resort: r, wx, breakdown: plannerScoreBreakdown(r, wx, targetForecastIndex(), w) };
-    })
-    .sort((a, b) => b.breakdown.score - a.breakdown.score);
-  const runnerPool = filterRunnerUpCandidates(scored);
-  return runnerPool.slice(0, limit);
 }
 
 function updateHeroVerdictEmptyState() {
@@ -1978,9 +1983,9 @@ function renderVerdict(resorts) {
     return;
   }
 
-  const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn, histTotal } = v;
-  const runningItems = collectRunnerUpItems(resorts, resort.id, 3);
-  saveCompareSession(v, runningItems, resorts);
+  const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn, histTotal, roles } = v;
+  const localEntry = roles?.local ?? null;
+  saveCompareSession(v, resorts);
   trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
 
@@ -2073,7 +2078,7 @@ function renderVerdict(resorts) {
     : '';
 
   const _whyPickLabels = (typeof buildWhyThisPickReasons === 'function')
-    ? buildWhyThisPickReasons(resorts, tier, resort.id)
+    ? buildWhyThisPickReasons(resorts, tier, resort.id, localEntry?.resort?.id ?? null)
     : ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
   // Filter out crowd-related pills · the crowd explainer block now covers that
   const _whyPickFiltered = _whyPickLabels.filter(t => !/crowd/i.test(t));
@@ -2089,40 +2094,30 @@ function renderVerdict(resorts) {
   const _verdictPhrase = topPickVerdictPhrase(tier, scoreNum);
   const _storyOneLine  = cardStoryOneLine(_narrative.story);
   const _overNearbyCallout = (typeof buildVerdictOverNearbyCallout === 'function')
-    ? buildVerdictOverNearbyCallout(resorts, resort.id, runningItems)
+    ? buildVerdictOverNearbyCallout(resorts, resort.id, [], localEntry?.resort?.id ?? null)
     : null;
   const _decisionCalloutHtml = _overNearbyCallout
     ? `<p class="vcard-decision-callout" role="note">${esc(_overNearbyCallout)}</p>`
     : '';
 
-  // ── Runner-up mini strip · always-on teaser inside the verdict card ─────────
-  const runnerStripHtml = runningItems.length > 0 ? (() => {
-    const miniCards = runningItems.map((item, rIdx) => {
-      const _rWx = state.weatherCache[item.resort.id]?.data;
-      const cf   = crowdForecast(item.resort, _rWx);
-      const _rNarr = _rWx
-        ? getMountainNarrative(buildNarrativeMountainPayload(item.resort, _rWx))
-        : { vibe: 'Fair Enough', story: 'Loading…' };
-      const _rGold = _rNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
-      const _primaryDiff = { resort, crowd: _crowd, drive: getDriveMins(resort.id) };
-      const _backupDiff  = { resort: item.resort, crowd: cf, drive: getDriveMins(item.resort.id) };
-      let _rReason = runnerDifferentiator(_primaryDiff, _backupDiff, runningItems);
-      if (state.passFilter !== 'All' && item.resort.passGroup !== state.passFilter) {
-        _rReason = `Not on your ${state.passFilter} pass`;
-      }
-      const _rReasonEsc = esc(_rReason);
-      const _rCrowdU = esc(crowdUtilityShort(cf.label));
-      const _rDriveU = esc(driveUtilitySegment(item.resort.id));
-      return `<button type="button" class="vcard-mini-runner${_rGold}" data-mini-runner-id="${esc(item.resort.id)}">
-        <span class="vmr-name">${esc(item.resort.name)}</span>
-        <p class="vmr-reason">${_rReasonEsc}</p>
-        <div class="vmr-meta" aria-label="Drive and crowds">${_rDriveU} · ${_rCrowdU}</div>
-      </button>`;
-    }).join('');
-    return `<div class="vcard-runners-zone">
-      <div class="vcard-runners-heading">Also in the Running</div>
+  // ── LOCAL role card (nearby convenience option; no generic score-ranked runners) ──
+  const localCardHtml = localEntry ? (() => {
+    const _lWx = localEntry.wx;
+    const _lCrowd = crowdForecast(localEntry.resort, _lWx);
+    const _lCopy = typeof localRoleExplanation === 'function'
+      ? localRoleExplanation(localEntry, resort)
+      : 'A shorter drive if you want to stay closer to home.';
+    const _lDriveU = esc(driveUtilitySegment(localEntry.resort.id));
+    const _lCrowdU = esc(crowdUtilityShort(_lCrowd.label));
+    const _lMarginalCls = localEntry.tier === 'marginal' ? ' vcard-local-card--marginal' : '';
+    return `<div class="vcard-runners-zone vcard-local-zone">
+      <div class="vcard-runners-heading">Best Nearby Option</div>
       <div class="vcard-runners-row">
-        ${miniCards}
+        <button type="button" class="vcard-mini-runner vcard-local-card${_lMarginalCls}" id="verdictLocalBtn" data-local-id="${esc(localEntry.resort.id)}">
+          <span class="vmr-name">${esc(localEntry.resort.name)}</span>
+          <p class="vmr-reason">${esc(_lCopy)}</p>
+          <div class="vmr-meta" aria-label="Drive and crowds">${_lDriveU} · ${_lCrowdU}</div>
+        </button>
       </div>
     </div>`;
   })() : '';
@@ -2151,7 +2146,7 @@ function renderVerdict(resorts) {
           ${shareBtn}
         </div>
         ${guidanceInsetHtml}
-        ${runnerStripHtml}
+        ${localCardHtml}
       </div>
        </div>`;
 
@@ -2174,7 +2169,7 @@ function renderVerdict(resorts) {
   $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_name_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
   $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
-    saveCompareSession(v, runningItems, resorts); // ensure freshest data on click
+    saveCompareSession(v, resorts);
     trackFilterEvent('engagement', 'compare_mountains_click');
     window.location.href = '/compare/';
   });
@@ -2184,16 +2179,12 @@ function renderVerdict(resorts) {
     shareVerdict(resort, v);
   });
 
-  // Mini runner-up cards · open detail panel on click
-  els.verdictCard.querySelectorAll('.vcard-mini-runner[data-mini-runner-id]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.selectedId = btn.dataset.miniRunnerId;
-      const _miniResort = RESORTS.find(r => r.id === btn.dataset.miniRunnerId);
-      if (_miniResort) trackResortView(_miniResort.id, _miniResort.name, 'mini_runner_click', _miniResort.passGroup || '');
-      renderDetail({ scroll: true });
-    });
+  $('verdictLocalBtn')?.addEventListener('click', () => {
+    if (!localEntry) return;
+    state.selectedId = localEntry.resort.id;
+    trackResortView(localEntry.resort.id, localEntry.resort.name, 'local_role_click', localEntry.resort.passGroup || '');
+    renderDetail({ scroll: true });
   });
-  // Runner-up strip is inside the verdict card; secondary action scrolls to runner-ups below.
   $('verdictRefineGuidanceBtn')?.addEventListener('click', () => {
     const panel = els.plannerSection;
     if (!panel) return;
@@ -2223,102 +2214,12 @@ function renderVerdict(resorts) {
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
 
-  // PATCH 5: Runner-up section title · pass + proximity angle
+  // Generic score-ranked runner-up grid hidden until SLEEPER/TRAP roles ship.
   const _hnSection = document.getElementById('hnRunnerUpSection');
   const _hnGrid    = document.getElementById('hnRunnersGrid');
-  const _hnTitle   = document.getElementById('hnRunnersTitle');
   if (_hnSection && _hnGrid) {
-    const _passLabel = state.passFilter !== 'All' ? state.passFilter + ' Pass ' : '';
-    const _distLabel = state.howFar === 0 ? 'within 3 hours' : state.howFar === 1 ? 'within 6 hours' : 'near';
-    if (_hnTitle) {
-      if (tier === 'bad') {
-        _hnTitle.textContent = _cityEw
-          ? `Other options near ${_cityEw} this weekend`
-          : 'Other options this weekend';
-        const sub = _hnSection.querySelector('.hn-results-sub');
-        if (sub) {
-          const stormNote = stormTotal > 0
-            ? 'A storm is in the forecast. Check back mid-week, conditions may improve.'
-            : 'No storm systems in the next 3 days. Check back mid-week; forecasts shift fast.';
-          sub.textContent = stormNote;
-          sub.classList.add('hn-results-sub--expanded');
-        }
-      } else if (tier === 'marginal') {
-        _hnTitle.textContent = _cityEw
-          ? `Other options near ${_cityEw}`
-          : 'Other options';
-        const sub = _hnSection.querySelector('.hn-results-sub');
-        if (sub) {
-          sub.textContent = 'Conditions are marginal across the board. Refine your preferences for a better match.';
-          sub.classList.add('hn-results-sub--expanded');
-        }
-      } else {
-        _hnTitle.textContent = (_cityEw && _passLabel)
-          ? `Best ${_passLabel}mountains ${_distLabel} of ${_cityEw}`
-          : _cityEw
-          ? `Runner-up options near ${_cityEw}`
-          : 'Runner-up options';
-        const sub = _hnSection.querySelector('.hn-results-sub');
-        if (sub) {
-          sub.textContent = 'Solid alternatives ranked after your top pick';
-          sub.classList.remove('hn-results-sub--expanded');
-        }
-      }
-    }
-    if (runningItems.length === 0) {
-      _hnGrid.innerHTML = '';
-      _hnSection.hidden = true;
-    } else {
-      _hnGrid.innerHTML = runningItems.map((item) => {
-        const _rDrive = getDriveMins(item.resort.id) ? formatDrive(item.resort.id) : null;
-        const _rWx    = state.weatherCache[item.resort.id]?.data;
-        const _rSnow  = _rWx ? (_rWx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-        const _rScoreNum = item.breakdown != null ? Math.round(item.breakdown.score) : null;
-        const _rScore = _rScoreNum != null ? _rScoreNum : '—';
-        const _rFitLbl = _rScoreNum != null ? esc(fitLabel(_rScoreNum)) : '';
-        const _rSponsor = getSponsor(item.resort.id);
-        const _rCls     = 'hn-runner-card' + (_rSponsor ? ' hn-runner-sponsored' : '');
-        const cf = crowdForecast(item.resort, item.wx);
-        const _rBlurb = esc(runnerUpBlurb(_rSnow, cf, item.resort.passGroup));
-        const _primaryDiff = { resort, crowd: _crowd, drive: getDriveMins(resort.id) };
-        const _backupDiff  = { resort: item.resort, crowd: cf, drive: getDriveMins(item.resort.id) };
-        const _diff = esc(runnerDifferentiator(_primaryDiff, _backupDiff, runningItems));
-        const _rCtaLabel = _rSponsor?.tagline ? esc(_rSponsor.tagline) : 'Visit partner';
-        const _rBookHtml = _rSponsor ? `<a class="hn-runner-book hn-runner-book--cta js-sponsor-link" href="${esc(_rSponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" ${sponsorTrackAttrs(item.resort.name, 'runner_card', item.resort.id, '')}>${_rCtaLabel} →</a>` : '';
-        const _rCallout = _rSponsor
-          ? `<div class="hn-runner-partner-callout" role="note">
-              <span class="hn-runner-partner-pill">Featured Partner</span>
-              <span class="hn-runner-partner-hint">Labeled partner · your ranked order and scores are unchanged.</span>
-            </div>`
-          : '';
-        const _crowdDotCls  = cf.label === 'Quiet' ? 'hn-crowd-dot--quiet' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'hn-crowd-dot--busy' : 'hn-crowd-dot--mod';
-        const _crowdChipCls = cf.label === 'Quiet' ? 'crowd-quiet-chip' : (cf.label === 'Avoid' || cf.label === 'Busy') ? 'crowd-busy-chip' : 'crowd-mod-chip';
-        const _crowdChipLabel = esc(crowdUtilityShort(cf.label));
-        const _crowdTipText   = esc(cf.reasons.slice(0, 3).join(' · ') || 'Based on holiday calendar, resort capacity, and distance from major metros.');
-        const _crowdChipHtml = `<div class="hn-runner-crowd-chip ${_crowdChipCls} nrc-crowd crowd-info-tip" tabindex="0" aria-label="Crowd forecast: ${_crowdChipLabel}. ${esc(cf.reasons[0] || '')}"><span class="hn-runner-crowd-dot ${_crowdDotCls}"></span>${_crowdChipLabel}<span class="crowd-info-icon" aria-hidden="true">?</span><span class="crowd-info-tooltip" role="tooltip">${_crowdTipText}</span></div>`;
-        return `<div class="${_rCls}" data-runner-id="${esc(item.resort.id)}">
-          ${_rCallout}
-          <div class="nrc-body">
-            <div class="nrc-state">${esc(item.resort.state)}</div>
-            <div class="nrc-name hn-runner-name">${esc(item.resort.name)}</div>
-            <div class="nrc-differentiator">${_diff}</div>
-            <p class="hn-runner-blurb nrc-sub">${_rBlurb}</p>
-            ${_crowdChipHtml}
-          </div>
-          <div class="hn-runner-bottom">
-            <div class="hn-runner-meta">
-              ${_rDrive ? `<span class="hn-runner-drive">${esc(_rDrive)} away</span>` : ''}
-              <span class="hn-runner-score-pill" title="How well this spot matches your settings"><span class="hn-runner-score-dot" aria-hidden="true"></span><span class="hn-runner-score-num">${_rScore}</span>${_rFitLbl ? `<span class="vcard-score-fit-label hn-runner-score-fit-label">${_rFitLbl}</span>` : ''}</span>
-            </div>
-            ${_rBookHtml}
-          </div>
-        </div>`;
-      }).join('');
-      _hnGrid.querySelectorAll('[data-runner-id]').forEach(card => {
-        card.addEventListener('click', () => { state.selectedId = card.dataset.runnerId; const _rc = RESORTS.find(r => r.id === card.dataset.runnerId); if (_rc) trackResortView(_rc.id, _rc.name, 'runner_card_click', _rc.passGroup || ''); renderDetail({ scroll: true }); });
-      });
-      _hnSection.hidden = false;
-    }
+    _hnGrid.innerHTML = '';
+    _hnSection.hidden = true;
   }
 
   // Guidance block removed · storm note is now in the runner-up section subtitle
