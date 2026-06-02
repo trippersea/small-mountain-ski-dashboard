@@ -397,7 +397,11 @@ function pickTopPickFromRanked(ranked) {
   };
 }
 
-/** Runner-up pool for broad search: omit ineligible locals when the floor is on. */
+/**
+ * Deferred for SLEEPER/TRAP: filters the ranked pool before picking alternative roles
+ * on broad search (drops ineligible locals when the top-pick floor is active).
+ * Not wired to hero UI in v1 — LOCAL uses pickLocalFromRanked instead.
+ */
 function filterRunnerUpCandidates(scored) {
   if (!isTopPickFloorActive()) return scored;
   return scored.filter(e => e.breakdown?.topPickEligible === true);

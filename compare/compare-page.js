@@ -14,11 +14,12 @@
 //   howFar:        0 | 1 | 2,
 //   skiDayPreset:  'weekday' | 'friday' | 'saturday' | 'sunday',
 //   forecastIndex: 0 | 1 | 2,  // which forecast[] slot was active (0=tomorrow, 1=day after, 2=third day)
-//   topPick:       { id, name, state, passGroup, driveText, stormTotal,
-//                    tomorrowIn, wxForecast, crowdLabel, price, vertical,
-//                    trails, avgSnowfall, headline, detail,
-//                    baseElevation?, summitElevation?, score? },
-//   runners:       [ /* same shape, up to 3 */ ],
+//   pick:          { /* same shape as topPick */, role: 'pick' },
+//   local:         { /* same shape */, role: 'local', driveSavingsMins?, localExplanation? } | null,
+//   sleeper:       null,
+//   trap:          null,
+//   topPick:       { /* backward-compatible alias for pick */ },
+//   runners:       [ /* legacy score-ranked runners; empty in v1 */ ],
 //   fullRankings:  [ /* top 25 scored rows, trip-mode snow totals */ ],
 //   rankingTotal:  <count with weather in filter pool>,
 // }
@@ -130,7 +131,7 @@
     return 'cp-pass-ind';
   }
 
-  // Generate a short reason for runners that have no headline/detail
+  // Generate a short reason for legacy runner columns (pre–role-layer sessions).
   function autoReason(r) {
     const parts = [];
     // Use the session's ski day label so "tomorrow" isn't hardcoded for a Saturday trip.
@@ -144,6 +145,37 @@
     if (cl.includes('quiet') || cl.includes('light')) parts.push('light crowds expected');
     if (r.passGroup && r.passGroup !== 'Independent') parts.push(`${r.passGroup} pass access`);
     return parts.length ? parts.join(' \u00B7 ') + '.' : 'Solid alternative for your search.';
+  }
+
+  /** Copy for the LOCAL role column — matches homepage when localExplanation is persisted. */
+  function localCompareReason(localR, pickR) {
+    if (localR.localExplanation) return localR.localExplanation;
+    const pickShort = (pickR?.name || 'your top pick')
+      .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
+    if (localR.tier === 'marginal') {
+      return `Nearby option if you want to skip the longer drive to ${pickShort} — fair conditions, not a destination day.`;
+    }
+    const savings = localR.driveSavingsMins;
+    if (savings != null && savings >= 30) {
+      return `About ${Math.round(savings)} minutes closer than ${pickShort} — convenient, not your best overall ski day.`;
+    }
+    return `Shorter drive if you don't want the haul to ${pickShort}.`;
+  }
+
+  /** Side columns: LOCAL role first, then legacy score-ranked runners (old sessions). */
+  function buildSideColumns(pick, localRow, legacyRunners) {
+    const cols = [];
+    if (localRow && localRow.id && localRow.id !== pick.id) {
+      cols.push({ row: localRow, kind: 'local' });
+    }
+    let legacyRank = 2;
+    (legacyRunners || []).slice(0, 3).forEach(function (r) {
+      if (!r?.id || r.id === pick.id) return;
+      if (cols.some(function (c) { return c.row.id === r.id; })) return;
+      cols.push({ row: r, kind: 'runner', rank: legacyRank });
+      legacyRank += 1;
+    });
+    return cols;
   }
 
   // ── Level 1 score explanation: directional, no numbers, no weights ──────────
@@ -255,9 +287,10 @@
   const {
     origin, passFilter, howFar, skiDayPreset, targetDate: targetDateIso = null,
     forecastIndex = 0,
-    topPick, runners = [], fullRankings = [], rankingTotal = 0,
+    topPick, local: localRow = null, runners = [], fullRankings = [], rankingTotal = 0,
   } = session;
   const city = cityName(origin.label);
+  const sideCols = buildSideColumns(topPick, localRow, runners);
 
   // Page title
   document.title = `Compare Near ${city} | WhereToSkiNext.com`;
@@ -311,79 +344,88 @@
   // BUILD AMAZON-STYLE COMPARISON TABLE
   // ════════════════════════════════════════════════════════════════
 
-  function buildCompareTable(pick, runnersArr) {
-    const all     = [pick, ...runnersArr.slice(0, 3)];
-    const runOnly = runnersArr.slice(0, 3);
+  function buildCompareTable(pick, sideColsArr) {
+    const altRows = sideColsArr.map(function (c) { return c.row; });
 
-    // Which runner wins each metric (lower or higher)
-    const bDrive = bestIdx(runOnly, '_driveMins', false); // see below
-    const bPrice = bestIdx(runOnly, 'price',       false);
-    const bVert  = bestIdx(runOnly, 'vertical',    true);
-    const bSnow  = bestIdx(runOnly, 'avgSnowfall', true);
-
-    // Annotate runners with numeric drive minutes
-    runOnly.forEach(function (r) {
+    // Which alternative wins each metric (legacy "Best" badges among side columns).
+    altRows.forEach(function (r) {
       r._driveMins = parseDriveMins(r.driveText);
     });
-    // Recompute best drive after annotation
-    const bDriveFinal = bestIdx(runOnly, '_driveMins', false);
+    const bDriveFinal = bestIdx(altRows, '_driveMins', false);
+    const bPrice = bestIdx(altRows, 'price', false);
+    const bVert  = bestIdx(altRows, 'vertical', true);
+    const bSnow  = bestIdx(altRows, 'avgSnowfall', true);
 
     function badge(i, best) {
-      return (runOnly.length > 1 && i === best) ? bestBadge() : '';
+      return (altRows.length > 1 && i === best) ? bestBadge() : '';
     }
 
     // ── Column group ──
     let cols = '<colgroup><col class="cp-col-label"><col class="cp-col-pick">';
-    runOnly.forEach(function () { cols += '<col class="cp-col-runner">'; });
+    sideColsArr.forEach(function (c) {
+      cols += c.kind === 'local' ? '<col class="cp-col-local">' : '<col class="cp-col-runner">';
+    });
     cols += '</colgroup>';
 
     // ── Header row ──
     let headCells = '<th class="cp-lbl" scope="col"></th>' +
       '<th class="cp-cgt-hd-pick" scope="col">' +
-        '<div class="cp-cgt-pick-badge">Our Pick</div>' +
+        '<div class="cp-cgt-pick-badge">Top Pick</div>' +
         '<div class="cp-cgt-mtn-name">' + esc(pick.name) + '</div>' +
         '<div class="cp-cgt-mtn-state">' + esc(pick.state) + '</div>' +
         '<a href="/ski-report/' + esc(pick.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
       '</th>';
 
-    runOnly.forEach(function (r, i) {
-      headCells +=
-        '<th class="cp-cgt-hd-runner" scope="col">' +
-          '<div class="cp-cgt-rank">#' + (i + 2) + '</div>' +
-          '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
-          '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
-          '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
-        '</th>';
+    sideColsArr.forEach(function (col) {
+      const r = col.row;
+      if (col.kind === 'local') {
+        headCells +=
+          '<th class="cp-cgt-hd-local" scope="col">' +
+            '<div class="cp-cgt-local-badge">Best Nearby Option</div>' +
+            '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
+            '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
+            '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
+          '</th>';
+      } else {
+        headCells +=
+          '<th class="cp-cgt-hd-runner" scope="col">' +
+            '<div class="cp-cgt-rank">#' + col.rank + '</div>' +
+            '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
+            '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
+            '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
+          '</th>';
+      }
     });
 
     const thead = '<thead><tr>' + headCells + '</tr></thead>';
 
     // ── Helper: build one data row ──
-    function row(label, pickCell, runnerCells) {
+    function row(label, pickCell, sideCells) {
       let tr = '<tr><td class="cp-lbl">' + label + '</td>' +
                '<td class="cp-td-pick">' + pickCell + '</td>';
-      runnerCells.forEach(function (cell) {
-        tr += '<td class="cp-td-runner">' + cell + '</td>';
+      sideCells.forEach(function (cell, i) {
+        const kind = sideColsArr[i]?.kind || 'runner';
+        const tdCls = kind === 'local' ? 'cp-td-local' : 'cp-td-runner';
+        tr += '<td class="' + tdCls + '">' + cell + '</td>';
       });
       return tr + '</tr>';
     }
 
-    // ── Row 1: Why it won ──
-    // Winner uses the same directional reason builder as the runners (autoReason).
-    // Previously fell through to pick.detail, which is the snow-conditions label
-    // (e.g. "Poor conditions") — wrong slot, made the winner look self-contradictory.
+    // ── Row 1: Why it fits ──
     const pickReason  = pick.headline || autoReason(pick) || 'Top score for your filters right now.';
     const reasonRow = row(
-      'Why it won',
+      'Why it fits',
       '<span class="cp-cgt-reason">' + esc(pickReason) + '</span>',
-      runOnly.map(function (r) {
-        const txt = r.headline || autoReason(r);
+      sideColsArr.map(function (col) {
+        const txt = col.kind === 'local'
+          ? localCompareReason(col.row, pick)
+          : (col.row.headline || autoReason(col.row));
         return '<span class="cp-cgt-reason">' + esc(txt) + '</span>';
       })
     );
 
     // ── Row 2: WTSN Score (show if available) ──
-    const hasScore = pick.score != null || runOnly.some(function (r) { return r.score != null; });
+    const hasScore = pick.score != null || altRows.some(function (r) { return r.score != null; });
     let scoreRow = '';
     if (hasScore) {
       const pct = Math.min(100, Math.max(0, pick.score || 0));
@@ -395,7 +437,7 @@
         '</div>' +
         '<div class="cp-cgt-score-bar-track"><div class="cp-cgt-score-bar-fill" style="width:' + pct + '%"></div></div>' +
         '<div class="cp-cgt-sub">out of 100</div>';
-      const runnerScores = runOnly.map(function (r) {
+      const sideScores = altRows.map(function (r) {
         const rPct = Math.min(100, Math.max(0, r.score || 0));
         return '<div class="cp-cgt-score-wrap">' +
             '<div class="cp-cgt-score-num">' + (r.score != null ? Math.round(r.score) : '\u2014') + '</div>' +
@@ -405,14 +447,14 @@
           '<div class="cp-cgt-score-bar-track" style="margin-top:5px"><div class="cp-cgt-score-bar-fill" style="width:' + rPct + '%"></div></div>' +
           '<div class="cp-cgt-sub">out of 100</div>';
       });
-      scoreRow = row('WTSN Score', pickScore, runnerScores);
+      scoreRow = row('WTSN Score', pickScore, sideScores);
     }
 
     // ── Row 3: Drive time ──
     const driveRow = row(
       'Drive time',
       '<div class="cp-cgt-val">' + esc(pick.driveText || '\u2014') + '</div>',
-      runOnly.map(function (r, i) {
+      altRows.map(function (r, i) {
         return '<div class="cp-cgt-val">' + esc(r.driveText || '\u2014') + badge(i, bDriveFinal) + '</div>';
       })
     );
@@ -439,14 +481,14 @@
     const forecastRow = row(
       'Snow forecast',
       forecastCell(pick),
-      runOnly.map(function (r) { return forecastCell(r); })
+      altRows.map(function (r) { return forecastCell(r); })
     );
 
     // ── Row 5: Conditions ──
     const condRow = row(
       'Conditions',
       '<div class="cp-cgt-val">' + esc(conditionLabel(pick.stormTotal || 0, pick.tomorrowIn || 0, pick.wxForecast)) + '</div>',
-      runOnly.map(function (r) {
+      altRows.map(function (r) {
         return '<div class="cp-cgt-val">' + esc(conditionLabel(r.stormTotal || 0, r.tomorrowIn || 0, r.wxForecast)) + '</div>';
       })
     );
@@ -460,7 +502,7 @@
           '<span class="cp-cgt-crowd-dot"></span>' + esc(crowdTopLabel(pick.crowdLabel)) + '</span>' +
           '<div class="cp-cgt-sub">' + esc(crowdSubLabel(pick.crowdLabel)) + '</div>';
       })(),
-      runOnly.map(function (r) {
+      altRows.map(function (r) {
         const cls = crowdClass(r.crowdLabel);
         return '<span class="cp-cgt-crowd ' + cls + '">' +
           '<span class="cp-cgt-crowd-dot"></span>' + esc(crowdTopLabel(r.crowdLabel)) + '</span>';
@@ -471,7 +513,7 @@
     const passRow = row(
       'Pass',
       '<span class="' + passClass(pick.passGroup) + '">' + esc(pick.passGroup || 'Independent') + '</span>',
-      runOnly.map(function (r) {
+      altRows.map(function (r) {
         return '<span class="' + passClass(r.passGroup) + '">' + esc(r.passGroup || 'Independent') + '</span>';
       })
     );
@@ -483,7 +525,7 @@
         const p = pick.price ? '$' + pick.price : '\u2014';
         return '<div class="cp-cgt-val">' + p + '</div><div class="cp-cgt-sub">walk-up price</div>';
       })(),
-      runOnly.map(function (r, i) {
+      altRows.map(function (r, i) {
         const p = r.price ? '$' + r.price : '\u2014';
         return '<div class="cp-cgt-val">' + p + badge(i, bPrice) + '</div><div class="cp-cgt-sub">walk-up price</div>';
       })
@@ -493,7 +535,7 @@
     const vertRow = row(
       'Vertical',
       '<div class="cp-cgt-val">' + (pick.vertical ? pick.vertical.toLocaleString() + ' ft' : '\u2014') + '</div>',
-      runOnly.map(function (r, i) {
+      altRows.map(function (r, i) {
         const v = r.vertical ? r.vertical.toLocaleString() + ' ft' : '\u2014';
         return '<div class="cp-cgt-val">' + v + badge(i, bVert) + '</div>';
       })
@@ -503,7 +545,7 @@
     const trailsRow = row(
       'Trails',
       '<div class="cp-cgt-val">' + (pick.trails || '\u2014') + '</div>',
-      runOnly.map(function (r) {
+      altRows.map(function (r) {
         return '<div class="cp-cgt-val">' + (r.trails || '\u2014') + '</div>';
       })
     );
@@ -513,7 +555,7 @@
       'Avg annual snow',
       '<div class="cp-cgt-val">' + (pick.avgSnowfall ? pick.avgSnowfall + '\u2033' : '\u2014') + '</div>' +
         '<div class="cp-cgt-sub">historical average</div>',
-      runOnly.map(function (r, i) {
+      altRows.map(function (r, i) {
         const v = r.avgSnowfall ? r.avgSnowfall + '\u2033' : '\u2014';
         return '<div class="cp-cgt-val">' + v + badge(i, bSnow) + '</div>' +
           '<div class="cp-cgt-sub">historical average</div>';
@@ -531,12 +573,7 @@
   // Inject the table
   const tableContainer = document.getElementById('compareTableContainer');
   if (tableContainer) {
-    if (runners.length === 0) {
-      // Only a top pick, no runners — still show single-column table
-      tableContainer.innerHTML = buildCompareTable(topPick, []);
-    } else {
-      tableContainer.innerHTML = buildCompareTable(topPick, runners);
-    }
+    tableContainer.innerHTML = buildCompareTable(topPick, sideCols);
   }
 
   // ── Full rankings table (top 25 from homepage scoring; same filters) ───────
@@ -566,10 +603,16 @@
       const crowdText = crowdTopLabel(r.crowdLabel) || '\u2014';
       const scoreText = r.score != null ? String(Math.round(r.score)) : '\u2014';
       const isPick = r.id === topPick.id;
-      const nameCell = isPick
-        ? `<strong>${esc(r.name)}</strong> <span class="cp-rank-pick-tag">Top pick</span>`
-        : esc(r.name);
-      return `<tr class="${isPick ? 'cp-rank-row--pick' : ''}">
+      const isLocal = localRow && r.id === localRow.id;
+      let nameCell;
+      if (isPick) {
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-pick-tag">Top pick</span>`;
+      } else if (isLocal) {
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-local-tag">Best nearby</span>`;
+      } else {
+        nameCell = esc(r.name);
+      }
+      return `<tr class="${isPick ? 'cp-rank-row--pick' : (isLocal ? 'cp-rank-row--local' : '')}">
         <td>${i + 1}</td>
         <td><a href="/ski-report/${esc(r.id)}/">${nameCell}</a></td>
         <td>${esc(snowText)}</td>
@@ -589,7 +632,7 @@
       container.innerHTML =
         '<div class="cp-cgt-empty">' +
           '<h2>No comparison loaded yet</h2>' +
-          '<p>Run a search on the homepage first. We stash your trip so this page can show your top pick, nearby options, and the full score breakdown.</p>' +
+          '<p>Run a search on the homepage first. We stash your trip so this page can show your top pick, optional best nearby option, and the full score breakdown.</p>' +
           '<a href="/" class="compare-page-btn compare-page-btn--primary">Find my mountain \u2192</a>' +
         '</div>';
     }

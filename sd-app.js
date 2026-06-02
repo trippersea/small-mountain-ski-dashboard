@@ -1768,6 +1768,9 @@ function saveCompareSession(v, resorts) {
         ...resortToCompareSessionRow(localEntry.resort, localEntry.wx, localEntry.breakdown, { tier: localEntry.tier }),
         role: 'local',
         driveSavingsMins: localEntry.driveSavingsMins ?? null,
+        localExplanation: typeof localRoleExplanation === 'function'
+          ? localRoleExplanation(localEntry, resort)
+          : null,
       }
     : null;
 

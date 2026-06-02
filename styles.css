@@ -7583,6 +7583,29 @@ button.vcard-detail-btn:hover,
   margin: 0 0 14px;
   font-family: 'Inter', system-ui, sans-serif;
 }
+
+/* Marginal LOCAL: softer hierarchy — copy carries the signal, not alarm styling */
+.hn-hero-verdict-dock .vcard-local-card--marginal {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.11);
+}
+.hn-hero-verdict-dock .vcard-local-card--marginal .vmr-name {
+  color: rgba(232, 240, 250, 0.86);
+}
+.hn-hero-verdict-dock .vcard-local-card--marginal .vmr-reason {
+  color: rgba(186, 200, 218, 0.72);
+}
+.hn-hero-verdict-dock .vcard-local-card--marginal .vmr-meta {
+  color: rgba(170, 188, 208, 0.62);
+}
+.hn-hero-verdict-dock .vcard-local-card--marginal:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.hn-hero-verdict-dock .vcard--rail .vcard-local-card--marginal:hover {
+  background: rgba(43, 109, 233, 0.08);
+  border-color: rgba(147, 197, 253, 0.18);
+}
 .hn-hero-verdict-dock .vcard-runners-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

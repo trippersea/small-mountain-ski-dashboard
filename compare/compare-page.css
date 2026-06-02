@@ -967,6 +967,57 @@ body.compare-page-body .site-footer-affiliate {
   box-shadow: 0 4px 14px rgba(69, 162, 255, 0.35);
 }
 
+/* ── LOCAL role column (Best Nearby Option) ── */
+.cp-cgt col.cp-col-local { width: 196px; }
+
+.cp-cgt-hd-local {
+  background: rgba(12, 28, 52, 0.92) !important;
+  border-left: 2px solid rgba(148, 180, 210, 0.35) !important;
+}
+
+.cp-cgt .cp-td-local {
+  background: rgba(12, 28, 52, 0.55);
+  border-left: 2px solid rgba(148, 180, 210, 0.22);
+}
+.cp-cgt tbody tr:nth-child(even) .cp-td-local {
+  background: rgba(14, 32, 58, 0.65);
+}
+
+.cp-cgt-local-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(148, 180, 210, 0.14);
+  color: rgba(210, 228, 248, 0.92);
+  border: 1px solid rgba(148, 180, 210, 0.28);
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 10px;
+  line-height: 1.25;
+  max-width: 11rem;
+}
+
+.cp-cgt-hd-local .cp-cgt-head-cta {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(210, 228, 248, 0.88);
+  border: 1px solid rgba(148, 180, 210, 0.22);
+}
+.cp-cgt-hd-local .cp-cgt-head-cta:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #f0f6fc;
+}
+
+.cp-td-local .cp-cgt-score-bar-fill {
+  background: linear-gradient(90deg, rgba(148, 180, 210, 0.75), rgba(110, 231, 183, 0.65));
+}
+.cp-td-local .cp-cgt-score-num {
+  color: rgba(210, 228, 248, 0.88);
+}
+
 /* ── Mountain name + state in header ── */
 .cp-cgt-mtn-name {
   font-family: "Newsreader", Georgia, serif;
@@ -1313,5 +1364,21 @@ body.compare-page-body .site-footer-affiliate {
   vertical-align: middle;
 }
 
+.cp-rank-local-tag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(186, 210, 232, 0.82);
+  vertical-align: middle;
+}
+
+.compare-page-table tbody tr.cp-rank-row--local {
+  background: rgba(148, 180, 210, 0.06);
+}
+
 /* Runner score cells: keep the right-most bubbles from overflowing the table edge */
-.cp-td-runner:last-child .cp-explain-bubble { left: auto; right: 0; }
+.cp-td-runner:last-child .cp-explain-bubble,
+.cp-td-local:last-child .cp-explain-bubble { left: auto; right: 0; }
