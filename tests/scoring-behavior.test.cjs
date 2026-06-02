@@ -98,14 +98,14 @@ test('[PROTECT] raising snow priority lifts a snowy mountain vs a dry one', () =
 // [SPEC] Two-layer model — destination suitability (does NOT exist yet).
 // Spec: CORE ARCHITECTURE + A1.3. Expected RED until built.
 // ─────────────────────────────────────────────────────────────────────────────
-test('[SPEC] engine exposes a destinationSuitabilityScore per resort', { todo: true }, () => {
+test('[SPEC] engine exposes a destinationSuitabilityScore per resort', () => {
   resetState();
   const b = api.plannerScoreBreakdown(byId['killington-resort'], h.bluebird(), 0, null);
   assert.ok(typeof b.destinationSuitabilityScore === 'number',
     'no destinationSuitabilityScore yet — build the identity layer');
 });
 
-test('[SPEC] destination suitability does NOT move when only weather changes (Layer-1 invariant)', { todo: true }, () => {
+test('[SPEC] destination suitability does NOT move when only weather changes (Layer-1 invariant)', () => {
   resetState();
   const dry = api.plannerScoreBreakdown(byId['tenney-mountain'], h.bluebird(), 0, null);
   const wet = api.plannerScoreBreakdown(byId['tenney-mountain'], h.powder(15), 0, null);
@@ -114,7 +114,7 @@ test('[SPEC] destination suitability does NOT move when only weather changes (La
     'identity changed with weather — two layers have bled together');
 });
 
-test('[SPEC] destination class ordering: Blue Hills < Pats Peak < Loon', { todo: true }, () => {
+test('[SPEC] destination class ordering: Blue Hills < Pats Peak < Loon', () => {
   resetState();
   const bh = api.plannerScoreBreakdown(byId['blue-hills-ski-area'], h.bluebird(), 0, null).destinationSuitabilityScore;
   const pp = api.plannerScoreBreakdown(byId['pats-peak'], h.bluebird(), 0, null).destinationSuitabilityScore;

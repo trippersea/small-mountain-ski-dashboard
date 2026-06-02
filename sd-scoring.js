@@ -309,6 +309,36 @@ function mountainSizeIndex(resort) {
   return v * 0.50 + a * 0.35 + l * 0.15;
 }
 
+// ─── Layer 1: destination suitability (stable mountain identity only) ─────────
+// Weather-invariant: vertical, trails, acres, lifts. No snow/crowd/forecast.
+const DEST_SUIT_TRAILS_CEILING = 120;
+const DEST_SUIT_LIFTS_CEILING  = 25;
+
+function destinationSuitabilityIndex(resort) {
+  const vertical = safeNum(resort.vertical, 0);
+  const trails   = safeNum(resort.trails, 0);
+  const acres    = safeNum(resort.acres, 0);
+  const lifts    = safeNum(resort.lifts, 0);
+  const cap = (n, ceiling) => Math.min(1, Math.max(0, n / Math.max(1, ceiling)));
+  const vIdx = cap(vertical, W.SCORING.VERTICAL_CEILING);
+  const tIdx = cap(trails, DEST_SUIT_TRAILS_CEILING);
+  const aIdx = cap(acres, W.SCORING.ACRES_CEILING);
+  const lIdx = cap(lifts, DEST_SUIT_LIFTS_CEILING);
+  // Acres/trails compensate for low vertical (e.g. Midwest destinations).
+  return vIdx * 0.28 + tIdx * 0.27 + aIdx * 0.35 + lIdx * 0.10;
+}
+
+function destinationSuitabilityScore(resort) {
+  return Math.round(destinationSuitabilityIndex(resort) * 100);
+}
+
+function destinationClass(resort) {
+  const score = destinationSuitabilityScore(resort);
+  if (score < 14) return 'local';
+  if (score < 40) return 'regional';
+  return 'destination';
+}
+
 /** Target ski day is Mon–Thu (terrain over drive). Default chip uses tomorrow; weekend chips opt out. */
 function isWeekdaySkiTrip() {
   const preset = state.skiDayPreset;
@@ -453,6 +483,10 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
   const score     = components.snow + components.skiability + components.fit +
                     components.value + components.crowd + components.drive;
   const baseScore = Math.round(score * 10) / 10;
+  const identity = {
+    destinationSuitabilityScore: destinationSuitabilityScore(resort),
+    destinationClass:            destinationClass(resort),
+  };
 
   return {
     score: baseScore,
@@ -466,6 +500,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     components,
     condIdx:   null,
     condBonus: 0,
+    ...identity,
   };
 }
 
