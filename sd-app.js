@@ -2219,7 +2219,11 @@ function renderVerdict(resorts) {
     : '';
 
   els.verdictCard.innerHTML = `
-    <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
+    <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}"
+      data-role-pick="${esc(resort.id)}"
+      data-role-local="${localEntry?.resort?.id ? esc(localEntry.resort.id) : ''}"
+      data-role-sleeper="${sleeperEntry?.resort?.id ? esc(sleeperEntry.resort.id) : ''}"
+      data-role-trap="${trapEntry?.resort?.id ? esc(trapEntry.resort.id) : ''}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
         <div class="vcard-top-pill vcard-eyebrow">${_eyebrow}</div>
         ${zipNudgeHtml}
@@ -2242,8 +2246,8 @@ function renderVerdict(resorts) {
           ${secondaryBtn}
           ${shareBtn}
         </div>
-        ${guidanceInsetHtml}
         ${otherSmartCallsHtml}
+        ${guidanceInsetHtml}
       </div>
        </div>`;
 
@@ -2322,6 +2326,17 @@ function renderVerdict(resorts) {
   }
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
+
+  if (isWtsnQaMode()) {
+    console.info('[WTSN roles]', {
+      pick: resort.id,
+      local: localEntry?.resort?.id ?? null,
+      sleeper: sleeperEntry?.resort?.id ?? null,
+      trap: trapEntry?.resort?.id ?? null,
+      tier,
+      pickCrowdWarning: !!roles?.pick?.pickCrowdWarning,
+    });
+  }
 
   // Generic score-ranked runner-up grid stays hidden (role cards replace it).
   const _hnSection = document.getElementById('hnRunnerUpSection');
