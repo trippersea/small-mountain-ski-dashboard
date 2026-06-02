@@ -162,11 +162,21 @@
     return `Shorter drive if you don't want the haul to ${pickShort}.`;
   }
 
-  /** Side columns: LOCAL role first, then legacy score-ranked runners (old sessions). */
-  function buildSideColumns(pick, localRow, legacyRunners) {
+  /** Copy for the SLEEPER role column — matches homepage when sleeperExplanation is persisted. */
+  function sleeperCompareReason(sleeperR) {
+    if (sleeperR.sleeperExplanation) return sleeperR.sleeperExplanation;
+    return 'Quieter alternative in a similar score band — worth it if lift lines are a concern.';
+  }
+
+  /** Side columns: LOCAL, then SLEEPER, then legacy score-ranked runners (old sessions). */
+  function buildSideColumns(pick, localRow, sleeperRow, legacyRunners) {
     const cols = [];
     if (localRow && localRow.id && localRow.id !== pick.id) {
       cols.push({ row: localRow, kind: 'local' });
+    }
+    if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id
+        && !cols.some(function (c) { return c.row.id === sleeperRow.id; })) {
+      cols.push({ row: sleeperRow, kind: 'sleeper' });
     }
     let legacyRank = 2;
     (legacyRunners || []).slice(0, 3).forEach(function (r) {
@@ -287,10 +297,10 @@
   const {
     origin, passFilter, howFar, skiDayPreset, targetDate: targetDateIso = null,
     forecastIndex = 0,
-    topPick, local: localRow = null, runners = [], fullRankings = [], rankingTotal = 0,
+    topPick, local: localRow = null, sleeper: sleeperRow = null, runners = [], fullRankings = [], rankingTotal = 0,
   } = session;
   const city = cityName(origin.label);
-  const sideCols = buildSideColumns(topPick, localRow, runners);
+  const sideCols = buildSideColumns(topPick, localRow, sleeperRow, runners);
 
   // Page title
   document.title = `Compare Near ${city} | WhereToSkiNext.com`;
@@ -363,7 +373,9 @@
     // ── Column group ──
     let cols = '<colgroup><col class="cp-col-label"><col class="cp-col-pick">';
     sideColsArr.forEach(function (c) {
-      cols += c.kind === 'local' ? '<col class="cp-col-local">' : '<col class="cp-col-runner">';
+      cols += c.kind === 'local' ? '<col class="cp-col-local">'
+        : c.kind === 'sleeper' ? '<col class="cp-col-sleeper">'
+        : '<col class="cp-col-runner">';
     });
     cols += '</colgroup>';
 
@@ -382,6 +394,14 @@
         headCells +=
           '<th class="cp-cgt-hd-local" scope="col">' +
             '<div class="cp-cgt-local-badge">Best Nearby Option</div>' +
+            '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
+            '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
+            '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
+          '</th>';
+      } else if (col.kind === 'sleeper') {
+        headCells +=
+          '<th class="cp-cgt-hd-sleeper" scope="col">' +
+            '<div class="cp-cgt-sleeper-badge">Smart Quieter Play</div>' +
             '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
             '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
@@ -405,7 +425,9 @@
                '<td class="cp-td-pick">' + pickCell + '</td>';
       sideCells.forEach(function (cell, i) {
         const kind = sideColsArr[i]?.kind || 'runner';
-        const tdCls = kind === 'local' ? 'cp-td-local' : 'cp-td-runner';
+        const tdCls = kind === 'local' ? 'cp-td-local'
+          : kind === 'sleeper' ? 'cp-td-sleeper'
+          : 'cp-td-runner';
         tr += '<td class="' + tdCls + '">' + cell + '</td>';
       });
       return tr + '</tr>';
@@ -419,7 +441,9 @@
       sideColsArr.map(function (col) {
         const txt = col.kind === 'local'
           ? localCompareReason(col.row, pick)
-          : (col.row.headline || autoReason(col.row));
+          : col.kind === 'sleeper'
+            ? sleeperCompareReason(col.row)
+            : (col.row.headline || autoReason(col.row));
         return '<span class="cp-cgt-reason">' + esc(txt) + '</span>';
       })
     );
@@ -604,15 +628,22 @@
       const scoreText = r.score != null ? String(Math.round(r.score)) : '\u2014';
       const isPick = r.id === topPick.id;
       const isLocal = localRow && r.id === localRow.id;
+      const isSleeper = sleeperRow && r.id === sleeperRow.id;
       let nameCell;
       if (isPick) {
         nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-pick-tag">Top pick</span>`;
       } else if (isLocal) {
         nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-local-tag">Best nearby</span>`;
+      } else if (isSleeper) {
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-sleeper-tag">Quieter play</span>`;
       } else {
         nameCell = esc(r.name);
       }
-      return `<tr class="${isPick ? 'cp-rank-row--pick' : (isLocal ? 'cp-rank-row--local' : '')}">
+      const rowCls = isPick ? 'cp-rank-row--pick'
+        : isLocal ? 'cp-rank-row--local'
+        : isSleeper ? 'cp-rank-row--sleeper'
+        : '';
+      return `<tr class="${rowCls}">
         <td>${i + 1}</td>
         <td><a href="/ski-report/${esc(r.id)}/">${nameCell}</a></td>
         <td>${esc(snowText)}</td>

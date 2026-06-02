@@ -1774,6 +1774,22 @@ function saveCompareSession(v, resorts) {
       }
     : null;
 
+  const sleeperEntry = roles?.sleeper ?? null;
+  const sleeperRefResort = sleeperEntry?.refResortId
+    ? (RESORTS.find(r => r.id === sleeperEntry.refResortId) || null)
+    : null;
+  const sleeperRow = sleeperEntry
+    ? {
+        ...resortToCompareSessionRow(sleeperEntry.resort, sleeperEntry.wx, sleeperEntry.breakdown, { tier: sleeperEntry.tier }),
+        role: 'sleeper',
+        refResortId: sleeperEntry.refResortId ?? null,
+        crowdGap: sleeperEntry.crowdGap ?? null,
+        sleeperExplanation: typeof sleeperRoleExplanation === 'function'
+          ? sleeperRoleExplanation(sleeperEntry, resort, sleeperRefResort)
+          : null,
+      }
+    : null;
+
   const session = {
     ts:           Date.now(),
     origin:       { ...state.origin },
@@ -1788,7 +1804,7 @@ function saveCompareSession(v, resorts) {
     fullRankings,
     pick:         pickRow,
     local:        localRow,
-    sleeper:      null,
+    sleeper:      sleeperRow,
     trap:         null,
     runners:      [],
     topPick:      pickRow,
@@ -1988,6 +2004,7 @@ function renderVerdict(resorts) {
 
   const { tier, headline, detail, subPoints, resort, driveText, breakdown, stormTotal, tomorrowIn, histTotal, roles } = v;
   const localEntry = roles?.local ?? null;
+  const sleeperEntry = roles?.sleeper ?? null;
   saveCompareSession(v, resorts);
   trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
@@ -2125,6 +2142,31 @@ function renderVerdict(resorts) {
     </div>`;
   })() : '';
 
+  // ── SLEEPER role card (quieter overlooked alternative; not score-ranked runners) ──
+  const sleeperCardHtml = sleeperEntry ? (() => {
+    const _sWx = sleeperEntry.wx;
+    const _sCrowd = crowdForecast(sleeperEntry.resort, _sWx);
+    const _sRef = sleeperEntry.refResortId
+      ? (RESORTS.find(r => r.id === sleeperEntry.refResortId) || null)
+      : null;
+    const _sCopy = typeof sleeperRoleExplanation === 'function'
+      ? sleeperRoleExplanation(sleeperEntry, resort, _sRef)
+      : 'A quieter alternative worth a look if crowds are a concern.';
+    const _sDriveU = esc(driveUtilitySegment(sleeperEntry.resort.id));
+    const _sCrowdU = esc(crowdUtilityShort(_sCrowd.label));
+    const _sMarginalCls = sleeperEntry.tier === 'marginal' ? ' vcard-sleeper-card--marginal' : '';
+    return `<div class="vcard-runners-zone vcard-sleeper-zone">
+      <div class="vcard-runners-heading">Smart Quieter Play</div>
+      <div class="vcard-runners-row">
+        <button type="button" class="vcard-mini-runner vcard-sleeper-card${_sMarginalCls}" id="verdictSleeperBtn" data-sleeper-id="${esc(sleeperEntry.resort.id)}">
+          <span class="vmr-name">${esc(sleeperEntry.resort.name)}</span>
+          <p class="vmr-reason">${esc(_sCopy)}</p>
+          <div class="vmr-meta" aria-label="Drive and crowds">${_sDriveU} · ${_sCrowdU}</div>
+        </button>
+      </div>
+    </div>`;
+  })() : '';
+
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}">
       <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
@@ -2150,6 +2192,7 @@ function renderVerdict(resorts) {
         </div>
         ${guidanceInsetHtml}
         ${localCardHtml}
+        ${sleeperCardHtml}
       </div>
        </div>`;
 
@@ -2188,6 +2231,12 @@ function renderVerdict(resorts) {
     trackResortView(localEntry.resort.id, localEntry.resort.name, 'local_role_click', localEntry.resort.passGroup || '');
     renderDetail({ scroll: true });
   });
+  $('verdictSleeperBtn')?.addEventListener('click', () => {
+    if (!sleeperEntry) return;
+    state.selectedId = sleeperEntry.resort.id;
+    trackResortView(sleeperEntry.resort.id, sleeperEntry.resort.name, 'sleeper_role_click', sleeperEntry.resort.passGroup || '');
+    renderDetail({ scroll: true });
+  });
   $('verdictRefineGuidanceBtn')?.addEventListener('click', () => {
     const panel = els.plannerSection;
     if (!panel) return;
@@ -2217,7 +2266,7 @@ function renderVerdict(resorts) {
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
 
-  // Generic score-ranked runner-up grid hidden until SLEEPER/TRAP roles ship.
+  // Generic score-ranked runner-up grid hidden until TRAP role ships.
   const _hnSection = document.getElementById('hnRunnerUpSection');
   const _hnGrid    = document.getElementById('hnRunnersGrid');
   if (_hnSection && _hnGrid) {
