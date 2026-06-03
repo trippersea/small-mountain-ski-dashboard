@@ -2158,9 +2158,10 @@ function renderVerdict(resorts) {
   const secondaryBtn = `<div class="vcard-secondary-actions" role="group" aria-label="More options">
     <button type="button" class="vcard-detail-btn vcard-compare-btn" id="verdictSeeAllRunnersBtn">Compare Mountains</button>
     <span class="vcard-action-divider" aria-hidden="true">|</span>
-    <button type="button" class="vcard-detail-btn vcard-rankings-btn" id="verdictViewAllRankingsBtn">View all ranked mountains</button>
+    <button type="button" class="vcard-detail-btn vcard-rankings-btn" id="verdictViewAllRankingsBtn">View all rankings</button>
   </div>`;
   const shareBtn = `<button type="button" class="vcard-share-btn vcard-share-btn--icon" id="verdictShareBtn" aria-label="Share this pick" title="Share this pick"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2"/></svg></button>`;
+  const actionRow = `<div class="vcard-action-row">${secondaryBtn}${shareBtn}</div>`;
 
   const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
   const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock' : '';
@@ -2336,8 +2337,7 @@ function renderVerdict(resorts) {
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
         <div class="vcard-actions vcard-actions-dash">
           ${primaryBtn}
-          ${secondaryBtn}
-          ${shareBtn}
+          ${actionRow}
         </div>
         ${otherSmartCallsHtml}
         ${guidanceInsetHtml}

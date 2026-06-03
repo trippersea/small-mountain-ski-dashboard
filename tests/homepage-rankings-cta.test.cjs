@@ -10,7 +10,7 @@ const appSrc = fs.readFileSync(path.join(__dirname, '..', 'sd-app.js'), 'utf8');
 
 test('[UI] verdict card exposes View all ranked mountains CTA', () => {
   assert.match(appSrc, /verdictViewAllRankingsBtn/);
-  assert.match(appSrc, /View all ranked mountains/);
+  assert.match(appSrc, /View all rankings/);
 });
 
 test('[UI] rankings CTA is peer to Compare Mountains', () => {
