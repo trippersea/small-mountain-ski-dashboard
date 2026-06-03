@@ -1110,6 +1110,48 @@ function skiScoreBreakdown(resort, weather, forecastIndex = null) {
   };
 }
 
+// ─── Groomer-day copy (verdict only — no scoring change) ─────────────────────
+function _groomerSubPoint(resortId, histTotal, warmCaution) {
+  const variants = [];
+  if (histTotal != null && histTotal >= 3) {
+    variants.push('Recent snow supports the base; expect a strong groomer day.');
+  }
+  if (!warmCaution) {
+    variants.push('Groomers should ski well.');
+    variants.push('Good clean day for groomers.');
+  }
+  variants.push('Clear and dry — more groomer day than powder day.');
+  const seed = String(resortId || '') + String(histTotal ?? '') + (warmCaution ? 'w' : 'c');
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
+  return variants[Math.abs(h) % variants.length];
+}
+
+function appendGroomerSubPoints(subPoints, ctx) {
+  const {
+    resort, stormTotal, tomorrowIn, histTotal, tier, warmCaution,
+    rainLikely, severeWind, target, snowMet,
+  } = ctx;
+  if (rainLikely || severeWind) return subPoints;
+  if (target >= 6 && !snowMet) return subPoints;
+  if (stormTotal >= 6 || tomorrowIn >= 4) return subPoints;
+  if (stormTotal >= 2) return subPoints;
+
+  const wind = ctx.wind ?? 0;
+  if (wind > 25) return subPoints;
+
+  const lowSnow = stormTotal < 0.5 && tomorrowIn < 0.5;
+  if (!lowSnow && stormTotal < 2 && !(histTotal != null && histTotal >= 6)) return subPoints;
+
+  const groomerTier = tier === 'good'
+    || (tier === 'marginal' && !rainLikely && stormTotal < 2);
+  if (!groomerTier) return subPoints;
+
+  const line = _groomerSubPoint(resort?.id, histTotal, warmCaution);
+  if (line && !subPoints.includes(line)) subPoints.push(line);
+  return subPoints;
+}
+
 // ─── Unified verdict from a pre-computed breakdown ────────────────────────────
 // Single source of truth for tier + label + detail used by BOTH the verdict
 // card (computeVerdict) and the detail panel (renderDetail).
@@ -1196,9 +1238,23 @@ function verdictFromBreakdown(resort, wx, breakdown) {
       label = 'Good conditions';
       detail = histTotal != null && histTotal >= 3
         ? `Clear and dry — ${histTotal}" recent snow supports a solid base.`
-        : 'Clear and dry — expect firm groomers and good visibility. No fresh snow in the forecast.';
+        : 'Clear and dry — more groomer day than powder day. No fresh snow in the forecast.';
     }
   }
+
+  subPoints = appendGroomerSubPoints(subPoints, {
+    resort,
+    stormTotal,
+    tomorrowIn,
+    histTotal,
+    tier,
+    warmCaution,
+    rainLikely,
+    severeWind,
+    target,
+    snowMet,
+    wind: fcDay.wind ?? 0,
+  });
 
   return { tier, label, detail, subPoints, rainLikely, stormTotal, tomorrowIn, histTotal };
 }

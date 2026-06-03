@@ -218,55 +218,19 @@
   }
 
   // ── Level 1 score explanation: directional, no numbers, no weights ──────────
-  // Reads only the plain summary fields present on each compare row (driveText,
-  // snow, crowdLabel, passGroup, price, vertical) — never weights or formula —
-  // so it explains the score without exposing proprietary scoring logic.
-  // Returns a short ordered list of { dir, text } where dir is help|hurt|mixed.
   function buildScoreExplanation(r) {
+    const snowPref = (session && session.weights && session.weights.snow != null)
+      ? session.weights.snow
+      : 1;
+    if (typeof WTSN_COMPARE_EXPLAIN !== 'undefined'
+        && WTSN_COMPARE_EXPLAIN.buildCompareScoreExplanation) {
+      return WTSN_COMPARE_EXPLAIN.buildCompareScoreExplanation(r, { snowPref });
+    }
     if (!r) return [];
-    const items = [];
-
-    // Drive — derive minutes from the same driveText shown on the page.
-    const dMins = parseDriveMins(r.driveText);
-    if (dMins != null) {
-      if (dMins <= 90)       items.push({ dir: 'help',  k: 'drive', text: 'Close drive from your start point' });
-      else if (dMins >= 180) items.push({ dir: 'hurt',  k: 'drive', text: 'Long drive to get there' });
-      else                   items.push({ dir: 'mixed', k: 'drive', text: 'Moderate drive' });
-    }
-
-    // Snow — uses the trip-window total / ski-day inches already on the row.
     const snow = Math.max(Number(r.stormTotal) || 0, Number(r.tomorrowIn) || 0);
-    if (snow >= 4)        items.push({ dir: 'help',  k: 'snow', text: 'Fresh snow in the forecast' });
-    else if (snow >= 1)   items.push({ dir: 'mixed', k: 'snow', text: 'Some new snow, not a big dump' });
-    else                  items.push({ dir: 'hurt',  k: 'snow', text: 'Dry forecast, little new snow' });
-
-    // Crowds — directional read of the crowd label.
-    const cl = (r.crowdLabel || '').toLowerCase();
-    if (cl.includes('quiet') || cl.includes('light'))      items.push({ dir: 'help',  k: 'crowd', text: 'Light crowds expected' });
-    else if (cl.includes('busy') || cl.includes('avoid') || cl.includes('packed')) items.push({ dir: 'hurt', k: 'crowd', text: 'Crowds likely to build' });
-    else if (cl)                                           items.push({ dir: 'mixed', k: 'crowd', text: 'Moderate crowds expected' });
-
-    // Pass fit — only call it out as a help when it's a major network.
-    if (r.passGroup && r.passGroup !== 'Independent') {
-      items.push({ dir: 'help', k: 'pass', text: r.passGroup + ' pass access' });
-    }
-
-    // Mountain size — vertical as a rough "big mountain" signal.
-    const vert = Number(r.vertical) || 0;
-    if (vert >= 2000)      items.push({ dir: 'help',  k: 'fit', text: 'Big mountain, lots of terrain' });
-    else if (vert > 0 && vert < 1000) items.push({ dir: 'mixed', k: 'fit', text: 'Smaller mountain' });
-
-    // Value — ticket price directional.
-    const price = Number(r.price) || 0;
-    if (price > 0 && price <= 90)   items.push({ dir: 'help', k: 'value', text: 'Good value on the ticket' });
-    else if (price >= 150)          items.push({ dir: 'hurt', k: 'value', text: 'Pricey day ticket' });
-
-    // Order: helpers first (most encouraging), then mixed, then hurts.
-    // Cap at 4 so the bubble stays scannable.
-    const helps = items.filter(i => i.dir === 'help');
-    const hurts = items.filter(i => i.dir === 'hurt');
-    const mixed = items.filter(i => i.dir === 'mixed');
-    return [...helps.slice(0, 2), ...hurts.slice(0, 2), ...mixed.slice(0, 1)].slice(0, 4);
+    if (snow >= 4) return [{ dir: 'help', k: 'snow', text: 'Fresh snow in the forecast' }];
+    if (snow >= 1) return [{ dir: 'mixed', k: 'snow', text: 'Some new snow, not a big dump' }];
+    return [{ dir: 'mixed', k: 'snow', text: 'Dry forecast — better for groomers than powder chasing' }];
   }
 
   function scoreExplainHtml(r, name) {

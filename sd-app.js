@@ -1821,6 +1821,7 @@ function saveCompareSession(v, resorts) {
       ? state.targetDate.toISOString().slice(0, 10)
       : null,
     forecastIndex: fi,
+    weights:      { snow: state.weights?.snow ?? 1 },
     rankingTotal: rankedWithWeather,
     fullRankings,
     pick:         pickRow,
