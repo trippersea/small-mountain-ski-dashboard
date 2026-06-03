@@ -677,7 +677,12 @@ function _hasHighMountainQuality(entry) {
   const cls = entry.breakdown?.destinationClass ?? destinationClass(entry.resort);
   if (cls === 'destination') return true;
   const suit = entry.breakdown?.destinationSuitabilityScore ?? destinationSuitabilityScore(entry.resort);
-  return suit >= TRAP_QUALITY_MIN_SUIT;
+  if (suit >= TRAP_QUALITY_MIN_SUIT) return true;
+  // Regional magnets near major metros (e.g. Wachusett for Boston) — real crowd-trap appeal.
+  if (cls === 'regional' && _metroGravity(entry.resort) >= TRAP_DEMAND_METRO_MIN) {
+    return safeNum(entry.resort.vertical, 0) >= 700;
+  }
+  return false;
 }
 
 function _hasHighDemand(entry) {
@@ -688,9 +693,33 @@ function _hasHighDemand(entry) {
   return cls === 'destination' || pass || mg >= TRAP_DEMAND_METRO_MIN;
 }
 
+/** Fri–Sun ski day (peak arrival days for Boston / NE day trips). */
+function _isPeakSkiDay() {
+  if (!(state.targetDate instanceof Date)) return false;
+  const dow = state.targetDate.getDay();
+  return dow === 5 || dow === 6 || dow === 0;
+}
+
+/**
+ * Crowd Watch crowd-risk: Busy/Avoid, or weekend peak-day demand at a magnet
+ * (e.g. Wachusett Saturday — close to Boston, scores Moderate but lifts fill up).
+ */
 function _hasHighCrowdRisk(entry) {
   const crowd = crowdForecast(entry.resort, entry.wx);
-  return _crowdIsLoud(crowd.label) || crowd.score >= TRAP_CROWD_SCORE_MIN;
+  if (_crowdIsLoud(crowd.label)) return true;
+  if (!_hasHighDemand(entry)) return false;
+  if (!_isPeakSkiDay()) return false;
+  return crowd.score >= 50;
+}
+
+/** True when a Crowd Watch card may render — never Quiet / "Light crowds". */
+function trapQualifiesForCrowdWatch(entry) {
+  if (!entry?.resort) return false;
+  const label = entry.crowdLabel || crowdForecast(entry.resort, entry.wx)?.label;
+  if (label === 'Quiet') return false;
+  if (_crowdIsLoud(label)) return true;
+  if (label === 'Moderate' && _hasHighCrowdRisk(entry)) return true;
+  return false;
 }
 
 function isCredibleTrapCandidate(entry, usedIds) {
@@ -836,6 +865,8 @@ function fillMissingRoleSlots(ranked, roles) {
     }
   }
 
+  if (trap && !trapQualifiesForCrowdWatch(trap)) trap = null;
+
   return { ...roles, local, sleeper, trap };
 }
 
@@ -878,7 +909,10 @@ function buildRecommendationRolesFromRanked(ranked) {
     };
   }
 
-  return fillMissingRoleSlots(ranked, { pick, local, sleeper, trap: trapResult.trap });
+  let trap = trapResult.trap;
+  if (trap && !trapQualifiesForCrowdWatch(trap)) trap = null;
+
+  return fillMissingRoleSlots(ranked, { pick, local, sleeper, trap });
 }
 
 /** Layer-2 fit: identity on broad/willing-to-drive; mountainFit for local intent & size chips. */

@@ -2231,14 +2231,14 @@ function renderVerdict(resorts) {
     </div>`;
   })() : '';
 
-  const trapCardHtml = trapEntry ? (() => {
+  const trapCardHtml = (trapEntry && typeof trapQualifiesForCrowdWatch === 'function' && trapQualifiesForCrowdWatch(trapEntry)) ? (() => {
     const _tWx = trapEntry.wx;
-    const _tCrowd = crowdForecast(trapEntry.resort, _tWx);
+    const _tCrowdLabel = trapEntry.crowdLabel || crowdForecast(trapEntry.resort, _tWx)?.label;
     const _tCopy = typeof trapRoleExplanation === 'function'
       ? trapRoleExplanation(trapEntry)
       : 'Great mountain, bad timing — crowds may be the real problem.';
     const _tDriveU = esc(driveUtilitySegment(trapEntry.resort.id));
-    const _tCrowdU = esc(crowdUtilityShort(_tCrowd.label));
+    const _tCrowdU = esc(crowdUtilityShort(_tCrowdLabel));
     const _tMarginalCls = trapEntry.tier === 'marginal' ? ' vcard-trap-card--marginal' : '';
     const _tHeading = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.TRAP) || 'Crowd Watch';
     return `<div class="vcard-role-card vcard-trap-zone" data-role-trap="${esc(trapEntry.resort.id)}">

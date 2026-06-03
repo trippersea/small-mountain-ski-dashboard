@@ -41,6 +41,10 @@
   }
 
   /** Subtle detail-panel banner after opening a role card from the verdict hero. */
+  function isCrowdWatchLabel(label) {
+    return label === 'Busy' || label === 'Avoid' || label === 'Moderate';
+  }
+
   function detailBanner(fromRole, localVariant) {
     if (!fromRole) return null;
     if (fromRole === 'trap') {
@@ -64,5 +68,6 @@
     rankingTagForRole,
     mergeRolesPerSlot,
     detailBanner,
+    isCrowdWatchLabel,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

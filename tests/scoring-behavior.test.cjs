@@ -714,7 +714,8 @@ test('[PROTECT] rain does not assign generic Crowd Watch filler', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
-  state.skiDayPreset = 'saturday';
+  state.skiDayPreset = 'weekday';
+  state.targetDate = new Date('2026-01-14T12:00:00');
   h.setDrive('killington-resort', 180);
   h.setDrive('wildcat-mountain', 155);
   h.setDrive('loon-mountain', 140);
@@ -741,6 +742,60 @@ test('[PROTECT] credible crowd magnet still fills Crowd Watch on bluebird Saturd
   assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
   assert.ok(roles.trap?.resort?.id, 'expected credible Crowd Watch among busy magnets');
   assert.notStrictEqual(roles.trap.resort.id, roles.pick.resort.id);
+  assert.ok(api.trapQualifiesForCrowdWatch(roles.trap));
+});
+
+test('[PROTECT] Wachusett can be Crowd Watch on Saturday near Boston', () => {
+  resetState();
+  state.origin = { lat: 42.36, lon: -71.06 };
+  state.howFar = 0;
+  state.targetDate = new Date('2026-01-17T12:00:00');
+  state.skiDayPreset = 'saturday';
+  h.setDrive('wachusett-mountain-ski-area', 125);
+  h.setDrive('killington-resort', 200);
+  h.setDrive('loon-mountain', 140);
+  const wx = h.bluebird();
+  const wachCrowd = api.crowdForecast(h.byId['wachusett-mountain-ski-area'], wx);
+  assert.ok(wachCrowd.score >= 50, `Saturday Wachusett should read elevated crowds (${wachCrowd.score} ${wachCrowd.label})`);
+  const wachEntry = {
+    resort: h.byId['wachusett-mountain-ski-area'],
+    wx,
+    breakdown: api.plannerScoreBreakdown(h.byId['wachusett-mountain-ski-area'], wx, 0, null),
+  };
+  assert.ok(api.isCredibleTrapCandidate(wachEntry, new Set()));
+  const ranked = ['killington-resort', 'loon-mountain', 'wachusett-mountain-ski-area', 'nashoba-valley']
+    .map((id) => {
+      const resort = h.byId[id];
+      return { resort, wx, breakdown: api.plannerScoreBreakdown(resort, wx, 0, null) };
+    })
+    .sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  const trapIds = [roles.trap?.resort?.id, roles.pick?.resort?.id].filter(Boolean);
+  assert.ok(
+    roles.trap?.resort?.id === 'wachusett-mountain-ski-area'
+      || roles.trap?.resort?.id === 'loon-mountain',
+    'expected a weekend crowd magnet as Crowd Watch',
+  );
+  if (roles.trap?.resort?.id === 'wachusett-mountain-ski-area') {
+    assert.strictEqual(roles.trap.crowdLabel, 'Moderate');
+    assert.ok(api.trapQualifiesForCrowdWatch(roles.trap));
+    assert.notStrictEqual(roles.trap.crowdLabel, 'Quiet');
+  }
+});
+
+test('[PROTECT] Crowd Watch never displays with Quiet / light crowds', () => {
+  resetState();
+  state.targetDate = new Date('2026-01-14T12:00:00');
+  state.skiDayPreset = 'weekday';
+  const wx = h.bluebird();
+  const wach = {
+    resort: h.byId['wachusett-mountain-ski-area'],
+    wx,
+    breakdown: api.plannerScoreBreakdown(h.byId['wachusett-mountain-ski-area'], wx, 0, null),
+    crowdLabel: 'Quiet',
+    crowdScore: 40,
+  };
+  assert.strictEqual(api.trapQualifiesForCrowdWatch(wach), false);
 });
 
 test('[PROTECT] local labels use Best Nearby Option vs Another Smart Play', () => {
