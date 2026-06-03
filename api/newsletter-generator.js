@@ -1,7 +1,8 @@
 /**
  * /api/newsletter-generator.js
  *
- * Scores resorts in 5 regions, selects Pick + Trap + 3 Also picks per region,
+ * Scores resorts in 5 regions using the same sd-scoring.js engine + role logic
+ * as the homepage (Top Pick, Crowd Watch, Smart Play, Best Nearby Option),
  * generates copy via Anthropic, and posts a DRAFT to Beehiiv.
  *
  * Generates Thursday 11pm UTC (7pm ET) via Vercel cron -- for Friday send.
@@ -24,66 +25,11 @@
  */
 
 
-// ============================================================================
-// REGIONS
-// Five editorial regions matching the newsletter template.
-// ============================================================================
-
-const REGIONS = {
-  'northeast': {
-    label:          'Northeast',
-    states:         ['VT', 'NH', 'ME', 'MA', 'CT', 'RI', 'NY', 'NJ', 'PA'],
-    driveAnchor:    'Boston, MA',
-    passContextTitle: 'Check Your Pass Logic',
-  },
-  'rockies': {
-    label:          'Rockies',
-    // NM included: Taos, Ski Santa Fe, Angel Fire are Rocky Mountain skiing
-    states:         ['CO', 'UT', 'WY', 'MT', 'ID', 'NM'],
-    driveAnchor:    'Denver, CO',
-    passContextTitle: "Don't Get Stuck on I-70",
-  },
-  'west': {
-    label:          'West',
-    // AZ and NV have genuine ski mountains (Snowbowl, Mt. Rose, Lee Canyon)
-    states:         ['CA', 'OR', 'WA', 'NV', 'AZ', 'AK'],
-    driveAnchor:    'Los Angeles, CA',
-    passContextTitle: 'Pass Holders Take Note',
-  },
-  'southeast': {
-    label:          'Southeast',
-    // MD included: Wisp Resort is Appalachian skiing, draws DC/Baltimore market
-    states:         ['NC', 'TN', 'VA', 'WV', 'MD', 'GA'],
-    driveAnchor:    'Charlotte, NC',
-    passContextTitle: 'Your Starting Point Changes Everything',
-  },
-  'midwest': {
-    label:          'Midwest',
-    // SD and ND have operating ski areas (Terry Peak, Huff Hills)
-    states:         ['MI', 'WI', 'MN', 'OH', 'IN', 'IL', 'MO', 'IA', 'SD', 'ND'],
-    driveAnchor:    'Milwaukee, WI',
-    passContextTitle: 'Not Up for the Drive?',
-  },
-};
-
-
-// ============================================================================
-// SCORING WEIGHTS
-// No drive time. No pass filter. That is the site's job.
-// ============================================================================
-
-const WEIGHTS = {
-  newSnow72h:   0.30,
-  forecast48h:  0.25,
-  crowd:        0.25,   // inverted -- low crowd scores high
-  baseDepth:    0.20,
-};
-
-const CAPS = {
-  newSnow72h:   40,   // cm  ~16" = perfect score
-  forecast48h:  25,   // cm  ~10" = perfect score
-  baseDepth:    200,  // cm  ~79" = perfect score
-};
+const {
+  EDITORIAL_REGIONS: REGIONS,
+  upcomingSaturdayDate,
+  scoreEditorialRegion,
+} = require('../lib/newsletter-scoring.js');
 
 // Picks with score below this are flagged in the reviewer comment only.
 // No yellow banners in subscriber-facing HTML.
@@ -200,103 +146,6 @@ function resortLocation(resort) {
 
 
 // ============================================================================
-// WEATHER
-// ============================================================================
-
-async function fetchWeather(resort) {
-  // Grid elevation only — elevation= summit returns unrealistic cold on this API.
-  const url = new URL('https://api.open-meteo.com/v1/forecast');
-  url.searchParams.set('latitude',      resort.lat);
-  url.searchParams.set('longitude',     resort.lon);
-  url.searchParams.set('hourly',        'snowfall,snow_depth');
-  url.searchParams.set('past_days',     '3');
-  url.searchParams.set('forecast_days', '3');
-  url.searchParams.set('timezone',      'UTC');
-
-  const resp = await fetch(url.toString(), { signal: AbortSignal.timeout(8000) });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  return resp.json();
-}
-
-async function fetchWeatherBatch(resorts, batchSize = 20) {
-  const weatherMap = new Map();
-  for (let i = 0; i < resorts.length; i += batchSize) {
-    const batch   = resorts.slice(i, i + batchSize);
-    const settled = await Promise.allSettled(
-      batch.map(r =>
-        fetchWeather(r)
-          .then(w => ({ name: r.name, weather: w }))
-          .catch(err => { throw Object.assign(err, { resortName: r.name }); })
-      )
-    );
-    for (const result of settled) {
-      if (result.status === 'fulfilled') {
-        weatherMap.set(result.value.name, result.value.weather);
-      } else {
-        console.warn(`Weather failed for ${result.reason?.resortName}: ${result.reason?.message}`);
-      }
-    }
-  }
-  return weatherMap;
-}
-
-
-// ============================================================================
-// SCORING
-// ============================================================================
-
-function scoreResort(resort, weather) {
-  const times     = weather.hourly.time;
-  const snowfall  = weather.hourly.snowfall;
-  const snowDepth = weather.hourly.snow_depth;
-
-  const now   = Date.now();
-  const ms72h = 72 * 3600 * 1000;
-  const ms48h = 48 * 3600 * 1000;
-
-  let newSnow72hCm  = 0;
-  let forecast48hCm = 0;
-  let latestDepthM  = 0;
-
-  for (let i = 0; i < times.length; i++) {
-    const t  = new Date(times[i]).getTime();
-    const sf = snowfall[i]  || 0;
-    const sd = snowDepth[i];
-
-    if (t <= now && t > now - ms72h)  newSnow72hCm  += sf;
-    if (t > now  && t <= now + ms48h) forecast48hCm += sf;
-    if (t <= now && sd != null)       latestDepthM   = sd;
-  }
-
-  const baseDepthCm = latestDepthM * 100;
-  const crowdScore  = getCrowdScore(resort);
-
-  const s_newSnow  = Math.min(newSnow72hCm   / CAPS.newSnow72h,  1);
-  const s_forecast = Math.min(forecast48hCm  / CAPS.forecast48h, 1);
-  const s_crowd    = 1 - crowdScore;
-  const s_depth    = Math.min(baseDepthCm    / CAPS.baseDepth,   1);
-
-  const total = (
-    s_newSnow  * WEIGHTS.newSnow72h  +
-    s_forecast * WEIGHTS.forecast48h +
-    s_crowd    * WEIGHTS.crowd       +
-    s_depth    * WEIGHTS.baseDepth
-  ) * 100;
-
-  const cmToIn = cm => Math.round((cm / 2.54) * 10) / 10;
-
-  return {
-    total:         Math.round(total * 10) / 10,
-    newSnow72hIn:  cmToIn(newSnow72hCm),
-    forecast48hIn: cmToIn(forecast48hCm),
-    baseDepthIn:   Math.round(baseDepthCm / 2.54),
-    crowdScore,
-    crowdLabel:    crowdLabel(crowdScore),
-  };
-}
-
-
-// ============================================================================
 // COPY GENERATION
 // Pick: returns { tagline, body, passNote }
 // Trap: returns string (body copy only)
@@ -407,63 +256,6 @@ function fallbackTrapCopy(scores, name) {
     ? `${scores.crowdLabel.toLowerCase()} crowds expected`
     : 'likely to be busier than the pick';
   return `${name} will have ${crowdReason} this weekend. The conditions may be fine but the experience will not be.`;
-}
-
-
-// ============================================================================
-// RESORT SELECTION PER REGION
-// Pick:   top scorer
-// Trap:   highest-priced resort that is NOT the pick
-//         (price = demand proxy; most recognizable name in the region)
-// Also 1: Best for a Full Day -- most lifts among top scorers (excl. pick + trap)
-// Also 2: Best Kept Secret -- best scorer among below-median-price resorts
-// Also 3: Under the Radar  -- best scorer among lowest-quartile-price resorts
-// ============================================================================
-
-function selectResorts(scored) {
-  if (scored.length === 0) return { pick: null, trap: null, also: [] };
-
-  const pick = scored[0];
-  const usedNames = new Set([pick.resort.name]);
-
-  // Trap: highest-demand (price) resort that is not the pick
-  const trap = [...scored]
-    .filter(x => !usedNames.has(x.resort.name))
-    .sort((a, b) => (b.resort.price || 0) - (a.resort.price || 0))[0] || null;
-  if (trap) usedNames.add(trap.resort.name);
-
-  const remaining = scored.filter(x => !usedNames.has(x.resort.name));
-
-  // Also 1: Best for a Full Day -- most lifts
-  const also1 = [...remaining]
-    .sort((a, b) => (b.resort.lifts || 0) - (a.resort.lifts || 0))[0] || null;
-  if (also1) usedNames.add(also1.resort.name);
-
-  const remaining2 = scored.filter(x => !usedNames.has(x.resort.name));
-  const allPrices  = scored.map(x => x.resort.price || 80).sort((a, b) => a - b);
-  const medianPrice = allPrices[Math.floor(allPrices.length / 2)] || 80;
-
-  // Also 2: Best Kept Secret -- best scorer at below-median price
-  const secretPool = remaining2.filter(x => (x.resort.price || 80) < medianPrice);
-  const also2 = (secretPool.length > 0 ? secretPool : remaining2)[0] || null;
-  if (also2) usedNames.add(also2.resort.name);
-
-  const remaining3 = scored.filter(x => !usedNames.has(x.resort.name));
-  const q25Price   = allPrices[Math.floor(allPrices.length * 0.25)] || 60;
-
-  // Also 3: Under the Radar -- lowest-quartile price and decent score
-  const radarPool = remaining3.filter(x => (x.resort.price || 80) <= q25Price && x.scores.total > 15);
-  const also3 = (radarPool.length > 0 ? radarPool : remaining3)[0] || null;
-
-  return {
-    pick,
-    trap,
-    also: [
-      also1 ? { ...also1, role: 'Best for a Full Day',  badge: signalBadge(also1.scores) } : null,
-      also2 ? { ...also2, role: 'Best Kept Secret',     badge: signalBadge(also2.scores) } : null,
-      also3 ? { ...also3, role: 'Under the Radar',      badge: signalBadge(also3.scores) } : null,
-    ].filter(Boolean),
-  };
 }
 
 
@@ -714,7 +506,7 @@ function buildEmailHtml(regionResults, generatedAt) {
 <!-- ================================================================
 REVIEWER NOTES -- delete before sending
 Generated: ${generatedAt}
-Scoring: new snow 30% / forecast 25% / crowds 25% / base depth 20%
+Scoring: sd-scoring.js plannerScoreBreakdown + role engine (same as wheretoskinext.com)
 Picks below ${MIN_PUBLISH_SCORE}/100 are flagged inline above their region.
 Review copy, then send.
 ================================================================ -->
@@ -869,6 +661,8 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Resort data loaded but is empty.' });
   }
 
+  const targetSaturday = upcomingSaturdayDate();
+
   // Process each region
   const regionResults = [];
 
@@ -880,34 +674,24 @@ module.exports = async function handler(req, res) {
         console.warn(`  No resorts found for ${region.label}`);
         continue;
       }
-      console.log(`  ${regionResorts.length} resorts. Fetching weather...`);
+      console.log(`  ${regionResorts.length} resorts. Scoring with shared engine from ${region.driveAnchor}...`);
 
-      const weatherMap = await fetchWeatherBatch(regionResorts, 20);
-
-      const scored = [];
-      for (const resort of regionResorts) {
-        const weather = weatherMap.get(resort.name);
-        if (!weather) continue;
-        try {
-          scored.push({ resort, scores: scoreResort(resort, weather) });
-        } catch (err) {
-          console.warn(`  Score failed for ${resort.name}:`, err.message);
-        }
-      }
-
-      if (scored.length === 0) {
+      const scored = await scoreEditorialRegion(region, regionResorts, targetSaturday);
+      if (!scored?.pick) {
         console.warn(`  No scored resorts in ${region.label}`);
         continue;
       }
 
-      scored.sort((a, b) => b.scores.total - a.scores.total);
-
-      const { pick, trap, also } = selectResorts(scored);
+      const { pick, trap, also } = scored;
+      const alsoWithBadges = also.map((item) => ({
+        ...item,
+        badge: item.badge || signalBadge(item.scores),
+      }));
 
       console.log(
         `  Pick: ${pick.resort.name} (${pick.scores.total})`,
         `| Trap: ${trap?.resort.name || 'none'}`,
-        `| Also: ${also.map(a => a.resort.name).join(', ')}`
+        `| Also: ${alsoWithBadges.map(a => a.resort.name).join(', ')}`
       );
 
       // Generate copy (2 API calls per region)
@@ -921,7 +705,7 @@ module.exports = async function handler(req, res) {
         region,
         pick:  { ...pick, copy: pickCopy },
         trap:  trap ? { ...trap, copy: trapCopy } : null,
-        also,
+        also: alsoWithBadges,
       });
 
     } catch (err) {
