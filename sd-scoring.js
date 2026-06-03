@@ -534,6 +534,40 @@ function _isMeaningfullyQuieterThan(candCrowd, refCrowd) {
   return _crowdIsLoud(refCrowd.label) && _crowdIsQuieter(candCrowd.label) && gap >= 8;
 }
 
+/** Contrast vs ref/pick — Smart Play needs a real reason, not raw score rank. */
+function hasSleeperReason(entry, pickEntry, refEntry) {
+  if (!entry?.resort || !pickEntry?.resort) return false;
+
+  const ref = (refEntry?.resort?.id && refEntry.resort.id !== entry.resort.id)
+    ? refEntry
+    : pickEntry;
+
+  const candCrowd = crowdForecast(entry.resort, entry.wx);
+  const refCrowd = crowdForecast(ref.resort, ref.wx);
+  if (_isMeaningfullyQuieterThan(candCrowd, refCrowd)) return true;
+
+  const candSnow = tripWindowSnow(entry.wx?.forecast || []);
+  const pickSnow = tripWindowSnow(pickEntry.wx?.forecast || []);
+  if (candSnow >= pickSnow + 0.5) return true;
+
+  const candPrice = safeNum(entry.resort.price, 0);
+  const pickPrice = safeNum(pickEntry.resort.price, 0);
+  if (pickPrice > 0 && candPrice > 0 && pickPrice - candPrice >= 20) {
+    const candMagnet = _hasHighMountainQuality(entry) && _hasHighDemand(entry);
+    const refMagnet = _hasHighMountainQuality(ref) && _hasHighDemand(ref);
+    if (!(candMagnet && refMagnet)) return true;
+  }
+
+  const candDrive = getDriveMins(entry.resort.id);
+  const pickDrive = getDriveMins(pickEntry.resort.id);
+  if (candDrive != null && pickDrive != null && pickDrive - candDrive >= 30) {
+    const cls = entry.breakdown?.destinationClass ?? destinationClass(entry.resort);
+    if (cls !== 'local') return true;
+  }
+
+  return false;
+}
+
 function _metroGravity(resort) {
   return (typeof METRO_GRAVITY !== 'undefined' ? METRO_GRAVITY[resort.id] : null) ?? 500;
 }
@@ -588,7 +622,10 @@ function isCredibleSleeperCandidate(entry, pickEntry, refEntry, usedIds) {
   const candScore = entry.breakdown?.score ?? -Infinity;
   if (pickScore - candScore > SLEEPER_SCORE_CLOSE_BAND) return false;
 
-  return true;
+  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+  if (vd.tier === 'bad') return false;
+
+  return hasSleeperReason(entry, pickEntry, refEntry);
 }
 
 function compareSleeperCandidates(a, b) {
@@ -799,8 +836,10 @@ function trapRoleExplanation(trapEntry) {
 }
 
 /**
- * Fill empty LOCAL / SLEEPER slots from the next-best ranked resorts when the pool allows.
- * TRAP (Crowd Watch) is never a generic filler — only isCredibleTrapCandidate qualifies.
+ * Fill empty LOCAL slot from the next-best ranked resort when the pool allows.
+ * TRAP (Crowd Watch) is never generic filler — only isCredibleTrapCandidate qualifies.
+ * Smart Play is never backfilled here: if pickSleeperFromRanked found no credible
+ * candidate, leave sleeper null rather than promote raw score rank to Smart Play.
  */
 function fillMissingRoleSlots(ranked, roles) {
   if (!roles.pick?.resort) return roles;
@@ -837,18 +876,7 @@ function fillMissingRoleSlots(ranked, roles) {
     if (entry) local = toRoleEntry(entry, { roleVariant: 'another_smart_play' });
   }
 
-  if (!sleeper) {
-    const entry = takeNext();
-    if (entry) {
-      const crowd = crowdForecast(entry.resort, entry.wx);
-      sleeper = toRoleEntry(entry, {
-        refResortId: null,
-        refCrowdLabel: null,
-        crowdLabel: crowd.label,
-        crowdGap: null,
-      });
-    }
-  }
+  // Smart Play is not generic runner-up filler — slot stays empty when no credible pick exists.
 
   if (!trap) {
     for (let i = 0; i < pool.length; i++) {

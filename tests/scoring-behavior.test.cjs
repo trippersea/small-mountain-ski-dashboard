@@ -498,7 +498,7 @@ test('[PROTECT] SLEEPER null when pick is already the quiet smart call', () => {
   assert.strictEqual(roles.sleeper, null);
 });
 
-test('[PROTECT] SLEEPER shows even when candidate has bad weather tier', () => {
+test('[PROTECT] bad-tier candidate cannot be Smart Play', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
@@ -516,7 +516,80 @@ test('[PROTECT] SLEEPER shows even when candidate has bad weather tier', () => {
   assert.strictEqual(wcTier, 'bad');
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
-  assert.strictEqual(roles.sleeper?.resort?.id, 'wildcat-mountain');
+  assert.strictEqual(roles.sleeper, null);
+});
+
+test('[PROTECT] Smart Play not backfilled from raw score when no credible candidate', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  state.skiDayPreset = 'saturday';
+  state.targetDate = new Date('2026-01-17T12:00:00');
+  h.setDrive('killington-resort', 180);
+  h.setDrive('loon-mountain', 140);
+  h.sandbox.historyCache.set('killington-resort', { total: 10, days: [] });
+  h.sandbox.historyCache.set('loon-mountain', { total: 10, days: [] });
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('killington-resort', wx),
+    rankedEntry('loon-mountain', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
+  assert.strictEqual(roles.sleeper, null, 'no third credible Smart Play — slot stays empty');
+});
+
+test('[PROTECT] raw #2 obvious magnet without quieter contrast is not Smart Play', () => {
+  resetState();
+  state.origin = { lat: 42.3601, lon: -71.0589 };
+  state.howFar = 0;
+  state.skiDayPreset = 'saturday';
+  state.targetDate = new Date('2026-01-17T12:00:00');
+  h.setDrive('killington-resort', 180);
+  h.setDrive('mount-sunapee', 180);
+  h.sandbox.historyCache.set('killington-resort', { total: 10, days: [] });
+  h.sandbox.historyCache.set('mount-sunapee', { total: 10, days: [] });
+  const wx = h.bluebird();
+  const ranked = [
+    rankedEntry('killington-resort', wx),
+    rankedEntry('mount-sunapee', wx),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const pick = ranked[0];
+  const sunapee = ranked[1];
+  const ref = api.obviousBigMountainReference(ranked, pick);
+  assert.ok(ref, 'reference magnet should exist');
+  assert.strictEqual(
+    api.isCredibleSleeperCandidate(sunapee, pick, ref, new Set([pick.resort.id])),
+    false,
+    'Sunapee should not qualify without crowd/snow/value contrast when drives are equal',
+  );
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.sleeper, null);
+});
+
+test('[PROTECT] Smart Play requires ref contrast via hasSleeperReason', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  state.skiDayPreset = 'saturday';
+  state.targetDate = new Date('2026-01-17T12:00:00');
+  h.setDrive('killington-resort', 180);
+  h.setDrive('wildcat-mountain', 155);
+  h.sandbox.historyCache.set('killington-resort', { total: 10, days: [] });
+  h.sandbox.historyCache.set('wildcat-mountain', { total: 10, days: [] });
+  const wx = h.bluebird();
+  const ranked = crowdedSaturdayRanked(
+    ['killington-resort', 'loon-mountain', 'wildcat-mountain'],
+    wx,
+    { historyIds: ['killington-resort', 'loon-mountain', 'wildcat-mountain'] },
+  );
+  const pick = ranked.find((e) => e.resort.id === 'killington-resort');
+  const wildcat = ranked.find((e) => e.resort.id === 'wildcat-mountain');
+  const ref = api.obviousBigMountainReference(ranked, pick);
+  assert.ok(api.hasSleeperReason(wildcat, pick, ref), 'Wildcat should have quieter contrast vs ref');
+  assert.ok(
+    api.isCredibleSleeperCandidate(wildcat, pick, ref, new Set(['killington-resort', 'loon-mountain'])),
+  );
 });
 
 test('[PROTECT] SLEEPER null when score gap exceeds close band', () => {
@@ -728,7 +801,7 @@ test('[PROTECT] rain does not assign generic Crowd Watch filler', () => {
   ].sort((a, b) => b.breakdown.score - a.breakdown.score);
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.ok(roles.pick?.resort?.id);
-  assert.ok(roles.sleeper?.resort?.id);
+  assert.strictEqual(roles.sleeper, null, 'bad-tier pool must not produce Smart Play');
   assert.strictEqual(roles.trap, null, 'wet low-crowd pool must not get a generic Crowd Watch');
 });
 
