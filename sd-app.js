@@ -9,6 +9,8 @@
 
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
+/** False while OSRM is refining routes — weather/verdict wait so drive tier is correct. */
+let driveTimesReady = true;
 
 // Scoring constants fetched from /api/weights at startup · never shipped in client JS.
 // W is null until loadWeights() resolves. All scoring code gates on this.
@@ -1247,6 +1249,10 @@ async function fetchOsrmTime(resort) {
 
 async function loadDriveTimes() {
   if (!state.origin) return;
+  driveTimesReady = false;
+  weatherFetchPhase1Done = false;
+  weatherFetchPhase2Done = false;
+  weatherPhase1Ids = [];
   applyHaversineEstimates();
   render();
   showToast('Refining drive times…', 5000);
@@ -1268,6 +1274,10 @@ async function loadDriveTimes() {
       if (++fetchCount % 8 === 0) render();
     }
   }));
+  driveTimesReady = true;
+  weatherFetchPhase1Done = false;
+  weatherFetchPhase2Done = false;
+  weatherPhase1Ids = [];
   render();
   if (osrmSuccessCount > 0) showToast('Drive times updated with routes', 2200);
   else if (closest.length > 0) {
@@ -1938,20 +1948,19 @@ function resolveVerdictRoles(verdict, resorts) {
 
 function computeVerdictStaged(resorts) {
   if (!state.origin) return null;
-  if (!weatherFetchPhase1Done) return null;
+  if (!driveTimesReady || !weatherFetchPhase1Done) return null;
   const phase1Verdict = computeVerdictPhase1(resorts);
   if (!weatherFetchPhase2Done) return phase1Verdict;
 
-  // Phase 2 finished: only switch picks if the "final" winner is meaningfully better.
-  // Prevents late flip-flops from small score differences as background fetches complete.
-  const VERDICT_UPGRADE_DELTA = 3; // points
   const finalVerdict = computeVerdict(resorts);
   if (!phase1Verdict) return finalVerdict;
   if (!finalVerdict) return phase1Verdict;
-  const p1 = phase1Verdict.breakdown?.score;
-  const p2 = finalVerdict.breakdown?.score;
-  if (Number.isFinite(p1) && Number.isFinite(p2) && (p2 - p1) >= VERDICT_UPGRADE_DELTA) return finalVerdict;
-  return mergeFullPoolRoles(phase1Verdict, finalVerdict) || phase1Verdict;
+
+  // Same drive-tier pool was scored in phase 1 — use the full-pool winner (matches the table).
+  if (phase1Verdict.resort?.id === finalVerdict.resort?.id) {
+    return mergeFullPoolRoles(phase1Verdict, finalVerdict) || finalVerdict;
+  }
+  return finalVerdict;
 }
 
 /** Compact supporting-role card for homepage “Other smart calls” row. */
@@ -2052,6 +2061,11 @@ function renderVerdict(resorts) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
           <div class="vcard-placeholder-title">No mountains in this drive window</div>
           <div class="vcard-placeholder-sub">Your list is empty for the selected range. Widen <strong>Drive time</strong> under Refine results or pick a different starting point.</div>
+        </div>`;
+      } else if (state.origin && !driveTimesReady) {
+        els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
+          <div class="vcard-placeholder-title">Refining drive times…</div>
+          <div class="vcard-placeholder-sub">We're mapping routes from your starting point so day-trip picks use the same mountains as your rankings.</div>
         </div>`;
       } else if (!anyWx && !weatherFetchPhase1Done) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
@@ -3426,6 +3440,7 @@ let _renderGen = 0;
 
 async function renderAsyncPanels(resorts, gen) {
   const candidates = plannerCandidates(resorts);
+  if (state.origin && !driveTimesReady) return;
   await ensureWeather(candidates);
   if (gen !== _renderGen) return;
   repaintMainUI(resorts);
@@ -4066,9 +4081,13 @@ function initialize() {
   syncSkiDayToTripMode(state.howFar);
   updateHeroHeadline();
   syncHeroV2UI();
+  if (state.origin) {
+    applyHaversineEstimates();
+    driveTimesReady = false;
+  }
   render();
 
-  if (state.origin) { applyHaversineEstimates(); loadDriveTimes(); }
+  if (state.origin) loadDriveTimes();
 
   const _mc = document.getElementById('heroMountainCount');
   if (_mc && typeof RESORTS !== 'undefined' && RESORTS.length) _mc.textContent = String(RESORTS.length);
@@ -4133,6 +4152,7 @@ function initialize() {
     const q = els.originInput.value.trim();
     if (!q) {
       state.origin = null; state.driveCache = {}; clearSavedOrigin();
+      driveTimesReady = true;
       els.locationStatus.textContent = '';
       els.locationStatus.classList.remove('hero-location-status--error');
       render(); return;
@@ -4142,6 +4162,8 @@ function initialize() {
     const loc = await geocodeOrigin(q);
     if (loc) {
       state.origin = loc; state.driveCache = {};
+      driveTimesReady = false;
+      applyHaversineEstimates();
       saveOrigin(loc);
       els.locationStatus.textContent = `✓ Location set to ${loc.label}`;
       els.locationStatus.classList.remove('hero-location-status--error');
@@ -4197,6 +4219,8 @@ function initialize() {
     navigator.geolocation.getCurrentPosition(async pos => {
       state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
       els.originInput.value = 'Your location';
+      driveTimesReady = false;
+      applyHaversineEstimates();
       trackEvent('location_set', { location_label: 'GPS', method: 'gps' });
       saveOrigin(state.origin);
       pushUrlDebounced();

@@ -135,21 +135,21 @@ function staticSort(resorts) {
 }
 
 // ─── Planner candidates (limits weather fetch scope) ─────────────────────────
-// PERFORMANCE FIX: fetch nearest 20 first, then remaining in background.
+// With origin: always include every drive-tier resort so verdict and table share the same pool.
 function plannerCandidates(resorts) {
   const MAX = 80;
   const qualityScore = r => (r.avgSnowfall / 300) * 55 + (r.vertical / 3500) * 45;
 
   if (state.origin) {
-    const byDistance = [...resorts]
-      .filter(r => getDriveMins(r.id) !== null)
+    const inTier = [...resorts]
+      .filter(r => resortMatchesDriveTier(r.id) && getDriveMins(r.id) !== null)
       .sort((a, b) => (getDriveMins(a.id) ?? 9999) - (getDriveMins(b.id) ?? 9999));
-    const closestIds = new Set(byDistance.slice(0, 40).map(r => r.id));
-    const extras     = [...resorts]
-      .filter(r => !closestIds.has(r.id))
+    const tierIds = new Set(inTier.map(r => r.id));
+    const extras = [...resorts]
+      .filter(r => !tierIds.has(r.id))
       .sort((a, b) => qualityScore(b) - qualityScore(a))
-      .slice(0, MAX - Math.min(40, byDistance.length));
-    return [...byDistance.slice(0, 40), ...extras];
+      .slice(0, Math.max(0, MAX - inTier.length));
+    return [...inTier, ...extras].slice(0, MAX);
   }
   return [...resorts].sort((a, b) => qualityScore(b) - qualityScore(a)).slice(0, MAX);
 }
@@ -166,26 +166,18 @@ function nearestCandidates(resorts, n = 20) {
     .slice(0, n);
 }
 
-/** Phase-1 weather batch: day trip = nearest 20; extended/all = full drive tier (capped). */
+/** Phase-1 weather batch: full drive-tier pool when origin is set (verdict + table alignment). */
 function phase1WeatherCandidates(resorts) {
-  const DAY_TRIP_N = 20;
-  const EXTENDED_N = 45;
-  const ANY_N      = 50;
+  const NO_ORIGIN_N = 20;
 
   if (!state.origin) {
-    const n = state.howFar === 0 ? DAY_TRIP_N : state.howFar === 1 ? EXTENDED_N : ANY_N;
+    const n = state.howFar === 0 ? NO_ORIGIN_N : state.howFar === 1 ? 45 : 50;
     return nearestCandidates(resorts, n);
   }
 
-  if (state.howFar === 0) {
-    return nearestCandidates(resorts, DAY_TRIP_N);
-  }
-
-  const cap = state.howFar === 1 ? EXTENDED_N : ANY_N;
   return [...resorts]
     .filter(r => resortMatchesDriveTier(r.id) && getDriveMins(r.id) !== null)
-    .sort((a, b) => (getDriveMins(a.id) ?? 9999) - (getDriveMins(b.id) ?? 9999))
-    .slice(0, cap);
+    .sort((a, b) => (getDriveMins(a.id) ?? 9999) - (getDriveMins(b.id) ?? 9999));
 }
 
 // ─── Decision brief (context + scored top5) ────────────────────────────────
