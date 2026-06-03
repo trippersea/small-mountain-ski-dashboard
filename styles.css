@@ -1379,6 +1379,81 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   max-width: 34rem;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
 }
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-hero-dash {
+  padding: 1.1rem 1.2rem 0.95rem !important;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-top-pill.vcard-eyebrow {
+  margin-bottom: 6px;
+  padding: 5px 10px;
+  gap: 6px 10px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-name-dash--pick {
+  margin: 0 0 6px;
+  font-size: clamp(1.35rem, 2.4vw, 1.72rem);
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-decision-callout {
+  margin: 0 0 6px;
+  padding: 6px 10px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-verdict-line {
+  margin: 0 0 6px;
+  font-size: clamp(1rem, 1.7vw, 1.1rem);
+  line-height: 1.26;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-pick-crowd-warning {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-story-one {
+  margin: 0 0 10px;
+  line-height: 1.42;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-freshness {
+  margin-top: 4px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-hist-row {
+  margin: 0;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-crowd-explainer {
+  margin: 8px 0 0;
+  padding: 7px 10px 7px 11px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .crowd-expl-header {
+  margin-bottom: 4px;
+  gap: 6px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .crowd-expl-factors {
+  font-size: 11.5px;
+  margin-bottom: 2px;
+  line-height: 1.35;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .crowd-expl-tip {
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-why-pick {
+  margin: 8px 0 0;
+  padding-top: 6px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-why-pick-heading {
+  margin-bottom: 5px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-why-pick-chips {
+  gap: 5px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-why-chip {
+  padding: 3px 8px;
+  font-size: 10px;
+}
+.hn-hero-verdict-dock .vcard--rail.vcard--pick-compact .vcard-actions-dash {
+  padding: 12px 0 4px;
+  box-shadow: none;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .vcard-other-smart-calls {
+  margin-top: 10px;
+  padding-top: 10px;
+}
 .hn-hero-verdict-dock .vcard-utility-row {
   display: flex;
   flex-wrap: wrap;
@@ -7242,7 +7317,7 @@ button.vcard-detail-btn:hover,
 }
 .hn-hero-verdict-dock {
   width: 100%;
-  max-width: min(520px, 100%);
+  max-width: min(580px, 100%);
   margin: 0;
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
 }
@@ -7381,7 +7456,7 @@ button.vcard-detail-btn:hover,
 }
 .hn-hero-verdict-dock .vcard--rail .vcard-actions-dash {
   border-top: none;
-  padding: 26px 0 10px;
+  padding: 16px 0 6px;
   margin: 0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
@@ -7682,41 +7757,114 @@ button.vcard-detail-btn:hover,
   margin-top: 18px;
 }
 
-/* Other smart calls — grouped role cards below hero actions */
+/* Other smart calls — horizontal role row below Top Pick actions */
 .hn-hero-verdict-dock .vcard-other-smart-calls {
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .hn-hero-verdict-dock .vcard-other-smart-calls-heading {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: rgba(232, 240, 250, 0.92);
 }
 .hn-hero-verdict-dock .vcard-other-smart-calls-helper {
-  margin: 0 0 14px;
-  font-size: 12px;
-  line-height: 1.45;
-  color: rgba(186, 200, 218, 0.72);
-  max-width: 36rem;
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(186, 200, 218, 0.68);
+  max-width: none;
 }
 .hn-hero-verdict-dock .vcard-other-smart-calls-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: stretch;
+}
+@media (min-width: 640px) {
+  .hn-hero-verdict-dock .vcard-other-smart-calls-grid--count-2,
+  .hn-hero-verdict-dock .vcard-other-smart-calls-grid--count-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .hn-hero-verdict-dock .vcard-other-smart-calls-grid--count-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 .hn-hero-verdict-dock .vcard-role-card {
   margin: 0;
   padding: 0;
+  min-width: 0;
+  display: flex;
 }
-.hn-hero-verdict-dock .vcard-role-card .vcard-runners-heading {
-  color: rgba(196, 210, 228, 0.78);
-  margin-bottom: 8px;
+.hn-hero-verdict-dock .vcard-role-card .vcard-role-mini {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  padding: 9px 10px 10px;
+  text-align: left;
 }
-@media (max-width: 640px) {
+.hn-hero-verdict-dock .vcard-role-mini .vmr-role-label {
+  display: block;
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: rgba(186, 200, 218, 0.62);
+}
+.hn-hero-verdict-dock .vcard-sleeper-card .vmr-role-label {
+  color: rgba(110, 231, 183, 0.75);
+}
+.hn-hero-verdict-dock .vcard-local-card .vmr-role-label,
+.hn-hero-verdict-dock .vcard-local-fallback-card .vmr-role-label {
+  color: rgba(147, 197, 253, 0.78);
+}
+.hn-hero-verdict-dock .vcard-trap-card .vmr-role-label {
+  color: rgba(253, 230, 138, 0.78);
+}
+.hn-hero-verdict-dock .vcard-role-mini .vmr-name {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+.hn-hero-verdict-dock .vcard-role-mini .vmr-reason {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1 1 auto;
+}
+.hn-hero-verdict-dock .vcard-role-mini .vmr-meta {
+  margin-top: 2px;
+  padding-top: 0;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 639px) {
   .hn-hero-verdict-dock .vcard-actions-dash {
     flex-direction: row;
     flex-wrap: wrap;
@@ -7736,8 +7884,8 @@ button.vcard-detail-btn:hover,
   .hn-hero-verdict-dock .vcard-detail-btn {
     width: auto;
   }
-  .hn-hero-verdict-dock .vcard-runners-mini,
-  .hn-hero-verdict-dock .vcard-runners-row {
+  .hn-hero-verdict-dock .vcard-other-smart-calls-grid--count-2,
+  .hn-hero-verdict-dock .vcard-other-smart-calls-grid--count-3 {
     grid-template-columns: 1fr;
   }
   .hn-hero-verdict-dock button.vcard-mini-runner {
@@ -7751,7 +7899,7 @@ button.vcard-detail-btn:hover,
 /* ── Verdict slot: reset absolute positioning from old split-panel layout ── */
 #searchSection.hero-v2 .hn-hero-verdict-dock {
   width: 100%;
-  max-width: min(520px, 100%);
+  max-width: min(580px, 100%);
 }
 #searchSection.hero-v2 #verdictSection {
   position: static !important;
@@ -8515,6 +8663,9 @@ button.vcard-detail-btn:hover,
   border-bottom: none;
   padding: 1.55rem 1.35rem 1.5rem !important;
 }
+.hn-hero-verdict-dock .vcard--rail.vcard--pick-compact .vcard-hero-dash {
+  padding: 1.1rem 1.2rem 0.95rem !important;
+}
 .hn-hero-verdict-dock .vcard--hero-light .vcard-body-dash,
 .hn-hero-verdict-dock .vcard-body-dash {
   background: rgba(8, 16, 28, 0.88);
@@ -8524,7 +8675,10 @@ button.vcard-detail-btn:hover,
 .hn-hero-verdict-dock .vcard--rail .vcard-body-dash {
   background: transparent;
   border-top: none;
-  padding: 8px 1.35rem 22px;
+  padding: 6px 1.2rem 16px;
+}
+.hn-hero-verdict-dock .vcard--rail.vcard--pick-compact .vcard-body-dash {
+  padding: 4px 1.2rem 14px;
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-name-dash,
 .hn-hero-verdict-dock .vcard-name-dash {

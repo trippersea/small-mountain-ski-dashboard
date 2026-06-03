@@ -1953,6 +1953,32 @@ function computeVerdictStaged(resorts) {
   return mergeFullPoolRoles(phase1Verdict, finalVerdict) || phase1Verdict;
 }
 
+/** Compact supporting-role card for homepage “Other smart calls” row. */
+function buildCompactRoleCardHtml(opts) {
+  const {
+    zoneCls = '',
+    btnCls = '',
+    btnId = '',
+    dataBtnAttr = '',
+    zoneDataAttr = '',
+    heading,
+    resortName,
+    copy,
+    driveU,
+    crowdU,
+    marginalCls = '',
+  } = opts;
+  const idAttr = btnId ? ` id="${btnId}"` : '';
+  return `<div class="vcard-role-card${zoneCls}"${zoneDataAttr}>
+    <button type="button" class="vcard-mini-runner vcard-role-mini${btnCls}${marginalCls}"${idAttr}${dataBtnAttr}>
+      <span class="vmr-role-label">${esc(heading)}</span>
+      <span class="vmr-name">${esc(resortName)}</span>
+      <p class="vmr-reason">${esc(copy)}</p>
+      <div class="vmr-meta" aria-label="Drive and crowds">${driveU} · ${crowdU}</div>
+    </button>
+  </div>`;
+}
+
 function updateHeroVerdictEmptyState() {
   const el = document.getElementById('heroVerdictEmpty');
   if (!el) return;
@@ -2196,16 +2222,24 @@ function renderVerdict(resorts) {
       ? localRoleLabel(localEntry)
       : 'Best Nearby Option';
     const _lCardCls = localEntry.roleVariant === 'another_smart_play'
-      ? ' vcard-local-fallback-card'
-      : '';
-    return `<div class="vcard-role-card vcard-local-zone${localEntry.roleVariant === 'another_smart_play' ? ' vcard-local-fallback-zone' : ''}" data-role-local="${esc(localEntry.resort.id)}">
-      <div class="vcard-runners-heading">${esc(_lHeading)}</div>
-      <button type="button" class="vcard-mini-runner vcard-local-card${_lMarginalCls}${_lCardCls}" id="verdictLocalBtn" data-local-id="${esc(localEntry.resort.id)}">
-        <span class="vmr-name">${esc(localEntry.resort.name)}</span>
-        <p class="vmr-reason">${esc(_lCopy)}</p>
-        <div class="vmr-meta" aria-label="Drive and crowds">${_lDriveU} · ${_lCrowdU}</div>
-      </button>
-    </div>`;
+      ? ' vcard-local-card vcard-local-fallback-card'
+      : ' vcard-local-card';
+    const _lZoneCls = localEntry.roleVariant === 'another_smart_play'
+      ? ' vcard-local-zone vcard-local-fallback-zone'
+      : ' vcard-local-zone';
+    return buildCompactRoleCardHtml({
+      zoneCls: _lZoneCls,
+      btnCls: _lCardCls,
+      btnId: 'verdictLocalBtn',
+      dataBtnAttr: ` data-local-id="${esc(localEntry.resort.id)}"`,
+      zoneDataAttr: ` data-role-local="${esc(localEntry.resort.id)}"`,
+      heading: _lHeading,
+      resortName: localEntry.resort.name,
+      copy: _lCopy,
+      driveU: _lDriveU,
+      crowdU: _lCrowdU,
+      marginalCls: _lMarginalCls,
+    });
   })() : '';
 
   const sleeperCardHtml = sleeperEntry ? (() => {
@@ -2221,14 +2255,19 @@ function renderVerdict(resorts) {
     const _sCrowdU = esc(crowdUtilityShort(_sCrowd.label));
     const _sMarginalCls = sleeperEntry.tier === 'marginal' ? ' vcard-sleeper-card--marginal' : '';
     const _sHeading = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.SLEEPER) || 'Smart Play';
-    return `<div class="vcard-role-card vcard-sleeper-zone" data-role-sleeper="${esc(sleeperEntry.resort.id)}">
-      <div class="vcard-runners-heading">${esc(_sHeading)}</div>
-      <button type="button" class="vcard-mini-runner vcard-sleeper-card${_sMarginalCls}" id="verdictSleeperBtn" data-sleeper-id="${esc(sleeperEntry.resort.id)}">
-        <span class="vmr-name">${esc(sleeperEntry.resort.name)}</span>
-        <p class="vmr-reason">${esc(_sCopy)}</p>
-        <div class="vmr-meta" aria-label="Drive and crowds">${_sDriveU} · ${_sCrowdU}</div>
-      </button>
-    </div>`;
+    return buildCompactRoleCardHtml({
+      zoneCls: ' vcard-sleeper-zone',
+      btnCls: ' vcard-sleeper-card',
+      btnId: 'verdictSleeperBtn',
+      dataBtnAttr: ` data-sleeper-id="${esc(sleeperEntry.resort.id)}"`,
+      zoneDataAttr: ` data-role-sleeper="${esc(sleeperEntry.resort.id)}"`,
+      heading: _sHeading,
+      resortName: sleeperEntry.resort.name,
+      copy: _sCopy,
+      driveU: _sDriveU,
+      crowdU: _sCrowdU,
+      marginalCls: _sMarginalCls,
+    });
   })() : '';
 
   const trapCardHtml = (trapEntry && typeof trapQualifiesForCrowdWatch === 'function' && trapQualifiesForCrowdWatch(trapEntry)) ? (() => {
@@ -2241,22 +2280,29 @@ function renderVerdict(resorts) {
     const _tCrowdU = esc(crowdUtilityShort(_tCrowdLabel));
     const _tMarginalCls = trapEntry.tier === 'marginal' ? ' vcard-trap-card--marginal' : '';
     const _tHeading = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.TRAP) || 'Crowd Watch';
-    return `<div class="vcard-role-card vcard-trap-zone" data-role-trap="${esc(trapEntry.resort.id)}">
-      <div class="vcard-runners-heading">${esc(_tHeading)}</div>
-      <button type="button" class="vcard-mini-runner vcard-trap-card${_tMarginalCls}" id="verdictTrapBtn" data-trap-id="${esc(trapEntry.resort.id)}">
-        <span class="vmr-name">${esc(trapEntry.resort.name)}</span>
-        <p class="vmr-reason">${esc(_tCopy)}</p>
-        <div class="vmr-meta" aria-label="Drive and crowds">${_tDriveU} · ${_tCrowdU}</div>
-      </button>
-    </div>`;
+    return buildCompactRoleCardHtml({
+      zoneCls: ' vcard-trap-zone',
+      btnCls: ' vcard-trap-card',
+      btnId: 'verdictTrapBtn',
+      dataBtnAttr: ` data-trap-id="${esc(trapEntry.resort.id)}"`,
+      zoneDataAttr: ` data-role-trap="${esc(trapEntry.resort.id)}"`,
+      heading: _tHeading,
+      resortName: trapEntry.resort.name,
+      copy: _tCopy,
+      driveU: _tDriveU,
+      crowdU: _tCrowdU,
+      marginalCls: _tMarginalCls,
+    });
   })() : '';
 
-  const roleCardsInner = [sleeperCardHtml, localCardHtml, trapCardHtml].filter(Boolean).join('');
+  const roleCardParts = [sleeperCardHtml, localCardHtml, trapCardHtml].filter(Boolean);
+  const roleCount = roleCardParts.length;
+  const roleCardsInner = roleCardParts.join('');
   const otherSmartCallsHtml = roleCardsInner
     ? `<section class="vcard-other-smart-calls" aria-labelledby="verdictOtherSmartCallsHeading">
         <h3 class="vcard-other-smart-calls-heading" id="verdictOtherSmartCallsHeading">Other smart calls</h3>
         <p class="vcard-other-smart-calls-helper">Different ways to play the day depending on drive, crowds, and convenience.</p>
-        <div class="vcard-other-smart-calls-grid">${roleCardsInner}</div>
+        <div class="vcard-other-smart-calls-grid vcard-other-smart-calls-grid--count-${roleCount}">${roleCardsInner}</div>
       </section>`
     : '';
 
