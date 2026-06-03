@@ -247,9 +247,9 @@
     }
     if (kind === 'sleeper') {
       const t = analyzeRowVsPick(row, pick);
-      if (t.rowQuieter && t.similarSnow) return 'Quieter option with a similar forecast — worth a look.';
-      if (t.rowQuieter) return 'Quieter option with enough mountain to be worth considering.';
-      return 'Credible alternative in a similar score band — compare before you commit.';
+      if (t.rowQuieter && t.similarSnow) return 'Quieter option with a similar forecast — the day sets up well here.';
+      if (t.rowQuieter) return 'Less obvious pick with enough mountain to be worth considering today.';
+      return 'Solid Option in a similar score band — compare the full breakdown before you commit.';
     }
     if (kind === 'local' || kind === 'local_fallback') {
       const t = analyzeRowVsPick(row, pick);

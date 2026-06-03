@@ -779,7 +779,7 @@ test('[PROTECT] no local within 45 min uses Another Smart Play fallback', () => 
   assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
   assert.ok(roles.local?.resort?.id);
   assert.strictEqual(roles.local.roleVariant, 'another_smart_play');
-  assert.strictEqual(api.localRoleLabel(roles.local), 'Another Smart Play');
+  assert.strictEqual(api.localRoleLabel(roles.local), 'Worth a Look');
   assert.notStrictEqual(roles.local.resort.id, roles.sleeper?.resort?.id);
   assert.notStrictEqual(roles.local.resort.id, roles.trap?.resort?.id);
 });

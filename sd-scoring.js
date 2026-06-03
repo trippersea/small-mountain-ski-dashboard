@@ -493,12 +493,12 @@ function pickLocalFallbackFromRanked(ranked, pickEntry, usedIds) {
   };
 }
 
-/** User-facing copy for the LOCAL / Another Smart Play slot. */
+/** User-facing copy for the LOCAL / Worth a Look fallback slot. */
 function localRoleExplanation(localEntry, pickResort) {
   if (localEntry?.roleVariant === 'another_smart_play') {
     const pickShort = (pickResort?.name || 'the top pick')
       .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
-    return `Another credible regional option if ${pickShort} doesn't fit your plan — worth a look for conditions or convenience.`;
+    return `No true nearby option in range — ${pickShort} is still the lead, but this mountain is worth considering for conditions or convenience.`;
   }
   const pickShort = (pickResort?.name || 'the top pick')
     .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
@@ -513,7 +513,7 @@ function localRoleLabel(localEntry) {
     return WTSN_ROLE.localRoleLabel(localEntry);
   }
   return localEntry?.roleVariant === 'another_smart_play'
-    ? 'Another Smart Play'
+    ? 'Worth a Look'
     : 'Best Nearby Option';
 }
 
@@ -752,16 +752,16 @@ function stripResortSuffix(name) {
   return raw;
 }
 
-/** User-facing copy for the SLEEPER role card. */
+/** User-facing copy for the SLEEPER (Solid Option) role card. */
 function sleeperRoleExplanation(sleeperEntry, pickResort, refResort) {
-  const refShort = stripResortSuffix(refResort?.name || 'the big-name option');
+  const refShort = stripResortSuffix(refResort?.name || 'the obvious pick');
   if (sleeperEntry?.tier === 'marginal') {
-    return `Quieter alternative if ${refShort}'s lift lines worry you — fair conditions, less circus.`;
+    return `Not the obvious pick, but the day sets up well here — fair conditions with less lift-line pressure than ${refShort}.`;
   }
   if (refResort?.id && refResort.id !== pickResort?.id) {
-    return `Smart quieter play vs ${refShort} — similar forecast window, lighter crowds.`;
+    return `A strong call if you want something different from the Top Pick — similar forecast window, lighter crowds than ${refShort}.`;
   }
-  return `Overlooked option in the same score band — worth it if you hate busy lift lines.`;
+  return `A credible mountain with a real reason to be on your radar — less obvious than the Top Pick, close in the score band.`;
 }
 
 const TRAP_QUALITY_MIN_SUIT = 40;

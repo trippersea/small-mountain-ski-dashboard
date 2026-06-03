@@ -2274,7 +2274,7 @@ function renderVerdict(resorts) {
     const _sDriveU = esc(driveUtilitySegment(sleeperEntry.resort.id));
     const _sCrowdU = esc(crowdUtilityShort(_sCrowd.label));
     const _sMarginalCls = sleeperEntry.tier === 'marginal' ? ' vcard-sleeper-card--marginal' : '';
-    const _sHeading = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.SLEEPER) || 'Smart Play';
+    const _sHeading = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.SLEEPER) || 'Solid Option';
     return buildCompactRoleCardHtml({
       zoneCls: ' vcard-sleeper-zone',
       btnCls: ' vcard-sleeper-card',
@@ -2320,7 +2320,7 @@ function renderVerdict(resorts) {
   const roleCardsInner = roleCardParts.join('');
   const otherSmartCallsHtml = roleCardsInner
     ? `<section class="vcard-other-smart-calls" aria-labelledby="verdictOtherSmartCallsHeading">
-        <h3 class="vcard-other-smart-calls-heading" id="verdictOtherSmartCallsHeading">Other smart calls</h3>
+        <h3 class="vcard-other-smart-calls-heading" id="verdictOtherSmartCallsHeading">More options for today</h3>
         <p class="vcard-other-smart-calls-helper">Different ways to play the day depending on drive, crowds, and convenience.</p>
         <div class="vcard-other-smart-calls-grid vcard-other-smart-calls-grid--count-${roleCount}">${roleCardsInner}</div>
       </section>`

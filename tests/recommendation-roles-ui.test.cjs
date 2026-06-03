@@ -132,10 +132,10 @@ test('[UI] mergeFullPoolRoles skips merge when displayed pick differs', () => {
 
 test('[UI] role labels match canonical copy', () => {
   assert.strictEqual(LABELS.PICK, 'Top Pick');
-  assert.strictEqual(LABELS.SLEEPER, 'Smart Play');
+  assert.strictEqual(LABELS.SLEEPER, 'Solid Option');
   assert.strictEqual(LABELS.TRAP, 'Crowd Watch');
   assert.strictEqual(localRoleLabel({ roleVariant: 'nearby' }), 'Best Nearby Option');
-  assert.strictEqual(localRoleLabel({ roleVariant: 'another_smart_play' }), 'Another Smart Play');
+  assert.strictEqual(localRoleLabel({ roleVariant: 'another_smart_play' }), 'Worth a Look');
 });
 
 test('[UI] buildSideColumns orders sleeper, local, trap and dedupes pick', () => {

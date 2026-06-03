@@ -144,7 +144,7 @@
     const cl = (r.crowdLabel || '').toLowerCase();
     if (cl.includes('quiet') || cl.includes('light')) parts.push('light crowds expected');
     if (r.passGroup && r.passGroup !== 'Independent') parts.push(`${r.passGroup} pass access`);
-    return parts.length ? parts.join(' \u00B7 ') + '.' : 'Solid alternative for your search.';
+    return parts.length ? parts.join(' \u00B7 ') + '.' : 'Solid Option for your search.';
   }
 
   const ROLE_LABELS = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS)
@@ -152,8 +152,8 @@
     : {
         PICK: 'Top Pick',
         LOCAL: 'Best Nearby Option',
-        LOCAL_ALT: 'Another Smart Play',
-        SLEEPER: 'Smart Play',
+        LOCAL_ALT: 'Worth a Look',
+        SLEEPER: 'Solid Option',
         TRAP: 'Crowd Watch',
       };
 
@@ -171,7 +171,7 @@
   function localCompareReason(localR, pickR) {
     if (localR.localExplanation) return localR.localExplanation;
     if (localR.roleVariant === 'another_smart_play') {
-      return 'Another credible regional option — worth a look if the top pick does not fit your plan.';
+      return 'No true nearby option in range — a credible mountain worth considering if the top pick does not fit your plan.';
     }
     const pickShort = (pickR?.name || 'your top pick')
       .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
@@ -184,7 +184,7 @@
   /** Copy for the SLEEPER role column — matches homepage when sleeperExplanation is persisted. */
   function sleeperCompareReason(sleeperR) {
     if (sleeperR.sleeperExplanation) return sleeperR.sleeperExplanation;
-    return 'Credible regional alternative in a similar score band — worth comparing before you commit.';
+    return 'A credible mountain with a real reason to be on your radar — close in the score band to the Top Pick.';
   }
 
   /** Copy for the TRAP role column — matches homepage when trapExplanation is persisted. */
