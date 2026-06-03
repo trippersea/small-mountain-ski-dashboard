@@ -841,6 +841,76 @@ body.compare-page-body .site-footer-affiliate {
   margin-top: 0;
 }
 
+/* Decision summary — above side-by-side table */
+.cp-decision-summary-host {
+  margin-bottom: 20px;
+}
+.cp-decision-summary {
+  padding: 18px 20px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(147, 197, 253, 0.22);
+  background: linear-gradient(135deg, rgba(43, 109, 233, 0.14) 0%, rgba(8, 22, 44, 0.55) 100%);
+}
+.cp-decision-summary__title {
+  margin: 0 0 10px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--cp-text);
+}
+.cp-decision-summary__body {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--cp-text-dim);
+  max-width: 62rem;
+}
+.cp-decision-summary__close-call {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 600;
+  color: rgba(253, 230, 138, 0.95);
+  background: rgba(180, 83, 9, 0.12);
+  border: 1px solid rgba(253, 230, 138, 0.22);
+}
+.cp-decision-summary__rival {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.cp-decision-summary__rival-title {
+  margin: 0 0 6px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgba(224, 242, 254, 0.95);
+}
+.cp-decision-summary__rival-body {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--cp-text-dim);
+  max-width: 58rem;
+}
+.cp-cgt-tradeoff {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .cp-decision-summary {
+    padding: 14px 14px 12px;
+  }
+  .cp-decision-summary__body {
+    font-size: 0.875rem;
+  }
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AMAZON-STYLE COMPARISON TABLE  (.cp-cgt-*)

@@ -383,7 +383,40 @@
   // BUILD AMAZON-STYLE COMPARISON TABLE
   // ════════════════════════════════════════════════════════════════
 
-  function buildCompareTable(pick, sideColsArr) {
+  function renderDecisionSummaryHtml(bundle) {
+    if (!bundle) return '';
+    let html = '<div class="cp-decision-summary" role="region" aria-labelledby="cpDecisionSummaryHeading">';
+    html += '<h2 class="cp-decision-summary__title" id="cpDecisionSummaryHeading">'
+      + esc(bundle.heading) + '</h2>';
+    html += '<p class="cp-decision-summary__body">' + esc(bundle.body) + '</p>';
+    if (bundle.closeCallNote) {
+      html += '<p class="cp-decision-summary__close-call" role="note">'
+        + esc(bundle.closeCallNote) + '</p>';
+    }
+    if (bundle.rivalCallout) {
+      html += '<div class="cp-decision-summary__rival">';
+      html += '<h3 class="cp-decision-summary__rival-title">' + esc(bundle.rivalCallout.title) + '</h3>';
+      html += '<p class="cp-decision-summary__rival-body">' + esc(bundle.rivalCallout.body) + '</p>';
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function tradeoffLineForColumn(col, pick, tradeoffById) {
+    if (tradeoffById && col.row?.id && tradeoffById[col.row.id]) {
+      return tradeoffById[col.row.id];
+    }
+    if (col.kind === 'local') return localCompareReason(col.row, pick);
+    if (col.kind === 'sleeper') return sleeperCompareReason(col.row);
+    if (col.kind === 'trap') return trapCompareReason(col.row);
+    if (typeof WTSN_COMPARE_EXPLAIN !== 'undefined') {
+      return WTSN_COMPARE_EXPLAIN.buildColumnTradeoffLine(col.row, pick, col.kind);
+    }
+    return col.row.headline || autoReason(col.row);
+  }
+
+  function buildCompareTable(pick, sideColsArr, tradeoffById) {
     const altRows = sideColsArr.map(function (c) { return c.row; });
 
     // Which alternative wins each metric (legacy "Best" badges among side columns).
@@ -475,17 +508,11 @@
     // ── Row 1: Why it fits ──
     const pickReason  = pick.headline || autoReason(pick) || 'Top score for your filters right now.';
     const reasonRow = row(
-      'Why it fits',
-      '<span class="cp-cgt-reason">' + esc(pickReason) + '</span>',
+      'Tradeoff',
+      '<span class="cp-cgt-reason cp-cgt-tradeoff">' + esc(pickReason) + '</span>',
       sideColsArr.map(function (col) {
-        const txt = col.kind === 'local'
-          ? localCompareReason(col.row, pick)
-          : col.kind === 'sleeper'
-            ? sleeperCompareReason(col.row)
-            : col.kind === 'trap'
-              ? trapCompareReason(col.row)
-              : (col.row.headline || autoReason(col.row));
-        return '<span class="cp-cgt-reason">' + esc(txt) + '</span>';
+        const txt = tradeoffLineForColumn(col, pick, tradeoffById);
+        return '<span class="cp-cgt-reason cp-cgt-tradeoff">' + esc(txt) + '</span>';
       })
     );
 
@@ -635,10 +662,35 @@
     return '<table class="cp-cgt">' + cols + thead + tbody + '</table>';
   }
 
+  let decisionBundle = null;
+  const tradeoffById = {};
+  if (typeof WTSN_COMPARE_EXPLAIN !== 'undefined') {
+    decisionBundle = WTSN_COMPARE_EXPLAIN.buildDecisionSummaryBundle(
+      topPick,
+      sideCols,
+      fullRankings,
+      passFilter,
+    );
+    (decisionBundle.columnTradeoffs || []).forEach(function (t) {
+      if (t.id && t.line) tradeoffById[t.id] = t.line;
+    });
+  }
+
+  const summaryHost = document.getElementById('compareDecisionSummary');
+  if (summaryHost) {
+    if (decisionBundle) {
+      summaryHost.innerHTML = renderDecisionSummaryHtml(decisionBundle);
+      summaryHost.hidden = false;
+    } else {
+      summaryHost.innerHTML = '';
+      summaryHost.hidden = true;
+    }
+  }
+
   // Inject the table
   const tableContainer = document.getElementById('compareTableContainer');
   if (tableContainer) {
-    tableContainer.innerHTML = buildCompareTable(topPick, sideCols);
+    tableContainer.innerHTML = buildCompareTable(topPick, sideCols, tradeoffById);
   }
 
   // ── Full rankings table (top 25 from homepage scoring; same filters) ───────
