@@ -727,3 +727,39 @@ test('[PROTECT] rain suppresses Crowd Watch and Smart Play roles', () => {
   assert.strictEqual(roles.sleeper, null);
   assert.strictEqual(roles.trap, null);
 });
+
+test('[PROTECT] ski today uses forecast[0] — weather and crowd stay on same day', () => {
+  resetState();
+  state.howFar = 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  state.targetDate = new Date(today);
+
+  const forecast = [
+    h.dayFc({ snow: 2, code: 61, lo: 35, hi: 42 }),
+    h.dayFc({ snow: 10, code: 75, lo: 12, hi: 24 }),
+  ];
+  const w = h.wx(forecast);
+
+  assert.strictEqual(api.targetForecastIndex(), 0);
+  assert.strictEqual(api.tripWindowSnow(forecast), 2);
+
+  const todayTier = api.verdictFromBreakdown(
+    byId['killington-resort'],
+    w,
+    api.plannerScoreBreakdown(byId['killington-resort'], w, 0, null),
+  );
+  assert.strictEqual(todayTier.tier, 'bad');
+
+  state.targetDate = new Date(today);
+  state.targetDate.setDate(state.targetDate.getDate() + 1);
+  assert.strictEqual(api.targetForecastIndex(), 1);
+  assert.strictEqual(api.tripWindowSnow(forecast), 10);
+
+  const tomorrowTier = api.verdictFromBreakdown(
+    byId['killington-resort'],
+    w,
+    api.plannerScoreBreakdown(byId['killington-resort'], w, 1, null),
+  );
+  assert.notStrictEqual(tomorrowTier.tier, 'bad');
+});

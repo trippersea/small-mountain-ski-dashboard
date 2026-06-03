@@ -41,12 +41,13 @@ function snowPreferenceLabel() {
 
 // ─── Forecast accessor ────────────────────────────────────────────────────────
 function tomorrowForecast(wx) {
-  return wx?.forecast?.[0] || null;
+  const fi = targetForecastIndex();
+  return wx?.forecast?.[fi] ?? wx?.forecast?.[0] ?? null;
 }
 
 // ─── Returns which forecast[] index matches state.targetDate ─────────────────
-// forecast[0] = tomorrow, forecast[1] = day after, forecast[2] = third day.
-// If targetDate is today or unset, returns 0.
+// forecast[0] = today, forecast[1] = tomorrow, forecast[2] = day after.
+// If targetDate is unset, returns 0 (today).
 // Clamps to 0–2 (the 3 days Open-Meteo returns).
 function targetForecastIndex() {
   if (!(state.targetDate instanceof Date)) return 0;
@@ -55,10 +56,10 @@ function targetForecastIndex() {
   const target = new Date(state.targetDate);
   target.setHours(0, 0, 0, 0);
   const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
-  // diffDays 1 = tomorrow → index 0
-  // diffDays 2 = day after → index 1
-  // diffDays 3+ = three days out → index 2
-  return Math.max(0, Math.min(2, diffDays - 1));
+  // diffDays 0 = today → index 0
+  // diffDays 1 = tomorrow → index 1
+  // diffDays 2 = day after → index 2
+  return Math.max(0, Math.min(2, diffDays));
 }
 
 // ─── Trip-mode snow window ────────────────────────────────────────────────────

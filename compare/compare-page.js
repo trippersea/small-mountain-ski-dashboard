@@ -13,7 +13,7 @@
 //   passFilter:    'All' | 'Epic' | 'Ikon' | 'Indy',
 //   howFar:        0 | 1 | 2,
 //   skiDayPreset:  'weekday' | 'friday' | 'saturday' | 'sunday',
-//   forecastIndex: 0 | 1 | 2,  // which forecast[] slot was active (0=tomorrow, 1=day after, 2=third day)
+//   forecastIndex: 0 | 1 | 2,  // which forecast[] slot was active (0=today, 1=tomorrow, 2=day after)
 //   pick:          { /* same shape as topPick */, role: 'pick' },
 //   local:         { /* same shape */, role: 'local', driveSavingsMins?, localExplanation? } | null,
 //   sleeper:       null,

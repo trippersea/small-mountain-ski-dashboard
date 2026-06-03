@@ -1143,19 +1143,19 @@ async function fetchWeather(resort) {
       humidity: data.current.relativehumidity_2m != null
         ? Math.round(data.current.relativehumidity_2m)
         : undefined,
-      forecast: data.daily.time.slice(1, 4).map((date, i) => {
+      forecast: data.daily.time.slice(0, 3).map((date, i) => {
         const raw = sanitizeGridDailyTempsF(
-          data.daily.temperature_2m_max[i + 1],
-          data.daily.temperature_2m_min[i + 1],
+          data.daily.temperature_2m_max[i],
+          data.daily.temperature_2m_min[i],
           resort,
         );
         return {
           day:  new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
-          code: data.daily.weathercode[i + 1],
+          code: data.daily.weathercode[i],
           hi:   raw.hi,
           lo:   raw.lo,
-          snow: Math.round((data.daily.snowfall_sum?.[i + 1] || 0) * 10) / 10,
-          wind: Math.round(data.daily.windspeed_10m_max?.[i + 1] || 0),
+          snow: Math.round((data.daily.snowfall_sum?.[i] || 0) * 10) / 10,
+          wind: Math.round(data.daily.windspeed_10m_max?.[i] || 0),
         };
       }),
     };
@@ -2385,8 +2385,8 @@ function buildWriteupPrompt(v, origin) {
   const driveStr   = driveText ? `${driveText} away` : 'distance unknown';
   const histStr    = histTotal !== null ? `${histTotal}" of snow in the last 7 days` : null;
   const wx         = state.weatherCache[resort.id]?.data;
-  const tomorrow   = tomorrowForecast(wx);
-  const weatherStr = tomorrow ? `tomorrow low ${tomorrow.lo}°F, high ${tomorrow.hi}°F, wind ${tomorrow.wind || 0} mph` : null;
+  const skiDayFc   = tomorrowForecast(wx);
+  const weatherStr = skiDayFc ? `ski day low ${skiDayFc.lo}°F, high ${skiDayFc.hi}°F, wind ${skiDayFc.wind || 0} mph` : null;
   const facts = [
     `${tomorrowIn.toFixed(1)}" forecast for your ski day, ${stormTotal.toFixed(1)}" in the window`,
     weatherStr, driveText ? driveStr : null, histStr,
