@@ -7708,15 +7708,6 @@ button.vcard-detail-btn:hover,
   flex-direction: column;
   gap: 14px;
 }
-.hn-hero-verdict-dock .vcard-roles-empty-nudge {
-  margin: 16px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 12px;
-  line-height: 1.45;
-  color: rgba(186, 200, 218, 0.72);
-  max-width: 36rem;
-}
 .hn-hero-verdict-dock .vcard-role-card {
   margin: 0;
   padding: 0;
@@ -7725,13 +7716,6 @@ button.vcard-detail-btn:hover,
   color: rgba(196, 210, 228, 0.78);
   margin-bottom: 8px;
 }
-.hn-hero-verdict-dock .vcard-runners-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  align-items: stretch;
-}
-
 @media (max-width: 640px) {
   .hn-hero-verdict-dock .vcard-actions-dash {
     flex-direction: row;

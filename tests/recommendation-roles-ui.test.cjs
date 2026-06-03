@@ -1,25 +1,29 @@
 /**
  * UI/session helpers for recommendation roles — not scoring logic.
- * mergeFullPoolRoles mirrors sd-app.js (phase-1 pick stability + full-pool roles).
  */
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+require('../recommendation-roles.js');
 
+const { mergeRolesPerSlot, LABELS, localRoleLabel } = globalThis.WTSN_ROLE;
+
+/** Mirrors sd-app.js mergeFullPoolRoles after per-slot merge. */
 function mergeFullPoolRoles(stableVerdict, fullVerdict) {
   if (!stableVerdict || !fullVerdict?.roles) return stableVerdict;
   if (stableVerdict.resort?.id !== fullVerdict.resort?.id) return stableVerdict;
-  return { ...stableVerdict, roles: fullVerdict.roles };
+  const roles = mergeRolesPerSlot(stableVerdict.roles, fullVerdict.roles);
+  return { ...stableVerdict, roles };
 }
 
-/** Mirrors compare/compare-page.js buildSideColumns (role column order + dedup). */
+/** Mirrors compare/compare-page.js buildSideColumns (Smart Play → local → Crowd Watch). */
 function buildSideColumns(pick, localRow, sleeperRow, trapRow, legacyRunners) {
   const cols = [];
-  if (localRow && localRow.id && localRow.id !== pick.id) {
-    cols.push({ row: localRow, kind: 'local' });
-  }
-  if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id
-      && !cols.some((c) => c.row.id === sleeperRow.id)) {
+  if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id) {
     cols.push({ row: sleeperRow, kind: 'sleeper' });
+  }
+  if (localRow && localRow.id && localRow.id !== pick.id
+      && !cols.some((c) => c.row.id === localRow.id)) {
+    cols.push({ row: localRow, kind: 'local' });
   }
   if (trapRow && trapRow.id && trapRow.id !== pick.id
       && !cols.some((c) => c.row.id === trapRow.id)) {
@@ -34,6 +38,34 @@ function buildSideColumns(pick, localRow, sleeperRow, trapRow, legacyRunners) {
   });
   return cols;
 }
+
+test('[UI] mergeRolesPerSlot fills only missing side roles', () => {
+  const cur = {
+    pick: { resort: { id: 'killington-resort' } },
+    local: { resort: { id: 'blue-hills-ski-area' } },
+    sleeper: null,
+    trap: null,
+  };
+  const full = {
+    pick: { resort: { id: 'killington-resort' } },
+    local: { resort: { id: 'tenney-mountain' } },
+    sleeper: { resort: { id: 'wildcat-mountain' } },
+    trap: { resort: { id: 'loon-mountain' } },
+  };
+  const m = mergeRolesPerSlot(cur, full);
+  assert.strictEqual(m.pick.resort.id, 'killington-resort');
+  assert.strictEqual(m.local.resort.id, 'blue-hills-ski-area');
+  assert.strictEqual(m.sleeper.resort.id, 'wildcat-mountain');
+  assert.strictEqual(m.trap.resort.id, 'loon-mountain');
+});
+
+test('[UI] mergeRolesPerSlot does not merge when Top Pick differs', () => {
+  const cur = { pick: { resort: { id: 'loon-mountain' } }, local: null, sleeper: null, trap: null };
+  const full = { pick: { resort: { id: 'killington-resort' } }, trap: { resort: { id: 'loon-mountain' } } };
+  const m = mergeRolesPerSlot(cur, full);
+  assert.strictEqual(m.pick.resort.id, 'loon-mountain');
+  assert.strictEqual(m.trap, null);
+});
 
 test('[UI] mergeFullPoolRoles attaches full-pool roles when pick is unchanged', () => {
   const stable = {
@@ -56,28 +88,30 @@ test('[UI] mergeFullPoolRoles attaches full-pool roles when pick is unchanged', 
   assert.strictEqual(merged.breakdown.score, 58);
   assert.strictEqual(merged.roles.sleeper?.resort?.id, 'wildcat-mountain');
   assert.strictEqual(merged.roles.trap?.resort?.id, 'loon-mountain');
-  assert.strictEqual(merged.roles.pick.pickCrowdWarning, true);
 });
 
 test('[UI] mergeFullPoolRoles skips merge when displayed pick differs', () => {
-  const stable = { resort: { id: 'loon-mountain' }, roles: { trap: null } };
-  const full = { resort: { id: 'killington-resort' }, roles: { trap: { resort: { id: 'loon-mountain' } } } };
+  const stable = { resort: { id: 'loon-mountain' }, roles: { pick: { resort: { id: 'loon-mountain' } }, trap: null } };
+  const full = { resort: { id: 'killington-resort' }, roles: { pick: { resort: { id: 'killington-resort' } }, trap: { resort: { id: 'loon-mountain' } } } };
   const merged = mergeFullPoolRoles(stable, full);
   assert.strictEqual(merged.roles.trap, null);
 });
 
-test('[UI] buildSideColumns orders local, sleeper, trap and dedupes pick', () => {
+test('[UI] role labels match canonical copy', () => {
+  assert.strictEqual(LABELS.PICK, 'Top Pick');
+  assert.strictEqual(LABELS.SLEEPER, 'Smart Play');
+  assert.strictEqual(LABELS.TRAP, 'Crowd Watch');
+  assert.strictEqual(localRoleLabel({ roleVariant: 'nearby' }), 'Best Nearby Option');
+  assert.strictEqual(localRoleLabel({ roleVariant: 'another_smart_play' }), 'Another Smart Play');
+});
+
+test('[UI] buildSideColumns orders sleeper, local, trap and dedupes pick', () => {
   const pick = { id: 'killington-resort', name: 'Killington' };
   const local = { id: 'blue-hills-ski-area', name: 'Blue Hills' };
   const sleeper = { id: 'wildcat-mountain', name: 'Wildcat' };
   const trap = { id: 'loon-mountain', name: 'Loon' };
   const cols = buildSideColumns(pick, local, sleeper, trap, []);
-  assert.deepStrictEqual(cols.map((c) => c.kind), ['local', 'sleeper', 'trap']);
-  assert.deepStrictEqual(cols.map((c) => c.row.id), [
-    'blue-hills-ski-area',
-    'wildcat-mountain',
-    'loon-mountain',
-  ]);
+  assert.deepStrictEqual(cols.map((c) => c.kind), ['sleeper', 'local', 'trap']);
 });
 
 test('[UI] buildSideColumns legacy topPick-only session yields pick column only', () => {

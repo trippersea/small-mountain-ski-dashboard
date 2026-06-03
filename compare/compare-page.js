@@ -147,11 +147,24 @@
     return parts.length ? parts.join(' \u00B7 ') + '.' : 'Solid alternative for your search.';
   }
 
+  const ROLE_LABELS = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS)
+    ? WTSN_ROLE.LABELS
+    : {
+        PICK: 'Top Pick',
+        LOCAL: 'Best Nearby Option',
+        LOCAL_ALT: 'Another Smart Play',
+        SLEEPER: 'Smart Play',
+        TRAP: 'Crowd Watch',
+      };
+
   /** Label for the LOCAL / Another Smart Play column header. */
   function localCompareLabel(localR) {
     if (localR.localLabel) return localR.localLabel;
-    if (localR.roleVariant === 'another_smart_play') return 'Another Smart Play';
-    return 'Best Nearby Option';
+    if (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.localRoleLabel) {
+      return WTSN_ROLE.localRoleLabel(localR);
+    }
+    if (localR.roleVariant === 'another_smart_play') return ROLE_LABELS.LOCAL_ALT;
+    return ROLE_LABELS.LOCAL;
   }
 
   /** Copy for the LOCAL role column — matches homepage when localExplanation is persisted. */
@@ -180,15 +193,15 @@
     return 'Great mountain, bad timing — conditions may hold, but crowds may mean long lift lines.';
   }
 
-  /** Side columns: LOCAL, SLEEPER, TRAP, then legacy score-ranked runners (old sessions). */
+  /** Side columns: Smart Play, local slot, Crowd Watch — then legacy runners (old sessions). */
   function buildSideColumns(pick, localRow, sleeperRow, trapRow, legacyRunners) {
     const cols = [];
-    if (localRow && localRow.id && localRow.id !== pick.id) {
-      cols.push({ row: localRow, kind: 'local' });
-    }
-    if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id
-        && !cols.some(function (c) { return c.row.id === sleeperRow.id; })) {
+    if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id) {
       cols.push({ row: sleeperRow, kind: 'sleeper' });
+    }
+    if (localRow && localRow.id && localRow.id !== pick.id
+        && !cols.some(function (c) { return c.row.id === localRow.id; })) {
+      cols.push({ row: localRow, kind: 'local' });
     }
     if (trapRow && trapRow.id && trapRow.id !== pick.id
         && !cols.some(function (c) { return c.row.id === trapRow.id; })) {
@@ -399,7 +412,7 @@
     // ── Header row ──
     let headCells = '<th class="cp-lbl" scope="col"></th>' +
       '<th class="cp-cgt-hd-pick" scope="col" data-compare-role="pick">' +
-        '<div class="cp-cgt-pick-badge">Top Pick</div>' +
+        '<div class="cp-cgt-pick-badge">' + esc(ROLE_LABELS.PICK) + '</div>' +
         '<div class="cp-cgt-mtn-name">' + esc(pick.name) + '</div>' +
         '<div class="cp-cgt-mtn-state">' + esc(pick.state) + '</div>' +
         '<a href="/ski-report/' + esc(pick.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
@@ -418,7 +431,7 @@
       } else if (col.kind === 'sleeper') {
         headCells +=
           '<th class="cp-cgt-hd-sleeper" scope="col" data-compare-role="sleeper">' +
-            '<div class="cp-cgt-sleeper-badge">Smart Play</div>' +
+            '<div class="cp-cgt-sleeper-badge">' + esc(ROLE_LABELS.SLEEPER) + '</div>' +
             '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
             '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
@@ -426,7 +439,7 @@
       } else if (col.kind === 'trap') {
         headCells +=
           '<th class="cp-cgt-hd-trap" scope="col" data-compare-role="trap">' +
-            '<div class="cp-cgt-trap-badge">Crowd Watch</div>' +
+            '<div class="cp-cgt-trap-badge">' + esc(ROLE_LABELS.TRAP) + '</div>' +
             '<div class="cp-cgt-mtn-name">' + esc(r.name) + '</div>' +
             '<div class="cp-cgt-mtn-state">' + esc(r.state) + '</div>' +
             '<a href="/ski-report/' + esc(r.id) + '/" class="cp-cgt-head-cta">Full conditions \u2192</a>' +
@@ -660,13 +673,13 @@
       const isTrap = trapRow && r.id === trapRow.id;
       let nameCell;
       if (isPick) {
-        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-pick-tag">Top pick</span>`;
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-pick-tag">${esc(ROLE_LABELS.PICK)}</span>`;
       } else if (isLocal) {
-        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-local-tag">${esc(localRow.localLabel || (localRow.roleVariant === 'another_smart_play' ? 'Smart play alt' : 'Best nearby'))}</span>`;
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-local-tag">${esc(localCompareLabel(localRow))}</span>`;
       } else if (isSleeper) {
-        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-sleeper-tag">Smart play</span>`;
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-sleeper-tag">${esc(ROLE_LABELS.SLEEPER)}</span>`;
       } else if (isTrap) {
-        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-trap-tag">Crowd watch</span>`;
+        nameCell = `<strong>${esc(r.name)}</strong> <span class="cp-rank-trap-tag">${esc(ROLE_LABELS.TRAP)}</span>`;
       } else {
         nameCell = esc(r.name);
       }

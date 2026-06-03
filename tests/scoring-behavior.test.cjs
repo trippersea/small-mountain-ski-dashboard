@@ -710,7 +710,7 @@ test('[PROTECT] no local within 45 min uses Another Smart Play fallback', () => 
   assert.notStrictEqual(roles.local.resort.id, roles.trap?.resort?.id);
 });
 
-test('[PROTECT] rain still fills all four recommendation slots', () => {
+test('[PROTECT] rain does not assign generic Crowd Watch filler', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
@@ -727,16 +727,36 @@ test('[PROTECT] rain still fills all four recommendation slots', () => {
   ].sort((a, b) => b.breakdown.score - a.breakdown.score);
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.ok(roles.pick?.resort?.id);
-  assert.ok(roles.local?.resort?.id, 'expected LOCAL / Another Smart Play on rainy day');
-  assert.ok(roles.sleeper?.resort?.id, 'expected Smart Play on rainy day');
-  assert.ok(roles.trap?.resort?.id, 'expected Crowd Watch on rainy day');
-  const ids = new Set([
-    roles.pick.resort.id,
-    roles.local.resort.id,
-    roles.sleeper.resort.id,
-    roles.trap.resort.id,
-  ]);
-  assert.strictEqual(ids.size, 4, 'all four slots should be distinct resorts');
+  assert.ok(roles.sleeper?.resort?.id);
+  assert.strictEqual(roles.trap, null, 'wet low-crowd pool must not get a generic Crowd Watch');
+});
+
+test('[PROTECT] credible crowd magnet still fills Crowd Watch on bluebird Saturday', () => {
+  const ranked = crowdedSaturdayRanked(
+    ['killington-resort', 'loon-mountain', 'wildcat-mountain'],
+    h.bluebird(),
+    { historyIds: ['killington-resort', 'loon-mountain', 'wildcat-mountain'] },
+  );
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
+  assert.ok(roles.trap?.resort?.id, 'expected credible Crowd Watch among busy magnets');
+  assert.notStrictEqual(roles.trap.resort.id, roles.pick.resort.id);
+});
+
+test('[PROTECT] local labels use Best Nearby Option vs Another Smart Play', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  h.setDrive('blue-hills-ski-area', 38);
+  h.setDrive('loon-mountain', 140);
+  const ranked = [
+    rankedEntry('blue-hills-ski-area', h.bluebird()),
+    rankedEntry('loon-mountain', h.bluebird()),
+  ].sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.local?.resort?.id, 'blue-hills-ski-area');
+  assert.strictEqual(api.localRoleLabel(roles.local), 'Best Nearby Option');
+  assert.strictEqual(roles.local.roleVariant, 'nearby');
 });
 
 test('[PROTECT] ski today uses forecast[0] — weather and crowd stay on same day', () => {

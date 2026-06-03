@@ -368,6 +368,8 @@ function sponsorTrackAttrs(name, placement, resortId, statePage) {
     .detail-header-rebuilt .dhr-actions { display: flex; align-items: center; gap: 10px; }
     .dhr-link-secondary { font-size: 12px; font-weight: 500; color: #7a92a8; text-decoration: none; transition: color .12s; }
     .dhr-link-secondary:hover { color: #2b6de9; }
+    .dhr-role-banner { font-size: 12px; line-height: 1.45; color: #5a7088; margin: 0 0 12px; padding: 8px 12px; background: #f0f4f8; border-radius: 8px; border-left: 3px solid #2b6de9; }
+    .dhr-role-banner--trap { border-left-color: #b45309; background: #fffbeb; color: #78350f; }
     .featured-pill { display: inline-flex; align-items: center; background: #2b6de9; color: #f0f6fc; border: 1px solid #2b6de9; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; letter-spacing: .04em; box-shadow: 0 4px 12px rgba(43,109,233,.18); white-space: nowrap; }
     .btn-book { background: #22b38a; color: #f0f6fc !important; font-size: 13px; font-weight: 700; padding: 8px 18px; border-radius: 999px; text-decoration: none; transition: background .12s; }
     .btn-book:hover { background: #1f9e78; }
@@ -485,6 +487,8 @@ const state = Object.seal({
   tempBucket:     'any',
   windBucket:     'any',
   selectedId:     null,
+  /** Role slot user opened from verdict hero (pick|local|local_fallback|sleeper|trap); detail banner only */
+  selectedFromRole: null,
   origin:         null,
   driveCache:     {},
   weatherCache:   {},
@@ -1906,18 +1910,29 @@ function computeVerdictPhase1(resorts) {
 function mergeFullPoolRoles(stableVerdict, fullVerdict) {
   if (!stableVerdict || !fullVerdict?.roles) return stableVerdict;
   if (stableVerdict.resort?.id !== fullVerdict.resort?.id) return stableVerdict;
-  return { ...stableVerdict, roles: fullVerdict.roles };
+  const merge = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.mergeRolesPerSlot)
+    ? WTSN_ROLE.mergeRolesPerSlot
+    : (cur, full) => ({ ...cur, ...full, pick: cur.pick });
+  const roles = merge(stableVerdict.roles, fullVerdict.roles);
+  return { ...stableVerdict, roles };
 }
 
-/** Rebuild role slots from the full ranked pool when staged verdict has none yet. */
+/** Fill missing side roles from the full ranked pool when Top Pick is unchanged. */
 function resolveVerdictRoles(verdict, resorts) {
   const roles = verdict?.roles;
   if (!roles) return null;
-  if (roles.local || roles.sleeper || roles.trap) return roles;
   if (!weatherFetchPhase2Done) return roles;
   const full = computeVerdict(resorts);
   if (!full?.roles || full.resort?.id !== verdict.resort?.id) return roles;
-  return full.roles;
+  if (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.mergeRolesPerSlot) {
+    return WTSN_ROLE.mergeRolesPerSlot(roles, full.roles);
+  }
+  return {
+    pick: roles.pick,
+    local: roles.local || full.roles.local,
+    sleeper: roles.sleeper || full.roles.sleeper,
+    trap: roles.trap || full.roles.trap,
+  };
 }
 
 function computeVerdictStaged(resorts) {
@@ -2059,7 +2074,8 @@ function renderVerdict(resorts) {
   const _fromCity = _cityEw || 'your location';
   const _utilityDrive  = driveUtilitySegment(resort.id);
   const _driveMins = getDriveMins(resort.id);
-  const _eyebrowTier = (tier === 'bad' || tier === 'marginal') ? 'Best Today' : 'Top Pick';
+  const _pickLabel = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.PICK) || 'Top Pick';
+  const _eyebrowTier = _pickLabel;
   const _eyebrowMain = esc(`${_eyebrowTier} • From ${_fromCity}`);
   const _driveEyebrowHtml = state.origin && _driveMins != null
     ? `<span class="vcard-eyebrow-drive">${esc(_utilityDrive)}</span>`
@@ -2204,8 +2220,9 @@ function renderVerdict(resorts) {
     const _sDriveU = esc(driveUtilitySegment(sleeperEntry.resort.id));
     const _sCrowdU = esc(crowdUtilityShort(_sCrowd.label));
     const _sMarginalCls = sleeperEntry.tier === 'marginal' ? ' vcard-sleeper-card--marginal' : '';
+    const _sHeading = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.SLEEPER) || 'Smart Play';
     return `<div class="vcard-role-card vcard-sleeper-zone" data-role-sleeper="${esc(sleeperEntry.resort.id)}">
-      <div class="vcard-runners-heading">Smart Play</div>
+      <div class="vcard-runners-heading">${esc(_sHeading)}</div>
       <button type="button" class="vcard-mini-runner vcard-sleeper-card${_sMarginalCls}" id="verdictSleeperBtn" data-sleeper-id="${esc(sleeperEntry.resort.id)}">
         <span class="vmr-name">${esc(sleeperEntry.resort.name)}</span>
         <p class="vmr-reason">${esc(_sCopy)}</p>
@@ -2223,8 +2240,9 @@ function renderVerdict(resorts) {
     const _tDriveU = esc(driveUtilitySegment(trapEntry.resort.id));
     const _tCrowdU = esc(crowdUtilityShort(_tCrowd.label));
     const _tMarginalCls = trapEntry.tier === 'marginal' ? ' vcard-trap-card--marginal' : '';
+    const _tHeading = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.TRAP) || 'Crowd Watch';
     return `<div class="vcard-role-card vcard-trap-zone" data-role-trap="${esc(trapEntry.resort.id)}">
-      <div class="vcard-runners-heading">Crowd Watch</div>
+      <div class="vcard-runners-heading">${esc(_tHeading)}</div>
       <button type="button" class="vcard-mini-runner vcard-trap-card${_tMarginalCls}" id="verdictTrapBtn" data-trap-id="${esc(trapEntry.resort.id)}">
         <span class="vmr-name">${esc(trapEntry.resort.name)}</span>
         <p class="vmr-reason">${esc(_tCopy)}</p>
@@ -2233,7 +2251,7 @@ function renderVerdict(resorts) {
     </div>`;
   })() : '';
 
-  const roleCardsInner = [localCardHtml, sleeperCardHtml, trapCardHtml].filter(Boolean).join('');
+  const roleCardsInner = [sleeperCardHtml, localCardHtml, trapCardHtml].filter(Boolean).join('');
   const otherSmartCallsHtml = roleCardsInner
     ? `<section class="vcard-other-smart-calls" aria-labelledby="verdictOtherSmartCallsHeading">
         <h3 class="vcard-other-smart-calls-heading" id="verdictOtherSmartCallsHeading">Other smart calls</h3>
@@ -2291,8 +2309,18 @@ function renderVerdict(resorts) {
     _fb.setAttribute('hidden', '');
   }
 
-  $('verdictPickBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_name_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
-  $('verdictDetailBtn')?.addEventListener('click', () => { state.selectedId = resort.id; trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || ''); renderDetail({ scroll: true }); });
+  $('verdictPickBtn')?.addEventListener('click', () => {
+    state.selectedFromRole = 'pick';
+    state.selectedId = resort.id;
+    trackResortView(resort.id, resort.name, 'verdict_name_click', resort.passGroup || '');
+    renderDetail({ scroll: true });
+  });
+  $('verdictDetailBtn')?.addEventListener('click', () => {
+    state.selectedFromRole = 'pick';
+    state.selectedId = resort.id;
+    trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || '');
+    renderDetail({ scroll: true });
+  });
   $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
     saveCompareSession(vWithRoles, resorts);
     trackFilterEvent('engagement', 'compare_mountains_click');
@@ -2306,18 +2334,21 @@ function renderVerdict(resorts) {
 
   $('verdictLocalBtn')?.addEventListener('click', () => {
     if (!localEntry) return;
+    state.selectedFromRole = localEntry.roleVariant === 'another_smart_play' ? 'local_fallback' : 'local';
     state.selectedId = localEntry.resort.id;
     trackResortView(localEntry.resort.id, localEntry.resort.name, 'local_role_click', localEntry.resort.passGroup || '');
     renderDetail({ scroll: true });
   });
   $('verdictSleeperBtn')?.addEventListener('click', () => {
     if (!sleeperEntry) return;
+    state.selectedFromRole = 'sleeper';
     state.selectedId = sleeperEntry.resort.id;
     trackResortView(sleeperEntry.resort.id, sleeperEntry.resort.name, 'sleeper_role_click', sleeperEntry.resort.passGroup || '');
     renderDetail({ scroll: true });
   });
   $('verdictTrapBtn')?.addEventListener('click', () => {
     if (!trapEntry) return;
+    state.selectedFromRole = 'trap';
     state.selectedId = trapEntry.resort.id;
     trackResortView(trapEntry.resort.id, trapEntry.resort.name, 'trap_role_click', trapEntry.resort.passGroup || '');
     renderDetail({ scroll: true });
@@ -3017,9 +3048,16 @@ function renderDetail({ scroll = false } = {}) {
   // PATCH 4: Use resort-specific photo in detail panel hero
   const _detailPhotoStyle = resortPhotoStyle(resort, 'linear-gradient(180deg, rgba(10, 20, 35, 0.52) 0%, rgba(10, 20, 35, 0.78) 100%)');
 
+  const _roleBannerTxt = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.detailBanner)
+    ? WTSN_ROLE.detailBanner(state.selectedFromRole)
+    : null;
+  const _roleBannerHtml = _roleBannerTxt
+    ? `<p class="dhr-role-banner${state.selectedFromRole === 'trap' ? ' dhr-role-banner--trap' : ''}" role="note">${esc(_roleBannerTxt)}</p>`
+    : '';
+
   els.detailCard.innerHTML = `
 <div class="detail-card-inner">
-
+${_roleBannerHtml}
   <div class="dhr" style="${_detailPhotoStyle}">
     <p class="dhr-eyebrow">${esc(resort.state)} · ${esc(resort.passGroup)}${resort.region ? ' · ' + esc(resort.region) : ''}</p>
     <h2 class="dhr-name">${esc(resort.name)}</h2>

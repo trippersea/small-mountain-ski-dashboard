@@ -509,6 +509,9 @@ function localRoleExplanation(localEntry, pickResort) {
 }
 
 function localRoleLabel(localEntry) {
+  if (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.localRoleLabel) {
+    return WTSN_ROLE.localRoleLabel(localEntry);
+  }
   return localEntry?.roleVariant === 'another_smart_play'
     ? 'Another Smart Play'
     : 'Best Nearby Option';
@@ -766,7 +769,10 @@ function trapRoleExplanation(trapEntry) {
   return `Great mountain, bad timing — ski quality may hold up, but ${crowdShort} crowds may mean long lift lines.`;
 }
 
-/** Fill empty LOCAL / SLEEPER / TRAP slots from the next-best ranked resorts (weather never blocks). */
+/**
+ * Fill empty LOCAL / SLEEPER slots from the next-best ranked resorts when the pool allows.
+ * TRAP (Crowd Watch) is never a generic filler — only isCredibleTrapCandidate qualifies.
+ */
 function fillMissingRoleSlots(ranked, roles) {
   if (!roles.pick?.resort) return roles;
 
@@ -816,13 +822,17 @@ function fillMissingRoleSlots(ranked, roles) {
   }
 
   if (!trap) {
-    const entry = takeNext();
-    if (entry) {
+    for (let i = 0; i < pool.length; i++) {
+      const entry = pool[i];
+      if (!entry?.resort?.id || usedIds.has(entry.resort.id)) continue;
+      if (!isCredibleTrapCandidate(entry, usedIds)) continue;
       const crowd = crowdForecast(entry.resort, entry.wx);
       trap = toRoleEntry(entry, {
         crowdLabel: crowd.label,
         crowdScore: crowd.score,
       });
+      usedIds.add(entry.resort.id);
+      break;
     }
   }
 
