@@ -414,17 +414,10 @@ const LOCAL_SCORE_CLOSE_BAND = 5;
 /** Score band for "Another Smart Play" when no mountain is within LOCAL_MAX_DRIVE_MINS. */
 const LOCAL_FALLBACK_SCORE_BAND = 15;
 
-function isWeatherPoorForRoles(entry) {
-  if (!entry?.resort || !entry?.wx) return true;
-  const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
-  return vd.tier === 'bad';
-}
-
 function isCredibleLocalCandidate(entry, pickEntry) {
   if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort) return false;
   if (entry.resort.id === pickEntry.resort.id) return false;
   if (entry.breakdown.destinationClass !== 'local') return false;
-  if (isWeatherPoorForRoles(entry)) return false;
 
   const localDrive = getDriveMins(entry.resort.id);
   if (localDrive == null || localDrive > LOCAL_MAX_DRIVE_MINS) return false;
@@ -469,7 +462,6 @@ function isCredibleLocalFallbackCandidate(entry, pickEntry, usedIds) {
   if (entry.resort.id === pickEntry.resort.id) return false;
   const cls = entry.breakdown.destinationClass ?? destinationClass(entry.resort);
   if (cls === 'local') return false;
-  if (isWeatherPoorForRoles(entry)) return false;
   if (isTopPickFloorActive() && entry.breakdown.topPickEligible !== true) return false;
   const pickScore = pickEntry.breakdown?.score ?? -Infinity;
   const candScore = entry.breakdown?.score ?? -Infinity;
@@ -587,8 +579,6 @@ function isCredibleSleeperCandidate(entry, pickEntry, refEntry, usedIds) {
   if (usedIds.has(entry.resort.id)) return false;
   if (entry.resort.id === pickEntry.resort.id) return false;
   if (entry.breakdown.destinationClass === 'local') return false;
-  if (isWeatherPoorForRoles(entry)) return false;
-
   if (isTopPickFloorActive() && entry.breakdown.topPickEligible !== true) return false;
 
   const pickScore = pickEntry.breakdown?.score ?? -Infinity;
@@ -704,8 +694,6 @@ function isCredibleTrapCandidate(entry, usedIds) {
   if (!entry?.resort || !entry?.wx || !entry?.breakdown) return false;
   if (usedIds.has(entry.resort.id)) return false;
   if (entry.breakdown.destinationClass === 'local') return false;
-  if (isWeatherPoorForRoles(entry)) return false;
-
   if (isTopPickFloorActive() && entry.breakdown.topPickEligible !== true) return false;
 
   return _hasHighMountainQuality(entry)
@@ -724,7 +712,6 @@ function compareTrapCandidates(a, b) {
 
 function pickQualifiesForCrowdWarning(pickEntry) {
   if (!pickEntry?.resort || !pickEntry?.wx) return false;
-  if (isWeatherPoorForRoles(pickEntry)) return false;
   if (!_hasHighMountainQuality(pickEntry) || !_hasHighDemand(pickEntry)) return false;
   const crowd = crowdForecast(pickEntry.resort, pickEntry.wx);
   return _crowdIsLoud(crowd.label);
@@ -779,6 +766,69 @@ function trapRoleExplanation(trapEntry) {
   return `Great mountain, bad timing — ski quality may hold up, but ${crowdShort} crowds may mean long lift lines.`;
 }
 
+/** Fill empty LOCAL / SLEEPER / TRAP slots from the next-best ranked resorts (weather never blocks). */
+function fillMissingRoleSlots(ranked, roles) {
+  if (!roles.pick?.resort) return roles;
+
+  const usedIds = new Set([
+    roles.pick?.resort?.id,
+    roles.local?.resort?.id,
+    roles.sleeper?.resort?.id,
+    roles.trap?.resort?.id,
+  ].filter(Boolean));
+
+  const pool = filterRunnerUpCandidates(ranked)
+    .filter(e => e.resort?.id && !usedIds.has(e.resort.id))
+    .sort((a, b) => (b.breakdown?.score ?? -Infinity) - (a.breakdown?.score ?? -Infinity));
+
+  let idx = 0;
+  const takeNext = () => {
+    while (idx < pool.length && usedIds.has(pool[idx].resort.id)) idx++;
+    if (idx >= pool.length) return null;
+    const entry = pool[idx++];
+    usedIds.add(entry.resort.id);
+    return entry;
+  };
+
+  const toRoleEntry = (entry, extras = {}) => {
+    const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
+    return { ...entry, tier: vd.tier, ...extras };
+  };
+
+  let { local, sleeper, trap } = roles;
+
+  if (!local && !hasLocalIntent() && roles.pick.breakdown?.destinationClass !== 'local') {
+    const entry = takeNext();
+    if (entry) local = toRoleEntry(entry, { roleVariant: 'another_smart_play' });
+  }
+
+  if (!sleeper) {
+    const entry = takeNext();
+    if (entry) {
+      const crowd = crowdForecast(entry.resort, entry.wx);
+      sleeper = toRoleEntry(entry, {
+        refResortId: null,
+        refCrowdLabel: null,
+        crowdLabel: crowd.label,
+        crowdGap: null,
+      });
+    }
+  }
+
+  if (!trap) {
+    const entry = takeNext();
+    if (entry) {
+      const crowd = crowdForecast(entry.resort, entry.wx);
+      trap = toRoleEntry(entry, {
+        crowdLabel: crowd.label,
+        crowdScore: crowd.score,
+      });
+    }
+  }
+
+  return { ...roles, local, sleeper, trap };
+}
+
 /**
  * PICK + LOCAL + SLEEPER + TRAP recommendation roles from a score-sorted verdict pool.
  * @param {Array<{resort: object, wx: object, breakdown: object, history?: object}>} ranked
@@ -818,7 +868,7 @@ function buildRecommendationRolesFromRanked(ranked) {
     };
   }
 
-  return { pick, local, sleeper, trap: trapResult.trap };
+  return fillMissingRoleSlots(ranked, { pick, local, sleeper, trap: trapResult.trap });
 }
 
 /** Layer-2 fit: identity on broad/willing-to-drive; mountainFit for local intent & size chips. */

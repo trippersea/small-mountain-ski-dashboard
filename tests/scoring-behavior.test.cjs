@@ -347,7 +347,7 @@ test('[PROTECT] LOCAL null when local drive time is unknown', () => {
   assert.strictEqual(roles.local, null);
 });
 
-test('[PROTECT] LOCAL null when local candidate tier is bad', () => {
+test('[PROTECT] LOCAL shows even when local candidate tier is bad', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
@@ -365,7 +365,7 @@ test('[PROTECT] LOCAL null when local candidate tier is bad', () => {
   assert.strictEqual(bhTier, 'bad');
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.pick?.resort?.id, 'loon-mountain');
-  assert.strictEqual(roles.local, null);
+  assert.strictEqual(roles.local?.resort?.id, 'blue-hills-ski-area');
 });
 
 test('[PROTECT] LOCAL may render when local candidate tier is marginal', () => {
@@ -498,7 +498,7 @@ test('[PROTECT] SLEEPER null when pick is already the quiet smart call', () => {
   assert.strictEqual(roles.sleeper, null);
 });
 
-test('[PROTECT] SLEEPER null when candidate has bad weather tier', () => {
+test('[PROTECT] SLEEPER shows even when candidate has bad weather tier', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
@@ -516,7 +516,7 @@ test('[PROTECT] SLEEPER null when candidate has bad weather tier', () => {
   assert.strictEqual(wcTier, 'bad');
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
-  assert.strictEqual(roles.sleeper, null);
+  assert.strictEqual(roles.sleeper?.resort?.id, 'wildcat-mountain');
 });
 
 test('[PROTECT] SLEEPER null when score gap exceeds close band', () => {
@@ -710,7 +710,7 @@ test('[PROTECT] no local within 45 min uses Another Smart Play fallback', () => 
   assert.notStrictEqual(roles.local.resort.id, roles.trap?.resort?.id);
 });
 
-test('[PROTECT] rain suppresses Crowd Watch and Smart Play roles', () => {
+test('[PROTECT] rain still fills all four recommendation slots', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
@@ -718,14 +718,25 @@ test('[PROTECT] rain suppresses Crowd Watch and Smart Play roles', () => {
   h.setDrive('killington-resort', 180);
   h.setDrive('wildcat-mountain', 155);
   h.setDrive('loon-mountain', 140);
+  h.setDrive('tenney-mountain', 120);
   const ranked = [
     rankedEntry('killington-resort', h.wetDay()),
     rankedEntry('loon-mountain', h.wetDay()),
     rankedEntry('wildcat-mountain', h.wetDay()),
+    rankedEntry('tenney-mountain', h.wetDay()),
   ].sort((a, b) => b.breakdown.score - a.breakdown.score);
   const roles = api.buildRecommendationRolesFromRanked(ranked);
-  assert.strictEqual(roles.sleeper, null);
-  assert.strictEqual(roles.trap, null);
+  assert.ok(roles.pick?.resort?.id);
+  assert.ok(roles.local?.resort?.id, 'expected LOCAL / Another Smart Play on rainy day');
+  assert.ok(roles.sleeper?.resort?.id, 'expected Smart Play on rainy day');
+  assert.ok(roles.trap?.resort?.id, 'expected Crowd Watch on rainy day');
+  const ids = new Set([
+    roles.pick.resort.id,
+    roles.local.resort.id,
+    roles.sleeper.resort.id,
+    roles.trap.resort.id,
+  ]);
+  assert.strictEqual(ids.size, 4, 'all four slots should be distinct resorts');
 });
 
 test('[PROTECT] ski today uses forecast[0] — weather and crowd stay on same day', () => {

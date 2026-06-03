@@ -2241,9 +2241,6 @@ function renderVerdict(resorts) {
         <div class="vcard-other-smart-calls-grid">${roleCardsInner}</div>
       </section>`
     : '';
-  const rolesEmptyNudgeHtml = !roleCardsInner && (tier === 'bad' || tier === 'marginal')
-    ? `<p class="vcard-roles-empty-nudge" role="note">Rough forecast — we are not surfacing alternative picks today. Use Compare Mountains for the full ranked list.</p>`
-    : '';
 
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}"
@@ -2274,7 +2271,6 @@ function renderVerdict(resorts) {
           ${shareBtn}
         </div>
         ${otherSmartCallsHtml}
-        ${rolesEmptyNudgeHtml}
         ${guidanceInsetHtml}
       </div>
        </div>`;
