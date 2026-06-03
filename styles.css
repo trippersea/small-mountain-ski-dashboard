@@ -5875,6 +5875,28 @@ tr:focus-within .story-text--table {
   align-items: center;
   gap: 10px;
 }
+.vcard-secondary-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  flex: 1 1 280px;
+}
+.vcard-action-divider {
+  color: var(--text-muted, rgba(255, 255, 255, 0.35));
+  font-size: 13px;
+  user-select: none;
+}
+.vcard-rankings-btn {
+  white-space: nowrap;
+}
+.hn-hero-verdict-dock .vcard-secondary-actions {
+  flex: 1 1 100%;
+  justify-content: flex-start;
+}
+.hn-hero-verdict-dock .vcard-action-divider {
+  color: rgba(255, 255, 255, 0.28);
+}
 /* Supportive nudge when conditions are weak or fit is low — icy inset, not an alert */
 .vcard-guidance-inset {
   margin-top: 20px;

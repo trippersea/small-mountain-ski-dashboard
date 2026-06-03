@@ -519,6 +519,58 @@ function localRoleLabel(localEntry) {
 
 const SLEEPER_SCORE_CLOSE_BAND = 12;
 const SLEEPER_CROWD_GAP_MIN = 10;
+/** Max pool-relative obviousness for Smart Play (tuned to anchor suite). */
+const SLEEPER_MAX_OBVIOUSNESS = 0.55;
+/** Min obviousness gap vs reference magnet (tuned to anchor suite). */
+const SLEEPER_OBVIOUSNESS_GAP = 0.15;
+/** Top Pick at/above this obviousness index uses itself as Smart Play reference. */
+const SLEEPER_OBVIOUS_PICK_THRESHOLD = 0.62;
+
+function sleeperObviousnessClassComponent(entry) {
+  const cls = entry.breakdown?.destinationClass ?? destinationClass(entry.resort);
+  if (cls === 'destination') return 1;
+  if (cls === 'regional') return 0.42;
+  return 0;
+}
+
+function sleeperObviousnessPassComponent(resort) {
+  const pg = resort.passGroup;
+  if (pg === 'Epic' || pg === 'Ikon') return 1;
+  if (pg === 'Indy') return 0.52;
+  return 0.28;
+}
+
+function sleeperObviousnessMetroComponent(resort) {
+  const mg = _metroGravity(resort);
+  return Math.min(1, Math.max(0, (mg - 350) / 650));
+}
+
+/** 0–1 pool-relative obviousness (destinationClass + passGroup + metroGravity). */
+function sleeperObviousnessIndex(entry) {
+  if (!entry?.resort) return 1;
+  const c = sleeperObviousnessClassComponent(entry);
+  const p = sleeperObviousnessPassComponent(entry.resort);
+  const m = sleeperObviousnessMetroComponent(entry.resort);
+  return Math.min(1, 0.38 * c + 0.32 * p + 0.30 * m);
+}
+
+/** Reference for less-obvious contrast: obvious Top Pick, else busiest pool magnet. */
+function smartPlayReference(ranked, pickEntry) {
+  if (!pickEntry?.resort) return null;
+  if (sleeperObviousnessIndex(pickEntry) >= SLEEPER_OBVIOUS_PICK_THRESHOLD) {
+    return pickEntry;
+  }
+  return obviousBigMountainReference(ranked, pickEntry) || pickEntry;
+}
+
+function isLessObviousSmartPlay(entry, refEntry) {
+  if (!entry?.resort || !refEntry?.resort) return false;
+  if (entry.resort.id === refEntry.resort.id) return false;
+  const cand = sleeperObviousnessIndex(entry);
+  const ref = sleeperObviousnessIndex(refEntry);
+  if (cand >= SLEEPER_MAX_OBVIOUSNESS) return false;
+  return (ref - cand) >= SLEEPER_OBVIOUSNESS_GAP;
+}
 
 function _crowdIsLoud(label) {
   return label === 'Busy' || label === 'Avoid';
@@ -625,6 +677,11 @@ function isCredibleSleeperCandidate(entry, pickEntry, refEntry, usedIds) {
   const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
   if (vd.tier === 'bad') return false;
 
+  const refForObvious = (refEntry?.resort?.id && refEntry.resort.id !== entry.resort.id)
+    ? refEntry
+    : pickEntry;
+  if (!isLessObviousSmartPlay(entry, refForObvious)) return false;
+
   return hasSleeperReason(entry, pickEntry, refEntry);
 }
 
@@ -632,6 +689,9 @@ function compareSleeperCandidates(a, b) {
   const sa = a.breakdown?.score ?? -Infinity;
   const sb = b.breakdown?.score ?? -Infinity;
   if (Math.abs(sb - sa) > 2) return sb - sa;
+  const oa = sleeperObviousnessIndex(a);
+  const ob = sleeperObviousnessIndex(b);
+  if (oa !== ob) return oa - ob;
   const ca = crowdForecast(a.resort, a.wx).score;
   const cb = crowdForecast(b.resort, b.wx).score;
   if (ca !== cb) return ca - cb;
@@ -650,8 +710,7 @@ function pickSleeperFromRanked(ranked, pickEntry, localEntry, trapEntry) {
   if (localEntry?.resort?.id) usedIds.add(localEntry.resort.id);
   if (trapEntry?.resort?.id) usedIds.add(trapEntry.resort.id);
 
-  const ref = obviousBigMountainReference(ranked, pickEntry);
-  if (ref && isPickAlreadyQuietPlay(pickEntry, ref)) return null;
+  const ref = smartPlayReference(ranked, pickEntry);
 
   const pool = filterRunnerUpCandidates(ranked).filter(e => e.resort?.id && !usedIds.has(e.resort.id));
   const candidates = pool

@@ -448,7 +448,7 @@ function crowdedSaturdayRanked(ids, wx, opts = {}) {
   const drives = {
     'killington-resort': 180,
     'loon-mountain': 140,
-    'wildcat-mountain': 155,
+    'magic-mountain': 170,
     'tenney-mountain': 165,
   };
   ids.forEach((id) => h.setDrive(id, drives[id] ?? 120));
@@ -457,15 +457,15 @@ function crowdedSaturdayRanked(ids, wx, opts = {}) {
     .sort((a, b) => b.breakdown.score - a.breakdown.score);
 }
 
-test('[PROTECT] Loon TRAP when Killington is PICK + Wildcat SLEEPER on crowded Saturday', () => {
+test('[PROTECT] Loon TRAP when Killington is PICK + Magic Smart Play on crowded Saturday', () => {
   const ranked = crowdedSaturdayRanked(
-    ['killington-resort', 'loon-mountain', 'wildcat-mountain'],
+    ['killington-resort', 'loon-mountain', 'magic-mountain'],
     h.bluebird(),
-    { historyIds: ['killington-resort', 'loon-mountain', 'wildcat-mountain'] },
+    { historyIds: ['killington-resort', 'loon-mountain', 'magic-mountain'] },
   );
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
-  assert.strictEqual(roles.sleeper?.resort?.id, 'wildcat-mountain');
+  assert.strictEqual(roles.sleeper?.resort?.id, 'magic-mountain');
   assert.strictEqual(roles.trap?.resort?.id, 'loon-mountain');
   assert.strictEqual(roles.pick.pickCrowdWarning, true);
   assert.ok(roles.pick.pickCrowdWarningCopy);
@@ -574,21 +574,22 @@ test('[PROTECT] Smart Play requires ref contrast via hasSleeperReason', () => {
   state.skiDayPreset = 'saturday';
   state.targetDate = new Date('2026-01-17T12:00:00');
   h.setDrive('killington-resort', 180);
-  h.setDrive('wildcat-mountain', 155);
+  h.setDrive('magic-mountain', 170);
   h.sandbox.historyCache.set('killington-resort', { total: 10, days: [] });
-  h.sandbox.historyCache.set('wildcat-mountain', { total: 10, days: [] });
+  h.sandbox.historyCache.set('magic-mountain', { total: 10, days: [] });
   const wx = h.bluebird();
   const ranked = crowdedSaturdayRanked(
-    ['killington-resort', 'loon-mountain', 'wildcat-mountain'],
+    ['killington-resort', 'loon-mountain', 'magic-mountain'],
     wx,
-    { historyIds: ['killington-resort', 'loon-mountain', 'wildcat-mountain'] },
+    { historyIds: ['killington-resort', 'loon-mountain', 'magic-mountain'] },
   );
   const pick = ranked.find((e) => e.resort.id === 'killington-resort');
-  const wildcat = ranked.find((e) => e.resort.id === 'wildcat-mountain');
-  const ref = api.obviousBigMountainReference(ranked, pick);
-  assert.ok(api.hasSleeperReason(wildcat, pick, ref), 'Wildcat should have quieter contrast vs ref');
+  const magic = ranked.find((e) => e.resort.id === 'magic-mountain');
+  const ref = api.smartPlayReference(ranked, pick);
+  assert.ok(api.hasSleeperReason(magic, pick, ref), 'Magic should have quieter contrast vs ref');
+  assert.ok(api.isLessObviousSmartPlay(magic, ref));
   assert.ok(
-    api.isCredibleSleeperCandidate(wildcat, pick, ref, new Set(['killington-resort', 'loon-mountain'])),
+    api.isCredibleSleeperCandidate(magic, pick, ref, new Set(['killington-resort', 'loon-mountain'])),
   );
 });
 
@@ -722,7 +723,7 @@ function bostonDayTripBluebirdRanked(ids) {
   const drives = {
     'killington-resort': 249,
     'loon-mountain': 140,
-    'wildcat-mountain': 155,
+    'magic-mountain': 170,
     'blue-hills-ski-area': 38,
     'nashoba-valley': 42,
   };
@@ -733,7 +734,7 @@ function bostonDayTripBluebirdRanked(ids) {
 
 test('[PROTECT] Boston day trip bluebird fills Pick + Local + Sleeper + Crowd Watch', () => {
   const ranked = bostonDayTripBluebirdRanked([
-    'killington-resort', 'loon-mountain', 'wildcat-mountain', 'blue-hills-ski-area',
+    'killington-resort', 'loon-mountain', 'magic-mountain', 'blue-hills-ski-area',
   ]);
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.strictEqual(roles.pick?.resort?.id, 'killington-resort');
