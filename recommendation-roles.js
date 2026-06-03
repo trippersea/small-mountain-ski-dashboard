@@ -28,15 +28,57 @@
     return null;
   }
 
-  /** Merge side roles when Top Pick is unchanged (phase-1 stability + phase-2 pool). */
+  /** Crowd pressure for merge tie-breaks (matches trap/sleeper scoring order). */
+  function roleCrowdPressure(entry) {
+    if (entry?.crowdScore != null && Number.isFinite(entry.crowdScore)) return entry.crowdScore;
+    const label = entry?.crowdLabel || '';
+    if (label === 'Avoid') return 90;
+    if (label === 'Busy') return 75;
+    if (label === 'Moderate') return 50;
+    if (label === 'Quiet') return 25;
+    return 0;
+  }
+
+  /** Positive when `b` is the stronger Crowd Watch candidate (busier magnet). */
+  function compareTrapRoleEntries(a, b) {
+    const ca = roleCrowdPressure(a);
+    const cb = roleCrowdPressure(b);
+    if (cb !== ca) return cb - ca;
+    const sa = a?.breakdown?.score ?? -Infinity;
+    const sb = b?.breakdown?.score ?? -Infinity;
+    return sb - sa;
+  }
+
+  /** Positive when `b` is the stronger Smart Play candidate. */
+  function compareSleeperRoleEntries(a, b) {
+    const sa = a?.breakdown?.score ?? -Infinity;
+    const sb = b?.breakdown?.score ?? -Infinity;
+    if (Math.abs(sb - sa) > 2) return sb - sa;
+    const ca = roleCrowdPressure(a);
+    const cb = roleCrowdPressure(b);
+    if (ca !== cb) return ca - cb;
+    return sb - sa;
+  }
+
+  function pickStrongerSideRole(current, full, compare) {
+    if (!current?.resort) return full || null;
+    if (!full?.resort) return current;
+    return compare(current, full) > 0 ? full : current;
+  }
+
+  /**
+   * Merge side roles when Top Pick is unchanged (phase-1 stability + phase-2 pool).
+   * LOCAL: keep phase-1 once set (convenience slot).
+   * SLEEPER / TRAP: prefer the stronger full-pool role when both exist.
+   */
   function mergeRolesPerSlot(current, full) {
     if (!current?.pick?.resort || !full?.pick?.resort) return current || full;
     if (current.pick.resort.id !== full.pick.resort.id) return current;
     return {
       pick: current.pick,
       local: current.local || full.local || null,
-      sleeper: current.sleeper || full.sleeper || null,
-      trap: current.trap || full.trap || null,
+      sleeper: pickStrongerSideRole(current.sleeper, full.sleeper, compareSleeperRoleEntries),
+      trap: pickStrongerSideRole(current.trap, full.trap, compareTrapRoleEntries),
     };
   }
 
@@ -67,6 +109,8 @@
     localRoleLabel,
     rankingTagForRole,
     mergeRolesPerSlot,
+    compareTrapRoleEntries,
+    compareSleeperRoleEntries,
     detailBanner,
     isCrowdWatchLabel,
   };

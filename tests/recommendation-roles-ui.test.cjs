@@ -59,6 +59,39 @@ test('[UI] mergeRolesPerSlot fills only missing side roles', () => {
   assert.strictEqual(m.trap.resort.id, 'loon-mountain');
 });
 
+test('[UI] mergeRolesPerSlot upgrades Crowd Watch when full pool is busier', () => {
+  const cur = {
+    pick: { resort: { id: 'waterville-valley' } },
+    local: { resort: { id: 'blue-hills-ski-area' } },
+    sleeper: { resort: { id: 'gunstock' }, breakdown: { score: 41.6 }, crowdLabel: 'Quiet', crowdScore: 25 },
+    trap: { resort: { id: 'mount-sunapee' }, breakdown: { score: 39.7 }, crowdLabel: 'Moderate', crowdScore: 50 },
+  };
+  const full = {
+    pick: { resort: { id: 'waterville-valley' } },
+    local: { resort: { id: 'blue-hills-ski-area' } },
+    sleeper: { resort: { id: 'gunstock' }, breakdown: { score: 41.6 }, crowdLabel: 'Quiet', crowdScore: 25 },
+    trap: { resort: { id: 'loon-mountain' }, breakdown: { score: 40.8 }, crowdLabel: 'Busy', crowdScore: 75 },
+  };
+  const m = mergeRolesPerSlot(cur, full);
+  assert.strictEqual(m.trap.resort.id, 'loon-mountain');
+  assert.strictEqual(m.sleeper.resort.id, 'gunstock');
+});
+
+test('[UI] mergeRolesPerSlot keeps stronger phase-1 Crowd Watch over weaker full-pool trap', () => {
+  const cur = {
+    pick: { resort: { id: 'waterville-valley' } },
+    local: null,
+    sleeper: null,
+    trap: { resort: { id: 'loon-mountain' }, crowdLabel: 'Busy', crowdScore: 75 },
+  };
+  const full = {
+    pick: { resort: { id: 'waterville-valley' } },
+    trap: { resort: { id: 'mount-sunapee' }, crowdLabel: 'Moderate', crowdScore: 50 },
+  };
+  const m = mergeRolesPerSlot(cur, full);
+  assert.strictEqual(m.trap.resort.id, 'loon-mountain');
+});
+
 test('[UI] mergeRolesPerSlot does not merge when Top Pick differs', () => {
   const cur = { pick: { resort: { id: 'loon-mountain' } }, local: null, sleeper: null, trap: null };
   const full = { pick: { resort: { id: 'killington-resort' } }, trap: { resort: { id: 'loon-mountain' } } };
