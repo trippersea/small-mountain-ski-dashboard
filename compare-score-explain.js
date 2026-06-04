@@ -41,13 +41,13 @@
       items.push({
         dir: 'hurt',
         k: 'snow',
-        text: `Below your ${target}"+ snow target — still skiable if temps and base hold, but not the snow day you asked for`,
+        text: `Below your ${target}"+ snow target. Still skiable if temps and base hold, but not the snow day you asked for`,
       });
     } else {
       items.push({
         dir: 'mixed',
         k: 'snow',
-        text: 'Dry forecast — better for groomers than powder chasing',
+        text: 'Dry forecast. Better for groomers than powder chasing',
       });
     }
 

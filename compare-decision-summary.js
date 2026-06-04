@@ -247,9 +247,9 @@
     }
     if (kind === 'sleeper') {
       const t = analyzeRowVsPick(row, pick);
-      if (t.rowQuieter && t.similarSnow) return 'Quieter option with a similar forecast — the day sets up well here.';
+      if (t.rowQuieter && t.similarSnow) return 'Quieter option with a similar forecast. The day sets up well here.';
       if (t.rowQuieter) return 'Less obvious pick with enough mountain to be worth considering today.';
-      return 'Solid Option in a similar score band — compare the full breakdown before you commit.';
+      return 'Solid Option in a similar score band. Compare the full breakdown before you commit.';
     }
     if (kind === 'local' || kind === 'local_fallback') {
       const t = analyzeRowVsPick(row, pick);
@@ -288,9 +288,9 @@
       });
       return joinList(p) + ', but ' + joinList(cons.slice(0, 2)) + '.';
     }
-    if (pros.length === 1) return pros[0].charAt(0).toUpperCase() + pros[0].slice(1) + ' — compare the full breakdown below.';
+    if (pros.length === 1) return pros[0].charAt(0).toUpperCase() + pros[0].slice(1) + '. Compare the full breakdown below.';
     if (cons.length) return 'Solid alternative, but ' + joinList(cons.slice(0, 2)) + ' on this day.';
-    return 'Solid alternative for your search — see how it compares below.';
+    return 'Solid alternative for your search. See how it compares below.';
   }
 
   function buildDecisionSummaryBundle(pick, sideCols, fullRankings, passFilter) {

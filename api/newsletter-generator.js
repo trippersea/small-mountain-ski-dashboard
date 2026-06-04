@@ -163,7 +163,7 @@ async function generatePickCopy(resort, scores, region) {
     `Crowd outlook: ${scores.crowdLabel}`,
   ].join('\n');
 
-  const prompt = `You write for WhereToSkiNext, a weekly ski newsletter. Skier talking to a skier. Short. Direct. Opinionated. No em dashes. No marketing language.
+  const prompt = `You write for WhereToSkiNext, a weekly ski newsletter. Skier talking to a skier. Short. Direct. Opinionated. Never use em dashes (—) or en dashes (–) as punctuation. Use periods or commas only. No marketing language.
 
 Data for this week's pick:
 ${dataBlock}
@@ -212,7 +212,7 @@ async function generateTrapCopy(resort, scores, regionLabel) {
     `Forecast (next 48h): ${scores.forecast48hIn}"`,
   ].join('\n');
 
-  const prompt = `Write 2 sentences on why ${resort.name} is the mountain to skip this weekend. This is the "Where Everyone's Going" card -- the well-known resort that will be crowded. Focus on the crowd situation and why it is the wrong choice this specific weekend. No em dashes. Direct. Skier voice.
+  const prompt = `Write 2 sentences on why ${resort.name} is the mountain to skip this weekend. This is the "Where Everyone's Going" card -- the well-known resort that will be crowded. Focus on the crowd situation and why it is the wrong choice this specific weekend. Never use em dashes (—) or en dashes (–) as punctuation. Use periods or commas only. Direct. Skier voice.
 
 ${dataBlock}`;
 

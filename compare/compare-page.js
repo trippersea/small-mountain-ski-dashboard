@@ -131,7 +131,7 @@
     return 'cp-pass-ind';
   }
 
-  // Generate a short reason for legacy runner columns (pre–role-layer sessions).
+  // Generate a short reason for legacy runner columns (pre. Role-layer sessions).
   function autoReason(r) {
     const parts = [];
     // Use the session's ski day label so "tomorrow" isn't hardcoded for a Saturday trip.
@@ -167,33 +167,33 @@
     return ROLE_LABELS.LOCAL;
   }
 
-  /** Copy for the LOCAL role column — matches homepage when localExplanation is persisted. */
+  /** Copy for the LOCAL role column. Matches homepage when localExplanation is persisted. */
   function localCompareReason(localR, pickR) {
     if (localR.localExplanation) return localR.localExplanation;
     if (localR.roleVariant === 'another_smart_play') {
-      return 'No true nearby option in range — a credible mountain worth considering if the top pick does not fit your plan.';
+      return 'No true nearby option in range. A credible mountain worth considering if the top pick does not fit your plan.';
     }
     const pickShort = (pickR?.name || 'your top pick')
       .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
     if (localR.tier === 'marginal') {
-      return `Quick local turns if you don't want the drive to ${pickShort} — fair conditions, mostly about convenience.`;
+      return `Quick local turns if you don't want the drive to ${pickShort}. Fair conditions, mostly about convenience.`;
     }
-    return `Quick local turns if you don't want the drive to ${pickShort} — a nearby option when convenience matters.`;
+    return `Quick local turns if you don't want the drive to ${pickShort}. A nearby option when convenience matters.`;
   }
 
-  /** Copy for the SLEEPER role column — matches homepage when sleeperExplanation is persisted. */
+  /** Copy for the SLEEPER role column. Matches homepage when sleeperExplanation is persisted. */
   function sleeperCompareReason(sleeperR) {
     if (sleeperR.sleeperExplanation) return sleeperR.sleeperExplanation;
-    return 'A credible mountain with a real reason to be on your radar — close in the score band to the Top Pick.';
+    return 'A credible mountain with a real reason to be on your radar. Close in the score band to the Top Pick.';
   }
 
-  /** Copy for the TRAP role column — matches homepage when trapExplanation is persisted. */
+  /** Copy for the TRAP role column. Matches homepage when trapExplanation is persisted. */
   function trapCompareReason(trapR) {
     if (trapR.trapExplanation) return trapR.trapExplanation;
-    return 'Great mountain, bad timing — conditions may hold, but crowds may mean long lift lines.';
+    return 'Great mountain, bad timing. Conditions may hold, but crowds may mean long lift lines.';
   }
 
-  /** Side columns: Smart Play, local slot, Crowd Watch — then legacy runners (old sessions). */
+  /** Side columns: Smart Play, local slot, Crowd Watch. Then legacy runners (old sessions). */
   function buildSideColumns(pick, localRow, sleeperRow, trapRow, legacyRunners) {
     const cols = [];
     if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id) {
@@ -230,7 +230,7 @@
     const snow = Math.max(Number(r.stormTotal) || 0, Number(r.tomorrowIn) || 0);
     if (snow >= 4) return [{ dir: 'help', k: 'snow', text: 'Fresh snow in the forecast' }];
     if (snow >= 1) return [{ dir: 'mixed', k: 'snow', text: 'Some new snow, not a big dump' }];
-    return [{ dir: 'mixed', k: 'snow', text: 'Dry forecast — better for groomers than powder chasing' }];
+    return [{ dir: 'mixed', k: 'snow', text: 'Dry forecast. Better for groomers than powder chasing' }];
   }
 
   function scoreExplainHtml(r, name) {
@@ -666,10 +666,10 @@
 
   if (rankingsHead && rankingTotal > COMPARE_FULL_RANKING_LIMIT) {
     rankingsHead.textContent =
-      `Top ${rankingRows.length} of ${rankingTotal} mountains with live forecast — same scoring as the homepage.`;
+      `Top ${rankingRows.length} of ${rankingTotal} mountains with live forecast. Same scoring as the homepage.`;
   } else if (rankingsHead && rankingRows.length) {
     rankingsHead.textContent =
-      `${rankingRows.length} mountain${rankingRows.length !== 1 ? 's' : ''} ranked for your search — same scoring as the homepage.`;
+      `${rankingRows.length} mountain${rankingRows.length !== 1 ? 's' : ''} ranked for your search. Same scoring as the homepage.`;
   }
 
   const snowColLabel = howFar === 0 ? 'Forecast' : '3-day snow';

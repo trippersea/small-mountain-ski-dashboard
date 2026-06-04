@@ -1410,7 +1410,29 @@ button.metric-chip:hover { background: rgba(43, 109, 233, 0.08); }
   line-height: 1.42;
 }
 .hn-hero-verdict-dock .vcard--pick-compact .vcard-freshness {
-  margin-top: 4px;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+.hn-hero-verdict-dock .vcard-actions-dash--primary {
+  padding: 12px 0 0;
+  box-shadow: none;
+}
+.hn-hero-verdict-dock .vcard-actions-dash--primary .vcard-book-btn {
+  width: 100%;
+}
+.hn-hero-verdict-dock .vcard-actions-dash--table {
+  padding: 12px 0 4px;
+  box-shadow: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 10px;
+}
+.hn-hero-verdict-dock .vcard--pick-compact .crowd-expl-body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(210, 224, 238, 0.82);
 }
 .hn-hero-verdict-dock .vcard--pick-compact .vcard-hist-row {
   margin: 0;
@@ -2489,6 +2511,14 @@ tr:focus-within .story-text--table {
   font-size: 12.5px;
   font-weight: 500;
   line-height: 1.4;
+  color: rgba(210, 224, 238, 0.82);
+}
+.crowd-expl-body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
   color: rgba(210, 224, 238, 0.82);
 }
 .crowd-expl-tip {

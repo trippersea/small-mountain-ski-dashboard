@@ -90,16 +90,16 @@
   function detailBanner(fromRole, localVariant) {
     if (!fromRole) return null;
     if (fromRole === 'trap') {
-      return 'Opened from Crowd Watch — this mountain may ski well, but crowds could affect the day.';
+      return 'Opened from Crowd Watch. This mountain may ski well, but crowds could affect the day.';
     }
     if (fromRole === 'sleeper') {
-      return 'Opened from Solid Option — a confident second opinion worth comparing to the Top Pick.';
+      return 'Opened from Solid Option. A confident second opinion worth comparing to the Top Pick.';
     }
     if (fromRole === 'local_fallback' || localVariant === 'another_smart_play') {
-      return 'Opened from Worth a Look — a credible mountain when there is no close local pick.';
+      return 'Opened from Worth a Look. A credible mountain when there is no close local pick.';
     }
     if (fromRole === 'local') {
-      return 'Opened from Best Nearby Option — the best closer-to-home choice today.';
+      return 'Opened from Best Nearby Option. The best closer-to-home choice today.';
     }
     return null;
   }

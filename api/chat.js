@@ -78,8 +78,9 @@ module.exports = async function handler(req, res) {
     resortList + '\n\n' +
     'Based on exactly what they said, pick the ONE mountain that fits best. ' +
     'Factor in any pass they mentioned, skill level, driving distance, day of week, or companions. ' +
-    'Respond with ONLY a valid JSON object — no markdown fences, no extra text, nothing else:\n' +
-    '{"resortName":"<exact name from list>","explanation":"<2–3 punchy sentences. Reference their exact words and the actual stats. Be specific and opinionated.>"}';
+    'Respond with ONLY a valid JSON object. No markdown fences, no extra text, nothing else:\n' +
+    'Never use em dashes (—) or en dashes (–) as punctuation in the explanation. Use periods or commas only.\n' +
+    '{"resortName":"<exact name from list>","explanation":"<2 to 3 punchy sentences. Reference their exact words and the actual stats. Be specific and opinionated.>"}';
 
   // ── Call Anthropic ──────────────────────────────────────────────────────────
   try {
@@ -114,12 +115,12 @@ module.exports = async function handler(req, res) {
       parsed = JSON.parse(clean);
     } catch {
       console.error('[/api/chat] Failed to parse AI JSON:', clean);
-      return res.status(500).json({ error: 'AI returned unexpected format — please try again' });
+      return res.status(500).json({ error: 'AI returned unexpected format. Please try again' });
     }
 
     const aiName = (parsed.resortName || '').trim();
     if (!aiName) {
-      return res.status(500).json({ error: 'AI returned unexpected format — please try again' });
+      return res.status(500).json({ error: 'AI returned unexpected format. Please try again' });
     }
 
     const allowed = resorts.slice(0, 25);
@@ -132,7 +133,7 @@ module.exports = async function handler(req, res) {
       }) || null;
     }
     if (!matched) {
-      return res.status(500).json({ error: 'AI pick was not in your filtered list — please try again' });
+      return res.status(500).json({ error: 'AI pick was not in your filtered list. Please try again' });
     }
 
     return res.status(200).json({

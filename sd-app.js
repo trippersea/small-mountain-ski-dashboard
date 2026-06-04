@@ -9,7 +9,7 @@
 
 let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
-/** False while OSRM is refining routes — weather/verdict wait so drive tier is correct. */
+/** False while OSRM is refining routes. Weather/verdict wait so drive tier is correct. */
 let driveTimesReady = true;
 
 // Scoring constants fetched from /api/weights at startup · never shipped in client JS.
@@ -179,10 +179,10 @@ function topPickVerdictPhrase(tier, scoreNum) {
   }
   if (tier === 'marginal') {
     if (s >= 58) return 'Better later in the day';
-    if (s >= 40) return 'Best of a rough day — keep it short';
+    if (s >= 40) return 'Best of a rough day. Keep it short.';
     return 'Decent if you keep expectations in check';
   }
-  if (s >= 40) return 'Best of a rough day — keep it short';
+  if (s >= 40) return 'Best of a rough day. Keep it short.';
   if (s >= 34) return 'Probably not worth the drive';
   return 'Probably skip this weekend';
 }
@@ -222,21 +222,22 @@ function buildCrowdExplainerHtml(crowd) {
   });
   const factorsStr = shorts.slice(0, 3).join(' + ');
 
-  // One-line actionable tip based on severity
   const tip = crowd.label === 'Quiet'    ? 'Wide open. Pick your line.'
             : crowd.label === 'Moderate' ? 'Manageable if you arrive early.'
             : crowd.label === 'Busy'     ? 'Expect lift lines. Stick to side chairs and trees.'
             :                              'Peak capacity. Consider shifting your day.';
 
   const levelCls = 'crowd-expl--' + crowd.label.toLowerCase();
+  const summary = factorsStr
+    ? `${factorsStr.charAt(0).toUpperCase()}${factorsStr.slice(1)}. ${tip}`
+    : tip;
 
   return `<div class="vcard-crowd-explainer ${levelCls}">
     <div class="crowd-expl-header">
       <span class="crowd-expl-tag">Crowd outlook</span>
       <span class="crowd-expl-level">${esc(crowd.label)} crowds</span>
     </div>
-    <p class="crowd-expl-factors">${esc(factorsStr)}</p>
-    <p class="crowd-expl-tip">${esc(tip)}</p>
+    <p class="crowd-expl-body">${esc(summary)}</p>
   </div>`;
 }
 
@@ -961,7 +962,7 @@ function resortPhotoStyle(resort, gradientCss) {
   return `background-image: ${grad}, url('${photo}'); background-size: cover; background-position: center 40%;`;
 }
 
-/** Weekend lodging strip removed — affiliate links no longer active. */
+/** Weekend lodging strip removed. Affiliate links no longer active. */
 function syncWeekendLodgingStrip(verdict) {
   const strip = document.getElementById('hnBookingStrip');
   if (strip) strip.hidden = true;
@@ -2119,7 +2120,6 @@ function renderVerdict(resorts) {
   const showVerdictGuidance = tier === 'bad'
     || tier === 'marginal'
     || (breakdown && scoreNum < 48 && tier !== 'great');
-  const guidanceInsetHtml = showVerdictGuidance ? buildVerdictRefineGuidanceHtml() : '';
   const _wxVerdict = state.weatherCache[resort.id]?.data;
   const _narrative = getMountainNarrative(buildNarrativeMountainPayload(resort, _wxVerdict));
   const _pureGoldCls = _narrative.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
@@ -2286,7 +2286,7 @@ function renderVerdict(resorts) {
     const _tCrowdLabel = trapEntry.crowdLabel || crowdForecast(trapEntry.resort, _tWx)?.label;
     const _tCopy = typeof trapRoleExplanation === 'function'
       ? trapRoleExplanation(trapEntry)
-      : 'Great mountain, bad timing — crowds may be the real problem.';
+      : 'Great mountain, bad timing. Crowds may be the real problem.';
     const _tDriveU = esc(driveUtilitySegment(trapEntry.resort.id));
     const _tCrowdU = esc(crowdUtilityShort(_tCrowdLabel));
     const _tMarginalCls = trapEntry.tier === 'marginal' ? ' vcard-trap-card--marginal' : '';
@@ -2317,6 +2317,14 @@ function renderVerdict(resorts) {
       </section>`
     : '';
 
+  const primaryActionsHtml = `<div class="vcard-actions vcard-actions-dash vcard-actions-dash--primary">
+          ${primaryBtn}
+          ${_freshnessHtml}
+        </div>`;
+  const tableActionsHtml = `<div class="vcard-actions vcard-actions-dash vcard-actions-dash--table">
+          ${actionRow}
+        </div>`;
+
   els.verdictCard.innerHTML = `
     <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}"
       data-role-pick="${esc(resort.id)}"
@@ -2334,18 +2342,14 @@ function renderVerdict(resorts) {
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         ${_histChipHtml}
-        ${_freshnessHtml}
         ${_crowdExplainerHtml}
         ${_whyPickHtml}
       </div>
       <div class="vcard-body vcard-body-dash">
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
-        <div class="vcard-actions vcard-actions-dash">
-          ${primaryBtn}
-          ${actionRow}
-        </div>
+        ${primaryActionsHtml}
         ${otherSmartCallsHtml}
-        ${guidanceInsetHtml}
+        ${tableActionsHtml}
       </div>
        </div>`;
 
@@ -2416,19 +2420,9 @@ function renderVerdict(resorts) {
     trackResortView(trapEntry.resort.id, trapEntry.resort.name, 'trap_role_click', trapEntry.resort.passGroup || '');
     renderDetail({ scroll: true });
   });
-  $('verdictRefineGuidanceBtn')?.addEventListener('click', () => {
-    const panel = els.plannerSection;
-    if (!panel) return;
-    panel.hidden = false;
-    syncPlannerControls();
-    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
-  });
   if (refinePromptEl) {
-    if (showVerdictGuidance) {
-      refinePromptEl.hidden = true;
-    } else {
-      refinePromptEl.hidden = false;
-      const isUrgent = tier === 'bad' || tier === 'marginal';
+    refinePromptEl.hidden = false;
+    const isUrgent = tier === 'bad' || tier === 'marginal';
       refinePromptEl.classList.toggle('hn-refine-prompt--urgent', isUrgent);
       const titleEl = document.getElementById('hnRefinePromptTitle');
       const subEl   = document.getElementById('hnRefinePromptSub');
@@ -2440,7 +2434,6 @@ function renderVerdict(resorts) {
         if (titleEl) titleEl.textContent = 'Not seeing the right mountain?';
         if (subEl)   subEl.textContent   = 'Adjust snow, crowds, ticket price or distance to find a better match.';
       }
-    }
   }
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
@@ -2483,7 +2476,7 @@ function buildWriteupPrompt(v, origin) {
     resort.vertical ? `${resort.vertical.toLocaleString()}ft vertical` : null,
     resort.passGroup !== 'Independent' ? `${resort.passGroup} pass access` : null,
   ].filter(Boolean).join('; ');
-  return `You're texting a friend who skis. In 1–2 short, confident sentences say why ${resort.name} in ${resort.state} is the right call for this ski day${originStr ? ' for someone ' + originStr : ''}. Use only these facts: ${facts}. Internally the model tiers this as "${tier}" · do not say "tier", "score", or any number out of 100. No corporate filler ("leverage", "insights"). Sound like a human on a lift pass.`;
+  return `You're texting a friend who skis. In 1 to 2 short, confident sentences say why ${resort.name} in ${resort.state} is the right call for this ski day${originStr ? ' for someone ' + originStr : ''}. Use only these facts: ${facts}. Internally the model tiers this as "${tier}". Do not say "tier", "score", or any number out of 100. Never use em dashes or en dashes. Use periods or commas only. No corporate filler ("leverage", "insights"). Sound like a human on a lift pass.`;
 }
 
 async function fetchVerdictWriteup(v, origin) {

@@ -141,13 +141,13 @@ function buildVerdictOverNearbyCallout(resorts, winnerId, runnerItems, localRole
 
   if (cSnow != null && wSnow != null && wSnow >= cSnow + 1) {
     const diff = (wSnow - cSnow).toFixed(1).replace(/\.0$/, '');
-    return `Beats ${shortName} on snow — +${diff}" in your forecast window`;
+    return `Beats ${shortName} on snow with +${diff}" in your forecast window`;
   }
 
   const avgTop5Cond = ranked.slice(0, 5).reduce((s, x) => s + _wtpCondScore(x), 0) / Math.max(1, Math.min(5, ranked.length));
   const weakWeather = avgTop5Cond < 0.45 || _wtpCondScore(winnerEntry) < 0.5;
   if (weakWeather) {
-    return `Outscores ${shortName} on groomed conditions — worth the extra drive today`;
+    return `Outscores ${shortName} on groomed conditions. Worth the extra drive today`;
   }
 
   const closestDrive = formatDriveMins(getDriveMins(closest.id), isDriveEstimated(closest.id));

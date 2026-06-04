@@ -264,19 +264,19 @@ function crowdForecast(resort, wx = null) {
   // blueF and rainF are already mutually exclusive (see _bluebirdFactor wet
   // guard), but we also gate the reason push so they can never co-display.
   const reasons = [];
-  if (dow === 6)                    reasons.push('Saturday — peak ski day');
-  else if (dow === 0)               reasons.push('Sunday — still busy');
-  else if (dow === 5)               reasons.push('Friday — early arrivals');
-  else                              reasons.push('Midweek — lighter traffic');
-  if (holidayF >= 1.0)              reasons.push('Holiday week — expect peak crowds');
-  else if (holidayF >= 0.7)         reasons.push('Holiday weekend — busy');
-  if (powderF >= 0.7)               reasons.push('Fresh snow — high demand');
+  if (dow === 6)                    reasons.push('Saturday. Peak ski day');
+  else if (dow === 0)               reasons.push('Sunday. Still busy');
+  else if (dow === 5)               reasons.push('Friday. Early arrivals');
+  else                              reasons.push('Midweek. Lighter traffic');
+  if (holidayF >= 1.0)              reasons.push('Holiday week. Expect peak crowds');
+  else if (holidayF >= 0.7)         reasons.push('Holiday weekend. Busy');
+  if (powderF >= 0.7)               reasons.push('Fresh snow. High demand');
   else if (powderF >= 0.4)          reasons.push('Recent snow drawing extra traffic');
-  if (rainF > 0)                    reasons.push('Wet forecast — lighter crowds');
-  else if (blueF)                   reasons.push('Clear, calm day — draws bigger crowds');
+  if (rainF > 0)                    reasons.push('Wet forecast. Lighter crowds');
+  else if (blueF)                   reasons.push('Clear, calm day. Draws bigger crowds');
   if (resort.passGroup === 'Epic' || resort.passGroup === 'Ikon')
-                                    reasons.push(`${resort.passGroup} pass — large network demand`);
-  if (rawTier <= 2)                 reasons.push('Small hill — crowds build quickly');
+                                    reasons.push(`${resort.passGroup} pass. Large network demand`);
+  if (rawTier <= 2)                 reasons.push('Small hill. Crowds build quickly');
 
   return { score, label, confidence, reasons };
 }
@@ -498,14 +498,14 @@ function localRoleExplanation(localEntry, pickResort) {
   if (localEntry?.roleVariant === 'another_smart_play') {
     const pickShort = (pickResort?.name || 'the top pick')
       .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
-    return `No true nearby option in range — ${pickShort} is still the lead, but this mountain is worth considering for conditions or convenience.`;
+    return `No true nearby option in range. ${pickShort} is still the lead, but this mountain is worth considering for conditions or convenience.`;
   }
   const pickShort = (pickResort?.name || 'the top pick')
     .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
   if (localEntry?.tier === 'marginal') {
-    return `Quick local turns if you don't want the drive to ${pickShort} — fair conditions, mostly about convenience.`;
+    return `Quick local turns if you don't want the drive to ${pickShort}. Fair conditions, mostly about convenience.`;
   }
-  return `Quick local turns if you don't want the drive to ${pickShort} — a nearby option when convenience matters.`;
+  return `Quick local turns if you don't want the drive to ${pickShort}. A nearby option when convenience matters.`;
 }
 
 function localRoleLabel(localEntry) {
@@ -586,7 +586,7 @@ function _isMeaningfullyQuieterThan(candCrowd, refCrowd) {
   return _crowdIsLoud(refCrowd.label) && _crowdIsQuieter(candCrowd.label) && gap >= 8;
 }
 
-/** Contrast vs ref/pick — Smart Play needs a real reason, not raw score rank. */
+/** Contrast vs ref/pick. Smart Play needs a real reason, not raw score rank. */
 function hasSleeperReason(entry, pickEntry, refEntry) {
   if (!entry?.resort || !pickEntry?.resort) return false;
 
@@ -631,7 +631,7 @@ function _isBigMountainEntry(entry) {
   return safeNum(entry.resort.vertical, 0) >= 1800;
 }
 
-/** Busiest crowd magnet in the pool — destination-class when present, else best eligible regional. */
+/** Busiest crowd magnet in the pool. Destination-class when present, else best eligible regional. */
 function obviousBigMountainReference(ranked, pickEntry) {
   const eligible = ranked.filter((e) => {
     if (!e?.resort || !e?.breakdown) return false;
@@ -756,12 +756,12 @@ function stripResortSuffix(name) {
 function sleeperRoleExplanation(sleeperEntry, pickResort, refResort) {
   const refShort = stripResortSuffix(refResort?.name || 'the obvious pick');
   if (sleeperEntry?.tier === 'marginal') {
-    return `Not the obvious pick, but the day sets up well here — fair conditions with less lift-line pressure than ${refShort}.`;
+    return `Not the obvious pick, but the day sets up well here. Fair conditions with less lift-line pressure than ${refShort}.`;
   }
   if (refResort?.id && refResort.id !== pickResort?.id) {
-    return `A strong call if you want something different from the Top Pick — similar forecast window, lighter crowds than ${refShort}.`;
+    return `A strong call if you want something different from the Top Pick. Similar forecast window, lighter crowds than ${refShort}.`;
   }
-  return `A credible mountain with a real reason to be on your radar — less obvious than the Top Pick, close in the score band.`;
+  return `A credible mountain with a real reason to be on your radar. Less obvious than the Top Pick, close in the score band.`;
 }
 
 const TRAP_QUALITY_MIN_SUIT = 40;
@@ -789,7 +789,7 @@ function _hasHighDemand(entry) {
   return cls === 'destination' || pass || mg >= TRAP_DEMAND_METRO_MIN;
 }
 
-/** Fri–Sun ski day (peak arrival days for Boston / NE day trips). */
+/** Fri. Sun ski day (peak arrival days for Boston / NE day trips). */
 function _isPeakSkiDay() {
   if (!(state.targetDate instanceof Date)) return false;
   const dow = state.targetDate.getDay();
@@ -808,7 +808,7 @@ function _hasHighCrowdRisk(entry) {
   return crowd.score >= 50;
 }
 
-/** True when a Crowd Watch card may render — never Quiet / "Light crowds". */
+/** True when a Crowd Watch card may render. Never Quiet / "Light crowds". */
 function trapQualifiesForCrowdWatch(entry) {
   if (!entry?.resort) return false;
   const label = entry.crowdLabel || crowdForecast(entry.resort, entry.wx)?.label;
@@ -882,16 +882,16 @@ function pickTrapFromRanked(ranked, pickEntry, localEntry, sleeperEntry) {
 
 /** Copy when the Top Pick is also an obvious crowd trap (spec A4.6). */
 function pickCrowdWarningCopy() {
-  return 'Best skiing, but expect crowds — lift lines may run long at peak.';
+  return 'Best skiing, but expect crowds. Lift lines may run long at peak.';
 }
 
 /** User-facing copy for the TRAP role card. */
 function trapRoleExplanation(trapEntry) {
   const crowdShort = (trapEntry?.crowdLabel || 'busy').toLowerCase();
   if (trapEntry?.tier === 'marginal') {
-    return `Great mountain on paper, but ${crowdShort} timing — fair conditions, real lift-line risk.`;
+    return `Great mountain on paper, but ${crowdShort} timing. Fair conditions, real lift-line risk.`;
   }
-  return `Great mountain, bad timing — ski quality may hold up, but ${crowdShort} crowds may mean long lift lines.`;
+  return `Great mountain, bad timing. Ski quality may hold up, but ${crowdShort} crowds may mean long lift lines.`;
 }
 
 /**
@@ -1010,7 +1010,7 @@ function plannerFitIndex(resort) {
   return destinationSuitabilityIndex(resort);
 }
 
-/** Target ski day is Mon–Thu (terrain over drive). Default chip uses tomorrow; weekend chips opt out. */
+/** Target ski day is Mon. Thu (terrain over drive). Default chip uses tomorrow; weekend chips opt out. */
 function isWeekdaySkiTrip() {
   const preset = state.skiDayPreset;
   if (preset === 'friday' || preset === 'saturday' || preset === 'sunday') return false;
@@ -1044,7 +1044,7 @@ function mountainFitIndex(resort) {
     if (vertical > 0 && vertical < 500) fit *= 0.88;
     return fit;
   }
-  // Weekend / Fri–Sun: gentle size nudge so drive + snow still decide tight calls.
+  // Weekend / Fri. Sun: gentle size nudge so drive + snow still decide tight calls.
   return 0.80 + sizeIdx * 0.12;
 }
 
@@ -1207,7 +1207,7 @@ function _groomerSubPoint(resortId, histTotal, warmCaution) {
     variants.push('Groomers should ski well.');
     variants.push('Good clean day for groomers.');
   }
-  variants.push('Clear and dry — more groomer day than powder day.');
+  variants.push('Clear and dry. More groomer day than powder day.');
   const seed = String(resortId || '') + String(histTotal ?? '') + (warmCaution ? 'w' : 'c');
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
@@ -1249,7 +1249,7 @@ function appendGroomerSubPoints(subPoints, ctx) {
 function verdictFromBreakdown(resort, wx, breakdown) {
   const forecast   = wx?.forecast || [];
   const fi         = targetForecastIndex();
-  const stormTotal = tripWindowSnow(forecast);   // trip-mode aware — matches ranking
+  const stormTotal = tripWindowSnow(forecast);   // trip-mode aware. Matches ranking
   const tomorrowIn = forecast[fi]?.snow || 0;
   const hist       = historyCache.get(resort.id);
   const histTotal  = hist?.total ?? null;
@@ -1279,53 +1279,53 @@ function verdictFromBreakdown(resort, wx, breakdown) {
 
   if (rainLikely || severeWind) {
     tier  = 'bad';
-    label = rainLikely ? 'Skip — rain likely' : 'Poor conditions';
+    label = rainLikely ? 'Skip. Rain likely' : 'Poor conditions';
     detail = rainLikely
-      ? `Temperatures look too warm — rain likely above ${resort.baseElevation.toLocaleString()} ft.`
-      : 'High winds may shut down or hold lifts — check the mountain before you go.';
+      ? `Temperatures look too warm. Rain likely above ${resort.baseElevation.toLocaleString()} ft.`
+      : 'High winds may shut down or hold lifts. Check the mountain before you go.';
   } else if (target >= 6 && !snowMet) {
     // User wants storm snow or powder but the window falls short.
     tier  = 'marginal';
     label = 'Below your snow target';
-    detail = `You're looking for ${target}"+ of snow — only ${stormTotal.toFixed(1)}" ${inWindow}.`;
+    detail = `You're looking for ${target}"+ of snow. Only ${stormTotal.toFixed(1)}" ${inWindow}.`;
     subPoints.push('Try widening your snow filter or checking Storm Chaser for better options');
   } else if (stormTotal >= 6 || tomorrowIn >= 4) {
     tier  = 'great';
-    label = 'Go — excellent conditions';
+    label = 'Go. Excellent conditions';
     detail = tomorrowIn >= 4
       ? `${tomorrowIn.toFixed(1)}" ${overWindow}. That's a powder day.`
-      : `${stormTotal.toFixed(1)}" ${inWindow} — this is what you wait all season for.`;
-    if (coldSnow) subPoints.push('Ideal temps — light, dry snow expected');
-    if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week — base is deep`);
+      : `${stormTotal.toFixed(1)}" ${inWindow}. This is what you wait all season for.`;
+    if (coldSnow) subPoints.push('Ideal temps. Light, dry snow expected');
+    if (histTotal !== null && histTotal >= 6) subPoints.push(`${histTotal}" already fell this week. Base is deep`);
   } else if (stormTotal >= 2 || (histTotal !== null && histTotal >= 6)) {
     tier  = 'good';
     label = 'Good conditions';
     detail = stormTotal >= 2
-      ? `${stormTotal.toFixed(1)}" ${inWindow} — fresh snow makes a real difference.`
-      : `${histTotal}" fell this week — expect a solid, consolidated base.`;
-    if (warmCaution) subPoints.push('Snow may be dense/wet — get out early for best runs');
+      ? `${stormTotal.toFixed(1)}" ${inWindow}. Fresh snow makes a real difference.`
+      : `${histTotal}" fell this week. Expect a solid, consolidated base.`;
+    if (warmCaution) subPoints.push('Snow may be dense/wet. Get out early for best runs');
   } else if (stormTotal >= 0.5) {
     tier  = 'marginal';
-    label = 'Marginal — manage expectations';
-    detail = `Only ${stormTotal.toFixed(1)}" ${inWindow}. Mostly working with the existing base — groomed runs will be fine.`;
+    label = 'Marginal. Manage expectations';
+    detail = `Only ${stormTotal.toFixed(1)}" ${inWindow}. Mostly working with the existing base. Groomed runs will be fine.`;
     subPoints.push('Stick to groomed trails, get out early, avoid south-facing terrain');
   } else {
     const wind = fcDay.wind ?? 0;
     if (wind > 35) {
       tier  = 'bad';
       label = 'Poor conditions';
-      detail = 'High winds may shut down or hold lifts — check the mountain before you go.';
+      detail = 'High winds may shut down or hold lifts. Check the mountain before you go.';
     } else if (warmCaution) {
       tier  = 'marginal';
       label = 'Fair conditions';
-      detail = 'Dry and firm — groomed runs will ski best. No fresh snow in the forecast.';
+      detail = 'Dry and firm. Groomed runs will ski best. No fresh snow in the forecast.';
       subPoints.push('Get out early before surfaces soften');
     } else {
       tier  = 'good';
       label = 'Good conditions';
       detail = histTotal != null && histTotal >= 3
-        ? `Clear and dry — ${histTotal}" recent snow supports a solid base.`
-        : 'Clear and dry — more groomer day than powder day. No fresh snow in the forecast.';
+        ? `Clear and dry. ${histTotal}" recent snow supports a solid base.`
+        : 'Clear and dry. More groomer day than powder day. No fresh snow in the forecast.';
     }
   }
 
@@ -1361,39 +1361,39 @@ function preferenceReasons(resort, wx, breakdown) {
 
   // ── Snow ──────────────────────────────────────────────────────────────────
   if (snowPref >= 15) {
-    if (stormTotal >= 12) reasons.push(`${stormTotal.toFixed(1)}" in the forecast — enough fresh snow for how picky you said you are`);
-    else if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" coming — interesting, but not a full-on powder day`);
-    else reasons.push(`Only ${stormTotal.toFixed(1)}" on tap — light for someone hunting powder`);
+    if (stormTotal >= 12) reasons.push(`${stormTotal.toFixed(1)}" in the forecast. Enough fresh snow for how picky you said you are`);
+    else if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" coming. Interesting, but not a full-on powder day`);
+    else reasons.push(`Only ${stormTotal.toFixed(1)}" on tap. Light for someone hunting powder`);
   } else if (snowPref >= 10) {
-    if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}" — lines up with wanting a storm day`);
-    else reasons.push(`${stormTotal.toFixed(1)}" — a bit light vs “6+ inches matters”`);
+    if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}". Lines up with wanting a storm day`);
+    else reasons.push(`${stormTotal.toFixed(1)}". A bit light vs “6+ inches matters”`);
   } else if (snowPref >= 5) {
-    if (stormTotal >= 3) reasons.push(`${stormTotal.toFixed(1)}" — matches your “a few inches helps” bar`);
-    else reasons.push(`${stormTotal.toFixed(1)}" — under your 3"+ threshold`);
+    if (stormTotal >= 3) reasons.push(`${stormTotal.toFixed(1)}". Matches your “a few inches helps” bar`);
+    else reasons.push(`${stormTotal.toFixed(1)}". Under your 3"+ threshold`);
   } else {
     if (stormTotal > 0) reasons.push(`${stormTotal.toFixed(1)}" in the next few days`);
-    else reasons.push('No new snow in the forecast — expect firm or groomed');
+    else reasons.push('No new snow in the forecast. Expect firm or groomed');
   }
 
   // ── Mountain size fit ──────────────────────────────────────────────────────
   const vert = resort.vertical;
   if (state.verticalFilter === 'small') {
-    if (vert <= 900) reasons.push(`${vert.toLocaleString()} ft — right-sized if you wanted a local hill`);
-    else reasons.push(`${vert.toLocaleString()} ft — bigger than a “small hill” day for you`);
+    if (vert <= 900) reasons.push(`${vert.toLocaleString()} ft. Right-sized if you wanted a local hill`);
+    else reasons.push(`${vert.toLocaleString()} ft. Bigger than a “small hill” day for you`);
   } else if (state.verticalFilter === 'mid') {
-    if (vert >= 800 && vert <= 1800) reasons.push(`${vert.toLocaleString()} ft — squarely mid-size, what you asked for`);
+    if (vert >= 800 && vert <= 1800) reasons.push(`${vert.toLocaleString()} ft. Squarely mid-size, what you asked for`);
     else reasons.push(`${vert.toLocaleString()} ft vertical`);
   } else if (state.verticalFilter === 'big') {
-    if (vert >= 1400) reasons.push(`${vert.toLocaleString()} ft — plenty of vert if you wanted a big hill`);
-    else reasons.push(`${vert.toLocaleString()} ft — on the smaller side for a “big mountain” day`);
+    if (vert >= 1400) reasons.push(`${vert.toLocaleString()} ft. Plenty of vert if you wanted a big hill`);
+    else reasons.push(`${vert.toLocaleString()} ft. On the smaller side for a “big mountain” day`);
   }
 
   // ── Pass match ────────────────────────────────────────────────────────────
   if (state.passFilter !== 'All') {
     if (resort.passGroup === state.passFilter) {
-      reasons.push(`Covered on your ${resort.passGroup} pass — no window ticket`);
+      reasons.push(`Covered on your ${resort.passGroup} pass. No window ticket`);
     } else {
-      reasons.push(`No ${state.passFilter} pass here — walk-up around $${resort.price}`);
+      reasons.push(`No ${state.passFilter} pass here. Walk-up around $${resort.price}`);
     }
   }
 
@@ -1401,11 +1401,11 @@ function preferenceReasons(resort, wx, breakdown) {
   const crowd = crowdForecast(resort, wx);
   if (crowdPref >= 10) {
     if (crowd.label === 'Quiet') {
-      reasons.push('Quiet crowds — what you asked for');
+      reasons.push('Quiet crowds. What you asked for');
     } else if (crowd.label === 'Moderate') {
-      reasons.push('Moderate crowds — manageable but not empty');
+      reasons.push('Moderate crowds. Manageable but not empty');
     } else {
-      reasons.push(`${crowd.label} crowds — busier than you said you like`);
+      reasons.push(`${crowd.label} crowds. Busier than you said you like`);
     }
   } else if (crowd.label === 'Quiet') {
     reasons.push('Should be pretty quiet');
@@ -1415,17 +1415,17 @@ function preferenceReasons(resort, wx, breakdown) {
 
   // ── Value ─────────────────────────────────────────────────────────────────
   if (valuePref >= 5) {
-    if (resort.price <= 85)       reasons.push(`$${resort.price} walk-up — easy on the wallet`);
-    else if (resort.price <= 125) reasons.push(`$${resort.price} walk-up — reasonable`);
-    else                          reasons.push(`$${resort.price} walk-up — pricey for how you filtered`);
+    if (resort.price <= 85)       reasons.push(`$${resort.price} walk-up. Easy on the wallet`);
+    else if (resort.price <= 125) reasons.push(`$${resort.price} walk-up. Reasonable`);
+    else                          reasons.push(`$${resort.price} walk-up. Pricey for how you filtered`);
   }
 
   // ── Drive ─────────────────────────────────────────────────────────────────
   const drive = getDriveMins(resort.id);
   if (drive !== null) {
-    if (drive <= 90)       reasons.push(`${formatDrive(resort.id)} — easy day-trip range`);
+    if (drive <= 90)       reasons.push(`${formatDrive(resort.id)}. Easy day-trip range`);
     else if (drive <= 150) reasons.push(`${formatDrive(resort.id)} in the car`);
-    else if (drive > 240)  reasons.push(`${formatDrive(resort.id)} — long haul, pack snacks`);
+    else if (drive > 240)  reasons.push(`${formatDrive(resort.id)}. Long haul, pack snacks`);
   }
 
   return reasons.slice(0, 4);

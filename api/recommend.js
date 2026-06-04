@@ -16,7 +16,7 @@ function buildWriteupPromptFromVerdict(v) {
   const name  = String(v.resortName || 'this mountain').slice(0, 120);
   const state = String(v.state || '').slice(0, 40);
   const tier  = String(v.tier || 'good').slice(0, 20);
-  return `You're texting a friend who skis. In 1–2 short, confident sentences say why ${name} in ${state} is the right call for this ski day${originStr ? ' for someone ' + originStr : ''}. Use only these facts: ${facts}. Internally the model tiers this as "${tier}" · do not say "tier", "score", or any number out of 100. No corporate filler ("leverage", "insights"). Sound like a human on a lift pass.`;
+  return `You're texting a friend who skis. In 1 to 2 short, confident sentences say why ${name} in ${state} is the right call for this ski day${originStr ? ' for someone ' + originStr : ''}. Use only these facts: ${facts}. Internally the model tiers this as "${tier}" · do not say "tier", "score", or any number out of 100. Never use em dashes (—) or en dashes (–) as punctuation. Use periods or commas only. No corporate filler ("leverage", "insights"). Sound like a human on a lift pass.`;
 }
 
 function parseVerdictPayload(raw) {
@@ -125,9 +125,10 @@ module.exports = async function handler(req, res) {
     "You're a witty, opinionated New England ski expert helping someone choose where to ski. " +
     "Here are the mountains being compared:\n\n" + resortList + "\n\n" +
     "In 3-4 punchy sentences: pick ONE clear winner and explain why using the actual stats. " +
-    "Be specific — name the numbers that clinch it. Have personality, don't be bland. " +
+    "Be specific. Name the numbers that clinch it. Have personality, don't be bland. " +
+    "Never use em dashes (—) or en dashes (–) as punctuation. Use periods or commas only. " +
     "End with one sentence on who the runner-up is best suited for. " +
-    "Sign off as '— SkiNE AI 🤖'";
+    "Sign off as 'SkiNE AI 🤖'";
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
