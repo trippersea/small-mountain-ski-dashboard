@@ -1,0 +1,41 @@
+[
+  { "id": "boston",        "label": "Boston",          "lat": 42.358, "lon": -71.060, "radius": 35 },
+  { "id": "worcester",     "label": "Worcester",       "lat": 42.263, "lon": -71.802, "radius": 25 },
+  { "id": "providence",    "label": "Providence",      "lat": 41.824, "lon": -71.413, "radius": 25 },
+  { "id": "hartford",      "label": "Hartford",        "lat": 41.764, "lon": -72.685, "radius": 30 },
+  { "id": "springfield-ma","label": "Springfield, MA", "lat": 42.102, "lon": -72.590, "radius": 22 },
+  { "id": "nyc",           "label": "NYC",             "lat": 40.713, "lon": -74.006, "radius": 30 },
+  { "id": "long-island",   "label": "Long Island",     "lat": 40.829, "lon": -73.193, "radius": 40 },
+  { "id": "albany",        "label": "Albany",          "lat": 42.652, "lon": -73.756, "radius": 30 },
+  { "id": "burlington-vt", "label": "Burlington, VT",  "lat": 44.476, "lon": -73.213, "radius": 35 },
+  { "id": "portland-me",   "label": "Portland, ME",    "lat": 43.659, "lon": -70.255, "radius": 35 },
+  { "id": "manchester-nh", "label": "Manchester, NH",  "lat": 42.995, "lon": -71.454, "radius": 25 },
+  { "id": "philadelphia",  "label": "Philadelphia",    "lat": 39.952, "lon": -75.165, "radius": 35 },
+  { "id": "buffalo",       "label": "Buffalo",         "lat": 42.886, "lon": -78.879, "radius": 40 },
+  { "id": "syracuse",      "label": "Syracuse",        "lat": 43.048, "lon": -76.147, "radius": 35 },
+
+  { "id": "washington-dc", "label": "Washington, DC",  "lat": 38.907, "lon": -77.037, "radius": 35 },
+  { "id": "baltimore",     "label": "Baltimore",       "lat": 39.290, "lon": -76.612, "radius": 25 },
+  { "id": "richmond",      "label": "Richmond",        "lat": 37.541, "lon": -77.434, "radius": 30 },
+  { "id": "pittsburgh",    "label": "Pittsburgh",      "lat": 40.441, "lon": -79.996, "radius": 35 },
+  { "id": "charlotte",     "label": "Charlotte",       "lat": 35.227, "lon": -80.843, "radius": 35 },
+  { "id": "atlanta",       "label": "Atlanta",         "lat": 33.749, "lon": -84.388, "radius": 40 },
+
+  { "id": "chicago",       "label": "Chicago",         "lat": 41.878, "lon": -87.630, "radius": 50 },
+  { "id": "milwaukee",     "label": "Milwaukee",       "lat": 43.039, "lon": -87.906, "radius": 30 },
+  { "id": "minneapolis",   "label": "Minneapolis",     "lat": 44.978, "lon": -93.265, "radius": 40 },
+  { "id": "detroit",       "label": "Detroit",         "lat": 42.331, "lon": -83.046, "radius": 40 },
+  { "id": "cleveland",     "label": "Cleveland",       "lat": 41.499, "lon": -81.695, "radius": 35 },
+  { "id": "indianapolis",  "label": "Indianapolis",    "lat": 39.768, "lon": -86.158, "radius": 35 },
+
+  { "id": "denver",        "label": "Denver",          "lat": 39.739, "lon": -104.990, "radius": 45 },
+  { "id": "salt-lake-city","label": "Salt Lake City",  "lat": 40.760, "lon": -111.891, "radius": 40 },
+  { "id": "boise",         "label": "Boise",           "lat": 43.615, "lon": -116.202, "radius": 35 },
+  { "id": "albuquerque",   "label": "Albuquerque",     "lat": 35.085, "lon": -106.651, "radius": 35 },
+
+  { "id": "seattle",       "label": "Seattle",         "lat": 47.606, "lon": -122.332, "radius": 40 },
+  { "id": "portland-or",   "label": "Portland, OR",    "lat": 45.515, "lon": -122.679, "radius": 35 },
+  { "id": "bay-area",      "label": "Bay Area",        "lat": 37.776, "lon": -122.419, "radius": 45 },
+  { "id": "sacramento",    "label": "Sacramento",      "lat": 38.582, "lon": -121.494, "radius": 35 },
+  { "id": "los-angeles",   "label": "Los Angeles",     "lat": 34.052, "lon": -118.244, "radius": 55 }
+]

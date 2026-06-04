@@ -498,6 +498,10 @@ const state = Object.seal({
   selectedFromRole: null,
   origin:         null,
   driveCache:     {},
+  /** Pre-computed cluster drive-time matrix (loaded once from /drive-matrix.json). */
+  driveMatrix:    null,
+  /** Cluster id the current origin snapped to, or null if origin is outside all clusters. */
+  originCluster:  null,
   weatherCache:   {},
   compareSet:     new Set(),
   conditionsCache: {},
@@ -1318,6 +1322,60 @@ async function ensureWeather(resorts) {
   }
 }
 
+// ─── Pre-computed drive matrix ────────────────────────────────────────────────
+// Loads /drive-matrix.json once and caches it on state. When the user's origin
+// falls inside a cluster radius, drive times come from the matrix (synchronous
+// lookup, no OSRM calls). Users outside all clusters fall through to the
+// existing OSRM path below.
+let _driveMatrixPromise = null;
+
+async function loadDriveMatrix() {
+  if (state.driveMatrix) return state.driveMatrix;
+  if (_driveMatrixPromise) return _driveMatrixPromise;
+  _driveMatrixPromise = (async () => {
+    try {
+      const res = await fetchWithTimeout('/drive-matrix.json', {}, 4000);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!Array.isArray(data?.origins) || !data?.times) return null;
+      state.driveMatrix = data;
+      return data;
+    } catch (e) {
+      return null;
+    }
+  })();
+  return _driveMatrixPromise;
+}
+
+function findOriginCluster(origin) {
+  const matrix = state.driveMatrix;
+  if (!matrix || !origin) return null;
+  let best = null;
+  let bestKm = Infinity;
+  for (const c of matrix.origins) {
+    if (!c || typeof c.lat !== 'number' || typeof c.lon !== 'number') continue;
+    const km = haversineKm(origin.lat, origin.lon, c.lat, c.lon);
+    const radius = typeof c.radius === 'number' ? c.radius : 40;
+    if (km <= radius && km < bestKm) {
+      best = c;
+      bestKm = km;
+    }
+  }
+  return best;
+}
+
+function applyDriveMatrix(cluster) {
+  const times = state.driveMatrix?.times?.[cluster.id] || {};
+  let matched = 0;
+  RESORTS.forEach(r => {
+    if (typeof times[r.id] === 'number') {
+      state.driveCache[r.id] = times[r.id];
+      matched++;
+    }
+  });
+  return matched;
+}
+
 // ─── OSRM drive times ─────────────────────────────────────────────────────────
 async function fetchOsrmTime(resort) {
   if (!state.origin) return null;
@@ -1345,6 +1403,24 @@ async function loadDriveTimes() {
   weatherPhase1Ids = [];
   applyHaversineEstimates();
   render();
+
+  // Try the pre-computed drive matrix first. If the user's origin snaps to a
+  // cluster, every resort gets a real drive time via synchronous lookup and we
+  // skip OSRM entirely. No mid-flight tier recalculation, no abort/re-fire
+  // cycle for the weather fetch.
+  const matrix = await loadDriveMatrix();
+  const cluster = matrix ? findOriginCluster(state.origin) : null;
+  if (cluster) {
+    state.originCluster = cluster.id;
+    const matched = applyDriveMatrix(cluster);
+    driveTimesReady = true;
+    render();
+    if (matched > 0) showToast('Drive times ready', 1800);
+    return;
+  }
+  state.originCluster = null;
+
+  // Fallback: existing OSRM path for users outside all cluster radii.
   showToast('Refining drive times…', 5000);
 
   const closest = [...RESORTS]
