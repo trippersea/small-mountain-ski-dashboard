@@ -6,7 +6,7 @@
     "node": "20.x"
   },
   "scripts": {
-    "test": "node --test sd-safe-url.test.cjs tests/scoring-behavior.test.cjs tests/recommendation-roles-ui.test.cjs tests/compare-decision-summary.test.cjs tests/copy-alignment.test.cjs tests/smart-play-anchors.test.cjs tests/homepage-rankings-cta.test.cjs tests/newsletter-scoring.test.cjs",
+    "test": "node --test sd-safe-url.test.cjs tests/scoring-behavior.test.cjs tests/recommendation-roles-ui.test.cjs tests/compare-decision-summary.test.cjs tests/copy-alignment.test.cjs tests/smart-play-anchors.test.cjs tests/homepage-rankings-cta.test.cjs tests/newsletter-scoring.test.cjs tests/forecast-api.test.cjs",
     "build:share-assets": "node scripts/build-share-assets.mjs"
   },
   "devDependencies": {

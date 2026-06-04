@@ -1127,21 +1127,13 @@ function saveHistoryCache() {
   } catch (e) {}
 }
 
-// Open-Meteo free tier: ~1 in-flight request per IP; 8 parallel workers caused 429/502 bursts.
-const WX_FETCH_BATCH_SIZE = 10;
-const WX_FETCH_CHUNK_GAP_MS = 500;
-const WX_FETCH_RETRY_MS = [800, 1600, 3200, 6000];
+// Weather via /api/forecast (server proxy + shared cache). Avoids per-browser Open-Meteo bursts.
+const WX_PROXY_CHUNK_SIZE = 28;
+const WX_PROXY_CHUNK_GAP_MS = 150;
 let _wxFetchGen = 0;
 
 function wxSleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function openMeteoForecastQueryString() {
-  return 'current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m' +
-    '&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum,windspeed_10m_max' +
-    '&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4' +
-    '&timezone=auto&models=best_match';
 }
 
 /** Parse one Open-Meteo forecast object (single location). */
@@ -1172,75 +1164,37 @@ function openMeteoPayloadToWx(data, resort) {
   };
 }
 
-async function fetchOpenMeteoJson(url) {
-  for (let attempt = 0; attempt <= WX_FETCH_RETRY_MS.length; attempt++) {
-    try {
-      const res = await fetchWithTimeout(url, {}, 12000);
-      if (res.status === 429 || res.status === 502 || res.status === 503) {
-        const retryHdr = Number(res.headers.get('Retry-After'));
-        const wait = Number.isFinite(retryHdr) && retryHdr > 0
-          ? retryHdr * 1000
-          : (WX_FETCH_RETRY_MS[attempt] ?? 8000);
-        if (attempt < WX_FETCH_RETRY_MS.length) {
-          await wxSleep(wait);
-          continue;
-        }
-        return null;
-      }
-      if (!res.ok) return null;
-      return await res.json();
-    } catch (e) {
-      if (attempt < WX_FETCH_RETRY_MS.length) {
-        await wxSleep(WX_FETCH_RETRY_MS[attempt]);
-        continue;
-      }
-      return null;
-    }
-  }
-  return null;
-}
-
-async function fetchWeatherSingle(resort) {
-  const cached = state.weatherCache[resort.id];
-  if (cached && Date.now() - cached.ts < WX_TTL) return cached.data;
-  // Do NOT pass elevation= — Open-Meteo returns unrealistic cold above ~8k ft at this API.
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&${openMeteoForecastQueryString()}`;
-  const data = await fetchOpenMeteoJson(url);
-  const wx = data ? openMeteoPayloadToWx(data, resort) : null;
-  if (!wx) return null;
-  state.weatherCache[resort.id] = { ts: Date.now(), data: wx };
-  return wx;
-}
-
-async function fetchWeatherChunk(resorts) {
+async function fetchForecastFromProxy(resorts) {
   if (!resorts.length) return;
-  const lats = resorts.map(r => r.lat).join(',');
-  const lons = resorts.map(r => r.lon).join(',');
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&${openMeteoForecastQueryString()}`;
-  const json = await fetchOpenMeteoJson(url);
-  if (!json) {
-    for (const r of resorts) await fetchWeatherSingle(r);
-    await wxSleep(WX_FETCH_CHUNK_GAP_MS);
-    return;
-  }
-  const items = Array.isArray(json) ? json : [json];
-  if (items.length !== resorts.length) {
-    for (const r of resorts) await fetchWeatherSingle(r);
-    await wxSleep(WX_FETCH_CHUNK_GAP_MS);
-    return;
-  }
-  for (let i = 0; i < resorts.length; i++) {
-    const wx = openMeteoPayloadToWx(items[i], resorts[i]);
-    if (wx) state.weatherCache[resorts[i].id] = { ts: Date.now(), data: wx };
-  }
+  const dayKey = skiDayCacheKey();
+  const skiDay = dayKey === 'default' ? undefined : dayKey;
+  try {
+    const res = await fetchWithTimeout('/api/forecast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        skiDay,
+        resorts: resorts.map(r => ({ id: r.id, lat: r.lat, lon: r.lon })),
+      }),
+    }, 55_000);
+    if (!res.ok) return;
+    const json = await res.json();
+    const forecasts = json.forecasts || {};
+    const now = Date.now();
+    for (const r of resorts) {
+      const raw = forecasts[r.id];
+      if (!raw) continue;
+      const wx = openMeteoPayloadToWx(raw, r);
+      if (wx) state.weatherCache[r.id] = { ts: now, data: wx };
+    }
+  } catch (e) { /* proxy unavailable */ }
 }
 
 async function fetchWeatherMissingList(resorts) {
   const missing = resorts.filter(r => !state.weatherCache[r.id]?.data);
-  for (let i = 0; i < missing.length; i += WX_FETCH_BATCH_SIZE) {
-    const chunk = missing.slice(i, i + WX_FETCH_BATCH_SIZE);
-    await fetchWeatherChunk(chunk);
-    if (i + WX_FETCH_BATCH_SIZE < missing.length) await wxSleep(WX_FETCH_CHUNK_GAP_MS);
+  for (let i = 0; i < missing.length; i += WX_PROXY_CHUNK_SIZE) {
+    await fetchForecastFromProxy(missing.slice(i, i + WX_PROXY_CHUNK_SIZE));
+    if (i + WX_PROXY_CHUNK_SIZE < missing.length) await wxSleep(WX_PROXY_CHUNK_GAP_MS);
   }
 }
 

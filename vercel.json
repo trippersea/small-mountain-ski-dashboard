@@ -12,6 +12,9 @@
   "functions": {
     "api/newsletter-generator.js": {
       "maxDuration": 120
+    },
+    "api/forecast.js": {
+      "maxDuration": 60
     }
   },
   "headers": [
