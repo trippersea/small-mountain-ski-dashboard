@@ -7,7 +7,7 @@
 
 const { resolveForecasts } = require('../lib/open-meteo-forecast-server');
 
-const MAX_RESORTS = 55;
+const MAX_RESORTS = 15;
 const ID_RE = /^[a-z0-9][a-z0-9-]{0,79}$/i;
 
 function parseSkiDay(raw) {

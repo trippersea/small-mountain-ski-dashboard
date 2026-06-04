@@ -11,6 +11,11 @@ let weatherFetchPhase1Done = false;
 let weatherFetchPhase2Done = false;
 /** False while OSRM is refining routes. Weather/verdict wait so drive tier is correct. */
 let driveTimesReady = true;
+let _wxFetchGen = 0;
+let _wxScopeKey = '';
+let _forecastAbort = null;
+let _ensureWeatherPromise = null;
+let _ensureWeatherScope = '';
 
 // Scoring constants fetched from /api/weights at startup · never shipped in client JS.
 // W is null until loadWeights() resolves. All scoring code gates on this.
@@ -994,8 +999,14 @@ function applyHaversineEstimates() {
 async function fetchWithTimeout(url, options = {}, ms = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
+  const parent = options.signal;
+  if (parent) {
+    if (parent.aborted) controller.abort();
+    else parent.addEventListener('abort', () => controller.abort(), { once: true });
+  }
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
+    const { signal: _drop, ...rest } = options;
+    return await fetch(url, { ...rest, signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
@@ -1038,6 +1049,13 @@ function clearLegacyWeatherCacheStorage() {
 
 function invalidateWeatherCache() {
   state.weatherCache = {};
+  _wxScopeKey = '';
+  _wxFetchGen++;
+  if (_forecastAbort) {
+    _forecastAbort.abort();
+    _forecastAbort = null;
+  }
+  _ensureWeatherPromise = null;
   try {
     sessionStorage.removeItem(WX_CACHE_KEY);
     sessionStorage.removeItem(WX_CACHE_DAY_KEY);
@@ -1128,9 +1146,28 @@ function saveHistoryCache() {
 }
 
 // Weather via /api/forecast (server proxy + shared cache). Avoids per-browser Open-Meteo bursts.
-const WX_PROXY_CHUNK_SIZE = 28;
-const WX_PROXY_CHUNK_GAP_MS = 150;
-let _wxFetchGen = 0;
+const WX_PROXY_CHUNK_SIZE = 12;
+const WX_PROXY_CHUNK_GAP_MS = 100;
+const WX_PROXY_TIMEOUT_MS = 58_000;
+
+function weatherScopeKey() {
+  const day = skiDayCacheKey();
+  const o = state.origin;
+  const origin = o ? `${o.lat},${o.lon}` : '';
+  return `${day}|${origin}|${state.howFar}`;
+}
+
+function resetWeatherFetchState() {
+  _wxFetchGen++;
+  if (_forecastAbort) {
+    _forecastAbort.abort();
+    _forecastAbort = null;
+  }
+  _ensureWeatherPromise = null;
+  weatherFetchPhase1Done = false;
+  weatherFetchPhase2Done = false;
+  weatherPhase1Ids = [];
+}
 
 function wxSleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -1164,8 +1201,8 @@ function openMeteoPayloadToWx(data, resort) {
   };
 }
 
-async function fetchForecastFromProxy(resorts) {
-  if (!resorts.length) return;
+async function fetchForecastFromProxy(resorts, signal) {
+  if (!resorts.length || signal?.aborted) return;
   const dayKey = skiDayCacheKey();
   const skiDay = dayKey === 'default' ? undefined : dayKey;
   try {
@@ -1176,7 +1213,8 @@ async function fetchForecastFromProxy(resorts) {
         skiDay,
         resorts: resorts.map(r => ({ id: r.id, lat: r.lat, lon: r.lon })),
       }),
-    }, 55_000);
+      signal,
+    }, WX_PROXY_TIMEOUT_MS);
     if (!res.ok) return;
     const json = await res.json();
     const forecasts = json.forecasts || {};
@@ -1187,13 +1225,16 @@ async function fetchForecastFromProxy(resorts) {
       const wx = openMeteoPayloadToWx(raw, r);
       if (wx) state.weatherCache[r.id] = { ts: now, data: wx };
     }
-  } catch (e) { /* proxy unavailable */ }
+  } catch (e) {
+    if (e?.name === 'AbortError') throw e;
+  }
 }
 
-async function fetchWeatherMissingList(resorts) {
+async function fetchWeatherMissingList(resorts, signal) {
   const missing = resorts.filter(r => !state.weatherCache[r.id]?.data);
   for (let i = 0; i < missing.length; i += WX_PROXY_CHUNK_SIZE) {
-    await fetchForecastFromProxy(missing.slice(i, i + WX_PROXY_CHUNK_SIZE));
+    if (signal?.aborted) return;
+    await fetchForecastFromProxy(missing.slice(i, i + WX_PROXY_CHUNK_SIZE), signal);
     if (i + WX_PROXY_CHUNK_SIZE < missing.length) await wxSleep(WX_PROXY_CHUNK_GAP_MS);
   }
 }
@@ -1234,23 +1275,47 @@ async function injectConditionsBadge(resortId, slotId) {
 }
 
 async function ensureWeather(resorts) {
+  const scope = weatherScopeKey();
+  if (_ensureWeatherPromise && _ensureWeatherScope === scope) {
+    return _ensureWeatherPromise;
+  }
+
   const gen = ++_wxFetchGen;
-  const near = phase1WeatherCandidates(resorts);
-  const rest  = resorts.filter(r => !near.find(n => n.id === r.id));
-  weatherPhase1Ids = near.map(r => r.id);
+  if (_forecastAbort) _forecastAbort.abort();
+  _forecastAbort = new AbortController();
+  const signal = _forecastAbort.signal;
+  _ensureWeatherScope = scope;
 
-  await fetchWeatherMissingList(near);
-  if (gen !== _wxFetchGen) return;
-  weatherFetchPhase1Done = true;
-  saveWeatherCache();
-  repaintMainUI(filteredResorts());
+  _ensureWeatherPromise = (async () => {
+    const near = phase1WeatherCandidates(resorts);
+    const rest  = resorts.filter(r => !near.find(n => n.id === r.id));
+    weatherPhase1Ids = near.map(r => r.id);
 
-  fetchWeatherMissingList(rest).then(() => {
-    if (gen !== _wxFetchGen) return;
+    try {
+      await fetchWeatherMissingList(near, signal);
+    } catch (e) {
+      if (e?.name === 'AbortError') return;
+    }
+    if (gen !== _wxFetchGen || signal.aborted) return;
+    weatherFetchPhase1Done = true;
     saveWeatherCache();
-    weatherFetchPhase2Done = true;
     repaintMainUI(filteredResorts());
-  });
+
+    fetchWeatherMissingList(rest, signal).then(() => {
+      if (gen !== _wxFetchGen || signal.aborted) return;
+      saveWeatherCache();
+      weatherFetchPhase2Done = true;
+      repaintMainUI(filteredResorts());
+    }).catch(() => {});
+  })();
+
+  try {
+    await _ensureWeatherPromise;
+  } finally {
+    if (_ensureWeatherScope === scope) {
+      _ensureWeatherPromise = null;
+    }
+  }
 }
 
 // ─── OSRM drive times ─────────────────────────────────────────────────────────
@@ -3460,12 +3525,11 @@ async function renderAsyncPanels(resorts, gen) {
 }
 
 function renderAllCards(resorts, gen) {
+  const scope = weatherScopeKey();
   const needWx = plannerCandidates(resorts).some(r => !state.weatherCache[r.id]?.data);
-  if (needWx) {
-    _wxFetchGen++;
-    weatherFetchPhase1Done = false;
-    weatherFetchPhase2Done = false;
-    weatherPhase1Ids = [];
+  if (needWx && scope !== _wxScopeKey) {
+    _wxScopeKey = scope;
+    resetWeatherFetchState();
   }
   repaintMainUI(resorts);
   renderAsyncPanels(resorts, gen);
