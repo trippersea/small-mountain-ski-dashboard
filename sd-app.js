@@ -1245,7 +1245,15 @@ async function fetchWeatherMissingList(resorts, signal) {
 
 const CONDITIONS_TTL = 30 * 60 * 1000;
 
+// Live conditions feature (surface, trails open, base depth, lifts open).
+// The /api/conditions endpoint is not deployed yet, so this is gated off.
+// To restore: deploy an /api/conditions handler that returns
+// { conditions: [{ surfaceCondition, trailsOpen, trailsTotal, baseDepthMin,
+// baseDepthMax, liftsOpen, liftsTotal }] }, then flip the flag below.
+const CONDITIONS_ENABLED = false;
+
 async function fetchConditions(resortId) {
+  if (!CONDITIONS_ENABLED) return null;
   const cached = state.conditionsCache[resortId];
   if (cached && Date.now() - cached.ts < CONDITIONS_TTL) return cached.data;
   try {
