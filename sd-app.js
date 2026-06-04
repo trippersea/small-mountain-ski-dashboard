@@ -486,8 +486,7 @@ const state = Object.seal({
   howFar:         0,
   priceRange:     0,
   verticalFilter: 'any',
-  tempBucket:     'any',
-  windBucket:     'any',
+
   selectedId:     null,
   /** Role slot user opened from verdict hero (pick|local|local_fallback|sleeper|trap); detail banner only */
   selectedFromRole: null,
@@ -1586,10 +1585,6 @@ function syncPlannerControls() {
   });
   const vertGroup = plannerRoot?.querySelector('.priority-btns[data-key="size"]');
   if (vertGroup) vertGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.verticalFilter));
-  const tempGroup = plannerRoot?.querySelector('.priority-btns[data-key="temp"]');
-  if (tempGroup) tempGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.tempBucket));
-  const windGroup = plannerRoot?.querySelector('.priority-btns[data-key="wind"]');
-  if (windGroup) windGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.val === state.windBucket));
   const howfarGroup = plannerRoot?.querySelector('.priority-btns[data-key="howfar"]');
   if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
 
@@ -1626,8 +1621,6 @@ function syncPlannerControls() {
 
 function updateStateFromPlannerPriorityButton(key, btn) {
   if (key === 'size') state.verticalFilter = btn.dataset.val;
-  else if (key === 'temp') state.tempBucket = btn.dataset.val;
-  else if (key === 'wind') state.windBucket = btn.dataset.val;
   else if (key === 'howfar') {
     state.howFar = Number(btn.dataset.val);
     const _hfEl = document.getElementById('howFarFilter');
@@ -2038,8 +2031,6 @@ function renderVerdict(resorts) {
       state.stateFilter !== 'All'  ||
       state.nightOnly              ||
       state.verticalFilter !== 'any' ||
-      state.tempBucket !== 'any'   ||
-      state.windBucket !== 'any'   ||
       state.priceRange > 0         ||
       (state.weights.value === 10 || state.weights.value === 5) ||
       state.howFar < 2
@@ -3779,7 +3770,7 @@ function wireEvents() {
 
   els.resetFilters.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
-    state.sortBy = 'planner'; state.tempBucket = 'any'; state.windBucket = 'any';
+    state.sortBy = 'planner';
     state.nightOnly = false; state.priceRange = 0;
     state.howFar = 0; state.verticalFilter = 'any';
     state.weights = { ...W.DEFAULT_WEIGHTS };

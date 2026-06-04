@@ -21,8 +21,6 @@ function activeFilters() {
   const filters = [];
   if (state.search.trim())        filters.push(`Search: "${esc(state.search.trim())}"`);
   if (state.howFar > 0)           filters.push(`Drive: ${HOW_FAR_TIERS[state.howFar]?.label ?? ''}${state.origin ? '' : ' (set location)'}`);
-  if (state.tempBucket !== 'any') filters.push(`Temp: ${{ideal:'0°–32°', spring:'33°+ Spring', cold:'Below 0°'}[state.tempBucket] || state.tempBucket}`);
-  if (state.windBucket !== 'any') filters.push(`Wind: ${{light:'Calm', breezy:'Breezy', holds:'Gusty'}[state.windBucket] || state.windBucket}`);
   if (state.priceRange > 0)       filters.push(`Ticket: ${PRICE_RANGES[state.priceRange]?.label ?? ''}`);
   if (state.passFilter !== 'All') filters.push(`Pass: ${esc(state.passFilter)}`);
   if (state.stateFilter !== 'All') {
@@ -85,8 +83,6 @@ function filteredResorts() {
     const fi = targetForecastIndex();
     const fc = wx?.forecast?.[fi] ?? tomorrowForecast(wx);
     if (fc) {
-      if (!tempBucketMatches(resortSummitTempF(r, fc.lo) ?? fc.lo))   return false;
-      if (!windBucketMatches(fc.wind)) return false;
       const target = snowPreferenceTarget();
       if (target > 0 && (fc.snow || 0) < target) return false;
     }
