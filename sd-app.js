@@ -4023,13 +4023,11 @@ function initialize() {
 
   if (hadUrlState && state.origin) {
     els.originInput.value = state.origin.label;
-    els.locationStatus.textContent = `Location set to ${state.origin.label}`;
   } else if (!state.origin) {
     const _saved = getSavedOrigin();
     if (_saved) {
       state.origin = _saved;
       els.originInput.value = _saved.label;
-      els.locationStatus.textContent = `Location restored: ${_saved.label}`;
       const _cb = document.getElementById('rememberLocation');
       if (_cb) _cb.checked = true;
     }
