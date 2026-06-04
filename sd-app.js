@@ -1127,47 +1127,121 @@ function saveHistoryCache() {
   } catch (e) {}
 }
 
-async function fetchWeather(resort) {
+// Open-Meteo free tier: ~1 in-flight request per IP; 8 parallel workers caused 429/502 bursts.
+const WX_FETCH_BATCH_SIZE = 10;
+const WX_FETCH_CHUNK_GAP_MS = 500;
+const WX_FETCH_RETRY_MS = [800, 1600, 3200, 6000];
+let _wxFetchGen = 0;
+
+function wxSleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function openMeteoForecastQueryString() {
+  return 'current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m' +
+    '&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum,windspeed_10m_max' +
+    '&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4' +
+    '&timezone=auto&models=best_match';
+}
+
+/** Parse one Open-Meteo forecast object (single location). */
+function openMeteoPayloadToWx(data, resort) {
+  if (!data?.current || !Array.isArray(data.daily?.time) || data.daily.time.length < 2) return null;
+  return {
+    temp: Math.round(data.current.temperature_2m),
+    code: data.current.weathercode,
+    wind: Math.round(data.current.windspeed_10m),
+    humidity: data.current.relativehumidity_2m != null
+      ? Math.round(data.current.relativehumidity_2m)
+      : undefined,
+    forecast: data.daily.time.slice(0, 3).map((date, i) => {
+      const raw = sanitizeGridDailyTempsF(
+        data.daily.temperature_2m_max[i],
+        data.daily.temperature_2m_min[i],
+        resort,
+      );
+      return {
+        day:  new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
+        code: data.daily.weathercode[i],
+        hi:   raw.hi,
+        lo:   raw.lo,
+        snow: Math.round((data.daily.snowfall_sum?.[i] || 0) * 10) / 10,
+        wind: Math.round(data.daily.windspeed_10m_max?.[i] || 0),
+      };
+    }),
+  };
+}
+
+async function fetchOpenMeteoJson(url) {
+  for (let attempt = 0; attempt <= WX_FETCH_RETRY_MS.length; attempt++) {
+    try {
+      const res = await fetchWithTimeout(url, {}, 12000);
+      if (res.status === 429 || res.status === 502 || res.status === 503) {
+        const retryHdr = Number(res.headers.get('Retry-After'));
+        const wait = Number.isFinite(retryHdr) && retryHdr > 0
+          ? retryHdr * 1000
+          : (WX_FETCH_RETRY_MS[attempt] ?? 8000);
+        if (attempt < WX_FETCH_RETRY_MS.length) {
+          await wxSleep(wait);
+          continue;
+        }
+        return null;
+      }
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      if (attempt < WX_FETCH_RETRY_MS.length) {
+        await wxSleep(WX_FETCH_RETRY_MS[attempt]);
+        continue;
+      }
+      return null;
+    }
+  }
+  return null;
+}
+
+async function fetchWeatherSingle(resort) {
   const cached = state.weatherCache[resort.id];
   if (cached && Date.now() - cached.ts < WX_TTL) return cached.data;
-  try {
-    // Do NOT pass elevation= — Open-Meteo returns unrealistic cold above ~8k ft at this API
-    // (e.g. -40°F lows for Snowbasin in late May). Grid temps + resortSummitTempF() in scoring.
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}` +
-      `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m` +
-      `&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum,windspeed_10m_max` +
-      `&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=4` +
-      `&timezone=auto&models=best_match`;
-    const res  = await fetchWithTimeout(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data?.current || !Array.isArray(data.daily?.time) || data.daily.time.length < 2) return null;
-    const wx = {
-      temp: Math.round(data.current.temperature_2m),
-      code: data.current.weathercode,
-      wind: Math.round(data.current.windspeed_10m),
-      humidity: data.current.relativehumidity_2m != null
-        ? Math.round(data.current.relativehumidity_2m)
-        : undefined,
-      forecast: data.daily.time.slice(0, 3).map((date, i) => {
-        const raw = sanitizeGridDailyTempsF(
-          data.daily.temperature_2m_max[i],
-          data.daily.temperature_2m_min[i],
-          resort,
-        );
-        return {
-          day:  new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }),
-          code: data.daily.weathercode[i],
-          hi:   raw.hi,
-          lo:   raw.lo,
-          snow: Math.round((data.daily.snowfall_sum?.[i] || 0) * 10) / 10,
-          wind: Math.round(data.daily.windspeed_10m_max?.[i] || 0),
-        };
-      }),
-    };
-    state.weatherCache[resort.id] = { ts: Date.now(), data: wx };
-    return wx;
-  } catch (e) { return null; }
+  // Do NOT pass elevation= — Open-Meteo returns unrealistic cold above ~8k ft at this API.
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${resort.lat}&longitude=${resort.lon}&${openMeteoForecastQueryString()}`;
+  const data = await fetchOpenMeteoJson(url);
+  const wx = data ? openMeteoPayloadToWx(data, resort) : null;
+  if (!wx) return null;
+  state.weatherCache[resort.id] = { ts: Date.now(), data: wx };
+  return wx;
+}
+
+async function fetchWeatherChunk(resorts) {
+  if (!resorts.length) return;
+  const lats = resorts.map(r => r.lat).join(',');
+  const lons = resorts.map(r => r.lon).join(',');
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&${openMeteoForecastQueryString()}`;
+  const json = await fetchOpenMeteoJson(url);
+  if (!json) {
+    for (const r of resorts) await fetchWeatherSingle(r);
+    await wxSleep(WX_FETCH_CHUNK_GAP_MS);
+    return;
+  }
+  const items = Array.isArray(json) ? json : [json];
+  if (items.length !== resorts.length) {
+    for (const r of resorts) await fetchWeatherSingle(r);
+    await wxSleep(WX_FETCH_CHUNK_GAP_MS);
+    return;
+  }
+  for (let i = 0; i < resorts.length; i++) {
+    const wx = openMeteoPayloadToWx(items[i], resorts[i]);
+    if (wx) state.weatherCache[resorts[i].id] = { ts: Date.now(), data: wx };
+  }
+}
+
+async function fetchWeatherMissingList(resorts) {
+  const missing = resorts.filter(r => !state.weatherCache[r.id]?.data);
+  for (let i = 0; i < missing.length; i += WX_FETCH_BATCH_SIZE) {
+    const chunk = missing.slice(i, i + WX_FETCH_BATCH_SIZE);
+    await fetchWeatherChunk(chunk);
+    if (i + WX_FETCH_BATCH_SIZE < missing.length) await wxSleep(WX_FETCH_CHUNK_GAP_MS);
+  }
 }
 
 const CONDITIONS_TTL = 30 * 60 * 1000;
@@ -1206,26 +1280,23 @@ async function injectConditionsBadge(resortId, slotId) {
 }
 
 async function ensureWeather(resorts) {
+  const gen = ++_wxFetchGen;
   const near = phase1WeatherCandidates(resorts);
   const rest  = resorts.filter(r => !near.find(n => n.id === r.id));
   weatherPhase1Ids = near.map(r => r.id);
 
-  const q1 = [...near.filter(r => !state.weatherCache[r.id]?.data)];
-  await Promise.all(Array.from({ length: 8 }, async () => {
-    while (q1.length) { const r = q1.shift(); if (r) await fetchWeather(r); }
-  }));
+  await fetchWeatherMissingList(near);
+  if (gen !== _wxFetchGen) return;
   weatherFetchPhase1Done = true;
+  saveWeatherCache();
+  repaintMainUI(filteredResorts());
 
-  const q2 = [...rest.filter(r => !state.weatherCache[r.id]?.data)];
-  Promise.all(Array.from({ length: 8 }, async () => {
-    while (q2.length) { const r = q2.shift(); if (r) await fetchWeather(r); }
-  })).then(() => {
+  fetchWeatherMissingList(rest).then(() => {
+    if (gen !== _wxFetchGen) return;
     saveWeatherCache();
     weatherFetchPhase2Done = true;
     repaintMainUI(filteredResorts());
   });
-
-  saveWeatherCache();
 }
 
 // ─── OSRM drive times ─────────────────────────────────────────────────────────
@@ -2067,7 +2138,7 @@ function renderVerdict(resorts) {
       } else if (!anyWx && weatherFetchPhase1Done && weatherFetchPhase2Done) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder">
           <div class="vcard-placeholder-title">Forecast data unavailable</div>
-          <div class="vcard-placeholder-sub">We could not load weather from our data provider. Drive times and the mountain list below still work · try refreshing the page in a minute.</div>
+          <div class="vcard-placeholder-sub">We could not load weather from our data provider (often a temporary rate limit). Drive times and the mountain list below still work. Wait a minute, then refresh the page.</div>
         </div>`;
       } else if (!anyWx) {
         els.verdictCard.innerHTML = `<div class="vcard-placeholder vcard-placeholder--loading">
@@ -3437,6 +3508,7 @@ async function renderAsyncPanels(resorts, gen) {
 function renderAllCards(resorts, gen) {
   const needWx = plannerCandidates(resorts).some(r => !state.weatherCache[r.id]?.data);
   if (needWx) {
+    _wxFetchGen++;
     weatherFetchPhase1Done = false;
     weatherFetchPhase2Done = false;
     weatherPhase1Ids = [];
