@@ -27,10 +27,6 @@ const PASS_PRICES = Object.freeze({ Indy: 349, Epic: 909, Ikon: 799 });
 // Table sort state
 let tableSort = { col: 'planner', dir: 'desc' };
 
-// AI chat loading flag
-let aiChatLoading = false;
-let aiLastCallTime = 0; // rate limiting
-
 // Pre-computed index lists
 const UNIQUE_STATES = Object.freeze(['All', ...new Set(RESORTS.map(r => r.state))].sort());
 const UNIQUE_PASSES = Object.freeze(['All', 'Epic', 'Ikon', 'Indy', 'Independent']);

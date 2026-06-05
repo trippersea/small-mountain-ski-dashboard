@@ -857,9 +857,6 @@ const els = {
   detailCard:          $('detailCard'),
   backToTop:           $('backToTop'),
   toast:               $('toast'),
-  aiChatInput:         $('aiChatInput'),
-  aiChatBtn:           $('aiChatBtn'),
-  aiChatResult:        $('aiChatResult'),
   heroPassSelect:      $('heroPassSelect'),
   heroSnowSelect:      $('heroSnowSelect'),
   hnRefinePromptBtn:   $('hnRefinePromptBtn'),
@@ -3381,103 +3378,6 @@ ${_roleBannerHtml}
   injectConditionsBadge(resort.id, 'detailConditionsSlot');
 }
 
-// ─── AI Chat ──────────────────────────────────────────────────────────────────
-async function askAI(query) {
-  if (!query.trim() || aiChatLoading) return;
-
-  const now = Date.now();
-  if (now - aiLastCallTime < 10000) {
-    showToast('Please wait a moment before asking again', 2000);
-    return;
-  }
-  aiLastCallTime = now;
-  aiChatLoading  = true;
-
-  if (els.aiChatBtn)    els.aiChatBtn.disabled = true;
-  if (els.aiChatResult) {
-    els.aiChatResult.className = 'ai-chat-result ai-chat-loading';
-    els.aiChatResult.removeAttribute('hidden');
-    els.aiChatResult.innerHTML = `<span class="ai-spinner"></span> Analyzing mountains that match your filters…`;
-  }
-
-  const current = filteredResorts();
-  if (current.length === 0) {
-    aiChatLoading = false;
-    if (els.aiChatBtn) els.aiChatBtn.disabled = false;
-    if (els.aiChatResult) {
-      els.aiChatResult.className = 'ai-chat-result ai-chat-error';
-      els.aiChatResult.removeAttribute('hidden');
-      els.aiChatResult.innerHTML = '<span>No mountains match your current filters. Widen distance, pass, or snow settings · or reset filters · then ask again.</span>';
-    }
-    return;
-  }
-  const w       = normalizedWeights();
-  const payload = current.slice(0, 25).map(r => {
-    const wx      = state.weatherCache[r.id]?.data;
-    const fi      = targetForecastIndex();
-    const snow3d  = wx ? (wx.forecast || []).reduce((s, f) => s + (f.snow || 0), 0) : null;
-    const bd      = wx ? plannerScoreBreakdown(r, wx, fi, w) : null;
-    return {
-      id: r.id, name: r.name, state: r.state, vertical: r.vertical, trails: r.trails,
-      price: r.price, passGroup: r.passGroup, avgSnowfall: r.avgSnowfall,
-      drive: getDriveMins(r.id), crowd: crowdForecast(r, wx).label,
-      snow3d: snow3d !== null ? Math.round(snow3d * 10) / 10 : null,
-      tomorrowSnow: wx?.forecast?.[fi]?.snow ?? null,
-      tomorrowLow:  wx?.forecast?.[fi]?.lo   ?? null,
-      tomorrowHigh: wx?.forecast?.[fi]?.hi   ?? null,
-      tomorrowWind: wx?.forecast?.[fi]?.wind ?? null,
-      plannerScore: bd ? bd.score : null,
-      beginner: r.terrainBreakdown?.beginner ?? null,
-    };
-  });
-
-  try {
-    const res  = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, resorts: payload }) });
-    let data = null;
-    try {
-      data = await res.json();
-    } catch (_) {
-      throw new Error(res.ok ? 'Bad response from server' : `Server error (${res.status})`);
-    }
-    if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
-    if (!data || data.error || !data.resortName) throw new Error(data?.error || 'No recommendation returned. Try a simpler question or check back shortly.');
-    let matched = null;
-    if (data.resortId) {
-      matched = RESORTS.find(r => r.id === data.resortId) || null;
-    }
-    if (!matched) {
-      const nameLower = data.resortName.toLowerCase();
-      matched = RESORTS.find(r => r.name.toLowerCase() === nameLower) || null;
-    }
-    const resortLink = matched ? `<button class="ai-result-jump-btn" data-resort-id="${matched.id}">View ${esc(data.resortName)} in table</button>` : '';
-    if (els.aiChatResult) {
-      els.aiChatResult.className = 'ai-chat-result ai-chat-success';
-      els.aiChatResult.removeAttribute('hidden');
-      els.aiChatResult.innerHTML =
-        `<div class="ai-result-header"><strong>AI Pick: ${esc(data.resortName)}</strong></div>` +
-        `<div class="ai-result-text">${esc(data.explanation)}</div>` +
-        (resortLink ? `<div class="ai-result-actions">${resortLink}</div>` : '');
-    }
-    if (matched) {
-      state.selectedId = matched.id;
-      renderDetail();
-      setTimeout(() => {
-        const row = document.querySelector(`tr[data-id="${matched.id}"]`);
-        if (row) { row.classList.add('ai-highlight'); setTimeout(() => row.classList.remove('ai-highlight'), 2500); }
-      }, 300);
-    }
-  } catch (err) {
-    if (els.aiChatResult) {
-      els.aiChatResult.className = 'ai-chat-result ai-chat-error';
-      els.aiChatResult.removeAttribute('hidden');
-      els.aiChatResult.innerHTML = `<span>${esc(err.message || 'AI unavailable · try again shortly')}</span>`;
-    }
-  } finally {
-    aiChatLoading = false;
-    if (els.aiChatBtn) els.aiChatBtn.disabled = false;
-  }
-}
-
 // ─── Mobile card grid ─────────────────────────────────────────────────────────
 function renderMobileCards(decorated, emptyOpts) {
   if (!els.mobileCardGrid) return;
@@ -3818,21 +3718,6 @@ function wireEvents() {
     const resortId   = verdict && verdict.resort ? verdict.resort.id   : '';
     trackSponsorClick(resortName, 'weekend_lodging_strip', resortId, '');
   });
-  if (els.aiChatBtn) els.aiChatBtn.addEventListener('click', () => { const q = els.aiChatInput?.value?.trim(); if (q) { trackEvent('ai_chat_used', { query: q }); trackFilterEvent('ai_chat_query', q); askAI(q); } });
-  if (els.aiChatInput) els.aiChatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const q = els.aiChatInput.value?.trim(); if (q) askAI(q); } });
-  if (els.aiChatResult) {
-    els.aiChatResult.addEventListener('click', e => {
-      const btn = e.target.closest('[data-resort-id]');
-      if (!btn) return;
-      const id = btn.dataset.resortId;
-      state.selectedId = id;
-      renderDetail();
-      const row = document.querySelector(`tr[data-id="${id}"]`);
-      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      else document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }
-
   if (els.mobileCardGrid) {
     els.mobileCardGrid.addEventListener('click', e => {
       const detailBtn = e.target.closest('[data-mob-detail]');

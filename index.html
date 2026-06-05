@@ -61,10 +61,6 @@
       .wtsn-trust-inner { gap: 8px; }
     }
 
-    /* ── AI input: open by default, give the toggle label more presence ──── */
-    .hn-editorial-ai-tog {
-      font-weight: 700 !important;
-    }
   </style>
   <link rel="icon" href="/wtsn-favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
@@ -656,22 +652,6 @@
           <div class="hero-v2__aux">
             <button type="button" id="detectLocation" class="hero-v2__link">Use current location</button>
             <div id="locationStatus" class="hero-v2__status" role="status"></div>
-          </div>
-
-          <div class="hn-editorial-ai hn-editorial-ai--hero hn-editorial-ai--belowfold">
-            <button type="button" class="hn-editorial-ai-tog" id="aiToggleBtn" aria-expanded="false" aria-controls="aiChatPanel">Describe your ideal day</button>
-            <div id="aiChatPanel" class="hero-ai-panel hn-editorial-ai-panel" hidden>
-              <div class="hero-ai-examples">
-                <button type="button" class="ai-example-chip" data-prompt="Ikon pass, powder day, under 2 hours from Boston">Powder near Boston</button>
-                <button type="button" class="ai-example-chip" data-prompt="Epic pass, family friendly, under $100, within 3 hours of NYC">Family trip from NYC</button>
-                <button type="button" class="ai-example-chip" data-prompt="Best hidden gem within 4 hours, low crowds, affordable">Hidden gem, low crowds</button>
-              </div>
-              <div class="hero-ai-input-row">
-                <input id="aiChatInput" type="text" class="ai-chat-input hero-ai-input" placeholder='e.g. "Ikon pass, 2 hrs from Boston, powder day"' aria-label="Describe your ideal ski day" />
-                <button type="button" id="aiChatBtn" class="btn btn-ai">Ask AI</button>
-              </div>
-              <div id="aiChatResult" class="ai-chat-result hidden" aria-live="polite"></div>
-            </div>
           </div>
 
           <!-- Hidden selects preserved for state compatibility -->
@@ -5989,31 +5969,12 @@
   <script defer src="why-this-pick.js"></script>
 
   <script>
-  // ── AI panel toggle ────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
-    var toggleBtn = document.getElementById('aiToggleBtn');
-    var panel     = document.getElementById('aiChatPanel');
-    if (toggleBtn && panel) {
-      toggleBtn.addEventListener('click', function() {
-        var open = toggleBtn.getAttribute('aria-expanded') === 'true';
-        toggleBtn.setAttribute('aria-expanded', String(!open));
-        panel.hidden = open;
-        if (!open) setTimeout(function() { document.getElementById('aiChatInput') && document.getElementById('aiChatInput').focus(); }, 50);
-      });
-    }
-    document.querySelectorAll('.ai-example-chip').forEach(function(chip) {
-      chip.addEventListener('click', function() {
-        var input = document.getElementById('aiChatInput');
-        if (input) { input.value = chip.getAttribute('data-prompt'); input.focus(); }
-      });
-    });
-    // Wire the empty-state locate button to the existing detectLocation handler
     var emptyLocateBtn = document.getElementById('verdictEmptyLocateBtn');
     var detectBtn      = document.getElementById('detectLocation');
     if (emptyLocateBtn && detectBtn) {
       emptyLocateBtn.addEventListener('click', function() { detectBtn.click(); });
     }
-    // setLocationInline arrow removed; Enter key and Find My Mountain are the only submit paths
   });
   </script>
 
