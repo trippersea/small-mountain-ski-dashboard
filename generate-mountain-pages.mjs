@@ -90,6 +90,13 @@ function passLabel(pg) {
   return { Epic: 'Epic Pass', Ikon: 'Ikon Pass', Indy: 'Indy Pass', Independent: 'Independent' }[pg] || pg;
 }
 
+// Pick "a" or "an" based on whether the next word starts with a vowel sound.
+// Used so pass labels like "Epic Pass", "Ikon Pass", "Indy Pass", "Independent"
+// all render correctly ("an Epic Pass mountain", not "a Epic Pass mountain").
+function aOrAn(word) {
+  return /^[aeiouAEIOU]/.test(String(word || '').trim()) ? 'an' : 'a';
+}
+
 function stateFullName(abbr) {
   const names = {
     AL:'Alabama', AK:'Alaska', AZ:'Arizona', AR:'Arkansas', CA:'California',
@@ -195,12 +202,15 @@ function buildFAQSchema(resort, stateName) {
     : `${resort.name} is well-suited to intermediate skiers — about ${intPct}% of the terrain falls in that range. There is something for most skill levels here.`;
 
   const peakMonths = resort.avgSnowfall >= 200 ? 'January through early March' : 'January and February';
+  // "January and February" is plural, "January through early March" is a single range.
+  // Use "are" vs "is" accordingly so the FAQ doesn't read awkwardly.
+  const peakVerb   = peakMonths.includes(' and ') ? 'are' : 'is';
 
   const questions = [
     {
       q: `Is ${resort.name} on the ${isPass ? passName : 'Epic, Ikon, or Indy Pass'}?`,
       a: isPass
-        ? `Yes. ${resort.name} is a ${passName} mountain. Pass holders can ski here as part of their pass benefits — check the current pass terms for any blackout dates or restrictions.`
+        ? `Yes. ${resort.name} is ${aOrAn(passName)} ${passName} mountain. Pass holders can ski here as part of their pass benefits — check the current pass terms for any blackout dates or restrictions.`
         : `${resort.name} is an independent mountain and is not on the Epic Pass, Ikon Pass, or Indy Pass. Day tickets are available directly through the resort at approximately $${resort.price}.`,
     },
     {
@@ -225,7 +235,7 @@ function buildFAQSchema(resort, stateName) {
     },
     {
       q: `When is the best time to ski ${resort.name}?`,
-      a: `${peakMonths} is typically peak season at ${resort.name} when snowpack is deepest and conditions are most consistent. ${resort.avgSnowfall >= 150 ? 'December can be good if the season starts early.' : 'December is hit or miss — the base needs time to build.'} Midweek visits are almost always less crowded than weekends${isPass ? ', especially when pass holders fill the mountain on Saturdays and holidays' : ''}.`,
+      a: `${peakMonths} ${peakVerb} typically peak season at ${resort.name} when snowpack is deepest and conditions are most consistent. ${resort.avgSnowfall >= 150 ? 'December can be good if the season starts early.' : 'December is hit or miss — the base needs time to build.'} Midweek visits are almost always less crowded than weekends${isPass ? ', especially when pass holders fill the mountain on Saturdays and holidays' : ''}.`,
     },
   ];
 
@@ -242,7 +252,7 @@ function buildFAQSchema(resort, stateName) {
 
 // ─── JSON-LD schemas ──────────────────────────────────────────────────────────
 function buildSchemas(resort, stateName, editorial) {
-  const canonUrl = `https://wheretoskinext.com/ski-report/${resort.id}/`;
+  const canonUrl = `https://wheretoskinext.com/ski-report/${resort.id}`;
 
   const sportsLocation = {
     '@context': 'https://schema.org',
@@ -264,8 +274,8 @@ function buildSchemas(resort, stateName, editorial) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext.com', item: 'https://wheretoskinext.com' },
-      { '@type': 'ListItem', position: 2, name: `Ski Mountains in ${stateName}`, item: `https://wheretoskinext.com/ski/${slugifyState(resort.state)}/` },
+      { '@type': 'ListItem', position: 1, name: 'WhereToSkiNext.com', item: 'https://wheretoskinext.com/' },
+      { '@type': 'ListItem', position: 2, name: `Ski Mountains in ${stateName}`, item: `https://wheretoskinext.com/ski/${slugifyState(resort.state)}` },
       { '@type': 'ListItem', position: 3, name: resort.name, item: canonUrl },
     ],
   };
@@ -298,7 +308,7 @@ function buildSchemas(resort, stateName, editorial) {
       publisher: {
         '@type': 'Organization',
         name: 'WhereToSkiNext.com',
-        url: 'https://wheretoskinext.com',
+        url: 'https://wheretoskinext.com/',
         logo: {
           '@type': 'ImageObject',
           url: 'https://wheretoskinext.com/wtsn-icon.svg'
@@ -384,7 +394,7 @@ function nearbyCard(r, baseResort) {
       : "";
 
   return `
-    <a href="/ski-report/${r.id}/" class="sr-nearby-card">
+    <a href="/ski-report/${r.id}" class="sr-nearby-card">
       <div class="sr-nc-name">${esc(r.name)}</div>
       <div class="sr-nc-meta">${esc(r.state)} · ${r.vertical.toLocaleString()} ft · ${esc(passLabel(r.passGroup))}</div>
       ${deltaHtml}
@@ -545,7 +555,7 @@ function renderEditorial(resort, editorial, allResorts) {
         return '';
       }
       return `
-        <a class="sr-ed-alt-card" href="/ski-report/${target.id}/">
+        <a class="sr-ed-alt-card" href="/ski-report/${target.id}">
           <div class="sr-ed-alt-name">${esc(target.name)}<span class="sr-ed-alt-arrow">&rarr;</span></div>
           <div class="sr-ed-alt-take">${esc(alt.take || '')}</div>
         </a>`;
@@ -853,7 +863,7 @@ function generateMountainPage(resort, allResorts) {
   const stateName  = stateFullName(resort.state);
   const stateSlug  = slugifyState(resort.state);
   const editorial  = MOUNTAIN_EDITORIAL[resort.id] || null;
-  const canonUrl   = `https://wheretoskinext.com/ski-report/${resort.id}/`;
+  const canonUrl   = `https://wheretoskinext.com/ski-report/${resort.id}`;
   const liveScoreUrl    = `https://wheretoskinext.com/?resort=${resort.id}#searchSection`;
   const compareExploreUrl = `https://wheretoskinext.com/?st=${encodeURIComponent(resort.state)}#compareSection`;
   const schemas    = buildSchemas(resort, stateName, editorial);
@@ -862,7 +872,10 @@ function generateMountainPage(resort, allResorts) {
   const year       = new Date().getFullYear();
   const month      = new Date().toLocaleString('en-US', { month: 'long' });
 
-  const pageTitle  = `${resort.name} Ski Report ${year} | Live Snow, Conditions & Forecast | WhereToSkiNext.com`;
+  // Title kept under ~60 chars so it doesn't get truncated in Google SERPs.
+  // No year (avoids dating every page), no full brand string (Google appends
+  // the site name automatically when it wants to show it).
+  const pageTitle  = `${resort.name} Ski Report | Live Snow & Forecast`;
   const metaDesc   = `Live snow forecast, mountain facts, and pass context for ${resort.name} in ${stateName}. ${resort.vertical.toLocaleString()} ft vertical, ${resort.trails} trails. Compare nearby options on WhereToSkiNext.com.`;
 
   const passColor  = { Epic: '#1a56db', Ikon: '#0e9f6e', Indy: '#c27803', Independent: '#6b7280' }[resort.passGroup] || '#6b7280';
@@ -889,7 +902,7 @@ function generateMountainPage(resort, allResorts) {
     ? `${resort.name} is welcoming to all levels with ${Math.round(tb.beginner * 100)}% beginner terrain.`
     : `${resort.name} is well-suited to intermediate skiers, with ${Math.round(tb.intermediate * 100)}% of trails in that range.`;
 
-  const heroTagline = `${resort.name} is a ${passLabel(resort.passGroup)} ski area in ${stateName}: ${resort.trails} trails, ${resort.vertical.toLocaleString()} ft vertical, ${resort.acres.toLocaleString()} acres.`;
+  const heroTagline = `${resort.name} is ${aOrAn(passLabel(resort.passGroup))} ${passLabel(resort.passGroup)} ski area in ${stateName}: ${resort.trails} trails, ${resort.vertical.toLocaleString()} ft vertical, ${resort.acres.toLocaleString()} acres.`;
 
   // Build sponsor hero block if this resort is a featured partner
   const _fp = FEATURED_PARTNERS[resort.id];
@@ -974,55 +987,55 @@ ${editorial ? EDITORIAL_CSS : ''}
         <div class="nav-browse-dropdown" role="menu">
           <div class="nav-browse-col">
             <div class="nav-browse-region">Northeast</div>
-            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
-            <a href="/ski/maine/" role="menuitem">Maine</a>
-            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
-            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
-            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
-            <a href="/ski/new-york/" role="menuitem">New York</a>
-            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
-            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
-            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+            <a href="/ski/connecticut" role="menuitem">Connecticut</a>
+            <a href="/ski/maine" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont" role="menuitem">Vermont</a>
           </div>
           <div class="nav-browse-col">
             <div class="nav-browse-region">Southeast</div>
-            <a href="/ski/maryland/" role="menuitem">Maryland</a>
-            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
-            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
-            <a href="/ski/virginia/" role="menuitem">Virginia</a>
-            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <a href="/ski/maryland" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia" role="menuitem">West Virginia</a>
             <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
-            <a href="/ski/illinois/" role="menuitem">Illinois</a>
-            <a href="/ski/indiana/" role="menuitem">Indiana</a>
-            <a href="/ski/iowa/" role="menuitem">Iowa</a>
-            <a href="/ski/michigan/" role="menuitem">Michigan</a>
-            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
-            <a href="/ski/missouri/" role="menuitem">Missouri</a>
-            <a href="/ski/ohio/" role="menuitem">Ohio</a>
-            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+            <a href="/ski/illinois" role="menuitem">Illinois</a>
+            <a href="/ski/indiana" role="menuitem">Indiana</a>
+            <a href="/ski/iowa" role="menuitem">Iowa</a>
+            <a href="/ski/michigan" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri" role="menuitem">Missouri</a>
+            <a href="/ski/ohio" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin" role="menuitem">Wisconsin</a>
           </div>
           <div class="nav-browse-col">
             <div class="nav-browse-region">Rockies</div>
-            <a href="/ski/colorado/" role="menuitem">Colorado</a>
-            <a href="/ski/idaho/" role="menuitem">Idaho</a>
-            <a href="/ski/montana/" role="menuitem">Montana</a>
-            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
-            <a href="/ski/utah/" role="menuitem">Utah</a>
-            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <a href="/ski/colorado" role="menuitem">Colorado</a>
+            <a href="/ski/idaho" role="menuitem">Idaho</a>
+            <a href="/ski/montana" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico" role="menuitem">New Mexico</a>
+            <a href="/ski/utah" role="menuitem">Utah</a>
+            <a href="/ski/wyoming" role="menuitem">Wyoming</a>
             <div class="nav-browse-region" style="margin-top:10px;">West</div>
-            <a href="/ski/alaska/" role="menuitem">Alaska</a>
-            <a href="/ski/arizona/" role="menuitem">Arizona</a>
-            <a href="/ski/california/" role="menuitem">California</a>
-            <a href="/ski/nevada/" role="menuitem">Nevada</a>
-            <a href="/ski/oregon/" role="menuitem">Oregon</a>
-            <a href="/ski/washington/" role="menuitem">Washington</a>
+            <a href="/ski/alaska" role="menuitem">Alaska</a>
+            <a href="/ski/arizona" role="menuitem">Arizona</a>
+            <a href="/ski/california" role="menuitem">California</a>
+            <a href="/ski/nevada" role="menuitem">Nevada</a>
+            <a href="/ski/oregon" role="menuitem">Oregon</a>
+            <a href="/ski/washington" role="menuitem">Washington</a>
           </div>
         </div>
       </div>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/about/" class="nav-primary">About</a>
+      <a href="/about" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+      <a href="/ski-pass-comparison" class="nav-primary">Pass Guides</a>
       <a href="https://wheretoskinext.com/#searchSection" class="nav-find-cta">Find my mountain &rarr;</a>
     </div>
   </nav>
@@ -1032,7 +1045,7 @@ ${editorial ? EDITORIAL_CSS : ''}
     <nav class="sr-breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a>
       <span class="sr-breadcrumb-sep">/</span>
-      <a href="/ski/${stateSlug}/">${esc(stateName)} ski mountains</a>
+      <a href="/ski/${stateSlug}">${esc(stateName)} ski mountains</a>
       <span class="sr-breadcrumb-sep">/</span>
       <span>${esc(resort.name)}</span>
     </nav>
@@ -1094,7 +1107,7 @@ ${editorial ? EDITORIAL_CSS : ''}
       </p>
       <p>
         The mountain averages ${resort.avgSnowfall}" of snowfall per season${resort.snowmaking > 0 ? ` with ${resort.snowmaking.toLocaleString()} GPM of snowmaking capacity` : ""}.
-        Lift tickets start around $${resort.price}; day-of pricing varies. ${esc(resort.name)} is a <strong>${esc(passLabel(resort.passGroup))}</strong> mountain.
+        Lift tickets start around $${resort.price}; day-of pricing varies. ${esc(resort.name)} is ${aOrAn(passLabel(resort.passGroup))} <strong>${esc(passLabel(resort.passGroup))}</strong> mountain.
       </p>
       <p>
         Snow conditions update often. Check back before you go. A fresh forecast can change everything.
@@ -1233,7 +1246,7 @@ ${editorial ? EDITORIAL_CSS : ''}
     <section class="sr-nearby-section" aria-label="Nearby mountains">
       <div class="sr-nearby-head">
         <h2>Also considering</h2>
-        <a href="/ski/${stateSlug}/">Browse all ${esc(stateName)} mountains</a>
+        <a href="/ski/${stateSlug}">Browse all ${esc(stateName)} mountains</a>
       </div>
       <div class="sr-nearby-grid">
         ${nearbyCards}
@@ -1242,7 +1255,7 @@ ${editorial ? EDITORIAL_CSS : ''}
       : ""}
 
     <p class="sr-state-link">
-      See all <a href="/ski/${stateSlug}/">${esc(stateName)} ski mountains</a> ranked by snow, vertical, and value in our state hub.
+      See all <a href="/ski/${stateSlug}">${esc(stateName)} ski mountains</a> ranked by snow, vertical, and value in our state hub.
     </p>
 
     <p class="sr-disclaimer">
@@ -1254,7 +1267,7 @@ ${editorial ? EDITORIAL_CSS : ''}
   <script src="/newsletter-band.js"></script>
 
   <footer class="site-footer">
-    <p>© ${year} WhereToSkiNext.com · <a href="/#searchSection">Find my mountain</a> · <a href="/about/">About</a> · <a href="/partners/">Partners</a></p>
+    <p>© ${year} WhereToSkiNext.com · <a href="/#searchSection">Find my mountain</a> · <a href="/about">About</a> · <a href="/partners">Partners</a></p>
   </footer>
 
   <!-- Live snow fetch from OpenMeteo: 72h snowfall + tomorrow temp for hero snapshot -->
@@ -1351,28 +1364,28 @@ function generateSitemap(resorts) {
   const skiNearSlugs = listSkiNearSlugs();
   // ── Static content pages — add new pages here as you build them ──────────
   const STATIC_PAGES = [
-    { loc: 'https://wheretoskinext.com/ski-pass-comparison/',            changefreq: 'monthly', priority: '0.9' },
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast/',         changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-rockies/',           changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-california/',        changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-pacific-northwest/', changefreq: 'monthly', priority: '0.8' },
-    { loc: 'https://wheretoskinext.com/epic-vs-ikon-midwest/',           changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/ski-pass-comparison',            changefreq: 'monthly', priority: '0.9' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast',         changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-rockies',           changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-california',        changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-pacific-northwest', changefreq: 'monthly', priority: '0.8' },
+    { loc: 'https://wheretoskinext.com/epic-vs-ikon-midwest',           changefreq: 'monthly', priority: '0.8' },
   ];
 
   const urls = [
     `  <url><loc>https://wheretoskinext.com/</loc><changefreq>daily</changefreq><priority>1.0</priority><lastmod>${today}</lastmod></url>`,
-    `  <url><loc>https://wheretoskinext.com/about/</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>${today}</lastmod></url>`,
+    `  <url><loc>https://wheretoskinext.com/about</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>${today}</lastmod></url>`,
     ...STATIC_PAGES.map(p =>
       `  <url><loc>${p.loc}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority><lastmod>${today}</lastmod></url>`
     ),
     ...skiNearSlugs.map(slug =>
-      `  <url><loc>https://wheretoskinext.com/ski-near/${slug}/</loc><changefreq>weekly</changefreq><priority>0.85</priority><lastmod>${today}</lastmod></url>`
+      `  <url><loc>https://wheretoskinext.com/ski-near/${slug}</loc><changefreq>weekly</changefreq><priority>0.85</priority><lastmod>${today}</lastmod></url>`
     ),
     ...states.map(s =>
-      `  <url><loc>https://wheretoskinext.com/ski/${slugifyState(s)}/</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>${today}</lastmod></url>`
+      `  <url><loc>https://wheretoskinext.com/ski/${slugifyState(s)}</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>${today}</lastmod></url>`
     ),
     ...resorts.map(r =>
-      `  <url><loc>https://wheretoskinext.com/ski-report/${r.id}/</loc><changefreq>daily</changefreq><priority>0.9</priority><lastmod>${today}</lastmod></url>`
+      `  <url><loc>https://wheretoskinext.com/ski-report/${r.id}</loc><changefreq>daily</changefreq><priority>0.9</priority><lastmod>${today}</lastmod></url>`
     ),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;

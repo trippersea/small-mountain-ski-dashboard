@@ -180,7 +180,7 @@ function generatePage(city) {
     const tb  = r.terrainBreakdown || {};
     const beg = Math.round((tb.beginner || 0) * 100);
     const adv = Math.round((tb.advanced  || 0) * 100);
-    return `<a href="https://wheretoskinext.com/ski-report/${r.id}/" class="sn-resort-card">
+    return `<a href="https://wheretoskinext.com/ski-report/${r.id}" class="sn-resort-card">
       <div class="sn-rc-name">${r.name}</div>
       <div class="sn-rc-meta">
         ${r.state}
@@ -214,7 +214,7 @@ function generatePage(city) {
     if (!r) return '';
     return `<article class="sn-pick-card">
       <div class="sn-pick-label">${label}</div>
-      <h3 class="sn-pick-name"><a href="https://wheretoskinext.com/ski-report/${r.id}/">${r.name}</a></h3>
+      <h3 class="sn-pick-name"><a href="https://wheretoskinext.com/ski-report/${r.id}">${r.name}</a></h3>
       <p class="sn-pick-reason">${reason}</p>
       <p class="sn-pick-meta">${r.state} · ${formatDrive(r.mins)} · $${r.price} · ${passLabel(r.passGroup)}</p>
     </article>`;
@@ -235,55 +235,55 @@ function generatePage(city) {
         <div class="nav-browse-dropdown" role="menu">
           <div class="nav-browse-col">
             <div class="nav-browse-region">Northeast</div>
-            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
-            <a href="/ski/maine/" role="menuitem">Maine</a>
-            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
-            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
-            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
-            <a href="/ski/new-york/" role="menuitem">New York</a>
-            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
-            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
-            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+            <a href="/ski/connecticut" role="menuitem">Connecticut</a>
+            <a href="/ski/maine" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont" role="menuitem">Vermont</a>
           </div>
           <div class="nav-browse-col">
             <div class="nav-browse-region">Southeast</div>
-            <a href="/ski/maryland/" role="menuitem">Maryland</a>
-            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
-            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
-            <a href="/ski/virginia/" role="menuitem">Virginia</a>
-            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <a href="/ski/maryland" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia" role="menuitem">West Virginia</a>
             <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
-            <a href="/ski/illinois/" role="menuitem">Illinois</a>
-            <a href="/ski/indiana/" role="menuitem">Indiana</a>
-            <a href="/ski/iowa/" role="menuitem">Iowa</a>
-            <a href="/ski/michigan/" role="menuitem">Michigan</a>
-            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
-            <a href="/ski/missouri/" role="menuitem">Missouri</a>
-            <a href="/ski/ohio/" role="menuitem">Ohio</a>
-            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+            <a href="/ski/illinois" role="menuitem">Illinois</a>
+            <a href="/ski/indiana" role="menuitem">Indiana</a>
+            <a href="/ski/iowa" role="menuitem">Iowa</a>
+            <a href="/ski/michigan" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri" role="menuitem">Missouri</a>
+            <a href="/ski/ohio" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin" role="menuitem">Wisconsin</a>
           </div>
           <div class="nav-browse-col">
             <div class="nav-browse-region">Rockies</div>
-            <a href="/ski/colorado/" role="menuitem">Colorado</a>
-            <a href="/ski/idaho/" role="menuitem">Idaho</a>
-            <a href="/ski/montana/" role="menuitem">Montana</a>
-            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
-            <a href="/ski/utah/" role="menuitem">Utah</a>
-            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <a href="/ski/colorado" role="menuitem">Colorado</a>
+            <a href="/ski/idaho" role="menuitem">Idaho</a>
+            <a href="/ski/montana" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico" role="menuitem">New Mexico</a>
+            <a href="/ski/utah" role="menuitem">Utah</a>
+            <a href="/ski/wyoming" role="menuitem">Wyoming</a>
             <div class="nav-browse-region" style="margin-top:10px;">West</div>
-            <a href="/ski/alaska/" role="menuitem">Alaska</a>
-            <a href="/ski/arizona/" role="menuitem">Arizona</a>
-            <a href="/ski/california/" role="menuitem">California</a>
-            <a href="/ski/nevada/" role="menuitem">Nevada</a>
-            <a href="/ski/oregon/" role="menuitem">Oregon</a>
-            <a href="/ski/washington/" role="menuitem">Washington</a>
+            <a href="/ski/alaska" role="menuitem">Alaska</a>
+            <a href="/ski/arizona" role="menuitem">Arizona</a>
+            <a href="/ski/california" role="menuitem">California</a>
+            <a href="/ski/nevada" role="menuitem">Nevada</a>
+            <a href="/ski/oregon" role="menuitem">Oregon</a>
+            <a href="/ski/washington" role="menuitem">Washington</a>
           </div>
         </div>
       </div>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/about/" class="nav-primary">About</a>
+      <a href="/about" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+      <a href="/ski-pass-comparison" class="nav-primary">Pass Guides</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
       <div class="nav-subscribe-wrap">
         <button class="nav-subscribe-btn" id="navSubBtn" aria-expanded="false" aria-haspopup="true">Subscribe &#9662;</button>
@@ -332,11 +332,11 @@ function generatePage(city) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title}</title>
   <meta name="description" content="${metaDesc}" />
-  <link rel="canonical" href="https://wheretoskinext.com/ski-near/${city.slug}/" />
+  <link rel="canonical" href="https://wheretoskinext.com/ski-near/${city.slug}" />
 
   <meta property="og:title" content="${title}" />
   <meta property="og:description" content="${metaDesc}" />
-  <meta property="og:url" content="https://wheretoskinext.com/ski-near/${city.slug}/" />
+  <meta property="og:url" content="https://wheretoskinext.com/ski-near/${city.slug}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="WhereToSkiNext.com" />
   <meta property="og:image" content="https://wheretoskinext.com/wtsn-og.png" />
@@ -353,14 +353,14 @@ function generatePage(city) {
     "@type": "ItemList",
     "name": "Best Ski Resorts Near ${city.name}",
     "description": "${metaDesc}",
-    "url": "https://wheretoskinext.com/ski-near/${city.slug}/",
+    "url": "https://wheretoskinext.com/ski-near/${city.slug}",
     "numberOfItems": ${total},
     "itemListElement": [
       ${resorts.slice(0, 10).map((r, i) => `{
         "@type": "ListItem",
         "position": ${i + 1},
         "name": "${r.name}",
-        "url": "https://wheretoskinext.com/ski-report/${r.id}/"
+        "url": "https://wheretoskinext.com/ski-report/${r.id}"
       }`).join(',\n      ')}
     ]
   }
@@ -495,7 +495,7 @@ ${topNav}
 <script src="/newsletter-band.js"></script>
 
 <footer class="site-footer">
-  <p>&copy; 2026 WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
+  <p>&copy; 2026 WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about">About</a> &middot; <a href="/privacy">Privacy Policy</a> &middot; <a href="/partners">Partners</a> &middot; <a href="/ski-pass-comparison">Pass Guides</a></p>
 </footer>
 
 <script src="/nav.js"></script>

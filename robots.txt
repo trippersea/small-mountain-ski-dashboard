@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://www.wheretoskinext.com/sitemap.xml
+Sitemap: https://wheretoskinext.com/sitemap.xml

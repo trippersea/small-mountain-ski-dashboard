@@ -151,7 +151,7 @@ function buildAdHtml(ad) {
 function buildFeaturedRow(resort, sponsor) {
   return `
         <tr class="sp-featured-row" data-featured-id="${resort.id}">
-          <td><a href="/ski-report/${resort.id}/">${esc(resort.name)}</a><span class="sp-featured-badge">Featured</span>${sponsor.tagline ? `<div class="sp-featured-tagline">${esc(sponsor.tagline)}</div>` : ''}</td>
+          <td><a href="/ski-report/${resort.id}">${esc(resort.name)}</a><span class="sp-featured-badge">Featured</span>${sponsor.tagline ? `<div class="sp-featured-tagline">${esc(sponsor.tagline)}</div>` : ''}</td>
           <td>${resort.vertical.toLocaleString()} ft</td>
           <td>${resort.trails}</td>
           <td>${resort.avgSnowfall}"</td>
@@ -226,7 +226,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   const stateSlug  = slugifyState(stateAbbr);
   const rankingsUrl = `https://wheretoskinext.com/?st=${stateAbbr}#compareSection`;
   const finderUrl   = `https://wheretoskinext.com/?st=${stateAbbr}#searchSection`;
-  const canonUrl   = `https://wheretoskinext.com/ski/${stateSlug}/`;
+  const canonUrl   = `https://wheretoskinext.com/ski/${stateSlug}`;
   const count      = resorts.length;
   const sorted     = [...resorts].sort((a, b) => b.avgSnowfall - a.avgSnowfall);
   const topNames   = sorted.slice(0, 3).map(r => r.name).join(', ');
@@ -256,7 +256,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
       numberOfItems: count,
       itemListElement: sorted.map((r, i) => ({
         '@type': 'ListItem', position: i + 1, name: r.name,
-        url: `https://wheretoskinext.com/ski-report/${r.id}/`,
+        url: `https://wheretoskinext.com/ski-report/${r.id}`,
       })),
     },
     ...resorts.map(r => ({
@@ -265,14 +265,14 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
       name: r.name,
       address: { '@type': 'PostalAddress', addressRegion: r.state, addressCountry: 'US' },
       geo: { '@type': 'GeoCoordinates', latitude: r.lat, longitude: r.lon },
-      url: r.website || `https://wheretoskinext.com/ski-report/${r.id}/`,
+      url: r.website || `https://wheretoskinext.com/ski-report/${r.id}`,
       priceRange: `$${r.price} day ticket`,
     })),
   ];
 
   const tableRows = sorted.map(r => `
     <tr>
-      <td><a href="/ski-report/${r.id}/">${esc(r.name)}</a></td>
+      <td><a href="/ski-report/${r.id}">${esc(r.name)}</a></td>
       <td>${r.vertical.toLocaleString()} ft</td>
       <td>${r.trails}</td>
       <td>${r.avgSnowfall}"</td>
@@ -357,55 +357,55 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
         <div class="nav-browse-dropdown" role="menu">
           <div class="nav-browse-col">
             <div class="nav-browse-region">Northeast</div>
-            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
-            <a href="/ski/maine/" role="menuitem">Maine</a>
-            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
-            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
-            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
-            <a href="/ski/new-york/" role="menuitem">New York</a>
-            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
-            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
-            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+            <a href="/ski/connecticut" role="menuitem">Connecticut</a>
+            <a href="/ski/maine" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont" role="menuitem">Vermont</a>
           </div>
           <div class="nav-browse-col">
             <div class="nav-browse-region">Southeast</div>
-            <a href="/ski/maryland/" role="menuitem">Maryland</a>
-            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
-            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
-            <a href="/ski/virginia/" role="menuitem">Virginia</a>
-            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <a href="/ski/maryland" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia" role="menuitem">West Virginia</a>
             <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
-            <a href="/ski/illinois/" role="menuitem">Illinois</a>
-            <a href="/ski/indiana/" role="menuitem">Indiana</a>
-            <a href="/ski/iowa/" role="menuitem">Iowa</a>
-            <a href="/ski/michigan/" role="menuitem">Michigan</a>
-            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
-            <a href="/ski/missouri/" role="menuitem">Missouri</a>
-            <a href="/ski/ohio/" role="menuitem">Ohio</a>
-            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+            <a href="/ski/illinois" role="menuitem">Illinois</a>
+            <a href="/ski/indiana" role="menuitem">Indiana</a>
+            <a href="/ski/iowa" role="menuitem">Iowa</a>
+            <a href="/ski/michigan" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri" role="menuitem">Missouri</a>
+            <a href="/ski/ohio" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin" role="menuitem">Wisconsin</a>
           </div>
           <div class="nav-browse-col">
             <div class="nav-browse-region">Rockies</div>
-            <a href="/ski/colorado/" role="menuitem">Colorado</a>
-            <a href="/ski/idaho/" role="menuitem">Idaho</a>
-            <a href="/ski/montana/" role="menuitem">Montana</a>
-            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
-            <a href="/ski/utah/" role="menuitem">Utah</a>
-            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <a href="/ski/colorado" role="menuitem">Colorado</a>
+            <a href="/ski/idaho" role="menuitem">Idaho</a>
+            <a href="/ski/montana" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico" role="menuitem">New Mexico</a>
+            <a href="/ski/utah" role="menuitem">Utah</a>
+            <a href="/ski/wyoming" role="menuitem">Wyoming</a>
             <div class="nav-browse-region" style="margin-top:10px;">West</div>
-            <a href="/ski/alaska/" role="menuitem">Alaska</a>
-            <a href="/ski/arizona/" role="menuitem">Arizona</a>
-            <a href="/ski/california/" role="menuitem">California</a>
-            <a href="/ski/nevada/" role="menuitem">Nevada</a>
-            <a href="/ski/oregon/" role="menuitem">Oregon</a>
-            <a href="/ski/washington/" role="menuitem">Washington</a>
+            <a href="/ski/alaska" role="menuitem">Alaska</a>
+            <a href="/ski/arizona" role="menuitem">Arizona</a>
+            <a href="/ski/california" role="menuitem">California</a>
+            <a href="/ski/nevada" role="menuitem">Nevada</a>
+            <a href="/ski/oregon" role="menuitem">Oregon</a>
+            <a href="/ski/washington" role="menuitem">Washington</a>
           </div>
         </div>
       </div>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/about/" class="nav-primary">About</a>
+      <a href="/about" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+      <a href="/ski-pass-comparison" class="nav-primary">Pass Guides</a>
       <a href="${esc(finderUrl)}" class="nav-find-cta">Find my mountain &rarr;</a>
     </div>
   </nav>
@@ -478,7 +478,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
       <h2>Explore other states</h2>
       <div class="sp-state-grid">${otherStatesHtml}</div>
       <div class="sp-explore-foot">
-        <a href="/ski-pass-comparison/">Compare Epic Pass vs Ikon Pass by region &rarr;</a>
+        <a href="/ski-pass-comparison">Compare Epic Pass vs Ikon Pass by region &rarr;</a>
       </div>
     </section>
 
@@ -487,7 +487,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   <script src="/newsletter-band.js"></script>
 
   <footer class="site-footer">
-    <p>&copy; ${year} WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
+    <p>&copy; ${year} WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about">About</a> &middot; <a href="/privacy">Privacy Policy</a> &middot; <a href="/partners">Partners</a></p>
   </footer>
 
 </body>
@@ -517,7 +517,7 @@ async function main() {
     const stateResorts = byState[stateAbbr];
     const otherStatesHtml = stateKeys
       .filter(s => s !== stateAbbr)
-      .map(s => `<a href="/ski/${slugifyState(s)}/" class="sp-state-chip"><span class="sp-state-chip__abbr">${esc(s)}</span><span class="sp-state-chip__name">${esc(stateFullName(s))}</span></a>`)
+      .map(s => `<a href="/ski/${slugifyState(s)}" class="sp-state-chip"><span class="sp-state-chip__abbr">${esc(s)}</span><span class="sp-state-chip__name">${esc(stateFullName(s))}</span></a>`)
       .join('\n      ');
 
     const stateSlug = slugifyState(stateAbbr);
