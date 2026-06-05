@@ -10,15 +10,15 @@
   })(window,document,'script','dataLayer','GTM-MCCDNQGB');</script>
   <!-- End Google Tag Manager -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mount Sunapee Ski Report 2026 | Live Snow, Conditions &amp; Forecast | WhereToSkiNext.com</title>
+  <title>Mount Sunapee Ski Report | Live Snow &amp; Forecast</title>
   <meta name="description" content="Live snow forecast, mountain facts, and pass context for Mount Sunapee in New Hampshire. 1,510 ft vertical, 55 trails. Compare nearby options on WhereToSkiNext.com." />
-  <link rel="canonical" href="https://wheretoskinext.com/ski-report/mount-sunapee/" />
+  <link rel="canonical" href="https://wheretoskinext.com/ski-report/mount-sunapee" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="Mount Sunapee Ski Conditions | WhereToSkiNext.com" />
   <meta property="og:description" content="Live snow forecast, mountain facts, and pass context for Mount Sunapee in New Hampshire. 1,510 ft vertical, 55 trails. Compare nearby options on WhereToSkiNext.com." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://wheretoskinext.com/ski-report/mount-sunapee/" />
+  <meta property="og:url" content="https://wheretoskinext.com/ski-report/mount-sunapee" />
   <meta property="og:site_name" content="WhereToSkiNext.com" />
   <meta property="og:image" content="https://wheretoskinext.com/wtsn-og.png" />
   <meta property="og:image:width" content="1200" />
@@ -43,6 +43,203 @@
   <link rel="stylesheet" href="/newsletter-band.css" />
   <link rel="stylesheet" href="/site-tokens-bridge.css" />
 
+    <style>
+      /* Editorial block. Uses site CSS variables so it inherits the design
+         system (Inter, navy palette, brand accent #2b6de9, --radius 16px,
+         --shadow-card). Sits naturally next to .sr-snapshot rather than
+         floating as a separate card. */
+      .sr-editorial {
+        background: var(--surface-white, #fff);
+        border: 1px solid var(--border-light, #dde5ee);
+        border-left: 4px solid var(--accent, #2b6de9);
+        border-radius: var(--radius, 16px);
+        box-shadow: var(--shadow-card, 0 4px 24px rgba(26, 46, 69, 0.07));
+        padding: 28px 32px;
+        margin: 24px 0 28px;
+        font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+      }
+      .sr-ed-kicker {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent, #2b6de9);
+        margin-bottom: 10px;
+      }
+      .sr-ed-hook {
+        font-size: 24px;
+        line-height: 1.3;
+        font-weight: 700;
+        color: var(--text-primary, #2a4158);
+        margin: 0 0 14px;
+        letter-spacing: -0.01em;
+      }
+      .sr-ed-byline {
+        font-size: 13px;
+        color: var(--text-muted, #7f96a9);
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border-light, #dde5ee);
+      }
+      .sr-ed-byline-by { font-weight: 600; color: var(--text-primary, #2a4158); }
+      .sr-ed-byline-title { margin-left: 10px; }
+      .sr-ed-byline-date { margin-left: 10px; }
+      .sr-ed-body {
+        font-size: 16px;
+        line-height: 1.65;
+        color: var(--text-body, #4a6177);
+      }
+      .sr-ed-body p { margin: 0 0 14px; }
+      .sr-ed-body p:last-child { margin-bottom: 0; }
+      .sr-ed-lede {
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--text-primary, #2a4158);
+      }
+      .sr-ed-crowd {
+        margin-top: 22px;
+        background: var(--accent-blue-dim, rgba(43, 109, 233, 0.08));
+        border-left: 3px solid var(--accent, #2b6de9);
+        border-radius: 0 var(--radius-sm, 10px) var(--radius-sm, 10px) 0;
+        padding: 16px 20px;
+      }
+      .sr-ed-crowd-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent, #2b6de9);
+        margin-bottom: 6px;
+      }
+      .sr-ed-crowd p {
+        font-size: 16px;
+        line-height: 1.55;
+        color: var(--text-primary, #2a4158);
+        margin: 0;
+        font-weight: 500;
+      }
+      .sr-ed-alts {
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-light, #dde5ee);
+      }
+      .sr-ed-alts-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted, #7f96a9);
+        margin-bottom: 12px;
+      }
+      .sr-ed-alts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .sr-ed-alt-card {
+        display: block;
+        background: var(--surface-subtle, #f7fafc);
+        border: 1px solid var(--border-light, #dde5ee);
+        border-radius: var(--radius-sm, 10px);
+        padding: 14px 16px;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color .15s, background .15s, transform .15s;
+      }
+      .sr-ed-alt-card:hover {
+        border-color: var(--accent, #2b6de9);
+        background: var(--surface-white, #fff);
+        transform: translateY(-1px);
+      }
+      .sr-ed-alt-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary, #2a4158);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 4px;
+      }
+      .sr-ed-alt-arrow { color: var(--accent, #2b6de9); }
+      .sr-ed-alt-take {
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text-body, #4a6177);
+      }
+      @media (max-width: 640px) {
+        .sr-editorial { padding: 22px 20px; }
+        .sr-ed-hook { font-size: 20px; }
+        .sr-ed-body { font-size: 15px; }
+        .sr-ed-byline { font-size: 12px; }
+        .sr-ed-byline-title { display: block; margin-left: 0; margin-top: 2px; }
+        .sr-ed-byline-date  { display: block; margin-left: 0; margin-top: 2px; }
+      }
+      /* Methodology / sources block */
+      .sr-ed-method {
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid var(--border-light, #dde5ee);
+      }
+      .sr-ed-method-head {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted, #7f96a9);
+        margin-bottom: 12px;
+      }
+      .sr-ed-method-body {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--text-muted, #7f96a9);
+      }
+      .sr-ed-method-body p { margin: 0 0 10px; }
+      .sr-ed-method-body p:last-child { margin-bottom: 0; }
+      .sr-ed-sources-list {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px dashed var(--border-light, #dde5ee);
+      }
+      .sr-ed-sources-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted, #7f96a9);
+        margin-bottom: 8px;
+      }
+      .sr-ed-sources-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-muted, #7f96a9);
+        line-height: 1.55;
+      }
+      .sr-ed-sources-list li {
+        padding: 2px 0;
+      }
+      .sr-ed-sources-list a {
+        color: var(--accent, #2b6de9);
+        text-decoration: none;
+        border-bottom: 1px solid var(--accent-blue-dim, rgba(43, 109, 233, 0.18));
+      }
+      .sr-ed-sources-list a:hover {
+        color: var(--accent-hover, #1a56c4);
+        border-bottom-color: var(--accent, #2b6de9);
+      }
+      .sr-ed-method-stamp {
+        margin: 14px 0 0;
+        font-size: 12px;
+        font-style: italic;
+        color: var(--text-muted, #7f96a9);
+      }
+      @media (max-width: 640px) {
+        .sr-ed-method-body { font-size: 13px; }
+      }
+    </style>
   <script type="application/ld+json">
   [
   {
@@ -50,7 +247,7 @@
     "@type": "SportsActivityLocation",
     "name": "Mount Sunapee",
     "description": "Mount Sunapee ski resort in New Hampshire: 1,510 ft vertical, 55 trails, 252 acres. Epic Pass mountain.",
-    "url": "https://wheretoskinext.com/ski-report/mount-sunapee/",
+    "url": "https://wheretoskinext.com/ski-report/mount-sunapee",
     "address": {
       "@type": "PostalAddress",
       "addressRegion": "NH",
@@ -78,19 +275,19 @@
         "@type": "ListItem",
         "position": 1,
         "name": "WhereToSkiNext.com",
-        "item": "https://wheretoskinext.com"
+        "item": "https://wheretoskinext.com/"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Ski Mountains in New Hampshire",
-        "item": "https://wheretoskinext.com/ski/new-hampshire/"
+        "item": "https://wheretoskinext.com/ski/new-hampshire"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": "Mount Sunapee",
-        "item": "https://wheretoskinext.com/ski-report/mount-sunapee/"
+        "item": "https://wheretoskinext.com/ski-report/mount-sunapee"
       }
     ]
   },
@@ -103,7 +300,7 @@
         "name": "Is Mount Sunapee on the Epic Pass?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes. Mount Sunapee is a Epic Pass mountain. Pass holders can ski here as part of their pass benefits — check the current pass terms for any blackout dates or restrictions."
+          "text": "Yes. Mount Sunapee is an Epic Pass mountain. Pass holders can ski here as part of their pass benefits — check the current pass terms for any blackout dates or restrictions."
         }
       },
       {
@@ -143,10 +340,51 @@
         "name": "When is the best time to ski Mount Sunapee?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "January and February is typically peak season at Mount Sunapee when snowpack is deepest and conditions are most consistent. December can be good if the season starts early. Midweek visits are almost always less crowded than weekends, especially when pass holders fill the mountain on Saturdays and holidays."
+          "text": "January and February are typically peak season at Mount Sunapee when snowpack is deepest and conditions are most consistent. December can be good if the season starts early. Midweek visits are almost always less crowded than weekends, especially when pass holders fill the mountain on Saturdays and holidays."
         }
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Mount Sunapee: On Epic and an hour from Boston, which is the entire pitch and the entire problem.",
+    "description": "On Epic and an hour from Boston, which is the entire pitch and the entire problem.",
+    "articleBody": "Mount Sunapee is one of those mountains that makes a lot of sense on paper and still works in real life, as long as you know what kind of day you are signing up for. It is close enough to Boston to be a realistic day trip, it is on Epic, and it has the kind of terrain that works for families, intermediates, and mixed-ability groups. That same convenience is also the problem. On a winter weekend, you are not the only person who noticed it.\n\nThe move at Sunapee is to get there early and ski with purpose. If you can get good laps in before 10:30 or so, the mountain can feel like a win before the busiest part of the day even starts. After that, the lift lines and base-area traffic tend to build, especially on Epic-heavy weekends when skiers from all over eastern Massachusetts and southern New Hampshire are making the same calculation.\n\nSunapee is not the place you pick for solitude. It is the place you pick when the group wants a dependable family ski day, manageable terrain, and enough vertical to feel like you actually went skiing. The reward, when the weather is clear, is the view over Lake Sunapee. It gives the whole place a little more drama than the trail map suggests.\n\nSki Sunapee like a morning mountain. Get the early laps, enjoy the lake view, and accept that the middle of the day may be more about company than vertical. If the group is relaxed about that, Sunapee can still be a great family day.",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://wheretoskinext.com/ski-report/mount-sunapee"
+    },
+    "url": "https://wheretoskinext.com/ski-report/mount-sunapee",
+    "image": "https://wheretoskinext.com/wtsn-og.png",
+    "datePublished": "2026-05-31",
+    "dateModified": "2026-05-31",
+    "publisher": {
+      "@type": "Organization",
+      "name": "WhereToSkiNext.com",
+      "url": "https://wheretoskinext.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://wheretoskinext.com/wtsn-icon.svg"
+      }
+    },
+    "about": {
+      "@type": "SportsActivityLocation",
+      "name": "Mount Sunapee",
+      "url": "https://wheretoskinext.com/ski-report/mount-sunapee"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Trip",
+      "jobTitle": "Founder, WhereToSkiNext.com",
+      "description": "Grew up skiing and racing at Bousquet Mountain in the Berkshires. Now skis with my family across the Northeast and beyond."
+    },
+    "accountablePerson": {
+      "@type": "Person",
+      "name": "Trip",
+      "jobTitle": "Founder, WhereToSkiNext.com",
+      "description": "Grew up skiing and racing at Bousquet Mountain in the Berkshires. Now skis with my family across the Northeast and beyond."
+    }
   }
 ]
   </script>
@@ -171,55 +409,55 @@
         <div class="nav-browse-dropdown" role="menu">
           <div class="nav-browse-col">
             <div class="nav-browse-region">Northeast</div>
-            <a href="/ski/connecticut/" role="menuitem">Connecticut</a>
-            <a href="/ski/maine/" role="menuitem">Maine</a>
-            <a href="/ski/massachusetts/" role="menuitem">Massachusetts</a>
-            <a href="/ski/new-hampshire/" role="menuitem">New Hampshire</a>
-            <a href="/ski/new-jersey/" role="menuitem">New Jersey</a>
-            <a href="/ski/new-york/" role="menuitem">New York</a>
-            <a href="/ski/pennsylvania/" role="menuitem">Pennsylvania</a>
-            <a href="/ski/rhode-island/" role="menuitem">Rhode Island</a>
-            <a href="/ski/vermont/" role="menuitem">Vermont</a>
+            <a href="/ski/connecticut" role="menuitem">Connecticut</a>
+            <a href="/ski/maine" role="menuitem">Maine</a>
+            <a href="/ski/massachusetts" role="menuitem">Massachusetts</a>
+            <a href="/ski/new-hampshire" role="menuitem">New Hampshire</a>
+            <a href="/ski/new-jersey" role="menuitem">New Jersey</a>
+            <a href="/ski/new-york" role="menuitem">New York</a>
+            <a href="/ski/pennsylvania" role="menuitem">Pennsylvania</a>
+            <a href="/ski/rhode-island" role="menuitem">Rhode Island</a>
+            <a href="/ski/vermont" role="menuitem">Vermont</a>
           </div>
           <div class="nav-browse-col">
             <div class="nav-browse-region">Southeast</div>
-            <a href="/ski/maryland/" role="menuitem">Maryland</a>
-            <a href="/ski/north-carolina/" role="menuitem">North Carolina</a>
-            <a href="/ski/tennessee/" role="menuitem">Tennessee</a>
-            <a href="/ski/virginia/" role="menuitem">Virginia</a>
-            <a href="/ski/west-virginia/" role="menuitem">West Virginia</a>
+            <a href="/ski/maryland" role="menuitem">Maryland</a>
+            <a href="/ski/north-carolina" role="menuitem">North Carolina</a>
+            <a href="/ski/tennessee" role="menuitem">Tennessee</a>
+            <a href="/ski/virginia" role="menuitem">Virginia</a>
+            <a href="/ski/west-virginia" role="menuitem">West Virginia</a>
             <div class="nav-browse-region" style="margin-top:10px;">Midwest</div>
-            <a href="/ski/illinois/" role="menuitem">Illinois</a>
-            <a href="/ski/indiana/" role="menuitem">Indiana</a>
-            <a href="/ski/iowa/" role="menuitem">Iowa</a>
-            <a href="/ski/michigan/" role="menuitem">Michigan</a>
-            <a href="/ski/minnesota/" role="menuitem">Minnesota</a>
-            <a href="/ski/missouri/" role="menuitem">Missouri</a>
-            <a href="/ski/ohio/" role="menuitem">Ohio</a>
-            <a href="/ski/wisconsin/" role="menuitem">Wisconsin</a>
+            <a href="/ski/illinois" role="menuitem">Illinois</a>
+            <a href="/ski/indiana" role="menuitem">Indiana</a>
+            <a href="/ski/iowa" role="menuitem">Iowa</a>
+            <a href="/ski/michigan" role="menuitem">Michigan</a>
+            <a href="/ski/minnesota" role="menuitem">Minnesota</a>
+            <a href="/ski/missouri" role="menuitem">Missouri</a>
+            <a href="/ski/ohio" role="menuitem">Ohio</a>
+            <a href="/ski/wisconsin" role="menuitem">Wisconsin</a>
           </div>
           <div class="nav-browse-col">
             <div class="nav-browse-region">Rockies</div>
-            <a href="/ski/colorado/" role="menuitem">Colorado</a>
-            <a href="/ski/idaho/" role="menuitem">Idaho</a>
-            <a href="/ski/montana/" role="menuitem">Montana</a>
-            <a href="/ski/new-mexico/" role="menuitem">New Mexico</a>
-            <a href="/ski/utah/" role="menuitem">Utah</a>
-            <a href="/ski/wyoming/" role="menuitem">Wyoming</a>
+            <a href="/ski/colorado" role="menuitem">Colorado</a>
+            <a href="/ski/idaho" role="menuitem">Idaho</a>
+            <a href="/ski/montana" role="menuitem">Montana</a>
+            <a href="/ski/new-mexico" role="menuitem">New Mexico</a>
+            <a href="/ski/utah" role="menuitem">Utah</a>
+            <a href="/ski/wyoming" role="menuitem">Wyoming</a>
             <div class="nav-browse-region" style="margin-top:10px;">West</div>
-            <a href="/ski/alaska/" role="menuitem">Alaska</a>
-            <a href="/ski/arizona/" role="menuitem">Arizona</a>
-            <a href="/ski/california/" role="menuitem">California</a>
-            <a href="/ski/nevada/" role="menuitem">Nevada</a>
-            <a href="/ski/oregon/" role="menuitem">Oregon</a>
-            <a href="/ski/washington/" role="menuitem">Washington</a>
+            <a href="/ski/alaska" role="menuitem">Alaska</a>
+            <a href="/ski/arizona" role="menuitem">Arizona</a>
+            <a href="/ski/california" role="menuitem">California</a>
+            <a href="/ski/nevada" role="menuitem">Nevada</a>
+            <a href="/ski/oregon" role="menuitem">Oregon</a>
+            <a href="/ski/washington" role="menuitem">Washington</a>
           </div>
         </div>
       </div>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/about/" class="nav-primary">About</a>
+      <a href="/about" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
-      <a href="/ski-pass-comparison/" class="nav-primary">Pass Guides</a>
+      <a href="/ski-pass-comparison" class="nav-primary">Pass Guides</a>
       <a href="https://wheretoskinext.com/#searchSection" class="nav-find-cta">Find my mountain &rarr;</a>
     </div>
   </nav>
@@ -229,7 +467,7 @@
     <nav class="sr-breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a>
       <span class="sr-breadcrumb-sep">/</span>
-      <a href="/ski/new-hampshire/">New Hampshire ski mountains</a>
+      <a href="/ski/new-hampshire">New Hampshire ski mountains</a>
       <span class="sr-breadcrumb-sep">/</span>
       <span>Mount Sunapee</span>
     </nav>
@@ -241,10 +479,10 @@
             <div class="sr-eyebrow-row">
               <span class="sr-pass-pill">Epic Pass</span>
               <span class="sr-live-pill"><span class="sr-live-dot" aria-hidden="true"></span>Live forecast</span>
-              <span class="sr-freshness">Updated May 2026</span>
+              <span class="sr-freshness">Updated June 2026</span>
             </div>
             <h1 class="sr-title">Mount Sunapee <span class="sr-title-state">NH</span></h1>
-            <p class="sr-tagline">Mount Sunapee is a Epic Pass ski area in New Hampshire: 55 trails, 1,510 ft vertical, 252 acres.</p>
+            <p class="sr-tagline">Mount Sunapee is an Epic Pass ski area in New Hampshire: 55 trails, 1,510 ft vertical, 252 acres.</p>
             <p class="sr-location-line">Base to summit 1,233–2,743 ft · 1,510 ft vertical</p>
             <div class="sr-hero-cta">
               <a href="https://wheretoskinext.com/?resort=mount-sunapee#searchSection" class="sr-btn sr-btn--primary">See if this is your best pick</a>
@@ -289,19 +527,52 @@
     </section>
 
     
-    <article class="sr-snapshot">
-      <h2>Mount Sunapee at a glance</h2>
-      <p>
-        Mount Sunapee sits in New Hampshire with 1,510 ft of vertical drop, 55 trails, and 252 skiable acres.
-        Mount Sunapee is well-suited to intermediate skiers, with 49% of trails in that range.
-      </p>
-      <p>
-        The mountain averages 187" of snowfall per season with 21,500 GPM of snowmaking capacity.
-        Lift tickets start around $135; day-of pricing varies. Mount Sunapee is a <strong>Epic Pass</strong> mountain.
-      </p>
-      <p>
-        Snow conditions update often. Check back before you go. A fresh forecast can change everything.
-      </p>
+    <article class="sr-editorial" itemscope itemtype="https://schema.org/Article">
+      <meta itemprop="headline" content="Mount Sunapee: On Epic and an hour from Boston, which is the entire pitch and the entire problem." />
+      <meta itemprop="dateModified" content="2026-05-31" />
+      <span class="sr-ed-kicker">Editor's take</span>
+      <p class="sr-ed-hook">On Epic and an hour from Boston, which is the entire pitch and the entire problem.</p>
+      
+      <div class="sr-ed-byline">
+        <span class="sr-ed-byline-by">By Trip</span>
+        <span class="sr-ed-byline-title">Founder, WhereToSkiNext.com</span>
+        <span class="sr-ed-byline-date">Updated May 2026</span>
+      </div>
+      <div class="sr-ed-body" itemprop="articleBody">
+        <p class="sr-ed-lede">Mount Sunapee is one of those mountains that makes a lot of sense on paper and still works in real life, as long as you know what kind of day you are signing up for. It is close enough to Boston to be a realistic day trip, it is on Epic, and it has the kind of terrain that works for families, intermediates, and mixed-ability groups. That same convenience is also the problem. On a winter weekend, you are not the only person who noticed it.</p>
+        <p>The move at Sunapee is to get there early and ski with purpose. If you can get good laps in before 10:30 or so, the mountain can feel like a win before the busiest part of the day even starts. After that, the lift lines and base-area traffic tend to build, especially on Epic-heavy weekends when skiers from all over eastern Massachusetts and southern New Hampshire are making the same calculation.</p>
+      <p>Sunapee is not the place you pick for solitude. It is the place you pick when the group wants a dependable family ski day, manageable terrain, and enough vertical to feel like you actually went skiing. The reward, when the weather is clear, is the view over Lake Sunapee. It gives the whole place a little more drama than the trail map suggests.</p>
+      </div>
+      
+      <aside class="sr-ed-crowd" aria-label="Crowd take">
+        <span class="sr-ed-crowd-label">The crowd take</span>
+        <p>Ski Sunapee like a morning mountain. Get the early laps, enjoy the lake view, and accept that the middle of the day may be more about company than vertical. If the group is relaxed about that, Sunapee can still be a great family day.</p>
+      </aside>
+      
+      <div class="sr-ed-alts" aria-label="Smarter alternatives">
+        <div class="sr-ed-alts-label">If not Mount Sunapee, then</div>
+        <div class="sr-ed-alts-grid">
+        <a class="sr-ed-alt-card" href="/ski-report/pats-peak">
+          <div class="sr-ed-alt-name">Pats Peak<span class="sr-ed-alt-arrow">&rarr;</span></div>
+          <div class="sr-ed-alt-take">Smaller and less dramatic, but often the easier family play when the goal is a simpler southern New Hampshire ski day.</div>
+        </a>
+        <a class="sr-ed-alt-card" href="/ski-report/ragged-mountain-resort">
+          <div class="sr-ed-alt-name">Ragged Mountain<span class="sr-ed-alt-arrow">&rarr;</span></div>
+          <div class="sr-ed-alt-take">A better choice when the day calls for more breathing room and a more independent New Hampshire feel.</div>
+        </a>
+        </div>
+      </div>
+      
+      <section class="sr-ed-method" aria-label="Methodology and sources">
+        <div class="sr-ed-method-head">How this review was put together</div>
+        <div class="sr-ed-method-body">
+          <p>Mountain data comes from each resort's own operator materials. That covers trail counts, vertical drop, lift configurations, and ticket pricing. Pass affiliations track Epic, Ikon, and Indy Pass network listings. Historical snowfall averages combine OpenSnow archives, NOAA station data, and Open-Meteo's archive API.</p>
+        <p>Editorial takes draw on ski media coverage (SKI Magazine, Powder, Storm Skiing Journal, regional outlets including NewEnglandSkiIndustry.com and Unofficial Networks), aggregator comparisons (ZRankings, PeakRankings, OnTheSnow) for cross-reference, and skier forums and trip reports for crowd-pattern signal. Live crowd outlook on the main tool is generated by WhereToSkiNext's own pressure model, which is built specifically for the question of when a mountain is likely to feel busy rather than how busy it has been historically.</p>
+        <p>Where I have skied the mountain, that experience anchors the call. Where I have not, the take is synthesized from the sources above. No resort pays for ranking placement or editorial influence on WhereToSkiNext. Reviews are updated as conditions, ownership, or pass affiliations change.</p>
+        </div>
+        
+        <p class="sr-ed-method-stamp">Independent review. No resort paid for placement or editorial influence.</p>
+      </section>
     </article>
 
     
@@ -446,32 +717,32 @@
     <section class="sr-nearby-section" aria-label="Nearby mountains">
       <div class="sr-nearby-head">
         <h2>Also considering</h2>
-        <a href="/ski/new-hampshire/">Browse all New Hampshire mountains</a>
+        <a href="/ski/new-hampshire">Browse all New Hampshire mountains</a>
       </div>
       <div class="sr-nearby-grid">
         
-    <a href="/ski-report/ragged-mountain-resort/" class="sr-nearby-card">
+    <a href="/ski-report/ragged-mountain-resort" class="sr-nearby-card">
       <div class="sr-nc-name">Ragged Mountain</div>
       <div class="sr-nc-meta">NH · 1,250 ft · Indy Pass</div>
       <div class="sr-nc-delta sr-nc-delta--less">❄ 162" avg snow (-25")</div>
       
       <div class="sr-nc-arrow">Open ski report →</div>
     </a>
-    <a href="/ski-report/pats-peak/" class="sr-nearby-card">
+    <a href="/ski-report/pats-peak" class="sr-nearby-card">
       <div class="sr-nc-name">Pats Peak</div>
       <div class="sr-nc-meta">NH · 770 ft · Indy Pass</div>
       <div class="sr-nc-delta sr-nc-delta--less">❄ 150" avg snow (-37")</div>
       <div class="sr-nc-diff">Compact trail network, often quicker to learn in a day</div>
       <div class="sr-nc-arrow">Open ski report →</div>
     </a>
-    <a href="/ski-report/whaleback-mountain/" class="sr-nearby-card">
+    <a href="/ski-report/whaleback-mountain" class="sr-nearby-card">
       <div class="sr-nc-name">Whaleback</div>
       <div class="sr-nc-meta">NH · 700 ft · Indy Pass</div>
       <div class="sr-nc-delta sr-nc-delta--less">❄ 150" avg snow (-37")</div>
       <div class="sr-nc-diff">Compact trail network, often quicker to learn in a day</div>
       <div class="sr-nc-arrow">Open ski report →</div>
     </a>
-    <a href="/ski-report/crotched-mountain/" class="sr-nearby-card">
+    <a href="/ski-report/crotched-mountain" class="sr-nearby-card">
       <div class="sr-nc-name">Crotched</div>
       <div class="sr-nc-meta">NH · 1,016 ft · Epic Pass</div>
       <div class="sr-nc-delta sr-nc-delta--less">❄ 153" avg snow (-34")</div>
@@ -482,7 +753,7 @@
     </section>
 
     <p class="sr-state-link">
-      See all <a href="/ski/new-hampshire/">New Hampshire ski mountains</a> ranked by snow, vertical, and value in our state hub.
+      See all <a href="/ski/new-hampshire">New Hampshire ski mountains</a> ranked by snow, vertical, and value in our state hub.
     </p>
 
     <p class="sr-disclaimer">
@@ -494,7 +765,7 @@
   <script src="/newsletter-band.js"></script>
 
   <footer class="site-footer">
-    <p>© 2026 WhereToSkiNext.com · <a href="/#searchSection">Find my mountain</a> · <a href="/about/">About</a> · <a href="/partners/">Partners</a></p>
+    <p>© 2026 WhereToSkiNext.com · <a href="/#searchSection">Find my mountain</a> · <a href="/about">About</a> · <a href="/partners">Partners</a></p>
   </footer>
 
   <!-- Live snow fetch from OpenMeteo: 72h snowfall + tomorrow temp for hero snapshot -->
