@@ -15,7 +15,7 @@ function mergeFullPoolRoles(stableVerdict, fullVerdict) {
   return { ...stableVerdict, roles };
 }
 
-/** Mirrors compare/compare-page.js buildSideColumns (Smart Play → local → Crowd Watch). */
+/** Mirrors compare/compare-page.js buildSideColumns (Solid Option → local → Crowd Watch). */
 function buildSideColumns(pick, localRow, sleeperRow, trapRow, legacyRunners) {
   const cols = [];
   if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id) {

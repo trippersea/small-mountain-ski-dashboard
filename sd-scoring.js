@@ -398,6 +398,51 @@ function pickTopPickFromRanked(ranked) {
   };
 }
 
+/** Next strongest Top-Pick-eligible alternative after the pick (for close-call copy). */
+function findTopPickRunnerUp(ranked, pickEntry) {
+  if (!ranked?.length || !pickEntry?.resort?.id) return null;
+  const pool = filterRunnerUpCandidates(ranked)
+    .filter(e => e?.resort?.id && e.resort.id !== pickEntry.resort.id);
+  if (!pool.length) return null;
+  if (isTopPickFloorActive()) {
+    const eligible = pool.find(e => e.breakdown?.topPickEligible === true);
+    if (eligible) return eligible;
+  }
+  return pool[0];
+}
+
+/** Plain-language edge for close-call Top Pick copy (derived from score breakdown). */
+function closeCallEdgeReason(pickEntry, runnerEntry) {
+  if (!pickEntry?.breakdown || !runnerEntry?.breakdown) return 'the overall score edge today';
+  const pn = pickEntry.breakdown.normalized || {};
+  const rn = runnerEntry.breakdown.normalized || {};
+  const edges = [];
+  if ((pn.snow ?? 0) - (rn.snow ?? 0) >= 0.08) edges.push({ w: 1, text: 'a better snow forecast' });
+  if ((pn.skiability ?? 0) - (rn.skiability ?? 0) >= 0.08) edges.push({ w: 2, text: 'calmer wind and temps' });
+  if ((pn.fit ?? 0) - (rn.fit ?? 0) >= 0.05) edges.push({ w: 3, text: 'better terrain fit' });
+  if ((pn.crowd ?? 0) - (rn.crowd ?? 0) >= 0.05) edges.push({ w: 4, text: 'a better crowd outlook' });
+  if ((pn.drive ?? 0) - (rn.drive ?? 0) >= 0.05) edges.push({ w: 5, text: 'a shorter drive' });
+  if ((pn.value ?? 0) - (rn.value ?? 0) >= 0.05) edges.push({ w: 6, text: 'better value' });
+  edges.sort((a, b) => a.w - b.w);
+  return edges[0]?.text || 'the overall score edge today';
+}
+
+/**
+ * Close-call Top Pick phrase when pick and runner-up are within TOP_PICK_CLOSE_CALL_BAND.
+ * @returns {string|null}
+ */
+function buildCloseCallTopPickCopy(pickEntry, runnerEntry) {
+  if (!pickEntry?.resort || !runnerEntry?.resort) return null;
+  const pickScore = pickEntry.breakdown?.score ?? -Infinity;
+  const runnerScore = runnerEntry.breakdown?.score ?? -Infinity;
+  const gap = pickScore - runnerScore;
+  if (gap < 0 || gap > TOP_PICK_CLOSE_CALL_BAND) return null;
+  const pickName = stripResortSuffix(pickEntry.resort.name || 'This pick');
+  const runnerName = stripResortSuffix(runnerEntry.resort.name || 'the runner-up');
+  const reason = closeCallEdgeReason(pickEntry, runnerEntry);
+  return `This one is close. ${pickName} edges out ${runnerName} today because of ${reason}.`;
+}
+
 /**
  * Filters the ranked pool before picking SLEEPER/TRAP alternative roles
  * on broad search (drops ineligible locals when the top-pick floor is active).
@@ -411,8 +456,10 @@ function filterRunnerUpCandidates(scored) {
 const LOCAL_MAX_DRIVE_MINS = 45;
 /** When daily scores are within this band, prefer the shorter drive among local candidates. */
 const LOCAL_SCORE_CLOSE_BAND = 5;
-/** Score band for "Another Smart Play" when no mountain is within LOCAL_MAX_DRIVE_MINS. */
+/** Score band for Worth a Look (local fallback) when no mountain is within LOCAL_MAX_DRIVE_MINS. */
 const LOCAL_FALLBACK_SCORE_BAND = 15;
+/** Top Pick vs runner-up: show close-call copy within this band (matches Solid Option proximity). */
+const TOP_PICK_CLOSE_CALL_BAND = 12;
 
 function isCredibleLocalCandidate(entry, pickEntry) {
   if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort) return false;
@@ -470,12 +517,21 @@ function isCredibleLocalFallbackCandidate(entry, pickEntry, usedIds) {
   if (_hasHighMountainQuality(entry) && _hasHighDemand(entry) && _hasHighCrowdRisk(entry)) {
     return false;
   }
-  return true;
+  return hasLocalFallbackReason(entry, pickEntry);
+}
+
+/** Worth a Look needs a defensible edge vs the pick, not just raw rank proximity. */
+function hasLocalFallbackReason(entry, pickEntry) {
+  if (hasSleeperReason(entry, pickEntry, pickEntry)) return true;
+  const pn = pickEntry.breakdown?.normalized || {};
+  const cn = entry.breakdown?.normalized || {};
+  const keys = ['snow', 'skiability', 'fit', 'drive', 'value', 'crowd'];
+  return keys.some((k) => (cn[k] ?? 0) >= (pn[k] ?? 0) + 0.03);
 }
 
 /**
  * When no credible mountain is within 45 minutes, fill the local slot with a
- * regional/destination alternative labeled "Another Smart Play" (not nearby).
+ * regional/destination alternative (roleVariant another_smart_play, label Worth a Look).
  */
 function pickLocalFallbackFromRanked(ranked, pickEntry, usedIds) {
   const pool = filterRunnerUpCandidates(ranked).filter(e => e.resort?.id && !usedIds.has(e.resort.id));
@@ -496,16 +552,14 @@ function pickLocalFallbackFromRanked(ranked, pickEntry, usedIds) {
 /** User-facing copy for the LOCAL / Worth a Look fallback slot. */
 function localRoleExplanation(localEntry, pickResort) {
   if (localEntry?.roleVariant === 'another_smart_play') {
-    const pickShort = (pickResort?.name || 'the top pick')
-      .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
-    return `No true nearby option in range. ${pickShort} is still the lead, but this mountain is worth considering for conditions or convenience.`;
+    return 'No true nearby option stands out today, but this mountain is still worth a look.';
   }
   const pickShort = (pickResort?.name || 'the top pick')
     .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
   if (localEntry?.tier === 'marginal') {
     return `Quick local turns if you don't want the drive to ${pickShort}. Fair conditions, mostly about convenience.`;
   }
-  return `Quick local turns if you don't want the drive to ${pickShort}. A nearby option when convenience matters.`;
+  return 'Closest is not always best, but this is the nearby option that makes the most sense today.';
 }
 
 function localRoleLabel(localEntry) {
@@ -519,11 +573,11 @@ function localRoleLabel(localEntry) {
 
 const SLEEPER_SCORE_CLOSE_BAND = 12;
 const SLEEPER_CROWD_GAP_MIN = 10;
-/** Max pool-relative obviousness for Smart Play (tuned to anchor suite). */
+/** Max pool-relative obviousness for Solid Option (tuned to anchor suite). Internal role: sleeper. */
 const SLEEPER_MAX_OBVIOUSNESS = 0.55;
 /** Min obviousness gap vs reference magnet (tuned to anchor suite). */
 const SLEEPER_OBVIOUSNESS_GAP = 0.15;
-/** Top Pick at/above this obviousness index uses itself as Smart Play reference. */
+/** Top Pick at/above this obviousness index uses itself as Solid Option reference. */
 const SLEEPER_OBVIOUS_PICK_THRESHOLD = 0.62;
 
 function sleeperObviousnessClassComponent(entry) {
@@ -586,7 +640,7 @@ function _isMeaningfullyQuieterThan(candCrowd, refCrowd) {
   return _crowdIsLoud(refCrowd.label) && _crowdIsQuieter(candCrowd.label) && gap >= 8;
 }
 
-/** Contrast vs ref/pick. Smart Play needs a real reason, not raw score rank. */
+/** Contrast vs ref/pick. Solid Option needs a real reason, not raw score rank. */
 function hasSleeperReason(entry, pickEntry, refEntry) {
   if (!entry?.resort || !pickEntry?.resort) return false;
 
@@ -706,11 +760,12 @@ function compareSleeperCandidates(a, b) {
 function pickSleeperFromRanked(ranked, pickEntry, localEntry, trapEntry) {
   if (!pickEntry?.resort) return null;
 
+  const ref = smartPlayReference(ranked, pickEntry);
+  if (isPickAlreadyQuietPlay(pickEntry, ref)) return null;
+
   const usedIds = new Set([pickEntry.resort.id]);
   if (localEntry?.resort?.id) usedIds.add(localEntry.resort.id);
   if (trapEntry?.resort?.id) usedIds.add(trapEntry.resort.id);
-
-  const ref = smartPlayReference(ranked, pickEntry);
 
   const pool = filterRunnerUpCandidates(ranked).filter(e => e.resort?.id && !usedIds.has(e.resort.id));
   const candidates = pool
@@ -759,9 +814,9 @@ function sleeperRoleExplanation(sleeperEntry, pickResort, refResort) {
     return `Not the obvious pick, but the day sets up well here. Fair conditions with less lift-line pressure than ${refShort}.`;
   }
   if (refResort?.id && refResort.id !== pickResort?.id) {
-    return `A strong call if you want something different from the Top Pick. Similar forecast window, lighter crowds than ${refShort}.`;
+    return `Not the obvious pick, but it has a real case today. Lighter crowds than ${refShort} with a similar forecast window.`;
   }
-  return `A credible mountain with a real reason to be on your radar. Less obvious than the Top Pick, close in the score band.`;
+  return 'Not the obvious pick, but it has a real case today.';
 }
 
 const TRAP_QUALITY_MIN_SUIT = 40;
@@ -885,20 +940,16 @@ function pickCrowdWarningCopy() {
   return 'Best skiing, but expect crowds. Lift lines may run long at peak.';
 }
 
-/** User-facing copy for the TRAP role card. */
+/** User-facing copy for the TRAP (Crowd Watch) role card. */
 function trapRoleExplanation(trapEntry) {
-  const crowdShort = (trapEntry?.crowdLabel || 'busy').toLowerCase();
-  if (trapEntry?.tier === 'marginal') {
-    return `Great mountain on paper, but ${crowdShort} timing. Fair conditions, real lift-line risk.`;
-  }
-  return `Great mountain, bad timing. Ski quality may hold up, but ${crowdShort} crowds may mean long lift lines.`;
+  return 'Great mountain, risky timing. Expect more people here than the score alone might suggest.';
 }
 
 /**
- * Fill empty LOCAL slot from the next-best ranked resort when the pool allows.
+ * Fill empty LOCAL slot when the pool allows (same rules as pickLocalFallbackFromRanked).
  * TRAP (Crowd Watch) is never generic filler — only isCredibleTrapCandidate qualifies.
- * Smart Play is never backfilled here: if pickSleeperFromRanked found no credible
- * candidate, leave sleeper null rather than promote raw score rank to Smart Play.
+ * Solid Option is never backfilled here: if pickSleeperFromRanked found no credible
+ * candidate, leave sleeper null rather than promote raw score rank to Solid Option.
  */
 function fillMissingRoleSlots(ranked, roles) {
   if (!roles.pick?.resort) return roles;
@@ -914,28 +965,26 @@ function fillMissingRoleSlots(ranked, roles) {
     .filter(e => e.resort?.id && !usedIds.has(e.resort.id))
     .sort((a, b) => (b.breakdown?.score ?? -Infinity) - (a.breakdown?.score ?? -Infinity));
 
-  let idx = 0;
-  const takeNext = () => {
-    while (idx < pool.length && usedIds.has(pool[idx].resort.id)) idx++;
-    if (idx >= pool.length) return null;
-    const entry = pool[idx++];
-    usedIds.add(entry.resort.id);
-    return entry;
-  };
-
   const toRoleEntry = (entry, extras = {}) => {
     const vd = verdictFromBreakdown(entry.resort, entry.wx, entry.breakdown);
     return { ...entry, tier: vd.tier, ...extras };
   };
 
   let { local, sleeper, trap } = roles;
+  const pickEntry = roles.pick;
 
-  if (!local && !hasLocalIntent() && roles.pick.breakdown?.destinationClass !== 'local') {
-    const entry = takeNext();
-    if (entry) local = toRoleEntry(entry, { roleVariant: 'another_smart_play' });
+  if (!local && !hasLocalIntent() && pickEntry.breakdown?.destinationClass !== 'local') {
+    for (let i = 0; i < pool.length; i++) {
+      const entry = pool[i];
+      if (!entry?.resort?.id || usedIds.has(entry.resort.id)) continue;
+      if (!isCredibleLocalFallbackCandidate(entry, pickEntry, usedIds)) continue;
+      local = toRoleEntry(entry, { roleVariant: 'another_smart_play' });
+      usedIds.add(entry.resort.id);
+      break;
+    }
   }
 
-  // Smart Play is not generic runner-up filler — slot stays empty when no credible pick exists.
+  // Solid Option is not generic runner-up filler — slot stays empty when no credible pick exists.
 
   if (!trap) {
     for (let i = 0; i < pool.length; i++) {
@@ -978,15 +1027,15 @@ function buildRecommendationRolesFromRanked(ranked) {
     local = pickLocalFromRanked(ranked, pickResult.pick);
   }
 
-  const trapResult = pickTrapFromRanked(ranked, pickResult.pick, local, null);
-  const sleeper = pickSleeperFromRanked(ranked, pickResult.pick, local, trapResult.trap);
+  const sleeper = pickSleeperFromRanked(ranked, pickResult.pick, local, null);
 
   if (!local && !hasLocalIntent() && pick.breakdown?.destinationClass !== 'local') {
     const usedIds = new Set([pickResult.pick.resort.id]);
     if (sleeper?.resort?.id) usedIds.add(sleeper.resort.id);
-    if (trapResult.trap?.resort?.id) usedIds.add(trapResult.trap.resort.id);
     local = pickLocalFallbackFromRanked(ranked, pickResult.pick, usedIds);
   }
+
+  const trapResult = pickTrapFromRanked(ranked, pickResult.pick, local, sleeper);
 
   if (trapResult.pickCrowdWarning) {
     pick = {

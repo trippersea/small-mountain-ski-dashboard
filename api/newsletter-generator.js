@@ -2,7 +2,7 @@
  * /api/newsletter-generator.js
  *
  * Scores resorts in 5 regions using the same sd-scoring.js engine + role logic
- * as the homepage (Top Pick, Crowd Watch, Smart Play, Best Nearby Option),
+ * as the homepage (Top Pick, Crowd Watch, Solid Option, Best Nearby Option),
  * generates copy via Anthropic, and posts a DRAFT to Beehiiv.
  *
  * Generates Thursday 11pm UTC (7pm ET) via Vercel cron -- for Friday send.

@@ -157,7 +157,7 @@
         TRAP: 'Crowd Watch',
       };
 
-  /** Label for the LOCAL / Another Smart Play column header. */
+  /** Label for the LOCAL / Worth a Look column header. */
   function localCompareLabel(localR) {
     if (localR.localLabel) return localR.localLabel;
     if (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.localRoleLabel) {
@@ -193,7 +193,7 @@
     return 'Great mountain, bad timing. Conditions may hold, but crowds may mean long lift lines.';
   }
 
-  /** Side columns: Smart Play, local slot, Crowd Watch. Then legacy runners (old sessions). */
+  /** Side columns: Solid Option, local slot, Crowd Watch. Then legacy runners (old sessions). */
   function buildSideColumns(pick, localRow, sleeperRow, trapRow, legacyRunners) {
     const cols = [];
     if (sleeperRow && sleeperRow.id && sleeperRow.id !== pick.id) {

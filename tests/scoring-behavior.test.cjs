@@ -698,7 +698,7 @@ test('[PROTECT] trapRoleExplanation mentions crowd timing', () => {
   const roles = api.buildRecommendationRolesFromRanked(ranked);
   assert.ok(roles.trap?.resort?.id, 'expected a TRAP role');
   const copy = api.trapRoleExplanation(roles.trap);
-  assert.match(copy, /bad timing|lift-line/i);
+  assert.match(copy, /risky timing|more people/i);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -872,7 +872,7 @@ test('[PROTECT] Crowd Watch never displays with Quiet / light crowds', () => {
   assert.strictEqual(api.trapQualifiesForCrowdWatch(wach), false);
 });
 
-test('[PROTECT] local labels use Best Nearby Option vs Another Smart Play', () => {
+test('[PROTECT] local labels use Best Nearby Option vs Worth a Look', () => {
   resetState();
   state.origin = { lat: 42, lon: -71 };
   state.howFar = 1;
@@ -922,4 +922,129 @@ test('[PROTECT] ski today uses forecast[0] — weather and crowd stay on same da
     api.plannerScoreBreakdown(byId['killington-resort'], w, 1, null),
   );
   assert.notStrictEqual(tomorrowTier.tier, 'bad');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [PROTECT] Trust layer — close-call copy, role order, Worth a Look backfill
+// ─────────────────────────────────────────────────────────────────────────────
+test('[PROTECT] close-call Top Pick copy when runner-up is within 12 points', () => {
+  resetState();
+  state.origin = { lat: 42, lon: -71 };
+  state.howFar = 1;
+  h.setDrive('loon-mountain', 140);
+  h.setDrive('wildcat-mountain', 155);
+  const wx = h.bluebird();
+  const loon = rankedEntry('loon-mountain', wx);
+  const wildcat = rankedEntry('wildcat-mountain', wx);
+  wildcat.breakdown = {
+    ...wildcat.breakdown,
+    score: loon.breakdown.score - 8,
+    normalized: {
+      ...loon.breakdown.normalized,
+      crowd: (loon.breakdown.normalized?.crowd ?? 0.5) - 0.15,
+    },
+  };
+  const ranked = [loon, wildcat];
+  const runner = api.findTopPickRunnerUp(ranked, loon);
+  assert.strictEqual(runner?.resort?.id, 'wildcat-mountain');
+  const copy = api.buildCloseCallTopPickCopy(loon, runner);
+  assert.ok(copy, 'expected close-call copy');
+  assert.match(copy, /This one is close/i);
+  assert.match(copy, /Loon/i);
+  assert.match(copy, /Wildcat/i);
+});
+
+test('[PROTECT] close-call copy omitted when gap exceeds 12 points', () => {
+  resetState();
+  const wx = h.bluebird();
+  const pick = rankedEntry('loon-mountain', wx);
+  const runner = rankedEntry('wildcat-mountain', wx);
+  runner.breakdown = { ...runner.breakdown, score: pick.breakdown.score - 20 };
+  const copy = api.buildCloseCallTopPickCopy(pick, runner);
+  assert.strictEqual(copy, null);
+});
+
+test('[PROTECT] role fill order assigns Solid Option before Crowd Watch can claim it', () => {
+  const ranked = crowdedSaturdayRanked(
+    ['killington-resort', 'loon-mountain', 'magic-mountain'],
+    h.bluebird(),
+    { historyIds: ['killington-resort', 'loon-mountain', 'magic-mountain'] },
+  );
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.sleeper?.resort?.id, 'magic-mountain');
+  assert.strictEqual(roles.trap?.resort?.id, 'loon-mountain');
+  assert.notStrictEqual(roles.sleeper.resort.id, roles.trap.resort.id);
+});
+
+test('[PROTECT] fillMissingRoleSlots does not backfill weak Worth a Look', () => {
+  resetState();
+  state.origin = { lat: 44.5, lon: -72.5 };
+  state.howFar = 1;
+  state.skiDayPreset = 'saturday';
+  h.setDrive('killington-resort', 90);
+  h.setDrive('loon-mountain', 100);
+  const wx = h.bluebird();
+  const pick = rankedEntry('killington-resort', wx);
+  const weak = rankedEntry('loon-mountain', wx);
+  weak.breakdown = {
+    ...weak.breakdown,
+    score: pick.breakdown.score - 25,
+    normalized: {
+      snow: 0.1, skiability: 0.1, fit: 0.1, drive: 0.1, value: 0.1, crowd: 0.1,
+    },
+  };
+  const ranked = [pick, weak];
+  const roles = api.fillMissingRoleSlots(ranked, {
+    pick,
+    local: null,
+    sleeper: null,
+    trap: null,
+  });
+  assert.strictEqual(roles.local, null);
+});
+
+test('[PROTECT] crowd magnet does not become Worth a Look via fillMissingRoleSlots', () => {
+  resetState();
+  state.origin = { lat: 42.36, lon: -71.06 };
+  state.howFar = 0;
+  state.skiDayPreset = 'saturday';
+  state.targetDate = new Date('2026-01-17T12:00:00');
+  h.setDrive('killington-resort', 180);
+  h.setDrive('loon-mountain', 140);
+  h.sandbox.historyCache.set('killington-resort', { total: 10, days: [] });
+  h.sandbox.historyCache.set('loon-mountain', { total: 10, days: [] });
+  const wx = h.bluebird();
+  const pick = rankedEntry('killington-resort', wx);
+  const loon = rankedEntry('loon-mountain', wx);
+  loon.breakdown = { ...loon.breakdown, score: pick.breakdown.score - 5 };
+  const ranked = [pick, loon];
+  const roles = api.fillMissingRoleSlots(ranked, {
+    pick,
+    local: null,
+    sleeper: null,
+    trap: null,
+  });
+  assert.strictEqual(roles.local, null, 'Loon crowd magnet should not fill Worth a Look');
+});
+
+test('[PROTECT] Worth a Look fallback copy uses approved phrasing', () => {
+  const copy = api.localRoleExplanation({ roleVariant: 'another_smart_play' }, { name: 'Killington Resort' });
+  assert.match(copy, /No true nearby option stands out today/i);
+});
+
+test('[PROTECT] isPickAlreadyQuietPlay suppresses Solid Option for quiet Top Pick', () => {
+  const ranked = crowdedSaturdayRanked(
+    ['wildcat-mountain', 'loon-mountain'],
+    h.bluebird(),
+    { historyIds: ['wildcat-mountain'] },
+  );
+  const wc = ranked.find((e) => e.resort.id === 'wildcat-mountain');
+  const ln = ranked.find((e) => e.resort.id === 'loon-mountain');
+  if (wc.breakdown.score <= ln.breakdown.score) {
+    wc.breakdown = { ...wc.breakdown, score: ln.breakdown.score + 1 };
+  }
+  ranked.sort((a, b) => b.breakdown.score - a.breakdown.score);
+  const roles = api.buildRecommendationRolesFromRanked(ranked);
+  assert.strictEqual(roles.pick?.resort?.id, 'wildcat-mountain');
+  assert.strictEqual(roles.sleeper, null);
 });

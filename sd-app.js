@@ -2046,6 +2046,13 @@ function computeVerdict(resorts) {
   const histDays = history?.days ?? null;
   const rawTop = ranked[0];
 
+  const runnerUp = typeof findTopPickRunnerUp === 'function'
+    ? findTopPickRunnerUp(ranked, roles.pick)
+    : null;
+  const closeCallCopy = (typeof buildCloseCallTopPickCopy === 'function' && runnerUp)
+    ? buildCloseCallTopPickCopy(roles.pick, runnerUp)
+    : null;
+
   const drive     = getDriveMins(resort.id);
   const driveText = drive !== null ? formatDrive(resort.id) : '';
 
@@ -2058,6 +2065,7 @@ function computeVerdict(resorts) {
     tier, headline, detail, subPoints, resort, breakdown, drive, driveText,
     tomorrowIn, stormTotal, histTotal, histDays,
     roles,
+    closeCallCopy,
     topPickEligible: breakdown.topPickEligible,
     topPickEligibilityReason: breakdown.topPickEligibilityReason,
     topPickFloorActive: pickResult.topPickFloorActive,
@@ -2389,6 +2397,9 @@ function renderVerdict(resorts) {
   const _decisionCalloutHtml = _overNearbyCallout
     ? `<p class="vcard-decision-callout" role="note">${esc(_overNearbyCallout)}</p>`
     : '';
+  const _closeCallHtml = v.closeCallCopy
+    ? `<p class="vcard-close-call" role="note">${esc(v.closeCallCopy)}</p>`
+    : '';
 
   // ── Role cards: LOCAL / SLEEPER / TRAP (grouped under “Other smart calls”) ──
   const localCardHtml = localEntry ? (() => {
@@ -2432,7 +2443,7 @@ function renderVerdict(resorts) {
       : null;
     const _sCopy = typeof sleeperRoleExplanation === 'function'
       ? sleeperRoleExplanation(sleeperEntry, resort, _sRef)
-      : 'A quieter alternative worth a look if crowds are a concern.';
+      : 'Not the obvious pick, but it has a real case today.';
     const _sDriveU = esc(driveUtilitySegment(sleeperEntry.resort.id));
     const _sCrowdU = esc(crowdUtilityShort(_sCrowd.label));
     const _sMarginalCls = sleeperEntry.tier === 'marginal' ? ' vcard-sleeper-card--marginal' : '';
@@ -2457,7 +2468,7 @@ function renderVerdict(resorts) {
     const _tCrowdLabel = trapEntry.crowdLabel || crowdForecast(trapEntry.resort, _tWx)?.label;
     const _tCopy = typeof trapRoleExplanation === 'function'
       ? trapRoleExplanation(trapEntry)
-      : 'Great mountain, bad timing. Crowds may be the real problem.';
+      : 'Great mountain, risky timing. Expect more people here than the score alone might suggest.';
     const _tDriveU = esc(driveUtilitySegment(trapEntry.resort.id));
     const _tCrowdU = esc(crowdUtilityShort(_tCrowdLabel));
     const _tMarginalCls = trapEntry.tier === 'marginal' ? ' vcard-trap-card--marginal' : '';
@@ -2480,10 +2491,14 @@ function renderVerdict(resorts) {
   const roleCardParts = [sleeperCardHtml, localCardHtml, trapCardHtml].filter(Boolean);
   const roleCount = roleCardParts.length;
   const roleCardsInner = roleCardParts.join('');
+  const _solidOptionEmptyHtml = !sleeperEntry && roleCount > 0
+    ? `<p class="vcard-solid-option-empty">No strong second opinion today. The Top Pick already has the best mix of snow, terrain, drive time, and crowd risk.</p>`
+    : '';
   const otherSmartCallsHtml = roleCardsInner
     ? `<section class="vcard-other-smart-calls" aria-labelledby="verdictOtherSmartCallsHeading">
         <h3 class="vcard-other-smart-calls-heading" id="verdictOtherSmartCallsHeading">More options for today</h3>
         <p class="vcard-other-smart-calls-helper">Different ways to play the day depending on drive, crowds, and convenience.</p>
+        ${_solidOptionEmptyHtml}
         <div class="vcard-other-smart-calls-grid vcard-other-smart-calls-grid--count-${roleCount}">${roleCardsInner}</div>
       </section>`
     : '';
@@ -2507,6 +2522,7 @@ function renderVerdict(resorts) {
         ${zipNudgeHtml}
         <button type="button" class="vcard-name-dash vcard-name-dash--pick" id="verdictPickBtn" data-role-pick="${esc(resort.id)}">${esc(resort.name)}</button>
         ${_decisionCalloutHtml}
+        ${_closeCallHtml}
         <p class="vcard-verdict-line">${esc(_verdictPhrase)}</p>
         ${pickCrowdWarningHtml}
         <p class="vcard-story-one">${esc(_storyOneLine)}</p>

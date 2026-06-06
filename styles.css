@@ -3381,6 +3381,14 @@ tr:focus-within .story-text--table {
   line-height: 1.45;
   max-width: 52ch;
 }
+.compare-rankings-note {
+  margin: 8px 0 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 56ch;
+}
 .compare-filter-btn.filter-toggle-btn {
   border-color: var(--border-mid);
   background: var(--surface-subtle);
@@ -7873,6 +7881,20 @@ button.vcard-detail-btn:hover,
   line-height: 1.4;
   color: rgba(186, 200, 218, 0.68);
   max-width: none;
+}
+.hn-hero-verdict-dock .vcard-solid-option-empty {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(186, 200, 218, 0.72);
+  max-width: none;
+}
+.hn-hero-verdict-dock .vcard-close-call {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(210, 224, 240, 0.88);
+  font-weight: 500;
 }
 .hn-hero-verdict-dock .vcard-other-smart-calls-grid {
   display: grid;

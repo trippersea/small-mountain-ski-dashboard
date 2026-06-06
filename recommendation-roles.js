@@ -49,7 +49,7 @@
     return sb - sa;
   }
 
-  /** Positive when `b` is the stronger Smart Play candidate. */
+  /** Positive when `b` is the stronger Solid Option candidate. Internal role: sleeper. */
   function compareSleeperRoleEntries(a, b) {
     const sa = a?.breakdown?.score ?? -Infinity;
     const sb = b?.breakdown?.score ?? -Infinity;
@@ -90,7 +90,7 @@
   function detailBanner(fromRole, localVariant) {
     if (!fromRole) return null;
     if (fromRole === 'trap') {
-      return 'Opened from Crowd Watch. This mountain may ski well, but crowds could affect the day.';
+      return 'Opened from Crowd Watch. Great mountain, risky timing. Expect more people here than the score alone might suggest.';
     }
     if (fromRole === 'sleeper') {
       return 'Opened from Solid Option. A confident second opinion worth comparing to the Top Pick.';
