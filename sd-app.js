@@ -460,9 +460,11 @@ function sponsorTrackAttrs(name, placement, resortId, statePage) {
     .vcard-freshness { font-size: 10px; color: rgba(240,246,252,.52); margin-top: 6px; letter-spacing: .01em; }
     .hn-hero-verdict-dock .vcard--hero-light .vcard-freshness { color: #9fb3c0; }
 
-    /* ── Why this pick ──────────────────────────────────────────────────────── */
-    .vcard-why-pick { font-size: 11px; color: rgba(240,246,252,.86); font-style: italic; margin: 10px 0 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.12); line-height: 1.5; }
-    .hn-hero-verdict-dock .vcard--hero-light .vcard-why-pick { color: #5a7080; border-top-color: rgba(15,23,42,.09); }
+    /* ── Why this pick (prose form) ─────────────────────────────────────────
+       One-line skier-y explanation of why this mountain won. Distinct from
+       story-one above it: Inter (not serif), slightly more muted, no italics. */
+    .vcard-why-prose { font-family: 'Inter', system-ui, sans-serif; font-size: 12.5px; color: rgba(220,232,246,.72); font-weight: 500; line-height: 1.5; margin: 6px 0 0; max-width: 34rem; }
+    .hn-hero-verdict-dock .vcard--hero-light .vcard-why-prose { color: #5a7080; }
 
     /* ── Mini runner tier badge ─────────────────────────────────────────────── */
     .vmr-name-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
@@ -2378,13 +2380,18 @@ function renderVerdict(resorts) {
   const _whyPickLabels = (typeof buildWhyThisPickReasons === 'function')
     ? buildWhyThisPickReasons(resorts, tier, resort.id, localEntry?.resort?.id ?? null)
     : ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
-  // Filter out crowd-related pills · the crowd explainer block now covers that
+  // Filter out crowd-related labels · the crowd explainer block already covers that
   const _whyPickFiltered = _whyPickLabels.filter(t => !/crowd/i.test(t));
-  const _whyPickChips = _whyPickFiltered.map(t => `<span class="vcard-why-chip">${esc(t)}</span>`).join('');
-  const _whyPickHtml = _whyPickFiltered.length ? `<div class="vcard-why-pick" role="group" aria-labelledby="verdictWhyPickHeading">
-    <div class="vcard-why-pick-heading" id="verdictWhyPickHeading">Why this pick</div>
-    <div class="vcard-why-pick-chips">${_whyPickChips}</div>
-  </div>` : '';
+  // Why-this-pick now renders as one prose sentence next to the verdict, not as
+  // pills below the card. The pills read like a database printout; one sentence
+  // sounds like a skier explaining the pick. Logic / scoring is unchanged ·
+  // see buildWhyThisPickReasons in why-this-pick.js.
+  const _whyPickProseText = (typeof buildWhyThisPickProse === 'function')
+    ? buildWhyThisPickProse(_whyPickFiltered)
+    : '';
+  const _whyPickProseHtml = _whyPickProseText
+    ? `<p class="vcard-why-prose">${esc(_whyPickProseText)}</p>`
+    : '';
 
   // ── Crowd Explainer: visible block with reasons, replaces hidden tooltip ────
   const _crowdExplainerHtml = buildCrowdExplainerHtml(_crowd);
@@ -2526,11 +2533,11 @@ function renderVerdict(resorts) {
         <p class="vcard-verdict-line">${esc(_verdictPhrase)}</p>
         ${pickCrowdWarningHtml}
         <p class="vcard-story-one">${esc(_storyOneLine)}</p>
+        ${_whyPickProseHtml}
         <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
         <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
         ${_histChipHtml}
         ${_crowdExplainerHtml}
-        ${_whyPickHtml}
       </div>
       <div class="vcard-body vcard-body-dash">
         <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>

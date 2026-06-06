@@ -453,3 +453,75 @@ function buildWhyThisPickReasons(resorts, tier, winnerId, suppressLocalResortId)
   }
   return labels.slice(0, 3);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROSE FORM — turns the 3 chip labels into one natural sentence so the verdict
+// card reads like a skier talking instead of a database printout.
+//
+// Each label maps to a {lead, mid} pair. lead is sentence-initial form
+// (capitalized), mid is mid-sentence clause (lowercase). The output uses
+// "with" as a connector for the trailing phrases when it reads better than
+// a comma list.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const WTP_PROSE_MAP = Object.freeze({
+  // Travel
+  'Best day-trip fit':         { lead: 'Best day-trip fit',           mid: 'best day-trip fit' },
+  'Closest decent option':     { lead: 'Closest decent option',       mid: 'the closest decent option' },
+  'Best extended-drive fit':   { lead: 'Best fit for a weekend trip', mid: 'best fit for a weekend trip' },
+  'Worth the extra drive':     { lead: 'Worth the extra drive',       mid: 'worth the extra drive' },
+  'Best nearby in range':      { lead: 'Closest decent option in range', mid: 'the closest decent option in range' },
+  'Best fit for your setup':   { lead: 'Best fit overall',            mid: 'best overall fit' },
+  'Best nearby option':        { lead: 'Closest decent option',       mid: 'the closest decent option' },
+  // Snow
+  'Best snow nearby':          { lead: 'Best snow nearby',            mid: 'best snow nearby' },
+  'Best snow in your range':   { lead: 'Best snow in your range',     mid: 'best snow in your range' },
+  'Better snow nearby':        { lead: 'More snow than the nearby alternatives', mid: 'more snow than the nearby alternatives' },
+  'More snow forecast':        { lead: 'More snow in the forecast',   mid: 'more snow in the forecast' },
+  'Better snow for the drive': { lead: 'Best snow worth the drive',   mid: 'best snow worth the drive' },
+  // Skiability / weather
+  'Better visibility':         { lead: 'Clearer visibility',          mid: 'clearer visibility' },
+  'Better groomer setup':      { lead: 'Groomers should hold up',     mid: 'groomers that should hold up' },
+  'Better surface setup':      { lead: 'Best surface conditions',     mid: 'the best surface conditions' },
+  'Better weather setup':      { lead: 'Best weather window',         mid: 'the best weather window' },
+  // Crowds (typically filtered out by sd-app before reaching here, but kept for safety)
+  'Lighter crowds':            { lead: 'Lighter crowds',              mid: 'lighter crowds' },
+  'Manageable crowds':         { lead: 'Manageable crowds',           mid: 'manageable crowds' },
+  // Pass
+  'Best on your pass':         { lead: 'On your pass',                mid: 'on your pass' },
+  // Value
+  'Better value today':        { lead: 'Best value today',            mid: 'best value today' },
+  // Fit
+  'More mountain for the drive': { lead: 'More mountain for the miles', mid: 'more mountain for the miles' },
+  'Best fit for your filters': { lead: 'Best fit for your filters',   mid: 'the best match to your filters' },
+});
+
+/**
+ * Build a single-sentence prose explanation from the 3 chip labels.
+ * @param {string[]} labels - 1 to 3 labels from buildWhyThisPickReasons
+ * @returns {string} a single sentence ending in a period, or '' if empty
+ */
+function buildWhyThisPickProse(labels) {
+  if (!Array.isArray(labels) || !labels.length) return '';
+
+  // Map each label to {lead, mid}, skipping anything we don't recognize
+  // (rather than emitting raw labels mid-sentence and reading awkwardly).
+  const items = [];
+  for (const label of labels) {
+    const m = WTP_PROSE_MAP[label];
+    if (m && !items.find(x => x.lead === m.lead)) items.push(m);
+  }
+  if (!items.length) return '';
+
+  if (items.length === 1) return items[0].lead + '.';
+
+  if (items.length === 2) {
+    // "Best snow nearby and on your pass."
+    return items[0].lead + ' and ' + items[1].mid + '.';
+  }
+
+  // 3+ items: "Best snow nearby, on your pass, and groomers that should hold up."
+  // Using a serial comma keeps it tight and skier-readable.
+  return items[0].lead + ', ' + items[1].mid + ', and ' + items[2].mid + '.';
+}
+
