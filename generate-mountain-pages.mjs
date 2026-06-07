@@ -1035,6 +1035,8 @@ ${editorial ? EDITORIAL_CSS : ''}
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/about" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/stories" class="nav-primary">Stories</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison" class="nav-primary">Pass Guides</a>
       <a href="https://wheretoskinext.com/#searchSection" class="nav-find-cta">Find my mountain &rarr;</a>
     </div>
@@ -1375,6 +1377,8 @@ function generateSitemap(resorts) {
   const urls = [
     `  <url><loc>https://wheretoskinext.com/</loc><changefreq>daily</changefreq><priority>1.0</priority><lastmod>${today}</lastmod></url>`,
     `  <url><loc>https://wheretoskinext.com/about</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>${today}</lastmod></url>`,
+    `  <url><loc>https://wheretoskinext.com/stories</loc><changefreq>monthly</changefreq><priority>0.65</priority><lastmod>${today}</lastmod></url>`,
+    `  <url><loc>https://wheretoskinext.com/stories/heres-to-the-two-seaters</loc><changefreq>monthly</changefreq><priority>0.65</priority><lastmod>${today}</lastmod></url>`,
     ...STATIC_PAGES.map(p =>
       `  <url><loc>${p.loc}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority><lastmod>${today}</lastmod></url>`
     ),

@@ -121,6 +121,10 @@
     {
       "source": "/ski-near/:city",
       "destination": "/ski-near/:city/index.html"
+    },
+    {
+      "source": "/stories/:slug",
+      "destination": "/stories/:slug/index.html"
     }
   ]
 }

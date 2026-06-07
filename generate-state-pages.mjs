@@ -460,6 +460,8 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
       <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/about" class="nav-primary">About</a>
       <span class="nav-link-sep" aria-hidden="true"></span>
+      <a href="/stories" class="nav-primary">Stories</a>
+      <span class="nav-link-sep" aria-hidden="true"></span>
       <a href="/ski-pass-comparison" class="nav-primary">Pass Guides</a>
       <a href="${esc(finderUrl)}" class="nav-find-cta">Find my mountain &rarr;</a>
     </div>
