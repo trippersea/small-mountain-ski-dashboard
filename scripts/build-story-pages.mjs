@@ -211,7 +211,7 @@ const articleJsonLd = `<script type="application/ld+json">
 }
 </script>`;
 
-const articleMain = `<main class="about-page-shell">
+const articleMain = `<main class="story-article-page">
 
   <section class="story-article-hero" aria-labelledby="story-h1">
     <div class="story-article-hero__inner">
@@ -219,30 +219,50 @@ const articleMain = `<main class="about-page-shell">
       <p class="about-page-eyebrow">Lift culture</p>
       <h1 id="story-h1" class="story-article-hero__title">Here's to the Two-Seaters</h1>
       <p class="story-article-hero__meta">June 2026</p>
+      <p class="story-article-hero__dek">If you've ever spent 12 minutes slowly creeping up a mountain on an old fixed-grip double, legs dangling, wind whistling, conversation flowing, you know that kind of chairlift ride is getting harder to find.</p>
     </div>
   </section>
 
-  <article class="story-article-body">
-    <div class="story-prose">
-      <p class="story-lede">If you've ever spent 12 minutes slowly creeping up a mountain on an old fixed-grip double, legs dangling, wind whistling, conversation flowing, you know that kind of chairlift ride is getting harder to find.</p>
-
-      <p>More and more resorts are phasing out their two-seaters in favor of high-speed quads and six-packs. From a business perspective, it makes sense: more vertical per hour, better ROI when pass holders want to rack up days, fewer complaints about lift lines. Nobody is wrong to want that. But for those of us who actually like skiing the mountain, not just cycling it, there is a cost. And we are starting to feel it.</p>
-
-      <p>First the numbers. Your average fixed-grip double moves about 900 people per hour. A detachable quad? Nearly triple that. That solves the lift line, but it hands you a different problem: the same trails, now with three times the traffic on them. Faster lifts do not make the mountain bigger. They just make it busier. None of this means fast is bad. On the main arteries, moving people efficiently is exactly the point. But run that math across a whole mountain and the trails that used to stay untouched until noon are tracked out by mid-morning. That two-minute lift ride you love? Great. But now you are back at the bottom with a few hundred of your closest friends, five times an hour, and so is everyone else.</p>
-
-      <p>Beginners feel it too, in a different way. Wide-open green groomers, the ones that are perfect for your first season, are now speedways. High-speed access means advanced skiers are bombing those same runs lap after lap, and a nervous first-timer trying to link turns is suddenly sharing the trail with people doing 40. The terrain that is supposed to be the gentlest on the mountain stops feeling that way.</p>
-
-      <p>There is something sacred about those slower, quieter laps. The ones off a mid-mountain double that somehow always stays uncrowded. The glades with a locals-only feel. The bump run that does not get chopped up in the first 45 minutes. The old double chair slowed you down on purpose. You were not in a rush. You were not pounding vert to get your money's worth. You were skiing, talking, looking around, and occasionally just sitting in silence, watching the snow drift sideways.</p>
-
-      <p>Some places still get it. <a href="/ski-report/mad-river-glen/">Mad River Glen</a> has its single chair. <a href="/ski-report/alta-ski-area/">Alta</a> still runs old fixed-grips. <a href="/ski-report/magic-mountain/">Magic Mountain</a> held onto its mid-mountain doubles for years because they worked.</p>
-
-      <p>The question is not whether we should stop upgrading lifts altogether. Of course not. Modern high-speed quads have their place, especially on the main arteries where moving big volumes of skiers efficiently is the whole job. But there is also value in protecting the slower, soulful doubles that access terrain meant to be savored, not rushed. And when a mountain plans an upgrade, the conversation cannot stop at the ride up. Are we ready for the downhill traffic that comes with it?</p>
-
-      <p>We all love fast laps now and then. But if every lift becomes a bullet train, we will look around one day and realize the mountains feel more crowded, more rushed, and a little less like the thing we fell for in the first place.</p>
-
-      <p>So here is to the two-seaters. The creaky, quiet, character-rich relics that helped shape the skiing we love.</p>
+  <div class="story-stat-strip" aria-label="Lift capacity comparison">
+    <div class="story-stat-strip__inner">
+      <div class="story-stat">
+        <span class="story-stat__value">900</span>
+        <span class="story-stat__label">people per hour on a fixed-grip double</span>
+      </div>
+      <div class="story-stat">
+        <span class="story-stat__value">~2,700</span>
+        <span class="story-stat__label">on a detachable quad</span>
+      </div>
+      <div class="story-stat">
+        <span class="story-stat__value">12 min</span>
+        <span class="story-stat__label">on a slow double, if you are lucky</span>
+      </div>
     </div>
-  </article>
+  </div>
+
+  <div class="story-article-band">
+    <article class="story-article-body">
+      <div class="story-prose">
+        <p>More and more resorts are phasing out their two-seaters in favor of high-speed quads and six-packs. From a business perspective, it makes sense: more vertical per hour, better ROI when pass holders want to rack up days, fewer complaints about lift lines. Nobody is wrong to want that. But for those of us who actually like skiing the mountain, not just cycling it, there is a cost. And we are starting to feel it.</p>
+
+        <p>First the numbers. Your average fixed-grip double moves about 900 people per hour. A detachable quad? Nearly triple that. That solves the lift line, but it hands you a different problem: the same trails, now with three times the traffic on them. Faster lifts do not make the mountain bigger. They just make it busier. None of this means fast is bad. On the main arteries, moving people efficiently is exactly the point. But run that math across a whole mountain and the trails that used to stay untouched until noon are tracked out by mid-morning. That two-minute lift ride you love? Great. But now you are back at the bottom with a few hundred of your closest friends, five times an hour, and so is everyone else.</p>
+
+        <p>Beginners feel it too, in a different way. Wide-open green groomers, the ones that are perfect for your first season, are now speedways. High-speed access means advanced skiers are bombing those same runs lap after lap, and a nervous first-timer trying to link turns is suddenly sharing the trail with people doing 40. The terrain that is supposed to be the gentlest on the mountain stops feeling that way.</p>
+
+        <p>There is something sacred about those slower, quieter laps. The ones off a mid-mountain double that somehow always stays uncrowded. The glades with a locals-only feel. The bump run that does not get chopped up in the first 45 minutes. The old double chair slowed you down on purpose. You were not in a rush. You were not pounding vert to get your money's worth. You were skiing, talking, looking around, and occasionally just sitting in silence, watching the snow drift sideways.</p>
+
+        <p>Some places still get it. <a href="/ski-report/mad-river-glen/">Mad River Glen</a> has its single chair. <a href="/ski-report/alta-ski-area/">Alta</a> still runs old fixed-grips. <a href="/ski-report/magic-mountain/">Magic Mountain</a> held onto its mid-mountain doubles for years because they worked.</p>
+
+        <p>The question is not whether we should stop upgrading lifts altogether. Of course not. Modern high-speed quads have their place, especially on the main arteries where moving big volumes of skiers efficiently is the whole job. But there is also value in protecting the slower, soulful doubles that access terrain meant to be savored, not rushed. And when a mountain plans an upgrade, the conversation cannot stop at the ride up. Are we ready for the downhill traffic that comes with it?</p>
+
+        <p>We all love fast laps now and then. But if every lift becomes a bullet train, we will look around one day and realize the mountains feel more crowded, more rushed, and a little less like the thing we fell for in the first place.</p>
+      </div>
+    </article>
+  </div>
+
+  <blockquote class="story-outro">
+    <p class="story-outro__text">So here is to the two-seaters. The creaky, quiet, character-rich relics that helped shape the skiing we love.</p>
+  </blockquote>
 
   <div class="story-article-cta">
     <p><strong>Planning a weekend?</strong> Rank mountains from your ZIP with live snow, drive time, and crowd outlook.</p>
