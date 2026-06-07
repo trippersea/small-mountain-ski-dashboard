@@ -246,7 +246,7 @@
     return '<div class="cp-explain-bubble" role="tooltip">' +
       '<div class="cp-explain-h">Why <b>' + esc(name) + '</b> scored here</div>' +
       rows +
-      '<div class="cp-explain-foot">Based on live forecast, drive time, pass fit, and crowd outlook. No resort pays for placement.</div>' +
+      '<div class="cp-explain-foot">Based on live forecast, drive time, whether your pass covers it, and crowd outlook. No resort pays for placement.</div>' +
     '</div>';
   }
 

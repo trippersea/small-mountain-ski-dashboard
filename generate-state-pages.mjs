@@ -183,16 +183,71 @@ const STATE_GUIDE_BLURBS = {
   OR: 'Oregon blends volcanoes, Cascade snow, and a strong Indy scene depending on where you look. The table helps you line up vertical, passes, and night skiing in one pass.',
   MI: 'Michigan spreads skiing across the Upper Peninsula and Lower Peninsula with a strong Midwest pass mix. Vertical is modest at many areas, but snowmaking and consistency matter.',
   MN: 'Minnesota skiing is about cold-weather reliability and family-friendly pacing. Compare ticket value and night skiing when you plan weeknight laps.',
-  WI: 'Wisconsin mixes small and mid-size areas that shine for quick trips. Use the list to spot pass fit and night options without guesswork.',
+  WI: 'Wisconsin mixes small and mid-size areas that shine for quick trips. Use the list to spot whether your pass covers a hill and which spots offer night skiing.',
   AZ: 'Arizona offers high-elevation snow in the northern part of the state with a different rhythm than Rocky Mountain mega-resorts. Great when you want desert proximity with real turns.',
   NV: 'Nevada skiing often means Lake Tahoe access and high Sierra conditions. Compare passes and ticket pressure alongside snow history before you book.',
   NM: 'New Mexico serves dry snow and big-sky days with a smaller resort count. Vertical and exposure can surprise first-time visitors in a good way.',
   AK: 'Alaska delivers serious terrain and snow when you are ready to travel for it. Use the table to anchor facts, then lean on live forecasts when you plan logistics.',
 };
 
+const HERO_TRUST_LINE =
+  'Current snow, drive time, pass access, and crowd outlook. Pick your weekend and we\'ll rank the options.';
+
+const STATE_HERO_LEDES = {
+  NH: 'New Hampshire splits cleanly on passes: Epic clusters Attitash, Wildcat, and Sunapee while Cannon and Waterville sit outside both mega-passes. This table covers every NH area so you can compare vertical and snow before you commit to a weekend.',
+  VT: 'Vermont runs more Ikon than Epic, with four big Ikon mountains against Stowe and the southern Epic pair. More ski areas per square mile than almost anywhere in the country, and the pass math is usually the first filter.',
+  ME: 'Maine\'s destination mountains, Sunday River and Sugarloaf, sit on Ikon, not Epic. Long drives from Boston make the snow-per-mile calculation matter more here than in southern New England.',
+  MA: 'Massachusetts keeps skiing within two hours of Boston for most people. Wachusett, Jiminy, and Berkshire East anchor the list, but the verticals stay modest compared to NH and VT.',
+  CT: 'Connecticut has real ski areas, just compact ones. Mohawk and Mount Southington are the names most people know, and everything here is a day-trip hill, not a destination.',
+  RI: 'Rhode Island has one ski area. Yawgoo is short, local, and exactly what you want when you need snow time without crossing a state line.',
+  NY: 'Whiteface and Gore are state-owned Olympic mountains with no Epic or Ikon tie-in. The rest of New York spans Adirondack giants, Catskill day hills, and more Indy Pass options than either mega-pass.',
+  NJ: 'New Jersey skiing is about convenience from NYC and Philly. Mountain Creek dominates the conversation, with smaller hills filling in when you want a quick lap without the Turnpike crawl.',
+  PA: 'Pennsylvania splits west and east: Laurel and Seven Springs country versus the Poconos crowd magnets. Pass overlap and ticket price swing more by region here than in New England.',
+  CO: 'Colorado has more Ikon mountains than Epic, but Epic owns the marquee Vail Resorts names. Elevation, dry snow, and I-70 traffic all shape which hill wins a given weekend.',
+  UT: 'Utah is Ikon country in the Cottonwoods: Alta, Snowbird, Deer Valley, and friends. Epic only has Park City, which matters if Brighton or Solitude is your home base.',
+  CA: 'California skiing spans Tahoe, Mammoth, and SoCal hills in one state. Epic clusters south Tahoe; Ikon owns Mammoth, Palisades, and the Southern California options Epic does not touch.',
+  WY: 'Wyoming is Jackson Hole and Grand Targhee territory for most pass holders, with tiny community hills scattered elsewhere. Vertical and exposure here are no joke.',
+  MT: 'Montana mixes Big Sky and Bridger Bowl with smaller community favorites. Snow quality and drive time often matter more than trail count.',
+  ID: 'Idaho rewards skiers who want steeps and space. Sun Valley sits on Epic; Schweitzer and Tamarack lean Ikon. Fewer crowds than Colorado, similar snow quality on the right day.',
+  WA: 'Washington is Ikon-heavy: Crystal, Snoqualmie, and Stevens Pass (Epic) are the triangle most Seattle skiers debate every Friday.',
+  OR: 'Oregon blends Cascade volcanoes with a strong Indy scene. Mount Hood Meadows and Timberline split the Portland drive, and pass coverage is thinner than in the Rockies.',
+  MI: 'Michigan spreads skiing across the UP and Lower Peninsula. Vertical stays modest, but snowmaking and night skiing keep the season long.',
+  MN: 'Minnesota skiing is cold, consistent, and family-paced. Afton Alps and Lutsen anchor the pass conversation; most hills are local-lap territory.',
+  WI: 'Wisconsin is Granite Peak, Cascade, and a long tail of small hills. Night skiing and quick drives from Milwaukee and Madison define the scene.',
+  AZ: 'Arizona Snowbowl is the whole story for most people: high desert proximity, real elevation, and a different rhythm from Rocky Mountain trips.',
+  NV: 'Nevada skiing means Lake Tahoe from the Nevada side. Pass overlap mirrors California Tahoe, with drive time from Reno as the usual constraint.',
+  NM: 'New Mexico serves dry snow and big sky at Taos, Angel Fire, and Ski Apache. Elevation catches newcomers off guard in a good way.',
+  AK: 'Alaska is Alyeska and a handful of community areas most Lower 48 skiers will never see. When you go, logistics matter as much as the snow report.',
+};
+
+function stateHeroLede(stateAbbr, stateName, count, resorts) {
+  if (STATE_HERO_LEDES[stateAbbr]) return STATE_HERO_LEDES[stateAbbr];
+  const top = [...resorts].sort((a, b) => b.vertical - a.vertical)[0];
+  return `${count} ski areas in ${stateName}. ${top.name} has the most vertical at ${top.vertical.toLocaleString()} feet. Skim the table for snow history and ticket prices, then open live rankings when you are picking a weekend.`;
+}
+
 function stateGuideBlurb(stateAbbr, stateName, count, topNames) {
   if (STATE_GUIDE_BLURBS[stateAbbr]) return STATE_GUIDE_BLURBS[stateAbbr];
-  return `${count} ski areas across ${stateName}, from local hills to larger destinations. Notable names include ${topNames}. Skim vertical, snow history, ticket price, and pass access in the table, then open live rankings for forecast snow, drive time, and crowd context in one place.`;
+  return `${count} ski areas across ${stateName}, from local hills to larger destinations. Notable names include ${topNames}. Skim vertical, snow history, ticket price, and pass access in the table, then open live rankings for forecast snow, drive time, and crowd outlook.`;
+}
+
+function passGuideBlurb(stateAbbr, stateName, epicCount, ikonCount, indyCount) {
+  if (stateAbbr === 'NY' && indyCount > epicCount && indyCount > ikonCount) {
+    return `${indyCount} Indy Pass mountains in ${stateName}, more than Epic and Ikon combined. See which pass actually covers where you ski before you buy.`;
+  }
+  if (stateAbbr === 'VT' && ikonCount > epicCount) {
+    return `Vermont skews Ikon: ${ikonCount} Ikon mountains vs ${epicCount} on Epic. Stowe is the Epic anchor most people compare against the Ikon quartet.`;
+  }
+  if (stateAbbr === 'NH' && epicCount > ikonCount) {
+    return `New Hampshire skews Epic: ${epicCount} Epic mountains vs ${ikonCount} on Ikon. Cannon and Waterville are the notable independents outside both passes.`;
+  }
+  if (stateAbbr === 'ME' && ikonCount > 0 && epicCount === 0) {
+    return `Maine\'s big destinations run on Ikon. Epic does not list Maine the same way, so check Sunday River and Sugarloaf access before you assume both passes work here.`;
+  }
+  if (indyCount > epicCount && indyCount > ikonCount) {
+    return `${indyCount} Indy Pass mountains in ${stateName}, more than either mega-pass. Worth comparing if you ski indie hills more than destination weekends.`;
+  }
+  return `${epicCount} Epic and ${ikonCount} Ikon ${ikonCount !== 1 ? 'mountains' : 'mountain'} in ${stateName}. Compare coverage before you commit to a pass for next season.`;
 }
 
 function buildQuickChips(stateAbbr, resorts) {
@@ -289,7 +344,7 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
           <div>
             <div class="sp-pass-guide-kicker">Pass guide</div>
             <h2>Epic Pass vs Ikon Pass: ${compLabel}</h2>
-            <p>${epicCount} Epic Pass and ${ikonCount} Ikon Pass ${ikonCount !== 1 ? 'mountains' : 'mountain'} in ${stateName}. Compare coverage and side-by-side value before you buy.</p>
+            <p>${esc(passGuideBlurb(stateAbbr, stateName, epicCount, ikonCount, indyCount))}</p>
           </div>
           <a href="/${compPage}/" class="pp-btn pp-btn--primary">Compare passes &rarr;</a>
         </div>` : '';
@@ -424,12 +479,12 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
           <div>
             <p class="sp-eyebrow">State ski guide</p>
             <h1 class="sp-title">Best Ski Mountains in ${stateName}</h1>
-            <p class="sp-lede">A ranked list of ${count} ski ${count !== 1 ? 'areas' : 'area'} with snow history, vertical, trails, and ticket context. Use this page as your ${stateName} guide, then open the app when you want live forecast, drive time, pass access, and crowd signals in one ranking.</p>
+            <p class="sp-lede">${esc(stateHeroLede(stateAbbr, stateName, count, resorts))}</p>
             <div class="sp-hero-cta">
               <a href="${esc(rankingsUrl)}" class="sp-btn sp-btn--primary">Open live rankings</a>
               <a href="${esc(finderUrl)}" class="sp-btn sp-btn--ghost">Find my mountain</a>
             </div>
-            <p class="sp-hero-trust">Live forecast, drive time, pass access, and crowds in one ranking. Compare the best mountains in ${stateName}, then find your best fit when you are ready.</p>
+            <p class="sp-hero-trust">${esc(HERO_TRUST_LINE)}</p>
           </div>
           <div class="sp-hero-aside">
             <div class="sp-metric-grid">

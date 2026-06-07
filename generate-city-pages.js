@@ -402,7 +402,7 @@ ${topNav}
           <div class="sp-hero-cta">
             <a href="${city.appUrl}" class="sp-btn sp-btn--primary">Find my mountain</a>
           </div>
-          <p class="sp-hero-trust">Live forecast, drive time, pass access, and crowds in one ranking. Compare resorts near ${city.name}, then get one personalized pick when you are ready.</p>
+          <p class="sp-hero-trust">Current snow, drive time, pass access, and crowd outlook. Pick your weekend and we'll rank the options.</p>
         </div>
         <aside class="sp-hero-aside">
           <div class="sp-metric-grid">

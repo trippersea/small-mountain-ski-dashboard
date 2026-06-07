@@ -64,7 +64,7 @@
             '<em>Every Friday, all winter.</em>' +
           '</h2>' +
           '<p class="nl-body">' +
-            'Each week we run the full scoring engine across 300 mountains and surface the top pick in every region: snow totals, crowd outlook, pass coverage. Northeast, Midwest, Rockies, Southeast, and West, all in one email. Jump straight to yours.' +
+            'Each week we run the full scoring engine across 300 mountains and pick the top option in every region: snow totals, crowd outlook, pass coverage. Northeast, Midwest, Rockies, Southeast, and West, all in one email. Jump straight to yours.' +
           '</p>' +
         '</div>' +
         '<div>' +

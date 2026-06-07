@@ -488,7 +488,7 @@
               <a href="https://wheretoskinext.com/?resort=belleayre#searchSection" class="sr-btn sr-btn--primary">See if this is your best pick</a>
               <a href="https://www.belleayre.com" class="sr-btn sr-btn--ghost" target="_blank" rel="noopener noreferrer">Official Belleayre site</a>
             </div>
-            <p class="sr-hero-trust">Live forecast plus mountain facts in one place. Use the main tool to compare snow, drive time, pass fit, and crowds. No account needed.</p>
+            <p class="sr-hero-trust">Live snow forecast for the next 72 hours. Use the main tool to see how it stacks up against other mountains on your drive. No account needed.</p>
             
           </div>
           <div class="sr-conditions-card">
@@ -522,7 +522,7 @@
     <section class="sr-highlights" aria-label="Mountain highlights">
       <p class="sr-section-eyebrow">Why skiers choose Belleayre</p>
       <ul class="sr-highlight-chips">
-        <li>Strong snowmaking backup</li><li>Strong intermediate mileage</li>
+        <li>Solid snowmaking coverage</li><li>Strong intermediate mileage</li>
       </ul>
     </section>
 
@@ -752,7 +752,21 @@
       *Day ticket prices are approximate and vary by date, demand, age, and promotions. Always confirm pricing directly with Belleayre before purchasing.
     </p>
 
-  </main>
+  
+    <section style="background:#fff;border:1px solid #d6e1f0;border-radius:16px;padding:24px 26px;margin-bottom:28px;box-shadow:0 2px 8px rgba(30,60,100,.05)">
+      <h2 style="font-size:18px;font-weight:800;margin:0 0 14px">Belleayre. At a Glance</h2>
+      <p style="font-size:15px;color:#2e3f54;line-height:1.78;margin:0 0 14px">Belleayre has a quieter kind of usefulness. It does not have Hunter's reputation or Windham's resort polish, but it often gives families and intermediates the better actual day. The mountain feels approachable, well sized, and less committed to being a scene.</p><p style="font-size:15px;color:#2e3f54;line-height:1.78;margin:0 0 14px">The best case for Belleayre is balance. It has enough terrain for a real day, enough snowmaking to matter, and enough separation from the louder Catskills choices to make it feel saner on many weekends. It is especially easy to recommend when the group wants less stress.</p><p style="font-size:15px;color:#2e3f54;line-height:1.78;margin:0 0 14px">The ceiling is not the same as the more aggressive mountains. Advanced skiers may want more challenge, and people looking for a big resort weekend may find Belleayre modest. But for a smart New York day trip, modest can be the right answer.</p>
+      <div class="resort-fit-section"><div class="fit-block">
+      <div class="fit-label fit-label--good">Best for</div>
+      <ul class="fit-list"><li>intermediate skiers looking to progress</li></ul>
+    </div><div class="fit-block">
+      <div class="fit-label fit-label--bad">Not ideal for</div>
+      <ul class="fit-list"><li>evening or twilight sessions</li></ul>
+    </div><div class="fit-block">
+    <div class="fit-label">When to go</div>
+    <p class="fit-when">January through March is peak season. December can be good if the season starts early. Weekdays are noticeably quieter if you can swing it.</p>
+  </div></div>
+    </section></main>
 
   <script src="/newsletter-band.js"></script>
 
@@ -858,7 +872,7 @@
       if (passMatches) {
         type = "yes";
         verdict = "Great match. " + name + " is built for advanced skiers on your pass.";
-        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when conditions are right.";
+        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when the forecast looks right.";
         ctaText = "Compare " + name + " with nearby mountains";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
@@ -878,7 +892,7 @@
       if (passMatches) {
         type = "yes";
         verdict = "A solid choice for intermediates with your pass.";
-        reason = "Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for lift lines.";
+        reason = "Your pass works here and the mountain has plenty of intermediate terrain to explore. Midweek is noticeably quieter.";
         ctaText = "See live conditions and compare";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
@@ -889,8 +903,8 @@
         ctaUrl = valueInStateUrl();
       } else {
         type = "maybe";
-        verdict = "Worth considering, but there may be better fits on your pass.";
-        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer a comparable experience included.";
+        verdict = "Worth a look, but check whether your pass covers it first.";
+        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer similar terrain included.";
         ctaText = "Find mountains on your pass";
         ctaUrl = compareSearchUrl(pass);
       }

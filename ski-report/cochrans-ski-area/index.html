@@ -250,7 +250,7 @@
               <a href="https://wheretoskinext.com/?resort=cochrans-ski-area#searchSection" class="sr-btn sr-btn--primary">See if this is your best pick</a>
               <a href="https://www.cochranskiarea.com" class="sr-btn sr-btn--ghost" target="_blank" rel="noopener noreferrer">Official Cochran's site</a>
             </div>
-            <p class="sr-hero-trust">Live forecast plus mountain facts in one place. Use the main tool to compare snow, drive time, pass fit, and crowds. No account needed.</p>
+            <p class="sr-hero-trust">Live snow forecast for the next 72 hours. Use the main tool to see how it stacks up against other mountains on your drive. No account needed.</p>
             
           </div>
           <div class="sr-conditions-card">
@@ -284,13 +284,14 @@
     <section class="sr-highlights" aria-label="Mountain highlights">
       <p class="sr-section-eyebrow">Why skiers choose Cochran's</p>
       <ul class="sr-highlight-chips">
-        <li>Night skiing</li><li>Strong intermediate mileage</li><li>Beginner-friendly</li><li>Good day-trip size</li>
+        <li>Night skiing</li><li>Strong intermediate mileage</li><li>Beginner-friendly</li><li>Right-sized for a day</li>
       </ul>
     </section>
 
     
     <article class="sr-snapshot">
       <h2>Cochran's at a glance</h2>
+      <p style="font-size:15px;color:#2e3f54;line-height:1.78;margin:0 0 14px">Cochran's keeps skiing affordable. About 
       <p>
         Cochran's sits in Vermont with 350 ft of vertical drop, 8 trails, and 15 skiable acres.
         Cochran's is welcoming to all levels with 40% beginner terrain. Night skiing available.
@@ -424,6 +425,17 @@
         <div id="mReason"></div>
         <a id="mCTA" href="https://wheretoskinext.com/?st=VT#compareSection" class="btn-matcher"></a>
       </div>
+    5 at the window, 8 trails, and no pretense about being a destination resort.</p><p style="font-size:15px;color:#2e3f54;line-height:1.78;margin:0 0 14px">Annual snowfall sits around 88 inches (the kind of place that opens because the snowmaking crew shows up), and coverage leans on what falls from the sky. On weekends it small-mountain pacing: more runs, less waiting.</p><p style="font-size:15px;color:#2e3f54;line-height:1.78;margin:0 0 14px">Save the long drive for somewhere with more vertical.</p>
+      <div class="resort-fit-section"><div class="fit-block">
+      <div class="fit-label fit-label--good">Best for</div>
+      <ul class="fit-list"><li>beginners and learning skiers</li><li>budget-conscious skiers</li><li>after-work or night skiing sessions</li></ul>
+    </div><div class="fit-block">
+      <div class="fit-label fit-label--bad">Not ideal for</div>
+      <ul class="fit-list"><li>skiers who need variety over a full day</li><li>natural snow seekers. Snowmaking does most of the work</li><li>explorers who want to cover new terrain all day</li></ul>
+    </div><div class="fit-block">
+    <div class="fit-label">When to go</div>
+    <p class="fit-when">January and February is peak season. December is hit or miss. The base needs to build first. Weekdays are noticeably quieter if you can swing it.</p>
+  </div></div>
     </section>
 
     <section class="pp-cta-band" aria-labelledby="sr-product-cta">
@@ -587,7 +599,7 @@
       if (passMatches) {
         type = "yes";
         verdict = "Great match. " + name + " is built for advanced skiers on your pass.";
-        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when conditions are right.";
+        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when the forecast looks right.";
         ctaText = "Compare " + name + " with nearby mountains";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
@@ -607,7 +619,7 @@
       if (passMatches) {
         type = "yes";
         verdict = "A solid choice for intermediates with your pass.";
-        reason = "Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for lift lines.";
+        reason = "Your pass works here and the mountain has plenty of intermediate terrain to explore. Midweek is noticeably quieter.";
         ctaText = "See live conditions and compare";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
@@ -618,8 +630,8 @@
         ctaUrl = valueInStateUrl();
       } else {
         type = "maybe";
-        verdict = "Worth considering, but there may be better fits on your pass.";
-        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer a comparable experience included.";
+        verdict = "Worth a look, but check whether your pass covers it first.";
+        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer similar terrain included.";
         ctaText = "Find mountains on your pass";
         ctaUrl = compareSearchUrl(pass);
       }

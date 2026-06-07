@@ -366,11 +366,11 @@ function mountainHighlights(resort) {
   const tb = resort.terrainBreakdown || {};
   if (resort.night) h.push("Night skiing");
   if (resort.terrainPark) h.push("Terrain park");
-  if (resort.snowmaking > 500) h.push("Strong snowmaking backup");
+  if (resort.snowmaking > 500) h.push("Solid snowmaking coverage");
   if (tb.intermediate >= 0.38) h.push("Strong intermediate mileage");
   if (tb.advanced >= 0.35) h.push("Notable advanced terrain");
   if (tb.beginner >= 0.35) h.push("Beginner-friendly");
-  if (resort.trails < 50 && resort.vertical < 2200) h.push("Good day-trip size");
+  if (resort.trails < 50 && resort.vertical < 2200) h.push("Right-sized for a day");
   return [...new Set(h)].slice(0, 4);
 }
 
@@ -462,7 +462,7 @@ function matcherScript(resort) {
       if (passMatches) {
         type = "yes";
         verdict = "Great match. " + name + " is built for advanced skiers on your pass.";
-        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when conditions are right.";
+        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when the forecast looks right.";
         ctaText = "Compare " + name + " with nearby mountains";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
@@ -482,7 +482,7 @@ function matcherScript(resort) {
       if (passMatches) {
         type = "yes";
         verdict = "A solid choice for intermediates with your pass.";
-        reason = "Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for lift lines.";
+        reason = "Your pass works here and the mountain has plenty of intermediate terrain to explore. Midweek is noticeably quieter.";
         ctaText = "See live conditions and compare";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
@@ -493,8 +493,8 @@ function matcherScript(resort) {
         ctaUrl = valueInStateUrl();
       } else {
         type = "maybe";
-        verdict = "Worth considering, but there may be better fits on your pass.";
-        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer a comparable experience included.";
+        verdict = "Worth a look, but check whether your pass covers it first.";
+        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer similar terrain included.";
         ctaText = "Find mountains on your pass";
         ctaUrl = compareSearchUrl(pass);
       }
@@ -1066,7 +1066,7 @@ ${editorial ? EDITORIAL_CSS : ''}
               <a href="${esc(liveScoreUrl)}" class="sr-btn sr-btn--primary">See if this is your best pick</a>
               ${resort.website ? `<a href="${esc(resort.website)}" class="sr-btn sr-btn--ghost" target="_blank" rel="noopener noreferrer">Official ${esc(resort.name)} site</a>` : ``}
             </div>
-            <p class="sr-hero-trust">Live forecast plus mountain facts in one place. Use the main tool to compare snow, drive time, pass fit, and crowds. No account needed.</p>
+            <p class="sr-hero-trust">Live snow forecast for the next 72 hours. Use the main tool to see how it stacks up against other mountains on your drive. No account needed.</p>
             ${SPONSOR_HERO_PLACEHOLDER}
           </div>
           <div class="sr-conditions-card">

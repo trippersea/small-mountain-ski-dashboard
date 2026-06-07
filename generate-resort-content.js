@@ -10,18 +10,36 @@
 const fs   = require('fs');
 const path = require('path');
 
-// ─── Load resort data from both source files ──────────────────────────────────
+// ─── Load resort data ─────────────────────────────────────────────────────────
 function loadResorts() {
-  const sdData  = fs.readFileSync('./sd-data.js', 'utf8');
-  const natData = fs.readFileSync('./resorts-national.js', 'utf8');
-
-  const neScope  = new Function(sdData.replace(/const RESORTS\s*=[\s\S]*$/, '') + '; return RESORTS_NE;');
-  const natScope = new Function(natData + '; return RESORTS_NATIONAL;');
-
-  return [...neScope(), ...natScope()];
+  const src = fs.readFileSync('./resorts.js', 'utf8');
+  const scope = new Function(src + '; return RESORTS;');
+  return scope() || [];
 }
 
 const RESORTS = loadResorts();
+
+// Prefer hand-written editorial when available (same file as ski-report reviews)
+function loadEditorial() {
+  try {
+    const code = fs.readFileSync('./mountain-editorial.js', 'utf8');
+    return new Function(code + '; return MOUNTAIN_EDITORIAL;')() || {};
+  } catch {
+    return {};
+  }
+}
+const MOUNTAIN_EDITORIAL = loadEditorial();
+
+// Stable per-resort variant pick (same resort → same phrasing every build)
+function seededIndex(id, salt, mod) {
+  let h = 0;
+  const s = String(id) + salt;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) >>> 0;
+  return h % mod;
+}
+function pickVariant(id, salt, variants) {
+  return variants[seededIndex(id, salt, variants.length)];
+}
 
 // ─── Archetype Classification ─────────────────────────────────────────────────
 // Each resort gets assigned one of 10 archetypes based on its data profile.
@@ -67,38 +85,150 @@ function passLabel(passGroup) {
   return map[passGroup] || null;
 }
 
-function snowQuality(avg) {
-  if (avg >= 400) return 'exceptional. This is a legitimate powder destination';
-  if (avg >= 250) return 'well above average. You can count on real snow here';
-  if (avg >= 150) return 'solid. Enough to keep things interesting most winters';
-  if (avg >= 100) return 'moderate. Snowmaking carries a lot of the load';
-  return 'limited. Snowmaking is the main reason this place stays open';
+function snowQuality(r) {
+  const avg = r.avgSnowfall;
+  const id = r.id;
+  if (avg >= 400) {
+    return pickVariant(id, 'snow4', [
+      'exceptional powder country by eastern standards',
+      'legitimate deep-snow territory most winters',
+      'the kind of snowfall average that keeps locals loyal',
+      'well into powder-destination territory on a good year',
+      'heavy enough that natural snow drives the conversation',
+    ]);
+  }
+  if (avg >= 250) {
+    return pickVariant(id, 'snow3', [
+      'well above average for the region',
+      'enough natural snow that you can trust the base',
+      'solid enough that storms actually change the day',
+      'reliable by regional standards when the pattern sets up',
+      'better than most neighbors on pure snowfall',
+    ]);
+  }
+  if (avg >= 150) {
+    return pickVariant(id, 'snow2', [
+      'respectable most seasons with good coverage potential',
+      'enough to matter when storms line up',
+      'middle of the pack on snow, but workable',
+      'decent when the season cooperates',
+      'solid regional average, not a powder mecca',
+    ]);
+  }
+  if (avg >= 100) {
+    return pickVariant(id, 'snow1', [
+      'moderate natural snow, so snowmaking does real work',
+      'light on average snowfall, heavy on grooming and guns',
+      'typical of hills where man-made base carries the season',
+      'depends on cold nights and consistent snowmaking',
+      'not a natural-snow lottery, more a coverage operation',
+    ]);
+  }
+  return pickVariant(id, 'snow0', [
+    'light on natural snow, so snowmaking keeps the lights on',
+    'built around guns and grooming more than storms',
+    'the kind of place that opens because the snowmaking crew shows up',
+    'low snowfall average, but they know how to stay open',
+    'you ski here for convenience, not because it snowed two feet last night',
+  ]);
 }
 
 function crowdLevel(r) {
   const passNetworks = ['Epic', 'Ikon'];
   const isNetwork = passNetworks.includes(r.passGroup);
-  if (r.vertical >= 2000 && isNetwork) return 'can get very busy on weekends and holidays. Plan accordingly';
-  if (r.vertical >= 1500 && isNetwork) return 'draws decent crowds on weekends, especially during holiday weeks';
-  if (r.vertical >= 1000)              return 'busy enough on weekends but manageable if you pick your days';
-  return 'rarely overwhelming. One of the perks of a smaller mountain';
+  const id = r.id;
+  if (r.vertical >= 2000 && isNetwork) {
+    return pickVariant(id, 'crowd3', [
+      'gets slammed on peak weekends and holidays, so timing matters',
+      'busy enough on Saturdays that an early start helps',
+      'draws pass crowds from a wide radius when conditions are good',
+      'one of those mountains where MLK Monday is a whole mood',
+      'expect lift lines on the busiest days, especially after a storm',
+    ]);
+  }
+  if (r.vertical >= 1500 && isNetwork) {
+    return pickVariant(id, 'crowd2', [
+      'pulls weekend crowds from nearby metros, especially on pass days',
+      'busy on holiday weekends but manageable midweek',
+      'enough traffic that you notice it on a bluebird Saturday',
+      'weekends can stack up when the forecast looks good',
+      'not empty on peak days, but rarely hopeless if you pick your timing',
+    ]);
+  }
+  if (r.vertical >= 1000) {
+    return pickVariant(id, 'crowd1', [
+      'weekends have a pulse, but you can still ski most of the day',
+      'busy enough to feel alive without the destination-resort crush',
+      'lines show up on holidays, not every Saturday',
+      'moderate weekend traffic if you avoid the obvious peak days',
+      'enough people to keep lifts spinning, not enough to ruin a lap',
+    ]);
+  }
+  return pickVariant(id, 'crowd0', [
+    'rarely feels crowded, which is half the appeal',
+    'short lines even on decent weekends',
+    'the kind of hill where you recognize faces by February',
+    'quiet enough that a bad forecast keeps most people home',
+    'small-mountain pacing: more runs, less waiting',
+  ]);
 }
 
 function driveWorthIt(r) {
-  if (r.vertical >= 2000 && r.avgSnowfall >= 200) return 'absolutely worth a longer drive when conditions are right';
-  if (r.vertical >= 1500)                          return 'worth a dedicated trip when the snow is there';
-  if (r.vertical >= 1000)                          return 'a solid destination for a day trip from the right location';
-  return 'best as a nearby option. Not the kind of place you drive hours for';
+  const id = r.id;
+  if (r.vertical >= 2000 && r.avgSnowfall >= 200) {
+    return pickVariant(id, 'drive3', [
+      'worth the longer haul when the forecast cooperates',
+      'the kind of mountain you plan around, not squeeze in',
+      'justifies a real road trip on a good snow week',
+      'enough scale that the drive pays off on the right day',
+      'a destination when conditions line up, not a maybe',
+    ]);
+  }
+  if (r.vertical >= 1500) {
+    return pickVariant(id, 'drive2', [
+      'worth a dedicated day when snow is in the forecast',
+      'a solid target for a longer day trip from the right city',
+      'enough terrain that the drive feels earned on a good day',
+      'the sort of place you pick when you want a full day out',
+      'reasonable as a primary trip when conditions are there',
+    ]);
+  }
+  if (r.vertical >= 1000) {
+    return pickVariant(id, 'drive1', [
+      'works as a day trip if you live within a couple hours',
+      'best when it is close, not when you are stretching the drive',
+      'a good regional option without being a cross-state pilgrimage',
+      'fine for a long day if the snow report looks decent',
+      'makes sense from nearby metros, less so from far away',
+    ]);
+  }
+  return pickVariant(id, 'drive0', [
+    'best treated as a local hill, not a road-trip destination',
+    'the value is proximity, not cross-state ambition',
+    'works when it is in your backyard, not when you are driving past better options',
+    'a nearby lap spot more than a planned expedition',
+    'save the long drive for somewhere with more vertical',
+  ]);
 }
 
 function passValue(r) {
   const label = passLabel(r.passGroup);
   if (!label) return null;
-  const savings = Math.round((r.price * 5) - 800); // rough pass savings over 5 days
-  if (savings > 0) {
-    return `${label} holders get access here, which adds real value. Five days at the window rate would run you around $${r.price * 5}, so the pass math works in your favor.`;
+  const id = r.id;
+  const fiveDay = r.price * 5;
+  if (fiveDay > 800) {
+    return pickVariant(id, 'pass1', [
+      `${label} covers this mountain, and the math works if you are already on the pass. Five window days would run about $${fiveDay}.`,
+      `Your ${label} works here. At roughly $${r.price} at the window, a handful of visits pays for itself fast.`,
+      `${label} access is included, which is the main reason pass holders show up here instead of buying day tickets.`,
+      `If you already ski on ${label}, this is an easy add. Window rates near $${r.price} make that obvious.`,
+    ]);
   }
-  return `${label} access is included, which is worth factoring in if you're already a pass holder.`;
+  return pickVariant(id, 'pass0', [
+    `${label} gets you in the door, worth weighing if you are deciding on a pass anyway.`,
+    `Included on ${label}, so factor that in when you compare ticket price to your pass list.`,
+    `${label} holders ski here as part of the pass. Day tickets run about $${r.price} if you are buying walk-up.`,
+  ]);
 }
 
 function bestFor(r) {
@@ -142,73 +272,116 @@ function whenToGo(r) {
 }
 
 // ─── Narrative Templates ───────────────────────────────────────────────────────
-// Each template uses the resort object (r) to inject specific data
-// alongside the voice-driven prose.
+
+function editorialAboutText(r) {
+  const ed = MOUNTAIN_EDITORIAL[r.id];
+  if (!ed) return null;
+  const chunks = [ed.lede, ...(Array.isArray(ed.body) ? ed.body : [])].filter(Boolean);
+  return chunks.length ? chunks.join('\n\n') : null;
+}
 
 function narrative(r, archetype) {
-  const snow = snowQuality(r.avgSnowfall);
+  const editorial = editorialAboutText(r);
+  if (editorial) return editorial.trim();
+
+  const snow = snowQuality(r);
   const crowd = crowdLevel(r);
   const drive = driveWorthIt(r);
   const pass  = passValue(r);
-  const when  = whenToGo(r);
   const tb    = r.terrainBreakdown || {};
   const beg   = Math.round((tb.beginner || 0) * 100);
   const adv   = Math.round((tb.advanced || 0) * 100);
+  const id    = r.id;
+  const layout = seededIndex(id, 'layout', 3);
+  const snowLine = r.snowmaking
+    ? pickVariant(id, 'snowmk', [
+        `${r.snowmaking.toLocaleString()} GPM of snowmaking backs up the natural average`,
+        `snowmaking at ${r.snowmaking.toLocaleString()} GPM fills gaps when storms miss`,
+        `${r.snowmaking.toLocaleString()} GPM of snowmaking keeps key runs open through thin weeks`,
+      ])
+    : pickVariant(id, 'nosnowmk', [
+        'natural snow drives the season here',
+        'coverage leans on what falls from the sky',
+        'no heavy snowmaking crutch, so storm track matters',
+      ]);
+  const priceLine = pickVariant(id, 'price', [
+    `Lift tickets run about $${r.price} at the window.`,
+    `Expect roughly $${r.price} for a walk-up day ticket.`,
+    `Day tickets land around $${r.price}, depending on date and demand.`,
+  ]);
+  const passBit = pass ? ` ${pass}` : '';
 
-  const templates = {
-
-    'large-destination': `
-${r.name} is the kind of place you plan a trip around. With ${r.vertical.toLocaleString()} feet of vertical drop across ${r.trails} trails and ${r.acres.toLocaleString()} skiable acres, there is enough mountain here to keep you exploring for days without repeating yourself. You will find everything from long groomers that let you open it up to steeps that make you stop and think for a second before committing. The base area has that full resort feel. Food, après options, and things to do once the lifts stop spinning.
-
-At ${r.summitElevation.toLocaleString()} feet at the summit, ${r.name} gets an average of ${r.avgSnowfall} inches of snow per year, which is ${snow}. That snowfall average, combined with ${r.snowmaking ? r.snowmaking.toLocaleString() + ' GPM of snowmaking capacity' : 'its natural snowfall base'}, means the mountain can maintain solid coverage through most of the season. Crowds are part of the deal at a resort this size. It ${crowd}. ${driveWorthIt(r) !== 'best as a nearby option. Not the kind of place you drive hours for' ? 'That said, the scale of the mountain makes it ' + drive + '.' : ''}${pass ? ' ' + pass : ''}`,
-
-    'large-family': `
-${r.name} checks a lot of boxes if you are traveling with a group or mixed-ability skiers. The mountain covers ${r.acres.toLocaleString()} acres across ${r.trails} trails, with ${beg}% of the terrain geared toward beginners and those still building confidence. Stronger skiers in the group will not get bored either. There is enough variety on the upper mountain to keep things interesting all day.
-
-With ${r.vertical.toLocaleString()} feet of vertical and a summit at ${r.summitElevation.toLocaleString()} feet, ${r.name} is ${snow === 'exceptional. This is a legitimate powder destination' ? 'one of the better snow destinations in the region' : 'a reliable option through most of the season'}. Snowfall averages ${r.avgSnowfall} inches per year${r.snowmaking ? `, backed by ${r.snowmaking.toLocaleString()} GPM of snowmaking to fill the gaps` : ''}. Lessons, rentals, and lodging are all available on site, so showing up and just skiing is straightforward. It is not the cheapest day on snow at around $${r.price} for a window ticket, but for a complete experience with a group, it delivers.${pass ? ' ' + pass : ''}`,
-
-    'mid-regional': `
-${r.name} sits in that sweet spot a lot of skiers gravitate toward. With ${r.vertical.toLocaleString()} feet of vertical and ${r.trails} trails spread across ${r.acres.toLocaleString()} acres, it is big enough to give you genuine variety without feeling overwhelming. You can get into a rhythm here. Lap a favorite chair, work on something specific, and still have new terrain to find by afternoon.
-
-Snow averages ${r.avgSnowfall} inches per season, which is ${snow}${r.snowmaking ? `, and the ${r.snowmaking.toLocaleString()} GPM snowmaking operation helps keep coverage consistent when nature does not fully cooperate` : ''}. Lift lines tend to move here. It is the kind of mountain where you actually ski most of the day instead of standing in queues, though weekends can get busy during the holiday stretch. Window tickets run around $${r.price}. ${pass ? pass : ''}`,
-
-    'mid-weekend': `
-If you are looking for a reliable weekend option, ${r.name} fits the bill. It is the kind of mountain that works for most people in the group. ${beg}% of the terrain is beginner-friendly, with enough intermediate and advanced runs that stronger skiers have something to chase. The ${r.vertical.toLocaleString()}-foot vertical gives you a real sense of descent without being so big that a day trip feels rushed.
-
-Snowfall averages ${r.avgSnowfall} inches per year${r.snowmaking ? `, with ${r.snowmaking.toLocaleString()} GPM of snowmaking as backup` : ''}. Coverage is generally ${r.avgSnowfall >= 150 ? 'reliable from mid-December onward' : 'weather-dependent early in the season, but typically consistent by January'}. You will see a mix of locals and regulars here who know exactly where to go depending on conditions. It may not have the flash of a destination resort, but at around $${r.price} for a lift ticket, it is consistent and easy to enjoy.${pass ? ' ' + pass : ''}`,
-
-    'hidden-gem-powder': `
-${r.name} is the kind of mountain that people hesitate to talk about too much. When conditions line up. And with ${r.avgSnowfall} inches of average annual snowfall, they line up more often than you might expect. It can be really good. The terrain leans expert-heavy at ${adv}% advanced or above, with pockets of the mountain that hold snow longer than you would find at more trafficked resorts. The ${r.vertical.toLocaleString()}-foot vertical across ${r.acres.toLocaleString()} acres gives you enough to work with on a powder day without feeling like you are burning through it in an hour.
-
-What makes ${r.name} work is the combination of ${snow} snowfall${r.snowmaking === 0 ? ' with no snowmaking to fall back on. Which keeps the focus on natural snow quality' : ` and ${r.snowmaking.toLocaleString()} GPM of snowmaking to extend the season`}. Fewer crowds, more space, and a bit of that did-we-just-find-something feeling. Window tickets at around $${r.price} are reasonable for what you get.${pass ? ' ' + pass : ''}`,
-
-    'hidden-gem-underrated': `
-${r.name} may not show up on the big resort lists, but it delivers where it counts. The terrain covers ${r.acres.toLocaleString()} acres across ${r.trails} trails with ${r.vertical.toLocaleString()} feet of vertical. Enough to explore meaningfully in a day and still find new lines if you look for them. The split leans toward ${adv >= 30 ? 'more technical terrain' : 'intermediate-friendly runs'}, which shapes the kind of skier who keeps coming back.
-
-Snowfall averages ${r.avgSnowfall} inches per season, which is ${snow}. The vibe here is a little more relaxed than what you find at the bigger-name mountains nearby. Lines are shorter, the pace is easier, and the ticket price. Around $${r.price}. Reflects the no-frills approach. It is the kind of place that surprises people in a good way.${pass ? ' ' + pass : ''}`,
-
-    'local-beginner': `
-This is where a lot of people fall in love with skiing. ${r.name} has ${r.vertical.toLocaleString()} feet of vertical across ${r.trails} trails, with ${beg}% of that terrain aimed at beginners or those still getting comfortable on snow. The runs are shorter and the lifts a little slower, which is exactly the point. You get more time to figure things out without feeling rushed or in the way.
-
-You will not find massive vertical or challenging blacks here, but that is not the goal. Snowmaking covers ${r.snowmaking ? r.snowmaking.toLocaleString() + ' GPM' : 'the key runs'} to keep things open when natural snow is light. Lift tickets run around $${r.price}, which makes it an easy decision for a first or second time on snow. ${r.night ? 'Night skiing is available too, which opens up weekday options for people who cannot make a full day work.' : ''}${pass ? ' ' + pass : ''}`,
-
-    'local-community': `
-There is a strong local energy at ${r.name} that you feel right away. People know each other, the lift rides are social, and the whole place has a laid-back feel that bigger mountains have trouble replicating. The mountain covers ${r.acres.toLocaleString()} acres with ${r.vertical.toLocaleString()} feet of vertical. Not enormous, but enough for quick laps and a proper day if you know where to go.
-
-Snowfall averages ${r.avgSnowfall} inches per year${r.snowmaking ? `, with ${r.snowmaking.toLocaleString()} GPM of snowmaking keeping things open when it is needed` : ''}. Tickets run around $${r.price}. ${r.night ? 'Night skiing adds another dimension. An after-work lap here beats sitting in traffic.' : ''} You are not chasing massive terrain. You are just skiing, and that is what makes this place work.${pass ? ' ' + pass : ''}`,
-
-    'budget-nofrills': `
-If you are trying to keep costs down without giving up a day on snow, ${r.name} is worth a look. At around $${r.price} for a lift ticket, it is one of the more affordable options in the region. The mountain has ${r.vertical.toLocaleString()} feet of vertical across ${r.trails} trails. Not a destination resort by any measure, but a genuine skiing experience.
-
-${r.snowmaking ? `The ${r.snowmaking.toLocaleString()} GPM snowmaking setup keeps the key runs in shape through most of the season, even when natural snowfall. Averaging ${r.avgSnowfall} inches per year. Does not fully cooperate.` : `With ${r.avgSnowfall} inches of average annual snowfall, coverage depends more on the season than at resorts with heavy snowmaking.`} There are no resort extras, no unnecessary frills. You show up, grab a ticket, and ski. For a lot of skiers, that is more than enough.${pass ? ' ' + pass : ''}`,
-
-    'budget-nofrills-2': `
-${r.name} keeps things straightforward. The terrain covers ${r.acres.toLocaleString()} acres across ${r.trails} trails with ${r.vertical.toLocaleString()} feet of vertical. It is not about luxury here. It is about getting out and making turns without the overhead of a bigger resort experience. Lift tickets at around $${r.price} reflect that philosophy.
-
-Snowfall averages ${r.avgSnowfall} inches per season${r.snowmaking ? `, supplemented by ${r.snowmaking.toLocaleString()} GPM of snowmaking to keep things open` : ''}. The terrain is consistent and easy to lap. A good day skiing does not have to be complicated or expensive, and ${r.name} is proof of that.${pass ? ' ' + pass : ''}`,
+  const openers = {
+    'large-destination': pickVariant(id, 'op-lg', [
+      `${r.name} is the kind of mountain you build a weekend around. ${r.vertical.toLocaleString()} feet of vertical, ${r.trails} trails, and ${r.acres.toLocaleString()} acres give you room to spread out.`,
+      `If you want scale in ${r.state}, ${r.name} is usually on the short list. ${r.trails} trails across ${r.acres.toLocaleString()} acres is enough terrain to stay busy for a multi-day trip.`,
+      `${r.name} plays in the big-resort category: long groomers, real steeps, and enough acreage that you are not lapping the same three runs by noon.`,
+    ]),
+    'large-family': pickVariant(id, 'op-lf', [
+      `${r.name} works well when the group has mixed abilities. About ${beg}% beginner terrain keeps newer skiers busy while the upper mountain still has juice for stronger legs.`,
+      `Families and mixed groups tend to land here because ${r.name} spreads ${beg}% of its terrain toward learners without making advanced skiers feel stuck on greens all day.`,
+      `Traveling with kids or a spread of skill levels? ${r.name} is built for that kind of weekend, with ${beg}% beginner-friendly terrain and enough upper-mountain options to keep interest.`,
+    ]),
+    'mid-regional': pickVariant(id, 'op-mr', [
+      `${r.name} hits a sweet spot a lot of regional skiers like: ${r.vertical.toLocaleString()} feet of vertical across ${r.trails} trails without the destination-resort overhead.`,
+      `Not too big, not too small. ${r.name} gives you ${r.acres.toLocaleString()} acres to explore on a day trip without feeling lost in a resort village.`,
+      `${r.name} is the sort of hill you can learn in a season and still find new lines by March. ${r.trails} trails is enough variety for repeat visits.`,
+    ]),
+    'mid-weekend': pickVariant(id, 'op-mw', [
+      `${r.name} is a reliable weekend answer when you do not want to overthink it. ${beg}% beginner terrain plus enough upper-mountain options for the stronger skiers in the car.`,
+      `For a straightforward Saturday, ${r.name} usually delivers. The ${r.vertical.toLocaleString()}-foot vertical feels like a real day on snow without needing a vacation week.`,
+      `${r.name} is where a lot of locals go when they want a normal good ski day. Familiar lifts, predictable layout, no drama.`,
+    ]),
+    'hidden-gem-powder': pickVariant(id, 'op-hgp', [
+      `${r.name} rewards people who pay attention to the forecast. With ${r.avgSnowfall} inches average snow and ${adv}% advanced terrain, powder days here feel earned.`,
+      `Powder chasers whisper about ${r.name} for a reason. ${r.avgSnowfall}" average snowfall and steep pockets that hold longer than the big pass mountains nearby.`,
+      `${r.name} is not on every bumper sticker, but ${r.avgSnowfall} inches of snow and ${adv}% advanced terrain make it interesting when storms track right.`,
+    ]),
+    'hidden-gem-underrated': pickVariant(id, 'op-hgu', [
+      `${r.name} will not top the Instagram list, but ${r.vertical.toLocaleString()} feet of vertical across ${r.trails} trails is a real ski day if you know what you are looking for.`,
+      `Underrated is the word locals use for ${r.name}. ${r.acres.toLocaleString()} acres, shorter lines, and a vibe that feels more like skiing than managing a crowd.`,
+      `${r.name} surprises people who write it off. ${r.trails} trails, ${r.avgSnowfall}" average snow, and a pace that lets you actually ski.`,
+    ]),
+    'local-beginner': pickVariant(id, 'op-lb', [
+      `A lot of skiers get hooked on snow at places like ${r.name}. ${beg}% beginner terrain, shorter runs, and a patient pace that helps first-timers breathe.`,
+      `${r.name} is where learning clicks for a lot of people. The vertical is modest on purpose, and ${beg}% of the hill is aimed at building confidence.`,
+      `If someone in your group is still finding their edges, ${r.name} is a low-stress place to start. ${beg}% beginner terrain and lift tickets around $${r.price}.`,
+    ]),
+    'local-community': pickVariant(id, 'op-lc', [
+      `${r.name} has the small-hill energy bigger places cannot fake. Regulars on the chair, short conversations in the lot, and ${r.acres.toLocaleString()} acres that feel like yours by February.`,
+      `You come to ${r.name} to ski with people you know. ${r.vertical.toLocaleString()} feet of vertical is enough for quick laps and a full afternoon if you pace it right.`,
+      `${r.name} is a community hill in the best sense. Not flashy, just consistent turns with people who show up every week.`,
+    ]),
+    'budget-nofrills': pickVariant(id, 'op-bn', [
+      `${r.name} keeps skiing affordable. About $${r.price} at the window, ${r.trails} trails, and no pretense about being a destination resort.`,
+      `When the goal is turns without a huge bill, ${r.name} is worth a look. ${r.vertical.toLocaleString()} feet of vertical for roughly $${r.price} per day.`,
+      `${r.name} strips it down: ticket, chair, snow. ${r.trails} trails and lift tickets near $${r.price}, which is the whole point.`,
+    ]),
   };
 
-  return (templates[archetype] || templates['mid-regional']).trim();
+  const opener = openers[archetype] || openers['mid-regional'];
+
+  const midBlocks = [
+    `Snow averages ${r.avgSnowfall} inches, which is ${snow}. ${snowLine.charAt(0).toUpperCase() + snowLine.slice(1)}. Crowds ${crowd}.`,
+    `Annual snowfall sits around ${r.avgSnowfall} inches (${snow}), and ${snowLine}. On weekends it ${crowd}.`,
+    `With ${r.avgSnowfall}" average snow, this is ${snow}. ${snowLine.charAt(0).toUpperCase() + snowLine.slice(1)}, and the crowd picture is simple: it ${crowd}.`,
+  ];
+  const mid = pickVariant(id, 'mid', midBlocks);
+
+  const closers = [
+    `${priceLine}${passBit}`,
+    `${drive.charAt(0).toUpperCase() + drive.slice(1)}.${passBit}`,
+    `${priceLine} ${drive.charAt(0).toUpperCase() + drive.slice(1)}.${passBit}`,
+  ];
+  const close = pickVariant(id, 'close', closers);
+
+  if (layout === 0) {
+    return `${opener} ${mid} ${close}`.trim();
+  }
+  if (layout === 1) {
+    return `${opener}\n\n${mid}\n\n${close}`.trim();
+  }
+  return `${opener}\n\n${mid}\n\n${close}`.trim();
 }
 
 // ─── Best For / Not Ideal For section ─────────────────────────────────────────

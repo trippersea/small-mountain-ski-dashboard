@@ -250,7 +250,7 @@
               <a href="https://wheretoskinext.com/?resort=aspen-highlands#searchSection" class="sr-btn sr-btn--primary">See if this is your best pick</a>
               <a href="https://www.aspensnowmass.com/four-mountains/aspen-highlands" class="sr-btn sr-btn--ghost" target="_blank" rel="noopener noreferrer">Official Aspen Highlands site</a>
             </div>
-            <p class="sr-hero-trust">Live forecast plus mountain facts in one place. Use the main tool to compare snow, drive time, pass fit, and crowds. No account needed.</p>
+            <p class="sr-hero-trust">Live snow forecast for the next 72 hours. Use the main tool to see how it stacks up against other mountains on your drive. No account needed.</p>
             
           </div>
           <div class="sr-conditions-card">
@@ -291,6 +291,7 @@
     
     <article class="sr-snapshot">
       <h2>Aspen Highlands at a glance</h2>
+      <p style="font-size:15px;color:#2e3f54;line-height:1.78;margin:0 0 14px">If you want scale in CO, Aspen Highlands is usually on the short list. 144 trails across 1,040 acres is enough terrain to stay busy for a multi-day trip. With 300" average snow, this is well above average for the region. Natural snow drives the season here, and the crowd picture is simple: it draws pass crowds from a wide radius when conditions are good. Day tickets land around 
       <p>
         Aspen Highlands sits in Colorado with 3,635 ft of vertical drop, 144 trails, and 1,040 skiable acres.
         Aspen Highlands skews toward experienced skiers. About 52% of the mountain is advanced terrain.
@@ -432,6 +433,26 @@
         <div id="mReason"></div>
         <a id="mCTA" href="https://wheretoskinext.com/?st=CO#compareSection" class="btn-matcher"></a>
       </div>
+    65, depending on date and demand. Justifies a real road trip on a good snow week. Ikon Pass covers this mountain, and the math works if you are already on the pass. Five window days would run about <section class="sr-highlights" aria-label="Mountain highlights">
+      <p class="sr-section-eyebrow">Why skiers choose Aspen Highlands</p>
+      <ul class="sr-highlight-chips">
+        <li>Notable advanced terrain</li>
+      </ul>
+    </section>
+
+    
+    <article class="sr-snapshot">
+      <h2>Aspen Highlands at a glance</h2>325.</p>
+      <div class="resort-fit-section"><div class="fit-block">
+      <div class="fit-label fit-label--good">Best for</div>
+      <ul class="fit-list"><li>advanced and expert skiers</li><li>Ikon pass holders</li><li>powder chasers</li><li>skiers who want a full day of exploration</li></ul>
+    </div><div class="fit-block">
+      <div class="fit-label fit-label--bad">Not ideal for</div>
+      <ul class="fit-list"><li>beginners or nervous skiers</li><li>budget-conscious skiers. Window rates are steep</li><li>evening or twilight sessions</li></ul>
+    </div><div class="fit-block">
+    <div class="fit-label">When to go</div>
+    <p class="fit-when">January through March is peak season. December can be good if the season starts early. Midweek is almost always better than weekends, especially for pass holders when lift lines stack up.</p>
+  </div></div>
     </section>
 
     <section class="pp-cta-band" aria-labelledby="sr-product-cta">
@@ -595,7 +616,7 @@
       if (passMatches) {
         type = "yes";
         verdict = "Great match. " + name + " is built for advanced skiers on your pass.";
-        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when conditions are right.";
+        reason = "Advanced terrain at " + advPct + "% of the mountain, and your pass covers this resort. Go when the forecast looks right.";
         ctaText = "Compare " + name + " with nearby mountains";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
@@ -615,7 +636,7 @@
       if (passMatches) {
         type = "yes";
         verdict = "A solid choice for intermediates with your pass.";
-        reason = "Your pass removes the cost barrier and the mountain has plenty of intermediate terrain to explore. Midweek visits are best for lift lines.";
+        reason = "Your pass works here and the mountain has plenty of intermediate terrain to explore. Midweek is noticeably quieter.";
         ctaText = "See live conditions and compare";
         ctaUrl = compareSearchUrl(pass);
       } else if (pass === "none") {
@@ -626,8 +647,8 @@
         ctaUrl = valueInStateUrl();
       } else {
         type = "maybe";
-        verdict = "Worth considering, but there may be better fits on your pass.";
-        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer a comparable experience included.";
+        verdict = "Worth a look, but check whether your pass covers it first.";
+        reason = "Your pass does not cover " + name + ", so you would pay window rate. A nearby mountain on your pass might offer similar terrain included.";
         ctaText = "Find mountains on your pass";
         ctaUrl = compareSearchUrl(pass);
       }
