@@ -16,8 +16,8 @@ function tripModeShortLabel(howFar) {
 const PRICE_RANGES = Object.freeze([
   { label: 'Any price',      min: 0,   max: Infinity },
   { label: 'Under $100',     min: 0,   max: 99       },
-  { label: '$100 – $150',    min: 100, max: 150       },
-  { label: '$150 – $200',    min: 151, max: 200       },
+  { label: '$100 – $149',    min: 100, max: 149       },
+  { label: '$150 – $200',    min: 150, max: 200       },
   { label: '$200+',          min: 201, max: Infinity  },
 ]);
 

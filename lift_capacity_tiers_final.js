@@ -141,7 +141,6 @@ const LIFT_CAPACITY_TIERS = {
   'snow-creek-mo': 1,  // lifts:6 acres:60
   'mount-holiday-ski-area': 1,  // lifts:4 acres:150
   'buck-hill-mn': 1,  // lifts:9 acres:80
-  'blackjack-ski-resort': 1,  // lifts:4 acres:190
   'trollhaugen': 1,  // lifts:8 acres:100
   'snow-trails': 1,  // lifts:8 acres:100
   'wild-mountain-mn': 1,  // lifts:7 acres:120
@@ -156,7 +155,6 @@ const LIFT_CAPACITY_TIERS = {
   'mount-la-crosse': 3,  // lifts:5 acres:260
   'mad-river-mountain': 3,  // lifts:9 acres:144
   'pine-knob-ski-resort': 3,  // lifts:10 acres:150
-  'indianhead-mountain': 3,  // lifts:7 acres:230
   'welch-village': 3,  // lifts:8 acres:220
   'chestnut-mountain-il': 3,  // lifts:8 acres:220
   'shanty-creek': 4,  // lifts:6 acres:450
@@ -263,4 +261,69 @@ const LIFT_CAPACITY_TIERS = {
   'mammoth-mountain': 5,  // lifts:25 acres:3500
   'heavenly-mountain-resort': 5,  // lifts:30 acres:4800
   'palisades-tahoe': 5,  // lifts:29 acres:6000
+
+  // ── BACKFILL · June 2026 · 52 resorts previously absent (defaulted to tier 3) ──
+  // PROPOSED values — tiered against regional peers on lifts+acres like the
+  // original table. Review before treating as final.
+
+  // ── NORTHEAST (backfill) ──
+  'cazenovia-ski-club': 1,  // lifts:2 acres:60
+  'hidden-valley-pa': 2,  // lifts:5 acres:110
+  'laurel-mountain': 2,  // lifts:5 acres:90
+  'cochrans-ski-area': 1,  // lifts:3 acres:15
+
+  // ── MIDWEST (backfill) ──
+  'snowriver-mountain-resort': 4,  // lifts:11 acres:400
+  'caberfae-peaks': 3,  // lifts:7 acres:320
+  'marquette-mountain': 2,  // lifts:4 acres:170
+  'mont-ripley': 1,  // lifts:3 acres:112
+  'norway-mountain': 2,  // lifts:5 acres:180
+  'pine-mountain-mi': 1,  // lifts:4 acres:100
+  'coffee-mill': 1,  // lifts:3 acres:65
+  'huff-hills': 2,  // lifts:4 acres:200
+  'terry-peak': 3,  // lifts:5 acres:450
+  'christie-mountain': 1,  // lifts:5 acres:65
+  'nordic-mountain-wi': 1,  // lifts:6 acres:60
+  'wilmot-mountain': 2,  // lifts:8 acres:120
+  'mt-brighton': 2,  // lifts:7 acres:130
+  'perfect-north-slopes': 3,  // lifts:13 acres:100
+  'mount-holly-mi': 3,  // lifts:13 acres:100
+  'bittersweet-ski-area': 2,  // lifts:8 acres:100
+  'alpine-valley-wi': 3,  // lifts:12 acres:100
+  'porcupine-mountains-ski': 2,  // lifts:3 acres:250
+
+  // ── MOUNTAIN (backfill) ──
+  'granby-ranch': 1,  // lifts:6 acres:406
+  'echo-mountain': 1,  // lifts:2 acres:70
+  'kelly-canyon': 1,  // lifts:5 acres:740
+  'magic-mountain-id': 1,  // lifts:4 acres:120
+  'pebble-creek-ski-area': 2,  // lifts:3 acres:1100
+  'pomerelle-mountain': 1,  // lifts:3 acres:500
+  'soldier-mountain': 1,  // lifts:2 acres:1150
+  'little-ski-hill': 1,  // lifts:2 acres:70
+  'blacktail-mountain': 1,  // lifts:3 acres:1000
+  'lost-trail-powder-mountain': 2,  // lifts:5 acres:1800
+  'montana-snowbowl': 2,  // lifts:4 acres:950
+  'antelope-butte': 1,  // lifts:3 acres:250
+  'meadowlark': 1,  // lifts:2 acres:200
+  'white-pine-resort': 1,  // lifts:2 acres:400
+  'cherry-peak': 1,  // lifts:4 acres:200
+  'eagle-point': 1,  // lifts:5 acres:650
+
+  // ── WEST (backfill) ──
+  'sugar-bowl-resort': 4,  // lifts:13 acres:1650
+  'boreal-mountain-ca': 2,  // lifts:8 acres:380
+  'donner-ski-ranch': 2,  // lifts:8 acres:505
+  'bear-valley-mountain-resort': 3,  // lifts:9 acres:1680
+  'mount-baldy-ski-lifts': 1,  // lifts:4 acres:800
+  'badger-pass': 1,  // lifts:5 acres:90
+  'cooper-spur': 1,  // lifts:2 acres:100
+  'hurricane-ridge': 1,  // lifts:3 acres:90
+  'loup-loup': 1,  // lifts:3 acres:550
+  'ski-bluewood': 1,  // lifts:3 acres:350
+  'arctic-valley': 1,  // lifts:4 acres:500
+  'eaglecrest': 1,  // lifts:4 acres:640
+  'mt-eyak': 1,  // lifts:2 acres:80
+  'moose-mountain-ak': 1,  // lifts:1 acres:750
+
 };

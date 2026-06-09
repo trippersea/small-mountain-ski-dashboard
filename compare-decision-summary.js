@@ -2,8 +2,14 @@
  * Compare page decision copy — reads session row fields only (no scoring engine).
  */
 (function (root) {
-  const CLOSE_CALL_GAP = 5;
-  const NAMED_RIVAL_GAP = 8;
+  // Close-call band is shared with the homepage Top Pick via
+  // recommendation-roles.js so the same mountain pair never reads as a
+  // nail-biter on one page and a comfortable win on the other.
+  // NAMED_RIVAL_GAP matches it: any close-call rival can earn the
+  // "Why X over Y?" callout.
+  const CLOSE_CALL_GAP =
+    (root.WTSN_ROLE && root.WTSN_ROLE.SCORE_BANDS && root.WTSN_ROLE.SCORE_BANDS.TOP_PICK_CLOSE_CALL) || 12;
+  const NAMED_RIVAL_GAP = CLOSE_CALL_GAP;
 
   function mountainShortName(name) {
     let s = String(name || 'this mountain').trim();
@@ -15,21 +21,21 @@
     return s || 'this mountain';
   }
 
-  function parseDriveMins(text) {
-    if (!text) return null;
-    const hm = String(text).match(/(\d+)h\s*(\d+)?m?/);
+  // Canonical implementation lives in recommendation-roles.js (loaded first on
+  // both pages). The inline fallback only guards a script-order regression.
+  const parseDriveMins = (root.WTSN_ROLE && root.WTSN_ROLE.parseDriveMins) || function (text) {
+    const hm = String(text || '').match(/(\d+)h\s*(\d+)?m?/);
     if (hm) return parseInt(hm[1], 10) * 60 + (parseInt(hm[2], 10) || 0);
-    const m = String(text).match(/^(\d+)m/);
-    if (m) return parseInt(m[1], 10);
-    return null;
-  }
+    const m = String(text || '').match(/^(\d+)m/);
+    return m ? parseInt(m[1], 10) : null;
+  };
 
   function crowdRank(label) {
     const l = String(label || '').toLowerCase();
     if (l.includes('quiet')) return 0;
     if (l.includes('moderate')) return 1;
     if (l.includes('busy')) return 2;
-    if (l.includes('avoid') || l.includes('packed')) return 3;
+    if (l.includes('avoid')) return 3;
     return 1;
   }
 
@@ -37,7 +43,7 @@
     const l = String(label || '').toLowerCase();
     if (l.includes('quiet')) return 'lighter crowds';
     if (l.includes('busy')) return 'busier slopes';
-    if (l.includes('avoid') || l.includes('packed')) return 'heavy crowds';
+    if (l.includes('avoid')) return 'heavy crowds';
     if (l.includes('moderate')) return 'moderate crowds';
     return 'crowd outlook';
   }
@@ -240,7 +246,7 @@
     if (!row || !pick) return '';
     if (kind === 'trap') {
       const cl = String(row.crowdLabel || '').toLowerCase();
-      if (cl.includes('busy') || cl.includes('avoid') || cl.includes('packed')) {
+      if (cl.includes('busy') || cl.includes('avoid')) {
         return 'Great mountain, but timing may mean longer lift lines.';
       }
       return 'Worth watching for crowd timing even when the forecast looks fine.';
@@ -249,7 +255,7 @@
       const t = analyzeRowVsPick(row, pick);
       if (t.rowQuieter && t.similarSnow) return 'Quieter option with a similar forecast. The day sets up well here.';
       if (t.rowQuieter) return 'Less obvious pick with enough mountain to be worth considering today.';
-      return 'Solid Option in a similar score band. Compare the full breakdown before you commit.';
+      return 'A solid alternative in a similar score band. Compare the full breakdown before you commit.';
     }
     if (kind === 'local' || kind === 'local_fallback') {
       const t = analyzeRowVsPick(row, pick);
@@ -298,17 +304,10 @@
     const competitor = findPrimaryCompetitor(pick, sideRows, fullRankings);
     const summary = buildPickWinsSummary(pick, competitor, passFilter);
     const columnTradeoffs = (sideCols || []).map(function (col) {
-      const fallback = col.kind === 'local'
-        ? null
-        : col.kind === 'sleeper'
-          ? null
-          : col.kind === 'trap'
-            ? null
-            : null;
       return {
         id: col.row.id,
         kind: col.kind,
-        line: buildColumnTradeoffLine(col.row, pick, col.kind) || fallback,
+        line: buildColumnTradeoffLine(col.row, pick, col.kind) || null,
       };
     });
     return {
@@ -338,5 +337,5 @@
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
   }
-  root.WTSN_COMPARE_EXPLAIN = api;
+  root.WTSN_COMPARE_EXPLAIN = Object.assign(root.WTSN_COMPARE_EXPLAIN || {}, api);
 })(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : this);

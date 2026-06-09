@@ -29,6 +29,10 @@ function resortSummitTempF(resort, gridTempF) {
 // ─── Snow preference helpers ──────────────────────────────────────────────────
 function snowPreferenceTarget() {
   const snow = Number(state.weights?.snow || 1);
+  // Canonical thresholds live in recommendation-roles.js (shared with compare page).
+  if (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.snowPrefTarget) {
+    return WTSN_ROLE.snowPrefTarget(snow);
+  }
   if (snow >= 15) return 12;
   if (snow >= 10) return 6;
   if (snow >= 5)  return 3;
@@ -103,7 +107,13 @@ function crowdPreferenceAllows(crowd) {
 // ─── Temperature score index ──────────────────────────────────────────────────
 function tempScoreIndex(temp) {
   if (temp == null) return 0.55;
-  if (temp < 0)   return 0.20;
+  // Deep-cold penalty is reserved for genuinely brutal days. The -10 to 0 F
+  // range is cold-smoke territory -- chilly, but often the best snow of the
+  // season -- so it should never score worse than a 40 F thaw day (0.65).
+  // Previously any sub-zero summit temp scored 0.20, which buried places like
+  // Jay or Saddleback on excellent cold powder days.
+  if (temp < -10) return 0.25;
+  if (temp < 0)   return 0.50;
   if (temp <= 32) return 1.00;
   return 0.65;
 }
@@ -124,11 +134,11 @@ function _holidayFactor(date) {
   const day   = date.getDate();
   const dow   = date.getDay();
   if (month === 12 && day >= 23)             return 1.0; // Christmas week
-  if (month === 1  && day <= 1)              return 1.0; // New Year's Day
+  if (month === 1  && day <= 4)              return 1.0; // New Year's week (school break runs through ~Jan 4)
   if (month === 2  && day >= 15 && day <= 23) return 1.0; // Presidents Week
-  if (month === 1  && day >= 13 && day <= 21 && dow <= 1) return 0.7; // MLK weekend
+  if (month === 1  && day >= 13 && day <= 21 && (dow === 6 || dow <= 1)) return 0.7; // MLK weekend (Sat-Mon; Saturday is the peak day)
   if (month === 11 && day >= 22 && day <= 30) return 0.7; // Thanksgiving
-  if (month === 10 && day >= 7  && day <= 14 && dow <= 1) return 0.4; // Columbus Day
+  if (month === 10 && day >= 6  && day <= 14 && (dow === 6 || dow <= 1)) return 0.4; // Columbus Day weekend (Sat-Mon)
   if (month === 11 && day >= 10 && day <= 12) return 0.4; // Veterans Day
   return 0;
 }
@@ -458,8 +468,11 @@ const LOCAL_MAX_DRIVE_MINS = 45;
 const LOCAL_SCORE_CLOSE_BAND = 5;
 /** Score band for Worth a Look (local fallback) when no mountain is within LOCAL_MAX_DRIVE_MINS. */
 const LOCAL_FALLBACK_SCORE_BAND = 15;
-/** Top Pick vs runner-up: show close-call copy within this band (matches Solid Option proximity). */
-const TOP_PICK_CLOSE_CALL_BAND = 12;
+/** Top Pick vs runner-up: show close-call copy within this band (matches Solid Option proximity).
+ *  Canonical value lives in recommendation-roles.js (WTSN_ROLE.SCORE_BANDS) so the
+ *  homepage and compare page always agree on what "close" means. */
+const TOP_PICK_CLOSE_CALL_BAND =
+  (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.SCORE_BANDS?.TOP_PICK_CLOSE_CALL) || 12;
 
 function isCredibleLocalCandidate(entry, pickEntry) {
   if (!entry?.resort || !entry?.wx || !entry?.breakdown || !pickEntry?.resort) return false;
@@ -1135,7 +1148,19 @@ function snowQualityIndex(resort, snowTotal, wx = null, forecastIndex = null) {
   if (target === 0) {
     live = Math.min(1, liveSnow / W.SCORING.SNOW_SCALE);
   } else if (liveSnow < target) {
-    live = 0.15 * Math.min(1, liveSnow / Math.max(1, target));
+    // Smooth the near-miss zone: a 5.9" day against a 6" target should not
+    // score like a 2" day (the old cliff jumped 0.15 -> 0.8 across one tenth
+    // of an inch of *forecast*, swinging rankings ~18 points on noise).
+    // Below 70% of target: scale within the old 0-0.15 band.
+    // Between 70% and 100% of target: ramp linearly from 0.15 to the 0.8
+    // "target met" anchor.
+    const rampStart = target * 0.7;
+    if (liveSnow <= rampStart) {
+      live = 0.15 * Math.min(1, liveSnow / Math.max(1, rampStart));
+    } else {
+      const tRamp = (liveSnow - rampStart) / Math.max(0.5, target - rampStart);
+      live = 0.15 + 0.65 * tRamp;
+    }
   } else {
     // Meeting the target IS the win the user asked for, so it anchors high (0.8);
     // exceeding it climbs the rest of the way to 1.0 at the cap. Previously this
@@ -1164,11 +1189,22 @@ function normalizedWeights() {
   const remaining = Math.max(0.1, 1 - snowW - crowdW - valueW);
   const weekday   = isWeekdaySkiTrip();
 
+  // Drive preference now shifts real weight toward drive. Previously it only
+  // toggled the local-intent eligibility floor (hasLocalIntent), so a user who
+  // said "drive matters most" got the exact same drive weighting as everyone
+  // else. The boost is taken from fit/skiability proportionally so the three
+  // shares still sum to 1 in both weekday and weekend modes.
+  const drivePref  = Number(state.weights?.drive || 0); // 0, 1, 5, or 10
+  const driveBoost = { 0: 0, 1: 0.02, 5: 0.08, 10: 0.14 }[drivePref] ?? 0;
+  const skiShare   = 0.46 - driveBoost * 0.4;
+  const fitShare   = (weekday ? 0.44 : 0.36) - driveBoost * 0.6;
+  const driveShare = (weekday ? 0.10 : 0.18) + driveBoost;
+
   return {
     snow:       snowW,
-    skiability: remaining * 0.46,
-    fit:        remaining * (weekday ? 0.44 : 0.36),
-    drive:      remaining * (weekday ? 0.10 : 0.18),
+    skiability: remaining * skiShare,
+    fit:        remaining * fitShare,
+    drive:      remaining * driveShare,
     value:      valueW,
     crowd:      crowdW,
   };
@@ -1330,7 +1366,7 @@ function verdictFromBreakdown(resort, wx, breakdown) {
     tier  = 'bad';
     label = rainLikely ? 'Skip. Rain likely' : 'Poor conditions';
     detail = rainLikely
-      ? `Temperatures look too warm. Rain likely above ${resort.baseElevation.toLocaleString()} ft.`
+      ? `Temperatures look too warm. Rain likely${Number.isFinite(resort.baseElevation) ? ` above ${resort.baseElevation.toLocaleString()} ft` : ''}.`
       : 'High winds may shut down or hold lifts. Check the mountain before you go.';
   } else if (target >= 6 && !snowMet) {
     // User wants storm snow or powder but the window falls short.
@@ -1415,9 +1451,9 @@ function preferenceReasons(resort, wx, breakdown) {
     else reasons.push(`Only ${stormTotal.toFixed(1)}" on tap. Light for someone hunting powder`);
   } else if (snowPref >= 10) {
     if (stormTotal >= 6) reasons.push(`${stormTotal.toFixed(1)}". Lines up with wanting a storm day`);
-    else reasons.push(`${stormTotal.toFixed(1)}". A bit light vs “6+ inches matters”`);
+    else reasons.push(`${stormTotal.toFixed(1)}". A bit light against your 6"-plus storm bar`);
   } else if (snowPref >= 5) {
-    if (stormTotal >= 3) reasons.push(`${stormTotal.toFixed(1)}". Matches your “a few inches helps” bar`);
+    if (stormTotal >= 3) reasons.push(`${stormTotal.toFixed(1)}". Clears your 3"-plus snow bar`);
     else reasons.push(`${stormTotal.toFixed(1)}". Under your 3"+ threshold`);
   } else {
     if (stormTotal > 0) reasons.push(`${stormTotal.toFixed(1)}" in the next few days`);

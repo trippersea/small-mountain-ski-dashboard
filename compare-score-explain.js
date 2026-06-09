@@ -4,14 +4,17 @@
 (function (root) {
   'use strict';
 
-  /** Map hero snow slider to snowPreferenceTarget-style threshold (0 = Any Snow). */
-  function snowPrefTarget(snowPref) {
+  /** Map hero snow slider to snowPreferenceTarget-style threshold (0 = Any Snow).
+   *  Canonical mapping lives in recommendation-roles.js; the fallback mirrors it
+   *  so this module still works standalone (e.g. Node tests). Change thresholds
+   *  in recommendation-roles.js, not here. */
+  const snowPrefTarget = (root.WTSN_ROLE && root.WTSN_ROLE.snowPrefTarget) || function (snowPref) {
     const snow = Number(snowPref) || 1;
     if (snow >= 15) return 12;
     if (snow >= 10) return 6;
     if (snow >= 5) return 3;
     return 0;
-  }
+  };
 
   /**
    * Directional score explanation lines for compare "i" tooltip.
@@ -54,7 +57,7 @@
     const cl = String(row.crowdLabel || '').toLowerCase();
     if (cl.includes('quiet') || cl.includes('light')) {
       items.push({ dir: 'help', k: 'crowd', text: 'Light crowds expected' });
-    } else if (cl.includes('busy') || cl.includes('avoid') || cl.includes('packed')) {
+    } else if (cl.includes('busy') || cl.includes('avoid')) {
       items.push({ dir: 'hurt', k: 'crowd', text: 'Crowds likely to build' });
     } else if (cl) {
       items.push({ dir: 'mixed', k: 'crowd', text: 'Moderate crowds expected' });
@@ -91,15 +94,14 @@
     return capped;
   }
 
-  /** Parse drive minutes from driveText (mirrors compare-page.js). */
-  function parseDriveMins(text) {
-    if (!text) return null;
-    const hm = String(text).match(/(\d+)h\s*(\d+)?m?/);
+  /** Parse drive minutes from driveText. Canonical copy lives in
+   *  recommendation-roles.js; inline fallback guards a script-order regression. */
+  const parseDriveMins = (root.WTSN_ROLE && root.WTSN_ROLE.parseDriveMins) || function (text) {
+    const hm = String(text || '').match(/(\d+)h\s*(\d+)?m?/);
     if (hm) return parseInt(hm[1], 10) * 60 + (parseInt(hm[2], 10) || 0);
-    const m = String(text).match(/^(\d+)m/);
-    if (m) return parseInt(m[1], 10);
-    return null;
-  }
+    const m = String(text || '').match(/^(\d+)m/);
+    return m ? parseInt(m[1], 10) : null;
+  };
 
   const api = { buildCompareScoreExplanation, snowPrefTarget, parseDriveMins };
 

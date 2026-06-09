@@ -11,6 +11,39 @@
     TRAP: 'Crowd Watch',
   };
 
+  /**
+   * Shared score bands so the homepage Top Pick (sd-scoring.js) and the compare
+   * page (compare-decision-summary.js) agree on what "close call" means. Before
+   * this, the homepage used 12 and compare used 5, so the same pair could read
+   * as a nail-biter on one page and a comfortable win on the other.
+   */
+  const SCORE_BANDS = Object.freeze({
+    TOP_PICK_CLOSE_CALL: 12,
+  });
+
+  /**
+   * Hero snow slider value -> minimum-inches target (canonical mapping).
+   * Mirrored as a load-order fallback in sd-scoring.js and compare-score-explain.js;
+   * change thresholds HERE only.
+   */
+  function snowPrefTarget(snowPref) {
+    const snow = Number(snowPref) || 1;
+    if (snow >= 15) return 12;
+    if (snow >= 10) return 6;
+    if (snow >= 5) return 3;
+    return 0;
+  }
+
+  /** Parse minutes from a driveText string like "2h 15m" or "45m" (canonical copy). */
+  function parseDriveMins(text) {
+    if (!text) return null;
+    const hm = String(text).match(/(\d+)h\s*(\d+)?m?/);
+    if (hm) return parseInt(hm[1], 10) * 60 + (parseInt(hm[2], 10) || 0);
+    const m = String(text).match(/^(\d+)m/);
+    if (m) return parseInt(m[1], 10);
+    return null;
+  }
+
   function localRoleLabel(localEntry) {
     if (!localEntry) return LABELS.LOCAL;
     return localEntry.roleVariant === 'another_smart_play'
@@ -106,6 +139,9 @@
 
   root.WTSN_ROLE = {
     LABELS,
+    SCORE_BANDS,
+    snowPrefTarget,
+    parseDriveMins,
     localRoleLabel,
     rankingTagForRole,
     mergeRolesPerSlot,
@@ -115,3 +151,7 @@
     isCrowdWatchLabel,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = (typeof globalThis !== 'undefined' ? globalThis : this).WTSN_ROLE;
+}

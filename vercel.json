@@ -77,7 +77,16 @@
       ]
     },
     {
-      "source": "/(.*)\\.(js|css|svg|png|jpg|jpeg|webp|ico|woff2|txt|json|xml)$",
+      "source": "/(.*)\\.(js|css)$",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(svg|png|jpg|jpeg|webp|ico|woff2|txt|json|xml)$",
       "headers": [
         {
           "key": "Cache-Control",

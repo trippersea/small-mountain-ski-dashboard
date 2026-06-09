@@ -160,7 +160,6 @@ const METRO_GRAVITY = {
   'chestnut-mountain-il': 433,
   'big-powderhorn': 427,
   'mount-la-crosse': 413,
-  'indianhead-mountain': 356,
   'spirit-mountain': 346,
   'shanty-creek': 332,
   'lutsen-mountains': 320,
@@ -171,7 +170,6 @@ const METRO_GRAVITY = {
   'trollhaugen': 269,
   'snow-creek-mo': 256,
   'whitecap-mountains': 238,
-  'blackjack-ski-resort': 219,
   'ski-brule': 214,
 
   // ── MOUNTAIN ──
@@ -264,4 +262,69 @@ const METRO_GRAVITY = {
   '49-degrees-north': 270,
   'anthony-lakes-ski-area': 226,
   'alyeska-resort': 133,
+
+  // ── BACKFILL · June 2026 · 52 resorts previously absent (defaulted to 500) ──
+  // PROPOSED values — anchored to regional comparables (population × draw,
+  // soft shadow penalty) per the v3 method. Review before treating as final.
+
+  // ── NORTHEAST (backfill) ──
+  'cazenovia-ski-club': 410,  // tiny volunteer club SE of Syracuse; peer of Brantling
+  'hidden-valley-pa': 470,  // Epic feeder in Seven Springs orbit; Pittsburgh draw, shadowed by 7S
+  'laurel-mountain': 455,  // Epic, smaller sibling next to Seven Springs; same metro, deeper shadow
+  'cochrans-ski-area': 360,  // community race hill outside Burlington; minimal destination pull
+
+  // ── MIDWEST (backfill) ──
+  'snowriver-mountain-resort': 360,  // Ikon UP destination; replaces merged Indianhead (356) + Blackjack (219)
+  'caberfae-peaks': 340,  // Cadillac MI regional; peer of Crystal/Shanty band, less metro reach
+  'marquette-mountain': 300,  // Marquette local hill; modest UP drive-market
+  'mont-ripley': 255,  // Michigan Tech campus hill; Houghton local only
+  'norway-mountain': 235,  // Iron Mountain area local; small UP market
+  'pine-mountain-mi': 245,  // Iron Mountain local; shares small market with Norway
+  'coffee-mill': 295,  // SE Minnesota local; fringe of Twin Cities/Rochester drive range
+  'huff-hills': 320,  // Bismarck's only hill; small metro but zero competition
+  'terry-peak': 380,  // Black Hills regional magnet; Rapid City + Deadwood tourism draw
+  'christie-mountain': 270,  // rural NW Wisconsin local
+  'nordic-mountain-wi': 280,  // central Wisconsin local; Fox Valley fringe
+  'wilmot-mountain': 650,  // Epic on the Chicago/Milwaukee line; heavy metro funnel like Buck Hill/Afton
+  'mt-brighton': 640,  // Epic in metro Detroit; same big-metro/small-hill profile as Wilmot
+  'perfect-north-slopes': 600,  // Cincinnati's hill; huge local monopoly draw
+  'mount-holly-mi': 560,  // metro Detroit local with strong night business
+  'bittersweet-ski-area': 420,  // Kalamazoo/Grand Rapids drive market
+  'alpine-valley-wi': 560,  // Milwaukee + N Chicago drive market; high lift count for size
+  'porcupine-mountains-ski': 230,  // remote western UP state-park hill
+
+  // ── MOUNTAIN (backfill) ──
+  'granby-ranch': 330,  // Front Range adjacent but deep in Winter Park shadow
+  'echo-mountain': 380,  // closest hill to Denver but tiny; heavy I-70 shadow
+  'kelly-canyon': 240,  // Idaho Falls / Rexburg local
+  'magic-mountain-id': 150,  // remote South Hills; Twin Falls weekend hill
+  'pebble-creek-ski-area': 230,  // Pocatello local; low capacity, big-acre terrain
+  'pomerelle-mountain': 200,  // Burley/Twin Falls local
+  'soldier-mountain': 170,  // remote Fairfield ID; light traffic
+  'little-ski-hill': 130,  // McCall town hill; fully shadowed by Brundage
+  'blacktail-mountain': 200,  // Flathead Valley local; shadowed by Whitefish
+  'lost-trail-powder-mountain': 180,  // remote MT/ID border; weekend-only powder draw
+  'montana-snowbowl': 260,  // Missoula's hill; solid college-town base
+  'antelope-butte': 90,  // remote Bighorns nonprofit; peer of Meadowlark
+  'meadowlark': 80,  // remote Bighorns; minimal drive market
+  'white-pine-resort': 100,  // Pinedale WY local
+  'cherry-peak': 180,  // Logan-adjacent newcomer; splits small market with Beaver Mtn (171)
+  'eagle-point': 190,  // remote south-central Utah; SLC/Vegas long-haul only
+
+  // ── WEST (backfill) ──
+  'sugar-bowl-resort': 520,  // major I-80 Tahoe resort; strong pull, discounted for Palisades shadow
+  'boreal-mountain-ca': 540,  // first resort off I-80 with night skiing; outsized convenience pull
+  'donner-ski-ranch': 430,  // Donner Summit value option; budget overflow from the I-80 corridor
+  'bear-valley-mountain-resort': 380,  // Hwy 4 destination; sizable mountain, long isolated access road
+  'mount-baldy-ski-lifts': 520,  // closest real vertical to LA; big metro, very limited capacity
+  'badger-pass': 300,  // Yosemite NP hill; tourism-driven, capped by park access
+  'cooper-spur': 220,  // north-side Hood beginner area; deep Meadows/Timberline shadow
+  'hurricane-ridge': 200,  // Port Angeles weekend-only NP hill
+  'loup-loup': 180,  // Methow Valley local
+  'ski-bluewood': 200,  // Walla Walla / Tri-Cities drive market
+  'arctic-valley': 150,  // Anchorage volunteer hill; weekend-only, Alyeska shadow
+  'eaglecrest': 160,  // Juneau's municipal mountain; isolated market
+  'mt-eyak': 60,  // Cordova; tiny roadless-access market
+  'moose-mountain-ak': 110,  // Fairbanks local; bus-served, no lifts beyond one
+
 };
