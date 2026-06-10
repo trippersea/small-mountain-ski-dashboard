@@ -103,32 +103,75 @@ function buildItemListSchema(resorts) {
 // ─── Inject into index.html ───────────────────────────────────────────────
 let html = readFileSync('./index.html', 'utf8');
 
-// 1. Static table rows
+// 1. Static table rows — IDEMPOTENT: matches the empty tag OR a previously
+// prerendered tbody. The old exact-string replace only matched
+// '<tbody id="comparisonBody"></tbody>', so once a built index.html (with
+// data-prerendered rows) was committed, every later build silently no-opped
+// and the table froze at its old row count (it shipped 250 rows while the
+// database had 300). Hard-abort if the tbody is missing entirely so a markup
+// change can never silently ship a stale table either.
+const tbodyRe = /<tbody id="comparisonBody"[^>]*>[\s\S]*?<\/tbody>/;
+if (!tbodyRe.test(html)) {
+  console.error('✗ Could not find <tbody id="comparisonBody"> in index.html — aborting prerender.');
+  process.exit(1);
+}
 html = html.replace(
-  '<tbody id="comparisonBody"></tbody>',
+  tbodyRe,
   `<tbody id="comparisonBody" data-prerendered="true">\n${buildTableRows(RESORTS)}\n    </tbody>`
 );
 
-// 2. Static summary cards
-html = html.replace(
-  '<div id="summaryCards" class="db-summary-grid"></div>',
+// 2. Static summary cards — same idempotency rules, but the section is
+// optional (it was removed from the homepage at some point). Balanced-div
+// scan because the injected cards contain nested <div>s that a lazy
+// non-greedy regex would cut in half.
+function replaceBalancedDiv(src, openRe, replacement) {
+  const m = src.match(openRe);
+  if (!m) return null;
+  const start = m.index;
+  const tagRe = /<\/?div\b[^>]*>/g;
+  tagRe.lastIndex = start + m[0].length;
+  let depth = 1, tag;
+  while ((tag = tagRe.exec(src))) {
+    depth += tag[0][1] === '/' ? -1 : 1;
+    if (depth === 0) return src.slice(0, start) + replacement + src.slice(tagRe.lastIndex);
+  }
+  return null;
+}
+const summaryReplaced = replaceBalancedDiv(
+  html,
+  /<div id="summaryCards" class="db-summary-grid"[^>]*>/,
   `<div id="summaryCards" class="db-summary-grid" data-prerendered="true">${buildSummaryCards(RESORTS)}</div>`
 );
+if (summaryReplaced) {
+  html = summaryReplaced;
+} else {
+  console.log('Note: #summaryCards not present in index.html — skipping summary card injection.');
+}
 
 // 3. ItemList schema in <head> — replace existing block so deploy does not duplicate JSON-LD
+// Consume any leading indentation in the match so reruns are byte-identical
+// (previously each build prepended two more spaces, growing the file forever).
 const itemListHtml = `  <script type="application/ld+json" id="ld-home-itemlist">\n${buildItemListSchema(RESORTS)}\n  </script>`;
-const itemListRe = /<script type="application\/ld\+json" id="ld-home-itemlist">[\s\S]*?<\/script>/;
+const itemListRe = /[ \t]*<script type="application\/ld\+json" id="ld-home-itemlist">[\s\S]*?<\/script>/;
 if (itemListRe.test(html)) {
   html = html.replace(itemListRe, itemListHtml);
 } else {
   html = html.replace('</head>', `${itemListHtml}\n</head>`);
 }
 
-// 4. Write back
+// 4. Verify before writing — the row count in the output must equal the
+// database, or we abort rather than deploy a silently wrong table.
+const injectedRows = (html.match(/data-static="true"/g) || []).length;
+if (injectedRows !== RESORTS.length) {
+  console.error(`✗ Row verification failed: injected ${injectedRows} rows, expected ${RESORTS.length}. Aborting.`);
+  process.exit(1);
+}
+
+// 5. Write back
 writeFileSync('./index.html', html, 'utf8');
 
-console.log(`✓  Injected ${RESORTS.length} static table rows into index.html`);
-console.log(`✓  Injected summary card counts`);
+console.log(`✓  Injected ${RESORTS.length} static table rows into index.html (verified)`);
+if (summaryReplaced) console.log(`✓  Injected summary card counts`);
 console.log(`✓  Injected ItemList schema (${Math.min(50, RESORTS.length)} items)`);
 
 // ─── Shared nav injection (build-time, no runtime HTML injection) ──────────

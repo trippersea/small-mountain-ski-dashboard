@@ -8,11 +8,18 @@ function parseAllowedOrigins() {
 }
 
 function getClientIp(req) {
+  // Prefer platform-set headers. Vercel writes x-vercel-forwarded-for and
+  // x-real-ip itself; a client-supplied x-forwarded-for chain can carry
+  // attacker-chosen leading entries on some platforms, which would let a
+  // caller rotate rate-limit buckets at will. Fall back through the chain.
+  const vff = req?.headers?.['x-vercel-forwarded-for'];
+  if (typeof vff === 'string' && vff.trim()) return vff.split(',')[0].trim();
+  const realIp = req?.headers?.['x-real-ip'];
+  if (typeof realIp === 'string' && realIp.trim()) return realIp.trim();
   const xff = req?.headers?.['x-forwarded-for'];
   if (typeof xff === 'string' && xff.trim()) return xff.split(',')[0].trim();
   if (Array.isArray(xff) && xff.length) return String(xff[0]).trim();
   return (
-    req?.headers?.['x-real-ip'] ||
     req?.socket?.remoteAddress ||
     req?.connection?.remoteAddress ||
     'unknown'
@@ -70,11 +77,20 @@ function applyApiBaselineSecurity(res, { cacheControl = 'no-store' } = {}) {
 // Note: Vercel serverless may run multiple instances; this is a per-instance
 // guard (still useful vs bursts / accidental loops).
 const _rateBuckets = new Map();
+const _RATE_BUCKET_SWEEP_AT = 1000; // bound per-instance memory
+
+function _sweepRateBuckets(now, windowMs) {
+  if (_rateBuckets.size < _RATE_BUCKET_SWEEP_AT) return;
+  for (const [k, b] of _rateBuckets) {
+    if (now - b.resetAt > windowMs) _rateBuckets.delete(k);
+  }
+}
 
 function rateLimit(req, res, { max = 30, windowMs = 60_000, prefix = 'rl' } = {}) {
   const ip = getClientIp(req);
   const now = Date.now();
   const key = `${prefix}:${ip}`;
+  _sweepRateBuckets(now, windowMs);
 
   const b = _rateBuckets.get(key);
   if (!b || now - b.resetAt > windowMs) {
@@ -114,6 +130,18 @@ function safeJsonParse(raw) {
   try { return raw ? JSON.parse(raw) : {}; } catch { return null; }
 }
 
+// ── Timing-safe secret comparison ────────────────────────────────────────────
+// For bearer tokens / cron secrets. Plain === comparison leaks match length
+// through response timing; crypto.timingSafeEqual requires equal lengths, so
+// hash both sides first to normalize.
+const crypto = require('crypto');
+
+function safeEqual(a, b) {
+  const ah = crypto.createHash('sha256').update(String(a ?? '')).digest();
+  const bh = crypto.createHash('sha256').update(String(b ?? '')).digest();
+  return crypto.timingSafeEqual(ah, bh);
+}
+
 module.exports = {
   applyCors,
   applyApiBaselineSecurity,
@@ -121,5 +149,6 @@ module.exports = {
   rateLimit,
   readRawBody,
   safeJsonParse,
+  safeEqual,
 };
 

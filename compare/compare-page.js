@@ -63,15 +63,15 @@
   }
 
   // Derive numeric drive minutes from driveText, e.g. "1h 48m" -> 108, "45m" -> 45.
-  // IIFE-scoped so both buildScoreExplanation and buildCompareTable can use it.
-  function parseDriveMins(text) {
-    if (!text) return null;
-    const hm = text.match(/(\d+)h\s*(\d+)?m?/);
-    if (hm) return parseInt(hm[1]) * 60 + (parseInt(hm[2]) || 0);
-    const m = text.match(/^(\d+)m/);
-    if (m) return parseInt(m[1]);
-    return null;
-  }
+  // Canonical implementation lives in recommendation-roles.js (loaded before this
+  // file on the compare page). The inline fallback only guards a script-order
+  // regression.
+  const parseDriveMins = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.parseDriveMins) || function (text) {
+    const hm = String(text || '').match(/(\d+)h\s*(\d+)?m?/);
+    if (hm) return parseInt(hm[1], 10) * 60 + (parseInt(hm[2], 10) || 0);
+    const m = String(text || '').match(/^(\d+)m/);
+    return m ? parseInt(m[1], 10) : null;
+  };
 
   // Builds a readable forecast line: "4" tomorrow" or "Dry forecast, 36°F"
   // Uses forecastIndex (from session) so the temperature matches whichever day
