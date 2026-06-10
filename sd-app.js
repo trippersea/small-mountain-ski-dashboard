@@ -699,34 +699,40 @@ function wireHeroDefaultsRow() {
   });
 }
 
-// ─── Homepage Hero V2 (replacement markup) ────────────────────────────────────
+// ─── Design handoff hero ───────────────────────────────────────────────────────
+function isHandoffHero() {
+  return document.getElementById('searchSection')?.classList.contains('dh-hero') === true;
+}
+
+function setDhPillGroup(container, matchFn) {
+  if (!container) return;
+  container.querySelectorAll('.dh-pill').forEach(btn => {
+    btn.setAttribute('aria-pressed', matchFn(btn) ? 'true' : 'false');
+  });
+}
+
 function syncHeroV2UI() {
   const root = document.getElementById('searchSection');
-  if (!root || !root.classList.contains('hero-v2')) return;
+  if (!root) return;
 
-  // Active pills (Pass / Trip)
+  if (isHandoffHero()) {
+    setDhPillGroup(document.getElementById('heroV2PassPills'), btn => btn.dataset.pass === (state.passFilter || 'All'));
+    setDhPillGroup(document.getElementById('heroV2TripPills'), btn => btn.dataset.trip === String(state.howFar ?? 0));
+    const dayPreset = state.skiDayPreset || smartDefaultWhenVal();
+    setDhPillGroup(document.getElementById('heroV2DayPills'), btn => {
+      if (btn.dataset.day === 'pick') return dayPreset === 'pick' || dayPreset === 'custom';
+      if (btn.dataset.day === 'saturday') return dayPreset === 'saturday' || dayPreset === 'sunday';
+      return btn.dataset.day === dayPreset || (btn.dataset.day === 'weekday' && !['saturday', 'sunday', 'pick', 'custom'].includes(dayPreset));
+    });
+    return;
+  }
+
+  if (!root.classList.contains('hero-v2')) return;
   document.querySelectorAll('#heroV2PassPills .hero-v2__pill[data-pass]').forEach(btn => {
     btn.classList.toggle('is-active', btn.dataset.pass === (state.passFilter || 'All'));
   });
   document.querySelectorAll('#heroV2TripPills .hero-v2__pill[data-trip]').forEach(btn => {
     btn.classList.toggle('is-active', btn.dataset.trip === String(state.howFar ?? 0));
-  });
-
-  // Compact summary: "Tuesday • Best fit" (default chip = tomorrow’s forecast day)
-  const summaryEl = document.getElementById('heroV2SummaryLabel');
-  if (summaryEl) {
-    const lab = heroSkiDayDisplayLabel();
-    const snowVal = (state.weights && state.weights.snow != null) ? state.weights.snow : 1;
-    const prLab = (HERO_PRIORITY_LABELS[Number(snowVal)] || heroPriorityLabelFromSnowWeight(snowVal));
-    summaryEl.textContent = `${lab} \u2022 ${prLab}`;
-  }
-
-  // Editor active pills
-  document.querySelectorAll('#heroV2DayPills .hero-v2__mini-pill[data-day]').forEach(btn => {
-    btn.classList.toggle('is-active', btn.dataset.day === (state.skiDayPreset || smartDefaultWhenVal()));
-  });
-  document.querySelectorAll('#heroV2PriorityPills .hero-v2__mini-pill[data-priority]').forEach(btn => {
-    btn.classList.toggle('is-active', btn.dataset.priority === String(state.weights?.snow ?? 1));
   });
 }
 
@@ -743,7 +749,8 @@ function setHeroV2EditorOpen(open) {
 
 function wireHeroV2() {
   const root = document.getElementById('searchSection');
-  if (!root || !root.classList.contains('hero-v2')) return;
+  if (!root) return;
+  const handoff = isHandoffHero();
 
   const passSel = document.getElementById('heroPassSelect');
   const tripSel = document.getElementById('heroSentenceTrip');
@@ -751,22 +758,45 @@ function wireHeroV2() {
   const prSel   = document.getElementById('heroSnowSelect');
 
   document.getElementById('heroV2PassPills')?.addEventListener('click', e => {
-    const btn = e.target.closest('.hero-v2__pill[data-pass]');
+    const btn = e.target.closest(handoff ? '.dh-pill[data-pass]' : '.hero-v2__pill[data-pass]');
     if (!btn || !passSel) return;
     passSel.value = btn.dataset.pass;
     passSel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
-    markCtaDirty();
+    if (handoff) flashHandoffHeroUpdate();
+    else markCtaDirty();
   });
 
   document.getElementById('heroV2TripPills')?.addEventListener('click', e => {
-    const btn = e.target.closest('.hero-v2__pill[data-trip]');
+    const btn = e.target.closest(handoff ? '.dh-pill[data-trip]' : '.hero-v2__pill[data-trip]');
     if (!btn || !tripSel) return;
     tripSel.value = btn.dataset.trip;
     tripSel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
-    markCtaDirty();
+    if (handoff) flashHandoffHeroUpdate();
+    else markCtaDirty();
   });
+
+  document.getElementById('heroV2DayPills')?.addEventListener('click', e => {
+    const btn = e.target.closest('.dh-pill[data-day]');
+    if (!btn || !handoff) return;
+    const day = btn.dataset.day;
+    if (day === 'pick') {
+      setHeroDefaultsEditorOpen?.(true, { focus: 'day' });
+      return;
+    }
+    if (day === 'saturday') state.skiDayPreset = 'saturday';
+    else if (day === 'weekday') state.skiDayPreset = smartDefaultWhenVal();
+    if (daySel) {
+      daySel.value = state.skiDayPreset;
+      daySel.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    syncHeroV2UI();
+    flashHandoffHeroUpdate();
+    if (state.origin) debouncedRender();
+  });
+
+  if (!handoff && !root.classList.contains('hero-v2')) return;
 
   // ── Dirty-state helpers ──────────────────────────────────────────────────
   // When params change after results are showing, pulse the CTA and relabel it.
@@ -798,7 +828,7 @@ function wireHeroV2() {
 
   document.getElementById('heroV2DayPills')?.addEventListener('click', e => {
     const btn = e.target.closest('.hero-v2__mini-pill[data-day]');
-    if (!btn || !daySel) return;
+    if (!btn || !daySel || handoff) return;
     daySel.value = btn.dataset.day;
     daySel.dispatchEvent(new Event('change', { bubbles: true }));
     syncHeroV2UI();
@@ -1684,9 +1714,11 @@ function normalizeWeightsToPriority() {
 }
 
 function updatePlannerOriginLabel() {
+  const label = state.origin?.label || '';
+  const fvLoc = document.getElementById('fvLocLabel');
+  if (fvLoc) fvLoc.textContent = label || 'your location';
   const el = document.getElementById('plannerFromLabel');
-  if (!el) return;
-  el.textContent = (state.origin?.label) ? ' · ' + state.origin.label : '';
+  if (el) el.textContent = label ? ' · ' + label : '';
   if (els.plannerEditLocation) els.plannerEditLocation.hidden = !state.origin;
 }
 
@@ -1695,15 +1727,21 @@ function setStateFilter(val) {
   const code = UNIQUE_STATES.includes(val) ? val : 'All';
   state.stateFilter = code;
   if (els.stateFilter) els.stateFilter.value = code;
-  const plannerSel = document.getElementById('plannerStateFilter');
-  if (plannerSel) plannerSel.value = code;
+  const fvSel = document.getElementById('fvStateSel');
+  if (fvSel) fvSel.value = code === 'All' ? 'all' : code;
 }
 
 function populateStateFilterSelects() {
   const html = typeof stateFilterOptionsHtml === 'function' ? stateFilterOptionsHtml() : '';
   if (els.stateFilter) els.stateFilter.innerHTML = html;
-  const plannerSel = document.getElementById('plannerStateFilter');
-  if (plannerSel) plannerSel.innerHTML = html;
+  const fvSel = document.getElementById('fvStateSel');
+  if (fvSel && typeof UNIQUE_STATES !== 'undefined') {
+    fvSel.innerHTML = '<option value="all">All states</option>' +
+      UNIQUE_STATES.filter(s => s !== 'All').map(code =>
+        `<option value="${esc(code)}">${esc(STATE_FILTER_LABELS[code] || code)}</option>`,
+      ).join('');
+    fvSel.value = state.stateFilter === 'All' ? 'all' : state.stateFilter;
+  }
 }
 
 /**
@@ -1749,6 +1787,11 @@ function buildVerdictRefineGuidanceHtml() {
 }
 
 function syncPlannerControls() {
+  if (typeof FiltersView !== 'undefined') {
+    FiltersView.syncFromAppState(state);
+    FiltersView.refresh();
+  }
+
   const plannerRoot = document.getElementById('plannerDetails');
 
   ['snow', 'value', 'crowd'].forEach(key => {
@@ -1762,8 +1805,10 @@ function syncPlannerControls() {
   const howfarGroup = plannerRoot?.querySelector('.priority-btns[data-key="howfar"]');
   if (howfarGroup) howfarGroup.querySelectorAll('.priority-btn').forEach(btn => btn.classList.toggle('active', Number(btn.dataset.val) === state.howFar));
 
-  const plannerState = document.getElementById('plannerStateFilter');
-  if (plannerState && plannerState.value !== state.stateFilter) plannerState.value = state.stateFilter;
+  const plannerState = document.getElementById('fvStateSel');
+  if (plannerState && plannerState.value !== (state.stateFilter === 'All' ? 'all' : state.stateFilter)) {
+    plannerState.value = state.stateFilter === 'All' ? 'all' : state.stateFilter;
+  }
   if (els.stateFilter && els.stateFilter.value !== state.stateFilter) els.stateFilter.value = state.stateFilter;
 
   const plannerPass = state.passFilter === 'All' ? 'any' : state.passFilter;
@@ -2164,7 +2209,133 @@ function buildCompactRoleCardHtml(opts) {
   </div>`;
 }
 
+function flashHandoffHeroUpdate() {
+  const card = document.getElementById('resultCard') || els.verdictCard?.querySelector('.dh-card');
+  const updated = document.getElementById('updatedAt');
+  if (typeof flashHeroResultCard === 'function') flashHeroResultCard(card, updated);
+}
+
+function buildHandoffHeroCardProps(vWithRoles, resorts) {
+  const { tier, resort, driveText, breakdown, stormTotal, localEntry, sleeperEntry } = vWithRoles;
+  const roles = vWithRoles.roles || {};
+  const _fromCity = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : 'your location';
+  const _wx = state.weatherCache[resort.id]?.data;
+  const _crowd = crowdForecast(resort, _wx);
+  const _narrative = getMountainNarrative(buildNarrativeMountainPayload(resort, _wx));
+  const fi = targetForecastIndex();
+  const todaySnow = _wx?.forecast?.[fi]?.snow ?? stormTotal ?? 0;
+  const snowMeta = _narrative.story?.includes('groom') ? 'Groomers holding' : (_narrative.vibe || '');
+
+  const stats = [
+    { label: 'Snow', value: `${Math.round(todaySnow * 10) / 10}" fresh`, meta: snowMeta || undefined },
+    { label: 'Drive', value: driveText || formatDrive(resort.id) || '—', meta: 'vs 3h+ alts' },
+    {
+      label: 'Crowds',
+      value: _crowd.label,
+      meta: _crowd.label === 'Quiet' ? 'Midweek, wide open' : undefined,
+      valueClass: _crowd.label === 'Quiet' ? 'good' : '',
+    },
+  ];
+
+  const passParts = [];
+  if (resort.passGroup && resort.passGroup !== 'Independent') passParts.push(resort.passGroup);
+  const locLine = [resort.region || resort.state, passParts.length ? passParts.join(' + ') : null].filter(Boolean).join(' · ');
+
+  let headsUpHtml = '';
+  if (_wx?.forecast?.[fi]?.rainLikely || tier === 'marginal') {
+    headsUpHtml = `<b style="color:var(--dh-ink)">Heads up:</b> ${_narrative.story || 'Conditions may shift — check the full forecast before you go.'}`;
+  }
+
+  const whyRunners = [];
+  if (localEntry?.resort && localEntry.resort.id !== resort.id) {
+    whyRunners.push({
+      name: localEntry.resort.name,
+      descriptionHtml: esc(typeof localRoleExplanation === 'function' ? localRoleExplanation(localEntry, resort) : 'Closer option with trade-offs today.'),
+      rightHtml: `${esc(driveUtilitySegment(localEntry.resort.id))}<br>${esc(crowdUtilityShort(crowdForecast(localEntry.resort, state.weatherCache[localEntry.resort.id]?.data).label))}`,
+    });
+  }
+  if (sleeperEntry?.resort && sleeperEntry.resort.id !== resort.id) {
+    whyRunners.push({
+      name: sleeperEntry.resort.name,
+      descriptionHtml: esc(typeof sleeperRoleExplanation === 'function' ? sleeperRoleExplanation(sleeperEntry, resort, null) : 'Strong alternative worth comparing.'),
+      rightHtml: `${esc(driveUtilitySegment(sleeperEntry.resort.id))}<br>${esc(crowdUtilityShort(crowdForecast(sleeperEntry.resort, state.weatherCache[sleeperEntry.resort.id]?.data).label))}`,
+    });
+  }
+
+  const _forecastDayStr = (() => {
+    const d = state.targetDate instanceof Date ? state.targetDate : dayValToDate(state.skiDayPreset || smartDefaultWhenVal());
+    return 'Forecast for ' + d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  })();
+
+  const verdictBits = ['fresh snow', 'open terrain', 'low crowds'];
+  const verdictHtml = `The best mix of <b>${verdictBits.join(', ')}</b> within your day-trip range today.`;
+
+  return {
+    variant: 'live',
+    rankLine: `Top pick · ${driveText || formatDrive(resort.id)} from ${_fromCity}`,
+    mountainName: resort.name,
+    locationLine: locLine,
+    verdictHtml,
+    stats,
+    headsUpHtml: headsUpHtml || undefined,
+    forecastDateLine: _forecastDayStr,
+    whyRunners: whyRunners.slice(0, 2),
+  };
+}
+
+function renderHandoffVerdictPlaceholder(opts) {
+  els.verdictCard.innerHTML = renderHeroResultCard({
+    variant: opts.loading ? 'loading' : 'empty',
+    emptyTitle: opts.title,
+    emptySubHtml: opts.subHtml || '',
+    emptyBtnLabel: opts.btnLabel,
+    emptyBtnId: opts.btnId,
+  });
+  wireHeroResultCard(els.verdictCard);
+  if (opts.btnId) {
+    document.getElementById(opts.btnId)?.addEventListener('click', opts.onBtnClick || (() => {}));
+  }
+}
+
+function wireHandoffVerdictEvents(vWithRoles, resorts) {
+  const { resort } = vWithRoles;
+  wireHeroResultCard(els.verdictCard);
+  $('verdictDetailBtn')?.addEventListener('click', () => {
+    state.selectedFromRole = 'pick';
+    state.selectedId = resort.id;
+    trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || '');
+    renderDetail({ scroll: true });
+  });
+  $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
+    saveCompareSession(vWithRoles, resorts);
+    trackFilterEvent('engagement', 'compare_mountains_click');
+    window.location.href = '/compare/';
+  });
+  $('verdictViewAllRankingsBtn')?.addEventListener('click', () => {
+    trackFilterEvent('engagement', 'view_all_rankings_click');
+    state.tableViewAll = true;
+    document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    renderCompareTable(filteredResorts());
+  });
+}
+
 function updateHeroVerdictEmptyState() {
+  if (isHandoffHero()) {
+    if (!state.origin) {
+      els.verdictCard.innerHTML = renderHeroResultCard({
+        variant: 'empty',
+        emptyTitle: 'Your top pick appears here',
+        emptySubHtml: 'We score 300 mountains on live snow, your exact drive time, crowd outlook, and pass. One clear pick comes back.',
+        emptyBtnLabel: 'Use my location',
+        emptyBtnId: 'verdictEmptyLocateBtn',
+      });
+      wireHeroResultCard(els.verdictCard);
+      document.getElementById('verdictEmptyLocateBtn')?.addEventListener('click', () => {
+        document.getElementById('detectLocation')?.click();
+      });
+    }
+    return;
+  }
   const el = document.getElementById('heroVerdictEmpty');
   if (!el) return;
   el.hidden = !!state.origin;
@@ -2173,7 +2344,7 @@ function updateHeroVerdictEmptyState() {
 function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
   const refinePromptEl = document.getElementById('hnRefinePrompt');
-  const splitHero = document.getElementById('searchSection')?.classList.contains('hn-hero-split');
+  const splitHero = isHandoffHero() || document.getElementById('searchSection')?.classList.contains('hn-hero-split');
   if (!state.origin) {
     if (refinePromptEl) refinePromptEl.hidden = true;
     els.verdictSection.classList.add('hn-verdict-pre-location');
@@ -2184,7 +2355,7 @@ function renderVerdict(resorts) {
       els.verdictSection.classList.add('hn-verdict-collapsed');
       els.verdictSection.setAttribute('aria-hidden', 'true');
     }
-    els.verdictCard.innerHTML = '';
+    if (!isHandoffHero()) els.verdictCard.innerHTML = '';
     updateHeroVerdictEmptyState();
     const _hn = document.getElementById('hnRunnerUpSection');
     if (_hn) _hn.hidden = true;
@@ -2221,12 +2392,16 @@ function renderVerdict(resorts) {
       const driveHint = state.origin && state.howFar < 2
         ? 'If nothing is within day-trip distance, try <strong>Extended drive (3h+)</strong> or <strong>All distances</strong>, or adjust your starting location.'
         : 'Try expanding your distance range, easing the ticket or snow filters, or choosing a different pass.';
-      els.verdictCard.innerHTML = `<div class="vcard-placeholder">
-        <div class="vcard-placeholder-title">No mountains match your filters</div>
-        <div class="vcard-placeholder-sub">${driveHint}</div>
-        <button type="button" class="vcard-placeholder-btn" id="verdictEmptyReset">Clear filters &amp; try again</button>
-      </div>`;
-      document.getElementById('verdictEmptyReset')?.addEventListener('click', () => { document.getElementById('resetFilters')?.click(); });
+      if (isHandoffHero()) {
+        renderHandoffVerdictPlaceholder({ title: 'No mountains match your filters', subHtml: driveHint, btnLabel: 'Clear filters & try again', btnId: 'verdictEmptyReset', onBtnClick: () => document.getElementById('resetFilters')?.click() });
+      } else {
+        els.verdictCard.innerHTML = `<div class="vcard-placeholder">
+          <div class="vcard-placeholder-title">No mountains match your filters</div>
+          <div class="vcard-placeholder-sub">${driveHint}</div>
+          <button type="button" class="vcard-placeholder-btn" id="verdictEmptyReset">Clear filters &amp; try again</button>
+        </div>`;
+        document.getElementById('verdictEmptyReset')?.addEventListener('click', () => { document.getElementById('resetFilters')?.click(); });
+      }
     } else if (resorts.length > 0) {
       const pool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
       const anyWx = pool.some(r => state.weatherCache[r.id]?.data);
@@ -2283,6 +2458,28 @@ function renderVerdict(resorts) {
   saveCompareSession(vWithRoles, resorts);
   trackRecommendation(resort.id, resort.name);
   document.getElementById('hnConditionsGuidance')?.remove();
+
+  if (isHandoffHero()) {
+    els.verdictCard.innerHTML = renderHeroResultCard(buildHandoffHeroCardProps(vWithRoles, resorts));
+    wireHandoffVerdictEvents(vWithRoles, resorts);
+    if (refinePromptEl) {
+      refinePromptEl.hidden = false;
+      const isUrgent = tier === 'bad' || tier === 'marginal';
+      refinePromptEl.classList.toggle('hn-refine-prompt--urgent', isUrgent);
+      const titleEl = document.getElementById('hnRefinePromptTitle');
+      const subEl   = document.getElementById('hnRefinePromptSub');
+      if (isUrgent) {
+        const g = verdictRefineGuidanceCopy();
+        if (titleEl) titleEl.textContent = 'Want a stronger match?';
+        if (subEl)   subEl.textContent   = `${g.detail}.`;
+      } else {
+        if (titleEl) titleEl.textContent = 'Not seeing the right mountain?';
+        if (subEl)   subEl.textContent   = 'Adjust snow, crowds, ticket price or distance to find a better match.';
+      }
+    }
+    if (typeof FiltersView !== 'undefined') FiltersView.updateLocationLabel(state.origin?.label || 'your location');
+    return;
+  }
 
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
   const _fromCity = _cityEw || 'your location';
@@ -3791,10 +3988,11 @@ function wireEvents() {
       debouncedRender();
     });
   }
-  const _plannerStateEl = document.getElementById('plannerStateFilter');
+  const _plannerStateEl = document.getElementById('fvStateSel');
   if (_plannerStateEl) {
     _plannerStateEl.addEventListener('change', e => {
-      setStateFilter(e.target.value);
+      const v = e.target.value;
+      setStateFilter(v === 'all' ? 'All' : v);
       trackEvent('filter_applied', { filter_type: 'state', filter_value: String(state.stateFilter), source: 'refine_panel' });
       trackFilterEvent('planner_state', String(state.stateFilter));
       savePlannerState();
@@ -3803,6 +4001,8 @@ function wireEvents() {
       debouncedRender();
     });
   }
+
+  if (typeof FiltersView !== 'undefined') FiltersView.wire();
 
   const _howFarEl = document.getElementById('howFarFilter');
   if (_howFarEl) _howFarEl.addEventListener('change', e => {
@@ -3830,7 +4030,9 @@ function wireEvents() {
     pushUrlDebounced(); render();
   });
 
-  if (els.plannerDetails) els.plannerDetails.hidden = false;
+  document.getElementById('heroNavSubscribe')?.addEventListener('click', () => {
+    document.getElementById('navSubBtn')?.click();
+  });
 
   const _filterToggleBtn = document.getElementById('filterToggleBtn');
   const _filterPanel     = document.getElementById('filterPanel');
@@ -3849,6 +4051,9 @@ function wireEvents() {
     state.nightOnly = false; state.priceRange = 0;
     state.howFar = 0; state.verticalFilter = 'any';
     state.weights = { ...W.DEFAULT_WEIGHTS };
+    state.filterPriceMax = 180;
+    state.rankSnowWeight = 1;
+    state.rankQuietWeight = 1;
     state.passPreference = 'any'; state.tableSearch = ''; state.tableViewAll = false;
     state.skiDayPreset = smartDefaultWhenVal();
     state.targetDate = dayValToDate(state.skiDayPreset);
@@ -3878,23 +4083,16 @@ function wireEvents() {
   els.clearCompare.addEventListener('click', () => { state.compareSet.clear(); els.comparePanel.classList.add('hidden'); renderCompareTray(); render(); });
   els.closeCompare.addEventListener('click', () => els.comparePanel.classList.add('hidden'));
 
-  els.plannerDetails?.addEventListener('click', e => {
-    const btn = e.target.closest('.priority-btn');
-    if (!btn || !els.plannerDetails.contains(btn)) return;
-    const key = btn.closest('.priority-btns')?.dataset.key;
-    if (!key) return;
-    commitPlannerPriorityChange(key, btn);
-  });
-
   els.hnRefinePromptBtn?.addEventListener('click', () => {
     const panel = els.plannerSection;
     if (!panel) return;
     panel.hidden = false;
     syncPlannerControls();
+    if (typeof FiltersView !== 'undefined') FiltersView.refresh();
     setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
   });
 
-  els.plannerSeeVerdictBtn?.addEventListener('click', () => scrollToBestMatchFromFilters('refine_footer'));
+  document.getElementById('fvTopBtn')?.addEventListener('click', () => scrollToBestMatchFromFilters('refine_footer'));
 
   document.querySelectorAll('.pass-pref-btn').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -66,11 +66,14 @@
   <link rel="apple-touch-icon" href="ski-decision-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet"></noscript>
-  <link rel="preload" href="/hero-bg.jpg" as="image" type="image/jpeg" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Spectral:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Spectral:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
+  <link rel="preload" href="/assets/hero.jpg" as="image" type="image/jpeg" />
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/design-handoff-tokens.css" />
+  <link rel="stylesheet" href="/handoff-hero.css" />
+  <link rel="stylesheet" href="/handoff-filters.css" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -461,7 +464,7 @@
   <link rel="stylesheet" href="/newsletter-band.css" />
   <link rel="stylesheet" href="/site-tokens-bridge.css" />
 </head>
-<body>
+<body class="handoff-homepage">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <a href="#compareSection" class="skip-to-content">Skip to mountain list</a>
   <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
@@ -570,97 +573,89 @@
 
   <div class="container">
 
-    <!-- ═══ HERO ═══════════════════════════════════════════════════════════ -->
-    <section id="searchSection" class="hero hero-search hero-v2 hn-hero-split" aria-label="Find your mountain">
-      <div class="hero-v2__grid">
-        <div class="hero-v2__left">
-          <div class="hero-v2__eyebrow">LIVE SNOW • DRIVE • CROWD FORECAST</div>
-          <h1 class="hero-v2__headline">
-            Stop guessing<br />
-            where to <span class="hero-v2__headline-accent">ski</span>.
-          </h1>
-          <p class="hero-v2__support">
-            One pick worth the drive, based on live snow, crowds, and your pass.
-          </p>
+    <!-- ═══ HERO (design handoff) ═════════════════════════════════════════ -->
+    <div class="dh-scene" aria-hidden="true">
+      <div class="dh-photo"></div>
+      <div class="dh-vignette"></div>
+    </div>
 
-          <div class="hero-v2__field">
-            <label class="hero-v2__label" for="originInput">Starting from</label>
-            <div class="hero-v2__location">
-              <span class="hero-v2__location-ico" aria-hidden="true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.2 7-12a7 7 0 10-14 0c0 6.8 7 12 7 12z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
-              </span>
-              <input id="originInput" class="hero-v2__location-input" type="text" value="Boston, MA" placeholder="Your location" autocomplete="off" inputmode="text" />
+    <section id="searchSection" class="dh-hero" aria-label="Find your mountain">
+      <header class="dh-hero-nav">
+        <a href="/" class="dh-brand" aria-label="WhereToSkiNext.com home">
+          <span class="mark">
+            <svg viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M15 4 L27 25 H3 Z" fill="oklch(0.80 0.085 225)"/><path d="M15 4 L15 25 H3 Z" fill="oklch(0.66 0.115 232)"/><path d="M11 17 l4 -3 4 3 -4 3 z" fill="oklch(0.16 0.02 250)" opacity="0.85"/></svg>
+          </span>
+          <span class="name">WhereToSki<span class="next">Next</span><span class="tld">.com</span></span>
+        </a>
+        <nav class="dh-links" aria-label="Hero navigation">
+          <a href="#compareSection">Browse <span class="caret">▾</span></a>
+          <a href="/about/">About</a>
+          <a href="/stories/">Stories</a>
+          <a href="/ski-pass-comparison/">Pass Guides</a>
+        </nav>
+        <span class="dh-spacer"></span>
+        <button type="button" class="dh-btn-sub" id="heroNavSubscribe">Subscribe</button>
+      </header>
+
+      <div class="dh-hero-main">
+        <section class="dh-ask">
+          <div class="dh-eyebrow"><span class="dot"></span> Live snow · drive · crowd forecast</div>
+          <h1 class="dh-headline">Stop guessing<br>where to <span class="em">ski</span>.</h1>
+          <p class="dh-sub">One pick worth the drive, ranked on live snow, crowds, and the pass you already own.</p>
+
+          <label class="dh-field-label" for="originInput">Starting from</label>
+          <div class="dh-locrow">
+            <div class="dh-loc">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>
+              <input id="originInput" class="dh-loc-input" type="text" value="Boston, MA" placeholder="Your location" autocomplete="off" inputmode="text" />
             </div>
           </div>
 
-          <div class="hero-v2__ski-day">
-            <div class="hero-v2__ski-day-inner" aria-label="Pass and trip">
-              <div class="hero-v2__pill-row" aria-label="Pass">
-                <div class="hero-v2__pill-label">Pass</div>
-                <div class="hero-v2__pills" id="heroV2PassPills">
-                  <button type="button" class="hero-v2__pill is-active" data-pass="All">Any</button>
-                  <button type="button" class="hero-v2__pill" data-pass="Epic">Epic</button>
-                  <button type="button" class="hero-v2__pill" data-pass="Ikon">Ikon</button>
-                  <button type="button" class="hero-v2__pill" data-pass="Indy">Indy</button>
-                </div>
-              </div>
-              <div class="hero-v2__pill-row" aria-label="Trip distance">
-                <div class="hero-v2__pill-label">Trip</div>
-                <div class="hero-v2__pills" id="heroV2TripPills">
-                  <button type="button" class="hero-v2__pill is-active" data-trip="0">Day trip</button>
-                  <button type="button" class="hero-v2__pill" data-trip="1">Extended drive (3h+)</button>
-                  <button type="button" class="hero-v2__pill" data-trip="2">Any distance</button>
-                </div>
+          <div class="dh-controls">
+            <div class="dh-cgroup">
+              <span class="dh-gl">Pass</span>
+              <div class="dh-pills" id="heroV2PassPills" data-group="pass">
+                <button type="button" class="dh-pill" data-pass="All" aria-pressed="true">Any</button>
+                <button type="button" class="dh-pill" data-pass="Epic" aria-pressed="false">Epic</button>
+                <button type="button" class="dh-pill" data-pass="Ikon" aria-pressed="false">Ikon</button>
+                <button type="button" class="dh-pill" data-pass="Indy" aria-pressed="false">Indy</button>
               </div>
             </div>
-          </div>
-
-          <div class="hero-v2__defaults" aria-label="Ski day and ranking preferences">
-            <div class="hero-v2__defaults-summary-row">
-              <button type="button" class="hero-v2__summary-chip" id="heroV2SummaryChip" aria-expanded="false" aria-controls="heroV2DefaultsEditor">
-                <span id="heroV2SummaryLabel">Friday • Best fit</span>
-              </button>
-              <button type="button" class="hero-v2__change" id="heroV2DefaultsChange" aria-expanded="false" aria-controls="heroV2DefaultsEditor">Edit</button>
-            </div>
-
-            <div id="heroV2DefaultsEditor" class="hero-v2__defaults-editor" hidden>
-              <div class="hero-v2__mini-row">
-                <div class="hero-v2__mini-label">Ski day</div>
-                <div class="hero-v2__mini-pills" id="heroV2DayPills">
-                  <button type="button" class="hero-v2__mini-pill" data-day="weekday">Weekday</button>
-                  <button type="button" class="hero-v2__mini-pill is-active" data-day="friday">Friday</button>
-                  <button type="button" class="hero-v2__mini-pill" data-day="saturday">Saturday</button>
-                  <button type="button" class="hero-v2__mini-pill" data-day="sunday">Sunday</button>
-                </div>
+            <div class="dh-cgroup">
+              <span class="dh-gl">Trip</span>
+              <div class="dh-pills" id="heroV2TripPills" data-group="trip">
+                <button type="button" class="dh-pill" data-trip="0" aria-pressed="true">Day trip</button>
+                <button type="button" class="dh-pill" data-trip="1" aria-pressed="false">Extended (3h+)</button>
+                <button type="button" class="dh-pill" data-trip="2" aria-pressed="false">Any distance</button>
               </div>
-              <div class="hero-v2__mini-row">
-                <div class="hero-v2__mini-label">Priority</div>
-                <div class="hero-v2__mini-pills" id="heroV2PriorityPills">
-                  <button type="button" class="hero-v2__mini-pill is-active" data-priority="1">Best fit</button>
-                  <button type="button" class="hero-v2__mini-pill" data-priority="10">Fresh snow</button>
-                  <button type="button" class="hero-v2__mini-pill" data-priority="5">Quiet slopes</button>
-                </div>
+            </div>
+            <div class="dh-cgroup">
+              <span class="dh-gl">Day</span>
+              <div class="dh-pills" id="heroV2DayPills" data-group="day">
+                <button type="button" class="dh-pill" data-day="weekday" aria-pressed="true">Thursday</button>
+                <button type="button" class="dh-pill" data-day="saturday" aria-pressed="false">This weekend</button>
+                <button type="button" class="dh-pill" data-day="pick" aria-pressed="false">Pick a date</button>
               </div>
             </div>
           </div>
 
-          <div class="hero-v2__cta-row">
-            <button type="button" id="setLocation" class="hero-v2__cta">Find My Mountain</button>
-            <div class="hero-v2__trust" role="note" aria-label="Trust and methodology notes">
-              <div class="hero-v2__trust-sub">Rankings not sponsored</div>
-            </div>
+          <div class="dh-formfoot">
+            <button type="button" class="dh-btn-update" id="setLocation">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v5h-5"/></svg>
+              Update results
+            </button>
+            <button type="button" class="dh-loclink" id="detectLocation">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+              Use my location
+            </button>
           </div>
-
-          <div class="hero-v2__aux">
-            <button type="button" id="detectLocation" class="hero-v2__link">Use current location</button>
-            <div id="locationStatus" class="hero-v2__status" role="status"></div>
-          </div>
+          <div id="locationStatus" class="dh-status" role="status"></div>
 
           <!-- Hidden selects preserved for state compatibility -->
           <select id="heroPassSelect" class="hn-vis-hidden" aria-label="Pass"></select>
           <select id="heroSentenceTrip" class="hn-vis-hidden" aria-label="Trip length">
             <option value="0">Day trip</option>
-            <option value="1">Extended drive (3h+)</option>
+            <option value="1">Extended (3h+)</option>
             <option value="2">Any distance</option>
           </select>
           <select id="heroSentenceDay" class="hn-vis-hidden" aria-label="Ski day"></select>
@@ -671,46 +666,15 @@
             <option value="10">6&quot;+ Chaser</option>
             <option value="15">Powder Day</option>
           </select>
-        </div>
+        </section>
 
-        <div class="hero-v2__right" aria-label="Top pick">
-          <div class="hn-hero-verdict-dock">
-
-            <!-- Empty state: visible until location resolves -->
-            <div id="heroVerdictEmpty" class="hn-hero-verdict-empty">
-              <div class="hn-verdict-empty-inner">
-                <p class="hn-hero-verdict-empty-title">Your top pick appears here</p>
-                <p class="hn-hero-verdict-empty-sub">We score 300 mountains on live snow, your exact drive time, crowd outlook, and pass. One clear pick comes back.</p>
-                <ul class="hn-verdict-empty-list" aria-label="What we factor in">
-                  <li>Live snow forecast</li>
-                  <li>Real drive times</li>
-                  <li>Crowd outlook</li>
-                  <li>Pass coverage</li>
-                </ul>
-                <button type="button" class="hn-verdict-empty-locate-btn" id="verdictEmptyLocateBtn">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-                  Use my location
-                </button>
-                <p class="hn-verdict-empty-or">or type a ZIP or city above ↑</p>
-              </div>
-            </div>
-
-            <!-- Live verdict: renderVerdict() writes here -->
-            <section id="verdictSection" class="verdict-section hn-verdict-pre-location" aria-label="Top mountain pick">
-              <div id="verdictCard" class="hn-verdict-card-root"></div>
-            </section>
-
-          </div>
+        <div class="dh-card-wrap" aria-label="Top pick">
+          <div id="heroVerdictEmpty" hidden></div>
+          <section id="verdictSection" class="verdict-section hn-verdict-pre-location" aria-label="Top mountain pick">
+            <div id="verdictCard" class="hn-verdict-card-root"></div>
+          </section>
         </div>
       </div>
-
-      <!-- Scroll cue: fades in after 3s, hides on first scroll -->
-      <button class="scroll-cue" id="scrollCue" aria-label="Scroll to results" aria-hidden="true" tabindex="-1">
-        <span class="scroll-cue-label">rankings below</span>
-        <svg class="scroll-cue-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M4 7l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
     </section>
 
     <!-- ═══ RESULTS & DISCOVERY (unified region) ═══════════════════════════ -->
@@ -745,92 +709,130 @@
     <!-- ═══ RUNNER-UPS ══════════════════════════════════════════════════════ -->
     </div><!-- /.hn-results-region -->
 
-    <!-- ═══ REFINE PANEL ════════════════════════════════════════════════════ -->
-    <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">
-      <div class="planner-col-header">
-        <div class="planner-header-top">
-          <div class="planner-main-title">Refine your results<span id="plannerFromLabel"></span></div>
-          <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" hidden>Edit location</button>
-        </div>
-        <p class="planner-subtitle">Change a filter and we will reshuffle the list. Your top pick stays <strong>above</strong> &mdash; tap <strong>See top pick</strong> when you want to jump back up.</p>
+    <!-- ═══ REFINE / FILTERS (design handoff) ═════════════════════════════ -->
+    <section id="plannerSection" class="dh-filters-view" hidden aria-label="Refine results">
+      <div class="dh-fv-bg" aria-hidden="true"><div class="dh-photo"></div><div class="dh-veil"></div></div>
+
+      <div class="dh-fv-head">
+        <h1>Refine your results · <span class="loc" id="fvLocLabel">your location</span></h1>
+        <p class="lede">Tune the search and the list re-ranks instantly. <b>Must-match</b> filters narrow which mountains qualify; <b>ranking</b> preferences reorder what's left — they never hide anything.</p>
       </div>
-      <div id="plannerDetails" class="planner-details">
-        <div class="score-grid score-grid--refine">
-          <!-- Column 1 -->
-          <div class="score-control">
-            <div class="score-control-label">Drive time</div>
-            <div class="priority-btns priority-btns--compact" data-key="howfar">
-              <button class="priority-btn active" data-val="0">&le;3h day trip</button>
-              <button class="priority-btn" data-val="1">Extended (3h+)</button>
-              <button class="priority-btn" data-val="2">Any distance</button>
-            </div>
-            <div class="slider-hint">From your starting location when set; otherwise all mountains stay in play.</div>
+
+      <div class="dh-cols">
+        <div class="dh-col-results">
+          <div class="dh-result-strip">
+            <div class="dh-rs-count"><span class="n" id="fvCount">0</span><span class="lbl">mountains match</span></div>
+            <div class="dh-rs-pick"><span class="k">Top pick</span><span class="v" id="fvPick">—</span></div>
+            <div class="dh-rs-spacer"></div>
+            <button type="button" class="dh-topbtn" id="fvTopBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+              See top pick
+            </button>
           </div>
-          <!-- Column 2 -->
-          <div class="score-control">
-            <div class="score-control-label">Fresh Snow</div>
-            <div class="priority-btns" data-key="snow">
-              <button class="priority-btn active" data-val="1">Any Snow</button>
-              <button class="priority-btn" data-val="5">3&quot;+ Preferred</button>
-              <button class="priority-btn" data-val="10">6&quot;+ Storm</button>
-              <button class="priority-btn" data-val="15">Powder Day</button>
-            </div>
-            <div class="slider-hint">How much new snow do you need to get excited?</div>
+
+          <div class="dh-chips" id="fvChips"></div>
+
+          <div class="dh-list-cap">
+            <span class="lt"><b id="fvListN">0</b> mountains · ranked best&#8209;first</span>
+            <span class="legend"><i></i> match strength</span>
           </div>
-          <!-- Column 1 -->
-          <div class="score-control">
-            <label class="score-control-label" for="plannerStateFilter">State</label>
-            <select id="plannerStateFilter" class="fp-select planner-state-select" aria-label="Filter by state"></select>
-            <div class="slider-hint">Only mountains in this state are ranked. All states keeps every region.</div>
-          </div>
-          <!-- Column 2 -->
-          <div class="score-control">
-            <div class="score-control-label">Ticket Price</div>
-            <div class="priority-btns" data-key="value">
-              <button class="priority-btn active" data-val="0">Any Price</button>
-              <button class="priority-btn" data-val="10">Under $100</button>
-              <button class="priority-btn" data-val="5">$100&ndash;$149</button>
-              <button class="priority-btn" data-val="1">$150+ Fine</button>
-            </div>
-            <div class="slider-hint">Sets a hard price ceiling &mdash; mountains above it are hidden.</div>
-          </div>
-          <!-- Column 1 -->
-          <div class="score-control">
-            <div class="score-control-label">Mountain Size</div>
-            <div class="priority-btns" data-key="size">
-              <button class="priority-btn active" data-val="any">Any Size</button>
-              <button class="priority-btn" data-val="small">Local Hill</button>
-              <button class="priority-btn" data-val="mid">Mid-Size</button>
-              <button class="priority-btn" data-val="big">Big Mountain</button>
-            </div>
-            <div class="slider-hint">Filters and ranks by vertical drop and acreage.</div>
-          </div>
-          <!-- Column 2 -->
-          <div class="score-control">
-            <div class="score-control-label">Crowd Level</div>
-            <div class="priority-btns" data-key="crowd">
-              <button class="priority-btn active" data-val="1">Don&rsquo;t Mind</button>
-              <button class="priority-btn" data-val="5">Some Is OK</button>
-              <button class="priority-btn" data-val="10">Quiet Slopes</button>
-            </div>
-            <div class="slider-hint">Ranks quieter mountains higher. High = crowds filtered out.</div>
-          </div>
-          <!-- Column 2 -->
-          <div class="score-control">
-            <div class="score-control-label">Pass</div>
-            <div class="priority-btns">
-              <button class="priority-btn pass-pref-btn active" data-pass="any">Any Pass</button>
-              <button class="priority-btn pass-pref-btn" data-pass="Epic">Epic</button>
-              <button class="priority-btn pass-pref-btn" data-pass="Ikon">Ikon</button>
-              <button class="priority-btn pass-pref-btn" data-pass="Indy">Indy</button>
-            </div>
-            <div class="slider-hint">Only mountains covered by your pass are shown.</div>
+          <section class="dh-results" id="fvResults"></section>
+
+          <div class="dh-empty" id="fvEmpty">
+            <span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></span>
+            <span class="t"><b>No mountains match.</b> Your must-match filters are too tight.</span>
+            <button type="button" class="relax" id="fvRelax">Loosen the tightest one</button>
           </div>
         </div>
-      </div>
-      <div class="planner-refine-footer">
-        <button type="button" class="planner-see-verdict-btn" id="plannerSeeVerdictBtn" aria-describedby="plannerSeeVerdictHint">See top pick &uarr;</button>
-        <p id="plannerSeeVerdictHint" class="planner-see-verdict-hint">Scrolls to your updated pick at the top.</p>
+
+        <div class="dh-col-filters">
+          <section class="dh-zone hard">
+            <div class="dh-zone-head">
+              <span class="badge">Must match</span>
+              <span class="desc"><b>Narrows the list.</b> Mountains that fail these drop out.</span>
+            </div>
+            <div class="dh-grid2">
+              <div class="dh-filter">
+                <div class="ftop"><span class="fname">Max drive time</span>
+                  <span class="info">i<span class="tip">Measured from your starting location. "Any distance" removes the cap entirely.</span></span></div>
+                <div class="dh-seg" data-filter="drive">
+                  <button type="button" data-value="day" aria-pressed="true">≤ 3h day trip</button>
+                  <button type="button" data-value="ext" aria-pressed="false">≤ 6h extended</button>
+                  <button type="button" data-value="any" aria-pressed="false">Any distance</button>
+                </div>
+              </div>
+
+              <div class="dh-filter">
+                <div class="ftop"><span class="fname">Pass</span>
+                  <span class="info">i<span class="tip">Only mountains covered by the selected pass remain. "Any" keeps every mountain.</span></span></div>
+                <div class="dh-seg" data-filter="pass">
+                  <button type="button" data-value="any" aria-pressed="true">Any pass</button>
+                  <button type="button" data-value="epic" aria-pressed="false">Epic</button>
+                  <button type="button" data-value="ikon" aria-pressed="false">Ikon</button>
+                  <button type="button" data-value="indy" aria-pressed="false">Indy</button>
+                </div>
+              </div>
+
+              <div class="dh-filter">
+                <div class="ftop"><span class="fname">Mountain size</span>
+                  <span class="info">i<span class="tip">By vertical drop. Local hills are small, big mountains have the most vertical. "Any" keeps every size.</span></span></div>
+                <div class="dh-seg" data-filter="size">
+                  <button type="button" data-value="any" aria-pressed="true">Any size</button>
+                  <button type="button" data-value="local" aria-pressed="false">Local hill</button>
+                  <button type="button" data-value="mid" aria-pressed="false">Mid-size</button>
+                  <button type="button" data-value="big" aria-pressed="false">Big mountain</button>
+                </div>
+              </div>
+
+              <div class="dh-filter">
+                <div class="ftop"><span class="fname">State</span>
+                  <span class="info">i<span class="tip">Restrict to one state. "All states" keeps every region in play.</span></span></div>
+                <div class="dh-selwrap">
+                  <select id="fvStateSel" aria-label="Filter by state">
+                    <option value="all">All states</option>
+                  </select>
+                  <span class="chev"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+                </div>
+              </div>
+
+              <div class="dh-filter">
+                <div class="ftop"><span class="fname">Max ticket price</span>
+                  <span class="info">i<span class="tip">A hard ceiling — mountains with a window rate above this are hidden. Slide to the far right for no limit.</span></span></div>
+                <div class="dh-price-val" id="fvPriceVal">No price limit <span class="nomax">· all rates</span></div>
+                <input type="range" id="fvPriceRange" min="70" max="180" step="5" value="180" aria-label="Max ticket price">
+                <div class="dh-price-scale"><span>$70</span><span>$120</span><span>No max</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="dh-zone soft">
+            <div class="dh-zone-head">
+              <span class="badge">Rank by what matters</span>
+              <span class="desc"><b>Reorders the list — never hides.</b> Heavier weight pushes those mountains up.</span>
+            </div>
+            <div class="dh-grid3">
+              <div class="dh-filter rankf">
+                <div class="ftop"><span class="fname">Fresh snow</span>
+                  <span class="info">i<span class="tip">How much recent snowfall should drive the ranking. Doesn't filter out low-snow days.</span></span></div>
+                <div class="dh-weight" data-filter="snow">
+                  <button type="button" data-w="0" aria-pressed="false"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Skip</span></button>
+                  <button type="button" data-w="1" aria-pressed="true"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Nice</span></button>
+                  <button type="button" data-w="2" aria-pressed="false"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Top</span></button>
+                </div>
+              </div>
+
+              <div class="dh-filter rankf">
+                <div class="ftop"><span class="fname">Quiet slopes</span>
+                  <span class="info">i<span class="tip">How much low crowds should drive the ranking. Busy mountains still appear, just lower.</span></span></div>
+                <div class="dh-weight" data-filter="quiet">
+                  <button type="button" data-w="0" aria-pressed="false"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Skip</span></button>
+                  <button type="button" data-w="1" aria-pressed="true"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Nice</span></button>
+                  <button type="button" data-w="2" aria-pressed="false"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Top</span></button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </section>
 
@@ -6965,6 +6967,9 @@
   <script defer src="metro_gravity_final.js"></script>
   <script defer src="recommendation-roles.js"></script>
   <script defer src="sd-scoring.js"></script>
+  <script defer src="filter-ranking-engine.js"></script>
+  <script defer src="filters-view.js"></script>
+  <script defer src="hero-result-card.js"></script>
   <script defer src="sd-filters.js"></script>
   <script defer src="featured-partners.js"></script>
   <script type="module" src="narrative-bridge.js"></script>

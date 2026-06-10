@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhereToSkiNext — Revised Homepage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* cool slate base */
+    --bg-0: oklch(0.16 0.025 248);
+    --bg-1: oklch(0.21 0.030 250);
+    --panel: oklch(0.20 0.028 250 / 0.72);
+    --panel-solid: oklch(0.215 0.028 250);
+    --line: oklch(0.45 0.03 250 / 0.30);
+    --line-soft: oklch(0.55 0.03 250 / 0.16);
+
+    /* text — lifted for contrast */
+    --ink: oklch(0.98 0.004 250);
+    --ink-2: oklch(0.86 0.012 250);   /* body, was very dim before */
+    --ink-3: oklch(0.74 0.030 240);   /* labels/eyebrows, AA on dark */
+
+    /* glacial accent (replaces generic tech-blue) */
+    --ice: oklch(0.80 0.085 225);
+    --ice-deep: oklch(0.66 0.115 232);
+    --ice-deep-h: oklch(0.71 0.115 232);
+    --ice-ghost: oklch(0.66 0.115 232 / 0.16);
+
+    --good: oklch(0.82 0.13 158);
+    --warn: oklch(0.83 0.11 78);
+
+    --sans: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, sans-serif;
+    --serif: "Spectral", Georgia, "Times New Roman", serif;
+
+    --r: 14px;
+    --r-sm: 10px;
+  }
+
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  html,body{ height: 100%; }
+  body{
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--bg-0);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ====== Photographic backdrop ====== */
+  .scene{ position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+  .photo{
+    position:absolute; inset:0;
+    background-image: url('assets/hero.jpg');
+    background-size: cover; background-position: 62% 38%;
+  }
+  .vignette{
+    position:absolute; inset:0;
+    background:
+      linear-gradient(90deg, oklch(0.13 0.02 250 / 0.92) 0%, oklch(0.13 0.02 250 / 0.74) 30%, oklch(0.13 0.02 250 / 0.30) 56%, oklch(0.13 0.02 250 / 0.12) 100%),
+      linear-gradient(180deg, oklch(0.13 0.02 250 / 0.55) 0%, transparent 22%, transparent 64%, oklch(0.11 0.02 250 / 0.55) 100%);
+  }
+
+  /* ====== Nav ====== */
+  header.nav{
+    position: relative; z-index: 3;
+    display: flex; align-items: center; gap: 40px;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--line-soft);
+    backdrop-filter: blur(2px);
+  }
+  .brand{ display:flex; align-items:center; gap: 12px; }
+  .brand .mark{
+    width: 30px; height: 30px; flex: none;
+    display: grid; place-items: center;
+  }
+  .brand .mark svg{ width: 30px; height: 30px; display:block; }
+  .brand .name{ font-weight: 800; font-size: 19px; letter-spacing: -0.01em; line-height: 1; }
+  .brand .name .tld{ color: var(--ink-3); font-weight: 700; }
+  .brand .name .next{ color: var(--ice); }
+  .brand .tag{ font-size: 12px; color: var(--ink-3); margin-top: 4px; letter-spacing: .01em; }
+  nav.links{ display:flex; align-items:center; gap: 30px; margin-left: 6px; }
+  nav.links a{
+    color: var(--ink-2); text-decoration: none; font-size: 15px; font-weight: 500;
+    display:flex; align-items:center; gap: 6px; transition: color .15s;
+  }
+  nav.links a:hover{ color: var(--ink); }
+  nav.links a .caret{ font-size: 10px; opacity: .7; }
+  nav .spacer{ flex: 1; }
+  .btn-sub{
+    color: var(--ink); font-size: 15px; font-weight: 600; text-decoration:none;
+    padding: 9px 18px; border-radius: 999px; border: 1px solid var(--ice-deep);
+    background: var(--ice-ghost); transition: background .15s, border-color .15s;
+    display:flex; align-items:center; gap:7px;
+  }
+  .btn-sub:hover{ background: oklch(0.66 0.115 232 / 0.28); }
+
+  /* ====== Layout ====== */
+  main{
+    position: relative; z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    gap: 64px;
+    align-items: center;
+    max-width: 1340px;
+    margin: 0 auto;
+    padding: clamp(40px, 6vh, 88px) 40px 64px;
+    min-height: calc(100vh - 72px);
+  }
+
+  /* ====== Left: the ask ====== */
+  .eyebrow{
+    display:flex; align-items:center; gap: 10px;
+    font-size: 12.5px; font-weight: 700; letter-spacing: .14em;
+    color: var(--ink-3); text-transform: uppercase; margin-bottom: 22px;
+  }
+  .eyebrow .dot{ width: 4px; height: 4px; border-radius: 999px; background: var(--ice); }
+  h1.hero{
+    font-family: var(--sans);
+    font-weight: 800; letter-spacing: -0.025em; line-height: 0.98;
+    font-size: clamp(44px, 5.6vw, 78px);
+    margin-bottom: 20px;
+  }
+  h1.hero .em{ color: var(--ice); }
+  .sub{
+    font-size: clamp(16px, 1.3vw, 19px); line-height: 1.5;
+    color: var(--ink-2); max-width: 46ch; margin-bottom: 34px;
+  }
+
+  .field-label{
+    font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-3); margin-bottom: 9px; display:block;
+  }
+  .locrow{ position: relative; margin-bottom: 18px; }
+  .loc{
+    width: 100%; display:flex; align-items:center; gap: 12px;
+    padding: 16px 18px; border-radius: var(--r);
+    background: oklch(0.24 0.025 250 / 0.66);
+    border: 1px solid var(--line);
+    font-size: 17px; font-weight: 600; color: var(--ink);
+    backdrop-filter: blur(8px);
+  }
+  .loc svg{ width: 18px; height: 18px; color: var(--ink-3); flex:none; }
+  .loc .ph{ color: var(--ink); }
+
+  .controls{ display:flex; flex-direction:column; gap: 16px; margin-bottom: 22px; }
+  .cgroup{ display:flex; align-items:center; gap: 12px; flex-wrap: wrap; }
+  .cgroup > .gl{
+    font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-3); width: 42px; flex: none;
+  }
+  .pills{ display:flex; gap: 8px; flex-wrap: wrap; }
+  .pill{
+    font-family: var(--sans); font-size: 14px; font-weight: 600;
+    padding: 9px 16px; border-radius: 999px; cursor: pointer;
+    color: var(--ink-2); background: oklch(0.26 0.022 250 / 0.55);
+    border: 1px solid var(--line-soft); transition: all .14s;
+  }
+  .pill:hover{ color: var(--ink); border-color: var(--line); }
+  .pill[aria-pressed="true"]{
+    color: var(--ink); background: var(--ice-deep);
+    border-color: var(--ice-deep-h);
+    box-shadow: 0 4px 14px oklch(0.66 0.115 232 / 0.35);
+  }
+
+  .formfoot{ display:flex; align-items:center; justify-content: space-between; gap: 16px; margin-top: 4px; }
+  .btn-update{
+    flex: 1;
+    display:flex; align-items:center; justify-content:center; gap: 10px;
+    padding: 16px 22px; border-radius: var(--r);
+    font-size: 15px; font-weight: 700; letter-spacing: .02em;
+    color: var(--ink); cursor: pointer;
+    background: oklch(0.30 0.025 250 / 0.6);
+    border: 1px solid var(--line);
+    transition: all .15s;
+  }
+  .btn-update:hover{ background: oklch(0.34 0.028 250 / 0.7); border-color: var(--ice-deep); }
+  .btn-update svg{ width: 16px; height:16px; }
+  .loclink{
+    font-size: 14px; font-weight: 600; color: var(--ice);
+    text-decoration: none; white-space: nowrap; display:flex; align-items:center; gap:6px;
+  }
+  .loclink:hover{ text-decoration: underline; }
+
+  /* ====== Right: the answer ====== */
+  .card{
+    background: linear-gradient(180deg, oklch(0.22 0.028 250 / 0.92), oklch(0.17 0.022 250 / 0.94));
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 28px 30px 24px;
+    backdrop-filter: blur(18px) saturate(1.1);
+    box-shadow: 0 30px 80px -30px oklch(0.05 0.02 250 / 0.8);
+  }
+  .card-top{ display:flex; align-items:center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  .badge-live{
+    display:flex; align-items:center; gap: 9px;
+    font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .live-dot{ width: 8px; height: 8px; border-radius:999px; background: var(--good);
+    box-shadow: 0 0 0 0 oklch(0.82 0.13 158 / 0.6); animation: pulse 2.4s infinite; }
+  @keyframes pulse{ 0%{ box-shadow: 0 0 0 0 oklch(0.82 0.13 158 / 0.55);} 70%{ box-shadow: 0 0 0 7px oklch(0.82 0.13 158 / 0);} 100%{ box-shadow: 0 0 0 0 oklch(0.82 0.13 158 / 0);} }
+  .updated{ font-size: 12.5px; color: var(--ink-3); }
+
+  .rank{ font-size: 12.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ice); margin-bottom: 6px; }
+  h2.peak{ font-family: var(--serif); font-weight: 600; font-size: 40px; line-height: 1.02; letter-spacing: -0.01em; }
+  .peak-loc{ font-size: 14.5px; color: var(--ink-3); margin-top: 8px; }
+  .verdict{
+    font-size: 18px; line-height: 1.42; color: var(--ink); margin-top: 18px; font-weight: 500;
+    max-width: 40ch;
+  }
+  .verdict b{ color: var(--ink); font-weight: 700; }
+
+  /* stat tiles replace stacked paragraphs */
+  .stats{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 22px 0 4px;
+    border: 1px solid var(--line-soft); border-radius: var(--r); overflow: hidden;
+    background: var(--line-soft); }
+  .stat{ background: oklch(0.20 0.024 250 / 0.85); padding: 15px 16px; }
+  .stat .k{ font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+  .stat .v{ font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); line-height: 1; }
+  .stat .v.good{ color: var(--good); }
+  .stat .meta{ font-size: 12px; color: var(--ink-3); margin-top: 6px; }
+
+  .heads{
+    display:flex; gap: 11px; align-items: flex-start;
+    font-size: 13.5px; line-height: 1.4; color: var(--ink-2);
+    margin: 18px 2px 2px;
+  }
+  .heads .ic{ color: var(--warn); flex:none; margin-top: 1px; }
+  .heads .ic svg{ width:16px; height:16px; display:block; }
+
+  .cta{
+    width:100%; margin-top: 22px; padding: 17px 24px;
+    border: none; border-radius: var(--r); cursor: pointer;
+    font-family: var(--sans); font-size: 16px; font-weight: 700; letter-spacing: .01em;
+    color: oklch(0.16 0.02 250); background: var(--ice);
+    transition: background .15s, transform .05s;
+    display:flex; align-items:center; justify-content:center; gap: 10px;
+  }
+  .cta:hover{ background: oklch(0.86 0.085 225); }
+  .cta:active{ transform: translateY(1px); }
+  .cta svg{ width:18px; height:18px; }
+
+  .divider{ height:1px; background: var(--line-soft); margin: 22px 0 18px; }
+
+  .secondary{ display:flex; align-items:center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .why{
+    background: none; border: none; cursor: pointer; padding: 0;
+    color: var(--ink-2); font-family: var(--sans); font-size: 14px; font-weight: 600;
+    display:flex; align-items:center; gap: 8px;
+  }
+  .why:hover{ color: var(--ink); }
+  .why .chev{ transition: transform .2s; display:inline-flex; }
+  .why[aria-expanded="true"] .chev{ transform: rotate(180deg); }
+  .seclinks{ display:flex; align-items:center; gap: 20px; }
+  .seclinks a{ color: var(--ink-2); font-size: 14px; font-weight: 600; text-decoration: none; }
+  .seclinks a:hover{ color: var(--ice); }
+
+  .why-body{
+    display: grid; grid-template-rows: 0fr; transition: grid-template-rows .28s ease, margin .28s ease, opacity .2s;
+    opacity: 0; margin-top: 0;
+  }
+  .why-body.open{ grid-template-rows: 1fr; opacity: 1; margin-top: 16px; }
+  .why-body > div{ overflow: hidden; }
+  .runner{
+    display:flex; align-items:center; justify-content: space-between; gap: 16px;
+    padding: 14px 16px; border-radius: var(--r-sm);
+    background: oklch(0.24 0.022 250 / 0.5); border: 1px solid var(--line-soft);
+  }
+  .runner + .runner{ margin-top: 10px; }
+  .runner .rl{ font-size: 13px; color: var(--ink-2); line-height:1.4; }
+  .runner .rl b{ color: var(--ink); font-weight:700; }
+  .runner .rt{ font-size: 12.5px; color: var(--ink-3); white-space: nowrap; flex:none; text-align:right; }
+
+  .card-foot{
+    display:flex; align-items:center; gap: 10px; margin-top: 20px;
+    font-size: 12px; color: var(--ink-3); font-weight: 600;
+  }
+  .trust{
+    display:flex; align-items:center; gap: 7px;
+    padding: 6px 11px; border-radius: 999px;
+    background: oklch(0.82 0.13 158 / 0.12); border: 1px solid oklch(0.82 0.13 158 / 0.3);
+    color: var(--good); font-size: 11.5px; font-weight: 700; letter-spacing: .02em;
+  }
+  .trust svg{ width: 13px; height:13px; }
+  .card-foot .sep{ flex:1; }
+
+  /* responsive */
+  @media (max-width: 980px){
+    main{ grid-template-columns: 1fr; gap: 40px; padding-top: 36px; }
+    .card{ order: 2; }
+    nav.links{ display:none; }
+  }
+  @media (max-width: 520px){
+    header.nav{ padding: 16px 20px; }
+    main{ padding-left: 20px; padding-right: 20px; }
+    h2.peak{ font-size: 32px; }
+    .stats{ grid-template-columns: 1fr 1fr; }
+    .stats .stat:last-child{ grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+  <div class="scene" aria-hidden="true">
+    <div class="photo"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <header class="nav">
+    <div class="brand">
+      <span class="mark">
+        <svg viewBox="0 0 30 30" fill="none"><path d="M15 4 L27 25 H3 Z" fill="oklch(0.80 0.085 225)"/><path d="M15 4 L15 25 H3 Z" fill="oklch(0.66 0.115 232)"/><path d="M11 17 l4 -3 4 3 -4 3 z" fill="oklch(0.16 0.02 250)" opacity="0.85"/></svg>
+      </span>
+      <span>
+        <span class="name">WhereToSki<span class="next">Next</span><span class="tld">.com</span></span>
+      </span>
+    </div>
+    <nav class="links">
+      <a href="#">Browse <span class="caret">▾</span></a>
+      <a href="#">About</a>
+      <a href="#">Stories</a>
+      <a href="#">Pass Guides</a>
+    </nav>
+    <span class="spacer"></span>
+    <a class="btn-sub" href="#">Subscribe</a>
+  </header>
+
+  <main>
+    <!-- LEFT: the ask -->
+    <section class="ask">
+      <div class="eyebrow"><span class="dot"></span> Live snow · drive · crowd forecast</div>
+      <h1 class="hero">Stop guessing<br>where to <span class="em">ski</span>.</h1>
+      <p class="sub">One pick worth the drive, ranked on live snow, crowds, and the pass you already own.</p>
+
+      <span class="field-label">Starting from</span>
+      <div class="locrow">
+        <div class="loc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>
+          <span class="ph">Scituate, Massachusetts</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="cgroup">
+          <span class="gl">Pass</span>
+          <div class="pills" data-group="pass">
+            <button class="pill" aria-pressed="true">Any</button>
+            <button class="pill" aria-pressed="false">Epic</button>
+            <button class="pill" aria-pressed="false">Ikon</button>
+            <button class="pill" aria-pressed="false">Indy</button>
+          </div>
+        </div>
+        <div class="cgroup">
+          <span class="gl">Trip</span>
+          <div class="pills" data-group="trip">
+            <button class="pill" aria-pressed="true">Day trip</button>
+            <button class="pill" aria-pressed="false">Extended (3h+)</button>
+            <button class="pill" aria-pressed="false">Any distance</button>
+          </div>
+        </div>
+        <div class="cgroup">
+          <span class="gl">Day</span>
+          <div class="pills" data-group="day">
+            <button class="pill" aria-pressed="true">Thursday</button>
+            <button class="pill" aria-pressed="false">This weekend</button>
+            <button class="pill" aria-pressed="false">Pick a date</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="formfoot">
+        <button class="btn-update" id="updateBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v5h-5"/></svg>
+          Update results
+        </button>
+        <a class="loclink" href="#">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          Use my location
+        </a>
+      </div>
+    </section>
+
+    <!-- RIGHT: the answer -->
+    <section class="card" id="resultCard">
+      <div class="card-top">
+        <span class="badge-live"><span class="live-dot"></span> Live · today's pick</span>
+        <span class="updated" id="updatedAt">Updated just now</span>
+      </div>
+
+      <div class="rank">Top pick · 2h 47m from Scituate</div>
+      <h2 class="peak">Cannon Mountain</h2>
+      <div class="peak-loc">Franconia Notch, New Hampshire · Epic + Indy</div>
+
+      <p class="verdict">The best mix of <b>fresh snow, open terrain, and low crowds</b> within your day-trip range today.</p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="k">Snow</div>
+          <div class="v">4" fresh</div>
+          <div class="meta">Groomers holding</div>
+        </div>
+        <div class="stat">
+          <div class="k">Drive</div>
+          <div class="v">2h 47m</div>
+          <div class="meta">vs 3h+ alts</div>
+        </div>
+        <div class="stat">
+          <div class="k">Crowds</div>
+          <div class="v good">Quiet</div>
+          <div class="meta">Midweek, wide open</div>
+        </div>
+      </div>
+
+      <div class="heads">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span>
+        <span><b style="color:var(--ink)">Heads up:</b> rain in the mix late — snow stays fast but wet. Keep the day short.</span>
+      </div>
+
+      <button class="cta">
+        See full forecast
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <div class="divider"></div>
+
+      <div class="secondary">
+        <button class="why" id="whyBtn" aria-expanded="false">
+          Why this beat the alternatives
+          <span class="chev"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></span>
+        </button>
+        <div class="seclinks">
+          <a href="#">Compare</a>
+          <a href="#">All rankings</a>
+        </div>
+      </div>
+
+      <div class="why-body" id="whyBody">
+        <div>
+          <div class="runner">
+            <div class="rl"><b>Waterville Valley</b> — similar snow, but heavier crowds expected and a longer drive.</div>
+            <div class="rt">3h 05m<br>Busier</div>
+          </div>
+          <div class="runner">
+            <div class="rl"><b>Blue Hills</b> — closest option, but thin cover and limited terrain today.</div>
+            <div class="rt">25m drive<br>Light crowds</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-foot">
+        <span class="trust">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>
+          Rankings never sponsored
+        </span>
+        <span class="sep"></span>
+        <span>Forecast for Thu, Jun 11</span>
+      </div>
+    </section>
+  </main>
+
+<script>
+  // single-select pill groups
+  document.querySelectorAll('.pills').forEach(group=>{
+    group.addEventListener('click', e=>{
+      const b = e.target.closest('.pill'); if(!b) return;
+      group.querySelectorAll('.pill').forEach(p=>p.setAttribute('aria-pressed', p===b ? 'true':'false'));
+      flashUpdate();
+    });
+  });
+
+  // "why this won" collapsible
+  const whyBtn = document.getElementById('whyBtn');
+  const whyBody = document.getElementById('whyBody');
+  whyBtn.addEventListener('click', ()=>{
+    const open = whyBtn.getAttribute('aria-expanded')==='true';
+    whyBtn.setAttribute('aria-expanded', String(!open));
+    whyBody.classList.toggle('open', !open);
+  });
+
+  // live "updated" feedback to sell the live-preview model
+  const updatedAt = document.getElementById('updatedAt');
+  const card = document.getElementById('resultCard');
+  let t;
+  function flashUpdate(){
+    updatedAt.textContent = 'Recalculating…';
+    card.style.transition = 'box-shadow .3s';
+    card.style.boxShadow = '0 0 0 1px oklch(0.66 0.115 232 / .5), 0 30px 80px -30px oklch(0.05 0.02 250 / .8)';
+    clearTimeout(t);
+    t = setTimeout(()=>{
+      updatedAt.textContent = 'Updated just now';
+      card.style.boxShadow = '';
+    }, 700);
+  }
+  document.getElementById('updateBtn').addEventListener('click', flashUpdate);
+</script>
+</body>
+</html>

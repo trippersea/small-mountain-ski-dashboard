@@ -1,0 +1,39 @@
+/**
+ * Design handoff tokens — Homepage.html + Filters.html :root
+ * Scoped to handoff surfaces; load after styles.css
+ */
+:root {
+  /* cool slate base */
+  --dh-bg-0: oklch(0.16 0.025 248);
+  --dh-bg-1: oklch(0.21 0.030 250);
+  --dh-panel: oklch(0.20 0.028 250 / 0.72);
+  --dh-panel-solid: oklch(0.215 0.028 250);
+  --dh-panel-2: oklch(0.235 0.026 250);
+  --dh-line: oklch(0.45 0.03 250 / 0.30);
+  --dh-line-soft: oklch(0.55 0.03 250 / 0.16);
+
+  /* text */
+  --dh-ink: oklch(0.98 0.004 250);
+  --dh-ink-2: oklch(0.86 0.012 250);
+  --dh-ink-3: oklch(0.74 0.030 240);
+
+  /* glacial accent */
+  --dh-ice: oklch(0.80 0.085 225);
+  --dh-ice-deep: oklch(0.66 0.115 232);
+  --dh-ice-deep-h: oklch(0.71 0.115 232);
+  --dh-ice-ghost: oklch(0.66 0.115 232 / 0.16);
+
+  /* ranking zone (filters) */
+  --dh-rank: oklch(0.82 0.105 200);
+  --dh-rank-deep: oklch(0.70 0.105 200);
+  --dh-rank-ghost: oklch(0.70 0.105 200 / 0.16);
+
+  --dh-good: oklch(0.82 0.13 158);
+  --dh-warn: oklch(0.83 0.11 78);
+
+  --dh-sans: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, sans-serif;
+  --dh-serif: "Spectral", Georgia, "Times New Roman", serif;
+
+  --dh-r: 14px;
+  --dh-r-sm: 10px;
+}

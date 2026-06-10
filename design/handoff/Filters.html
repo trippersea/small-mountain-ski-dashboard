@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhereToSkiNext — Revised Filters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0: oklch(0.16 0.025 248);
+    --bg-1: oklch(0.21 0.030 250);
+    --panel: oklch(0.205 0.026 250);
+    --panel-2: oklch(0.235 0.026 250);
+    --line: oklch(0.50 0.03 250 / 0.28);
+    --line-soft: oklch(0.58 0.03 250 / 0.15);
+
+    --ink: oklch(0.98 0.004 250);
+    --ink-2: oklch(0.86 0.012 250);
+    --ink-3: oklch(0.74 0.030 240);
+
+    --ice: oklch(0.80 0.085 225);
+    --ice-deep: oklch(0.66 0.115 232);
+    --ice-deep-h: oklch(0.71 0.115 232);
+    --ice-ghost: oklch(0.66 0.115 232 / 0.16);
+
+    --rank: oklch(0.82 0.105 200);          /* distinct cyan-teal for ranking zone */
+    --rank-deep: oklch(0.70 0.105 200);
+    --rank-ghost: oklch(0.70 0.105 200 / 0.16);
+
+    --good: oklch(0.82 0.13 158);
+    --warn: oklch(0.83 0.11 78);
+
+    --sans: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, sans-serif;
+    --serif: "Spectral", Georgia, serif;
+    --r: 14px;
+    --r-sm: 10px;
+  }
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  body{
+    font-family: var(--sans); color: var(--ink);
+    background: var(--bg-0);
+    -webkit-font-smoothing: antialiased; min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+  .bg{ position:fixed; inset:0; z-index:-1; }
+  .bg .photo{ position:absolute; inset:0; background:url('assets/hero.jpg') center 35%/cover; }
+  .bg .veil{ position:absolute; inset:0;
+    background:
+      linear-gradient(180deg, oklch(0.13 0.02 250 / 0.86) 0%, oklch(0.13 0.02 250 / 0.93) 30%, oklch(0.12 0.02 250 / 0.96) 100%); }
+  .wrap{ max-width: 1080px; margin: 0 auto; position:relative; }
+
+  /* ===== Header + live result strip ===== */
+  .head h1{
+    font-size: 28px; font-weight: 800; letter-spacing: -0.02em;
+  }
+  .head h1 .loc{ color: var(--ice); }
+  .head .lede{ color: var(--ink-2); font-size: 15px; margin-top: 8px; max-width: 62ch; line-height: 1.5; }
+  .head .lede b{ color: var(--ink); font-weight: 700; }
+
+  .result-strip{
+    display:flex; align-items:center; gap: 20px; flex-wrap: wrap;
+    margin-top: 22px; padding: 18px 22px;
+    background: linear-gradient(180deg, oklch(0.24 0.03 250 / 0.7), oklch(0.20 0.026 250 / 0.7));
+    border: 1px solid var(--line); border-radius: 16px;
+    backdrop-filter: blur(10px);
+  }
+  .rs-count{ display:flex; align-items: baseline; gap: 10px; }
+  .rs-count .n{ font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .rs-count .lbl{ font-size: 14px; color: var(--ink-3); }
+  .rs-pick{ font-size: 14px; color: var(--ink-2); padding-left: 20px; border-left: 1px solid var(--line); white-space: nowrap; }
+  .rs-pick .k{ font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); display:block; margin-bottom: 4px; }
+  .rs-pick .v{ font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--ink); }
+  .rs-pick .v.none{ font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--warn); }
+  .rs-spacer{ flex: 1; }
+  .topbtn{
+    display:flex; align-items:center; gap: 9px; white-space: nowrap;
+    padding: 12px 20px; border-radius: 999px; cursor: pointer; border: none;
+    font-family: var(--sans); font-size: 14px; font-weight: 700; letter-spacing: .01em;
+    color: oklch(0.16 0.02 250); background: var(--ice); transition: background .15s;
+  }
+  .topbtn:hover{ background: oklch(0.86 0.085 225); }
+  .topbtn svg{ width: 15px; height: 15px; }
+
+  /* ===== Active filter chips ===== */
+  .chips{ display:flex; align-items:center; gap: 9px; flex-wrap: wrap; margin-top: 16px; min-height: 30px; }
+  .chips .clabel{ font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-right: 2px; }
+  .chip{
+    display:flex; align-items:center; gap: 8px;
+    padding: 7px 8px 7px 13px; border-radius: 999px;
+    background: var(--ice-ghost); border: 1px solid var(--ice-deep);
+    font-size: 13px; font-weight: 600; color: var(--ink);
+  }
+  .chip.rank{ background: var(--rank-ghost); border-color: var(--rank-deep); }
+  .chip button{
+    display:grid; place-items:center; width: 18px; height: 18px; border-radius: 999px;
+    border: none; cursor: pointer; color: var(--ink-2);
+    background: oklch(0.98 0.004 250 / 0.10); transition: background .12s, color .12s;
+  }
+  .chip button:hover{ background: oklch(0.98 0.004 250 / 0.2); color: var(--ink); }
+  .chip button svg{ width: 10px; height: 10px; }
+  .reset{ background:none; border:none; cursor:pointer; color: var(--ink-3); font: inherit; font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  .reset:hover{ color: var(--ink); }
+
+  /* ===== Zones ===== */
+  .zone{ margin-top: 26px; }
+  .zone-head{ display:flex; align-items: baseline; gap: 12px; margin-bottom: 14px; padding: 0 4px; }
+  .zone-head .badge{
+    font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+    padding: 5px 10px; border-radius: 7px;
+  }
+  .zone.hard .badge{ color: var(--ice); background: var(--ice-ghost); }
+  .zone.soft .badge{ color: var(--rank); background: var(--rank-ghost); }
+  .zone-head .desc{ font-size: 13.5px; color: var(--ink-3); }
+  .zone-head .desc b{ color: var(--ink-2); font-weight: 700; }
+
+  .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+  .filter{
+    background: var(--panel); border: 1px solid var(--line-soft);
+    border-radius: var(--r); padding: 18px 18px 16px;
+  }
+  .filter .ftop{ display:flex; align-items:center; justify-content: space-between; gap: 10px; margin-bottom: 13px; }
+  .filter .fname{ font-size: 14px; font-weight: 700; letter-spacing: .01em; }
+  .filter .info{
+    width: 17px; height: 17px; border-radius: 999px; display:grid; place-items:center;
+    border: 1px solid var(--line); color: var(--ink-3); font-size: 10px; font-weight: 700;
+    cursor: help; position: relative;
+  }
+  .filter .info:hover{ color: var(--ink); border-color: var(--ice-deep); }
+  .filter .info .tip{
+    position:absolute; bottom: 140%; right: -6px; width: 210px;
+    background: oklch(0.14 0.02 250); border: 1px solid var(--line);
+    border-radius: 9px; padding: 10px 12px; font-size: 12px; font-weight: 500;
+    color: var(--ink-2); line-height: 1.4; letter-spacing: 0;
+    opacity: 0; visibility: hidden; transform: translateY(4px); transition: all .15s;
+    box-shadow: 0 16px 40px -12px oklch(0.05 0.02 250 / 0.9); z-index: 5; text-transform: none;
+  }
+  .filter .info:hover .tip{ opacity:1; visibility: visible; transform: translateY(0); }
+
+  /* pills (hard = removes) */
+  .seg{ display:flex; gap: 7px; flex-wrap: wrap; }
+  .seg button{
+    font-family: var(--sans); font-size: 13.5px; font-weight: 600;
+    padding: 9px 14px; border-radius: 9px; cursor: pointer;
+    color: var(--ink-2); background: var(--panel-2); border: 1px solid var(--line-soft);
+    transition: all .13s;
+  }
+  .seg button:hover{ color: var(--ink); border-color: var(--line); }
+  .seg button[aria-pressed="true"]{
+    color: var(--ink); background: var(--ice-deep); border-color: var(--ice-deep-h);
+    box-shadow: 0 3px 12px oklch(0.66 0.115 232 / 0.3);
+  }
+
+  /* state combobox */
+  .selwrap{ position: relative; }
+  .selwrap select{
+    width:100%; appearance:none; font-family: var(--sans); font-size: 14.5px; font-weight: 600;
+    color: var(--ink); background: var(--panel-2); border: 1px solid var(--line);
+    padding: 12px 40px 12px 14px; border-radius: 9px; cursor: pointer;
+  }
+  .selwrap select:focus{ outline: none; border-color: var(--ice-deep); }
+  .selwrap .chev{ position:absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events:none; color: var(--ink-3); }
+
+  /* price slider */
+  .price-val{ font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+  .price-val span{ color: var(--ice); }
+  .price-val span.nomax{ color: var(--good); }
+  input[type=range]{ -webkit-appearance:none; appearance:none; width: 100%; height: 6px; border-radius: 999px;
+    background: linear-gradient(90deg, var(--ice-deep) var(--fill,100%), oklch(0.32 0.02 250) var(--fill,100%)); cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width: 20px; height: 20px; border-radius: 999px;
+    background: var(--ice); border: 3px solid oklch(0.16 0.02 250); box-shadow: 0 2px 8px oklch(0.05 0.02 250 / 0.6); }
+  input[type=range]::-moz-range-thumb{ width: 20px; height: 20px; border-radius: 999px; background: var(--ice); border: 3px solid oklch(0.16 0.02 250); }
+  .price-scale{ display:flex; justify-content: space-between; font-size: 11px; color: var(--ink-3); margin-top: 8px; }
+
+  /* soft = ranking weight control */
+  .filter.rankf{ background: oklch(0.205 0.024 232 / 0.6); border-color: oklch(0.70 0.105 200 / 0.22); }
+  .weight{ display:flex; gap: 7px; }
+  .weight button{
+    flex:1; display:flex; flex-direction: column; align-items:center; gap: 7px;
+    padding: 11px 8px 10px; border-radius: 9px; cursor: pointer;
+    background: var(--panel-2); border: 1px solid var(--line-soft); transition: all .13s;
+    font-family: var(--sans);
+  }
+  .weight button:hover{ border-color: var(--line); }
+  .weight .bars{ display:flex; align-items:flex-end; gap: 3px; height: 16px; }
+  .weight .bars i{ width: 4px; border-radius: 2px; background: oklch(0.55 0.03 250); display:block; }
+  .weight .bars i:nth-child(1){ height: 6px; }
+  .weight .bars i:nth-child(2){ height: 11px; }
+  .weight .bars i:nth-child(3){ height: 16px; }
+  .weight .wl{ font-size: 12px; font-weight: 600; color: var(--ink-3); }
+  .weight button[aria-pressed="true"]{ background: var(--rank-ghost); border-color: var(--rank-deep); }
+  .weight button[aria-pressed="true"] .wl{ color: var(--ink); }
+  .weight button[data-w="0"][aria-pressed="true"] .bars i:nth-child(1){ background: var(--rank); }
+  .weight button[data-w="1"][aria-pressed="true"] .bars i:nth-child(-n+2){ background: var(--rank); }
+  .weight button[data-w="2"][aria-pressed="true"] .bars i{ background: var(--rank); }
+
+  /* empty state */
+  .empty{ display:none; margin-top: 14px; padding: 16px 18px; border-radius: var(--r);
+    background: oklch(0.83 0.11 78 / 0.10); border: 1px solid oklch(0.83 0.11 78 / 0.3); }
+  .empty.show{ display:flex; align-items:center; gap: 12px; }
+  .empty .ic{ color: var(--warn); flex:none; }
+  .empty .t{ font-size: 14px; color: var(--ink); }
+  .empty .t b{ font-weight: 700; }
+  .empty .relax{ margin-left:auto; background:none; border:none; color: var(--warn); font: inherit; font-weight: 700; cursor:pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ===== Live results list ===== */
+  .list-cap{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:24px; padding:0 4px 12px; border-bottom:1px solid var(--line-soft); }
+  .list-cap .lt{ font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+  .list-cap .lt b{ color:var(--ink-2); }
+  .list-cap .legend{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-3); }
+  .list-cap .legend i{ width:22px; height:5px; border-radius:999px; background:linear-gradient(90deg,var(--rank),var(--rank-deep)); display:inline-block; }
+  .results{ position:relative; }
+  .row{
+    display:grid; grid-template-columns: 30px minmax(0,1.4fr) minmax(0,1.55fr) 74px; align-items:center; gap:16px;
+    padding:14px 16px; margin-top:8px; border-radius:var(--r);
+    background:var(--panel); border:1px solid var(--line-soft); will-change:transform;
+  }
+  .row.top{ background:linear-gradient(180deg, var(--ice-ghost), oklch(0.20 0.026 250 / .7)); border-color:var(--ice-deep); }
+  .row.enter{ animation:rowIn .35s ease both; }
+  .row.leave{ opacity:0; transform:scale(.97); transition:opacity .24s, transform .24s; }
+  @keyframes rowIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none;} }
+  .rk{ font-size:18px; font-weight:800; color:var(--ink-3); font-variant-numeric:tabular-nums; text-align:center; }
+  .row.top .rk{ color:var(--ice); }
+  .rname{ font-family:var(--serif); font-size:19px; font-weight:600; line-height:1.1; }
+  .rtag{ display:inline-block; font-family:var(--sans); font-size:9.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:oklch(0.16 0.02 250); background:var(--ice); padding:2px 6px; border-radius:5px; margin-left:8px; vertical-align:2px; }
+  .rmeta{ display:flex; gap:7px; align-items:center; margin-top:5px; }
+  .pbadge{ font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); background:var(--panel-2); border:1px solid var(--line-soft); padding:2px 7px; border-radius:5px; }
+  .pbadge.none{ color:var(--ink-3); }
+  .rmeta .stt{ font-size:12px; color:var(--ink-3); }
+  .rstats{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .rstats .c{ min-width:0; }
+  .rstats .c .k{ font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:3px; }
+  .rstats .c .v{ font-size:14px; font-weight:700; color:var(--ink); white-space:nowrap; }
+  .rstats .c .v.q{ color:var(--good); }
+  .rstats .c .v.b{ color:var(--warn); }
+  .rbar{ height:6px; border-radius:999px; background:oklch(0.32 0.02 250); overflow:hidden; }
+  .rbar i{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--rank-deep),var(--rank)); transition:width .42s cubic-bezier(.2,.8,.2,1); }
+  .row.top .rbar i{ background:linear-gradient(90deg,var(--ice-deep),var(--ice)); }
+
+  /* ===== Two-column layout: sticky filters | live results ===== */
+  .cols{ display:grid; grid-template-columns: 380px minmax(0,1fr); grid-template-areas:"filters results"; gap:28px; align-items:start; margin-top:22px; }
+  .col-filters{ grid-area:filters; position:sticky; top:24px; max-height:calc(100vh - 48px); overflow-y:auto; overflow-x:hidden; padding-right:6px; }
+  .col-results{ grid-area:results; min-width:0; }
+  .col-filters .grid2, .col-filters .grid3{ grid-template-columns:1fr; }
+  .col-filters .zone{ margin-top:0; }
+  .col-filters .zone + .zone{ margin-top:22px; }
+  .col-results .result-strip{ margin-top:0; }
+  .col-results .list-cap{ margin-top:18px; }
+  .col-filters::-webkit-scrollbar{ width:8px; }
+  .col-filters::-webkit-scrollbar-thumb{ background:var(--line); border-radius:999px; }
+  .col-filters::-webkit-scrollbar-track{ background:transparent; }
+
+  @media (max-width: 1040px){
+    .cols{ grid-template-columns:1fr; grid-template-areas:"results" "filters"; gap:20px; }
+    .col-filters{ position:static; max-height:none; overflow:visible; padding-right:0; margin-top:4px; }
+    .col-results .result-strip{ position:sticky; top:0; z-index:20;
+      background:linear-gradient(180deg, oklch(0.22 0.03 250 / .97), oklch(0.18 0.026 250 / .97)); }
+  }
+  @media (max-width: 760px){
+    .row{ grid-template-columns:26px 1fr; gap:6px 12px; }
+    .row .rstats{ grid-column:1 / -1; margin-top:6px; }
+    .row .rbar{ grid-column:1 / -1; }
+    .grid2,.grid3{ grid-template-columns: 1fr; }
+    .result-strip{ flex-wrap: wrap; }
+    .rs-pick{ padding-left: 0; border-left: none; }
+    .rs-spacer{ display:none; }
+    .topbtn{ width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><div class="photo"></div><div class="veil"></div></div>
+<div class="wrap">
+
+  <div class="head">
+    <h1>Refine your results · <span class="loc">Scituate, Massachusetts</span></h1>
+    <p class="lede">Tune the search and the list re-ranks instantly. <b>Must-match</b> filters narrow which mountains qualify; <b>ranking</b> preferences reorder what's left — they never hide anything.</p>
+  </div>
+
+  <div class="cols">
+  <div class="col-results">
+
+  <div class="result-strip">
+    <div class="rs-count"><span class="n" id="count">0</span><span class="lbl">mountains match</span></div>
+    <div class="rs-pick"><span class="k">Top pick</span><span class="v" id="pick">—</span></div>
+    <div class="rs-spacer"></div>
+    <button class="topbtn" id="topbtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+      See top pick
+    </button>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="list-cap">
+    <span class="lt"><b id="listN">0</b> mountains · ranked best&#8209;first</span>
+    <span class="legend"><i></i> match strength</span>
+  </div>
+  <section class="results" id="results"></section>
+
+  <div class="empty" id="empty">
+    <span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></span>
+    <span class="t"><b>No mountains match.</b> Your must-match filters are too tight.</span>
+    <button class="relax" id="relax">Loosen the tightest one</button>
+  </div>
+  </div><!-- /col-results -->
+
+  <div class="col-filters">
+  <!-- MUST MATCH -->
+  <section class="zone hard">
+    <div class="zone-head">
+      <span class="badge">Must match</span>
+      <span class="desc"><b>Narrows the list.</b> Mountains that fail these drop out.</span>
+    </div>
+    <div class="grid2">
+      <div class="filter">
+        <div class="ftop"><span class="fname">Max drive time</span>
+          <span class="info">i<span class="tip">Measured from your starting location. "Any distance" removes the cap entirely.</span></span></div>
+        <div class="seg" data-filter="drive">
+          <button data-value="day" aria-pressed="true">≤ 3h day trip</button>
+          <button data-value="ext" aria-pressed="false">≤ 6h extended</button>
+          <button data-value="any" aria-pressed="false">Any distance</button>
+        </div>
+      </div>
+
+      <div class="filter">
+        <div class="ftop"><span class="fname">Pass</span>
+          <span class="info">i<span class="tip">Only mountains covered by the selected pass remain. "Any" keeps every mountain.</span></span></div>
+        <div class="seg" data-filter="pass">
+          <button data-value="any" aria-pressed="true">Any pass</button>
+          <button data-value="epic" aria-pressed="false">Epic</button>
+          <button data-value="ikon" aria-pressed="false">Ikon</button>
+          <button data-value="indy" aria-pressed="false">Indy</button>
+        </div>
+      </div>
+
+      <div class="filter">
+        <div class="ftop"><span class="fname">Mountain size</span>
+          <span class="info">i<span class="tip">By vertical drop. Local hills are small, big mountains have the most vertical. "Any" keeps every size.</span></span></div>
+        <div class="seg" data-filter="size">
+          <button data-value="any" aria-pressed="true">Any size</button>
+          <button data-value="local" aria-pressed="false">Local hill</button>
+          <button data-value="mid" aria-pressed="false">Mid-size</button>
+          <button data-value="big" aria-pressed="false">Big mountain</button>
+        </div>
+      </div>
+
+      <div class="filter">
+        <div class="ftop"><span class="fname">State</span>
+          <span class="info">i<span class="tip">Restrict to one state. "All states" keeps every region in play.</span></span></div>
+        <div class="selwrap">
+          <select id="stateSel">
+            <option value="all">All states</option>
+            <option value="MA">Massachusetts</option>
+            <option value="NH">New Hampshire</option>
+            <option value="VT">Vermont</option>
+            <option value="ME">Maine</option>
+          </select>
+          <span class="chev"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+        </div>
+      </div>
+
+      <div class="filter">
+        <div class="ftop"><span class="fname">Max ticket price</span>
+          <span class="info">i<span class="tip">A hard ceiling — mountains with a window rate above this are hidden. Slide to the far right for no limit.</span></span></div>
+        <div class="price-val" id="priceVal">No price limit <span class="nomax">· all rates</span></div>
+        <input type="range" id="priceRange" min="70" max="180" step="5" value="180">
+        <div class="price-scale"><span>$70</span><span>$120</span><span>No max</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RANK BY -->
+  <section class="zone soft">
+    <div class="zone-head">
+      <span class="badge">Rank by what matters</span>
+      <span class="desc"><b>Reorders the list — never hides.</b> Heavier weight pushes those mountains up.</span>
+    </div>
+    <div class="grid3">
+      <div class="filter rankf">
+        <div class="ftop"><span class="fname">Fresh snow</span>
+          <span class="info">i<span class="tip">How much recent snowfall should drive the ranking. Doesn't filter out low-snow days.</span></span></div>
+        <div class="weight" data-filter="snow">
+          <button data-w="0" aria-pressed="false"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Skip</span></button>
+          <button data-w="1" aria-pressed="true"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Nice</span></button>
+          <button data-w="2" aria-pressed="false"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Top</span></button>
+        </div>
+      </div>
+
+      <div class="filter rankf">
+        <div class="ftop"><span class="fname">Quiet slopes</span>
+          <span class="info">i<span class="tip">How much low crowds should drive the ranking. Busy mountains still appear, just lower.</span></span></div>
+        <div class="weight" data-filter="quiet">
+          <button data-w="0" aria-pressed="false"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Skip</span></button>
+          <button data-w="1" aria-pressed="true"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Nice</span></button>
+          <button data-w="2" aria-pressed="false"><span class="bars"><i></i><i></i><i></i></span><span class="wl">Top</span></button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  </div><!-- /col-filters -->
+  </div><!-- /cols -->
+
+</div>
+
+<script>
+  const MTNS = [
+    { name:"Cannon Mountain",  st:"NH", drive:167, pass:["indy"],  price:99,  snow:4, crowd:20, vert:2180 },
+    { name:"Waterville Valley",st:"NH", drive:185, pass:["indy"],  price:109, snow:3, crowd:55, vert:2020 },
+    { name:"Loon Mountain",    st:"NH", drive:175, pass:["ikon"],  price:135, snow:2, crowd:70, vert:2100 },
+    { name:"Bretton Woods",    st:"NH", drive:200, pass:["indy"],  price:119, snow:3, crowd:35, vert:1500 },
+    { name:"Cranmore",         st:"NH", drive:180, pass:["indy"],  price:99,  snow:3, crowd:45, vert:1200 },
+    { name:"Pats Peak",        st:"NH", drive:95,  pass:[],        price:79,  snow:1, crowd:60, vert:770  },
+    { name:"Wachusett",        st:"MA", drive:75,  pass:["indy"],  price:89,  snow:1, crowd:80, vert:1000 },
+    { name:"Blue Hills",       st:"MA", drive:25,  pass:[],        price:59,  snow:0, crowd:75, vert:309  },
+    { name:"Berkshire East",   st:"MA", drive:130, pass:["indy"],  price:89,  snow:2, crowd:35, vert:1180 },
+    { name:"Sunday River",     st:"ME", drive:215, pass:["ikon"],  price:149, snow:5, crowd:50, vert:2340 },
+    { name:"Sugarloaf",        st:"ME", drive:260, pass:["ikon"],  price:155, snow:6, crowd:40, vert:2820 },
+    { name:"Killington",       st:"VT", drive:195, pass:["ikon"],  price:159, snow:5, crowd:65, vert:3050 },
+    { name:"Stowe",            st:"VT", drive:230, pass:["epic"],  price:169, snow:6, crowd:45, vert:2360 },
+    { name:"Okemo",            st:"VT", drive:175, pass:["epic"],  price:139, snow:4, crowd:55, vert:2200 },
+    { name:"Mount Snow",       st:"VT", drive:150, pass:["epic"],  price:129, snow:3, crowd:70, vert:1700 },
+    { name:"Stratton",         st:"VT", drive:180, pass:["ikon"],  price:145, snow:4, crowd:50, vert:2003 },
+    { name:"Sugarbush",        st:"VT", drive:220, pass:["ikon"],  price:149, snow:5, crowd:40, vert:2600 },
+    { name:"Jay Peak",         st:"VT", drive:300, pass:["indy"],  price:115, snow:9, crowd:25, vert:2153 },
+  ];
+  const DRIVE_CAP = { day:180, ext:360, any:Infinity };
+  const STATE_NAME = { MA:"Massachusetts", NH:"New Hampshire", VT:"Vermont", ME:"Maine" };
+  const SIZE_LABEL = { local:"Local hill", mid:"Mid-size", big:"Big mountain" };
+  function sizeBucket(v){ return v <= 1300 ? "local" : v <= 2100 ? "mid" : "big"; }
+  const W_LABEL = ["0","Nice to have","Top priority"];
+
+  const DEFAULTS = { drive:"day", pass:"any", state:"all", price:180, snow:1, quiet:1, size:"any" };
+  let S = { ...DEFAULTS };
+
+  const maxSnow = Math.max(...MTNS.map(m=>m.snow));
+  const maxVert = Math.max(...MTNS.map(m=>m.vert));
+
+  function passesHard(m){
+    if (m.drive > DRIVE_CAP[S.drive]) return false;
+    if (S.pass !== "any" && !m.pass.includes(S.pass)) return false;
+    if (S.state !== "all" && m.st !== S.state) return false;
+    if (S.size !== "any" && sizeBucket(m.vert) !== S.size) return false;
+    if (S.price < 180 && m.price > S.price) return false;
+    return true;
+  }
+  const maxDrive = Math.max(...MTNS.map(m=>m.drive));
+  function scoreDisplay(m){
+    const w = S.snow + S.quiet;
+    if (w === 0) return 1 - m.drive / maxDrive;          // no weights → nearest first
+    const sn = m.snow / maxSnow, qu = (100 - m.crowd) / 100;
+    return (S.snow*sn + S.quiet*qu) / w;                 // 0..1 average
+  }
+
+  const $ = s => document.querySelector(s);
+  const countEl = $("#count"), pickEl = $("#pick"), chipsEl = $("#chips"), emptyEl = $("#empty");
+
+  function animateCount(to){
+    const from = parseInt(countEl.textContent) || 0;
+    if (from === to){ countEl.textContent = to; return; }
+    const step = from < to ? 1 : -1; let cur = from;
+    clearInterval(countEl._t);
+    countEl._t = setInterval(()=>{ cur += step; countEl.textContent = cur; if (cur === to) clearInterval(countEl._t); }, 40);
+  }
+
+  function buildChips(){
+    const c = [];
+    if (S.drive !== "any") c.push({ k:"drive", label:"Drive: " + (S.drive==="day"?"≤ 3h":"≤ 6h"), rank:false });
+    if (S.pass !== "any")  c.push({ k:"pass",  label:"Pass: " + S.pass.charAt(0).toUpperCase()+S.pass.slice(1), rank:false });
+    if (S.state !== "all") c.push({ k:"state", label:STATE_NAME[S.state], rank:false });
+    if (S.size !== "any")  c.push({ k:"size", label:"Size: " + SIZE_LABEL[S.size], rank:false });
+    if (S.price < 180)     c.push({ k:"price", label:"Under $" + S.price, rank:false });
+    [["snow","Snow"],["quiet","Quiet"]].forEach(([k,lbl])=>{
+      if (S[k] === 2) c.push({ k, label: lbl + ": top priority", rank:true });
+    });
+
+    chipsEl.innerHTML = "";
+    if (!c.length){
+      chipsEl.innerHTML = '<span class="clabel">No filters set</span><span style="font-size:13px;color:var(--ink-3)">— every mountain in range, ranked by best overall.</span>';
+      return;
+    }
+    const lab = document.createElement("span"); lab.className="clabel"; lab.textContent="Active"; chipsEl.appendChild(lab);
+    c.forEach(ch=>{
+      const el = document.createElement("span"); el.className = "chip" + (ch.rank?" rank":"");
+      el.innerHTML = ch.label + ' <button aria-label="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 5l14 14M19 5L5 19"/></svg></button>';
+      el.querySelector("button").addEventListener("click", ()=>{ S[ch.k] = DEFAULTS[ch.k]; render(); });
+      chipsEl.appendChild(el);
+    });
+    const r = document.createElement("button"); r.className="reset"; r.textContent="Reset all";
+    r.addEventListener("click", ()=>{ S = { ...DEFAULTS }; render(); });
+    chipsEl.appendChild(r);
+  }
+
+  function reflectControls(){
+    document.querySelectorAll('.seg[data-filter]').forEach(g=>{
+      const f = g.dataset.filter;
+      g.querySelectorAll('button').forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.value === S[f])));
+    });
+    document.querySelectorAll('.weight[data-filter]').forEach(g=>{
+      const f = g.dataset.filter;
+      g.querySelectorAll('button').forEach(b=> b.setAttribute('aria-pressed', String(+b.dataset.w === S[f])));
+    });
+    $("#stateSel").value = S.state;
+    const pr = $("#priceRange"); pr.value = S.price;
+    pr.style.setProperty('--fill', ((S.price-70)/(180-70)*100) + '%');
+    $("#priceVal").innerHTML = S.price >= 180
+      ? 'No price limit <span class="nomax">· all rates</span>'
+      : 'Up to <span>$' + S.price + '</span> per day';
+  }
+
+  /* ---- live results list with FLIP reordering ---- */
+  const resultsEl = $("#results"), listN = $("#listN");
+  const rowMap = new Map();
+  function fmtDrive(d){ const h=Math.floor(d/60), m=d%60; return h+'h '+(m<10?'0':'')+m+'m'; }
+  function crowdInfo(c){ if(c<=30) return {l:'Quiet',cls:'q'}; if(c<=55) return {l:'Moderate',cls:''}; return {l:'Busy',cls:'b'}; }
+  function passBadges(p){ return p.length ? p.map(x=>'<span class="pbadge">'+x+'</span>').join('') : '<span class="pbadge none">No pass</span>'; }
+  function makeRow(){
+    const el = document.createElement('div'); el.className='row';
+    el.innerHTML =
+      '<div class="rk"></div>'+
+      '<div class="rmain"><div class="rname"></div><div class="rmeta"></div></div>'+
+      '<div class="rstats">'+
+        '<div class="c"><div class="k">Snow</div><div class="v vsnow"></div></div>'+
+        '<div class="c"><div class="k">Crowds</div><div class="v vcrowd"></div></div>'+
+        '<div class="c"><div class="k">Drive</div><div class="v vdrive"></div></div>'+
+      '</div>'+
+      '<div class="rbar"><i></i></div>';
+    return el;
+  }
+  function updateRow(el,m,i,frac,isTop){
+    el.classList.toggle('top', isTop);
+    el.querySelector('.rk').textContent = i+1;
+    el.querySelector('.rname').innerHTML = m.name + (isTop ? '<span class="rtag">Top pick</span>' : '');
+    const ci = crowdInfo(m.crowd);
+    el.querySelector('.rmeta').innerHTML = passBadges(m.pass) + '<span class="stt">'+m.st+'</span><span class="stt dot">·</span><span class="stt">$'+m.price+'/day</span>';
+    el.querySelector('.vsnow').textContent = m.snow+'\u2033';
+    const vc = el.querySelector('.vcrowd'); vc.textContent = ci.l; vc.className = 'v vcrowd '+ci.cls;
+    el.querySelector('.vdrive').textContent = fmtDrive(m.drive);
+    el.querySelector('.rbar i').style.width = Math.max(6, Math.round(frac*100))+'%';
+  }
+  function renderList(sorted){
+    const present = new Set(sorted.map(m=>m.name));
+    const old = new Map();
+    rowMap.forEach((el,n)=>{ if(present.has(n)) old.set(n, el.getBoundingClientRect().top); });
+    // pull leavers out of flow + fade
+    rowMap.forEach((el,n)=>{ if(!present.has(n)){ rowMap.delete(n);
+      const r=el.getBoundingClientRect(), pr=resultsEl.getBoundingClientRect();
+      el.style.position='absolute'; el.style.left='0'; el.style.right='0'; el.style.top=(r.top-pr.top)+'px';
+      el.classList.add('leave'); setTimeout(()=>el.remove(),260);
+    }});
+    const maxS = Math.max(...sorted.map(scoreDisplay), 0.0001);
+    sorted.forEach((m,i)=>{
+      let el = rowMap.get(m.name);
+      if(!el){ el=makeRow(); rowMap.set(m.name,el); el.classList.add('enter'); setTimeout(()=>el.classList.remove('enter'),360); }
+      updateRow(el, m, i, scoreDisplay(m)/maxS, i===0);
+      resultsEl.appendChild(el);
+    });
+    rowMap.forEach((el,n)=>{ const o=old.get(n); if(o==null) return;
+      const dy = o - el.getBoundingClientRect().top;
+      if(Math.abs(dy)>1){ el.style.transition='none'; el.style.transform='translateY('+dy+'px)';
+        requestAnimationFrame(()=>{ el.style.transition='transform .42s cubic-bezier(.2,.8,.2,1)'; el.style.transform=''; }); }
+    });
+  }
+
+  function render(){
+    reflectControls();
+    const matched = MTNS.filter(passesHard);
+    const sorted = matched.slice().sort((a,b)=> scoreDisplay(b)-scoreDisplay(a) || a.drive-b.drive);
+    animateCount(matched.length);
+    listN.textContent = matched.length;
+    if (matched.length === 0){
+      pickEl.textContent = "No match"; pickEl.className = "v none";
+      emptyEl.classList.add("show");
+    } else {
+      const top = sorted[0];
+      const h = Math.floor(top.drive/60), m = top.drive%60;
+      pickEl.innerHTML = top.name + ' <span style="font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink-3)">· ' + h + 'h ' + (m<10?'0':'') + m + 'm</span>';
+      pickEl.className = "v";
+      emptyEl.classList.remove("show");
+    }
+    renderList(sorted);
+    buildChips();
+  }
+
+  // wire hard pill groups
+  document.querySelectorAll('.seg[data-filter]').forEach(g=>{
+    g.addEventListener('click', e=>{ const b = e.target.closest('button'); if(!b) return; S[g.dataset.filter] = b.dataset.value; render(); });
+  });
+  // wire weight groups
+  document.querySelectorAll('.weight[data-filter]').forEach(g=>{
+    g.addEventListener('click', e=>{ const b = e.target.closest('button'); if(!b) return; S[g.dataset.filter] = +b.dataset.w; render(); });
+  });
+  $("#stateSel").addEventListener('change', e=>{ S.state = e.target.value; render(); });
+  $("#priceRange").addEventListener('input', e=>{ S.price = +e.target.value; render(); });
+
+  // relax: loosen the most restrictive hard filter
+  $("#relax").addEventListener('click', ()=>{
+    if (S.price < 180) S.price = 180;
+    else if (S.size !== "any") S.size = "any";
+    else if (S.state !== "all") S.state = "all";
+    else if (S.pass !== "any") S.pass = "any";
+    else if (S.drive !== "any") S.drive = (S.drive === "day" ? "ext" : "any");
+    render();
+  });
+
+  $("#topbtn").addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: "smooth" }));
+
+  render();
+</script>
+</body>
+</html>
