@@ -4019,19 +4019,15 @@ function wireEvents() {
     state.priceRange = Number(e.target.value);
     pushUrlDebounced(); render();
   });
-  els.sortBy.addEventListener('change', e => {
+  if (els.sortBy) els.sortBy.addEventListener('change', e => {
     state.sortBy = e.target.value;
     pushUrlDebounced(); render();
   });
-  els.toggleNight.addEventListener('click', () => {
+  if (els.toggleNight) els.toggleNight.addEventListener('click', () => {
     state.nightOnly = !state.nightOnly;
     els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
     els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
     pushUrlDebounced(); render();
-  });
-
-  document.getElementById('heroNavSubscribe')?.addEventListener('click', () => {
-    document.getElementById('navSubBtn')?.click();
   });
 
   const _filterToggleBtn = document.getElementById('filterToggleBtn');

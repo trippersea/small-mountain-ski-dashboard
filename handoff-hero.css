@@ -4,7 +4,26 @@
 body.handoff-homepage {
   background: var(--dh-bg-0);
   color: var(--dh-ink);
-  font-family: var(--dh-sans);
+  font-family: var(--dh-sans) !important;
+  /* Spec token aliases (design/spec.md §2) */
+  --bg-0: var(--dh-bg-0);
+  --bg-1: var(--dh-bg-1);
+  --panel: var(--dh-panel);
+  --line: var(--dh-line);
+  --line-soft: var(--dh-line-soft);
+  --ink: var(--dh-ink);
+  --ink-2: var(--dh-ink-2);
+  --ink-3: var(--dh-ink-3);
+  --ice: var(--dh-ice);
+  --ice-deep: var(--dh-ice-deep);
+  --ice-deep-h: var(--dh-ice-deep-h);
+  --ice-ghost: var(--dh-ice-ghost);
+  --good: var(--dh-good);
+  --warn: var(--dh-warn);
+  --sans: var(--dh-sans);
+  --serif: var(--dh-serif);
+  --r: var(--dh-r);
+  --r-sm: var(--dh-r-sm);
 }
 
 body.handoff-homepage .container {
@@ -54,16 +73,23 @@ body.handoff-homepage .container {
   display: none;
 }
 
-/* In-hero nav */
+/* In-hero nav — spec §4: space-between, grouped right side, no flex spacer */
 .dh-hero-nav {
   position: relative;
   z-index: 3;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 40px;
   padding: 20px 40px;
   border-bottom: 1px solid var(--dh-line-soft);
   backdrop-filter: blur(2px);
+}
+.dh-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex-shrink: 0;
 }
 .dh-hero-nav .dh-brand {
   display: flex;
@@ -110,7 +136,51 @@ body.handoff-homepage .container {
 }
 .dh-hero-nav .dh-links a:hover { color: var(--dh-ink); }
 .dh-hero-nav .dh-links a .caret { font-size: 10px; opacity: 0.7; }
-.dh-hero-nav .dh-spacer { flex: 1; }
+
+/* Browse dropdown in hero nav */
+.dh-hero-nav .dh-browse-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.dh-hero-nav .dh-browse-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--dh-sans);
+  color: var(--dh-ink-2);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  transition: color 0.15s;
+}
+.dh-hero-nav .dh-browse-btn:hover { color: var(--dh-ink); }
+.dh-hero-nav .nav-browse-dropdown {
+  z-index: 100;
+  left: 0;
+  transform: none;
+}
+.dh-hero-nav .dh-browse-wrap.open .nav-browse-dropdown,
+.dh-hero-nav .dh-browse-wrap:hover .nav-browse-dropdown {
+  display: flex;
+}
+
+/* Subscribe in hero nav */
+.dh-hero-nav .dh-subscribe-wrap {
+  position: relative;
+}
+.dh-hero-nav .nav-subscribe-dropdown {
+  z-index: 100;
+  right: 0;
+  left: auto;
+}
+.dh-hero-nav .dh-subscribe-wrap.open .nav-subscribe-dropdown {
+  display: block;
+}
+
 .dh-hero-nav .dh-btn-sub {
   color: var(--dh-ink);
   font-size: 15px;
@@ -128,6 +198,11 @@ body.handoff-homepage .container {
   font-family: var(--dh-sans);
 }
 .dh-hero-nav .dh-btn-sub:hover { background: oklch(0.66 0.115 232 / 0.28); }
+.dh-hero-nav .dh-btn-sub.dh-btn-sub--done {
+  color: var(--dh-good);
+  background: oklch(0.82 0.13 158 / 0.12);
+  border-color: oklch(0.82 0.13 158 / 0.3);
+}
 
 /* Two-column main */
 .dh-hero-main {
@@ -176,6 +251,7 @@ body.handoff-homepage .container {
 .dh-sub {
   font-size: clamp(16px, 1.3vw, 19px);
   line-height: 1.5;
+  font-weight: 400;
   color: var(--dh-ink-2);
   max-width: 46ch;
   margin: 0 0 34px;
@@ -358,6 +434,10 @@ body.handoff-homepage .container {
   letter-spacing: -0.01em;
   margin: 0;
   color: var(--dh-ink);
+}
+.dh-rname,
+.handoff-filters-view .dh-rname {
+  font-family: var(--dh-serif);
 }
 .dh-peak-loc { font-size: 14.5px; color: var(--dh-ink-3); margin-top: 8px; }
 .dh-verdict {
@@ -584,4 +664,9 @@ body.handoff-homepage > .top-nav { display: none; }
   .dh-peak { font-size: 32px; }
   .dh-stats { grid-template-columns: 1fr 1fr; }
   .dh-stats .dh-stat:last-child { grid-column: 1 / -1; }
+}
+
+/* Keep hero subscribe visible — global styles hide .nav-subscribe-wrap below 640px */
+body.handoff-homepage .dh-hero-nav .dh-subscribe-wrap {
+  display: block;
 }
