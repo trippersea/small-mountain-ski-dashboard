@@ -1,9 +1,11 @@
 // nav.js — shared nav interactions (build-time injected nav HTML)
 (function () {
-  var browseWraps = document.querySelectorAll('.nav-browse-wrap');
-  var browseBtns = document.querySelectorAll('.nav-browse-btn');
+  // ── Browse dropdown ──────────────────────────────────────────────────
+  var browseWrap = document.querySelector('.nav-browse-wrap');
+  var browseBtn = document.querySelector('.nav-browse-btn');
 
-  var subWraps = document.querySelectorAll('.nav-subscribe-wrap');
+  // ── Subscribe dropdown ───────────────────────────────────────────────
+  var subWrap = document.getElementById('navSubDropdown') && document.querySelector('.nav-subscribe-wrap');
   var subBtn = document.getElementById('navSubBtn');
   var subDropdown = document.getElementById('navSubDropdown');
   var subSubmit = document.getElementById('navSubSubmit');
@@ -12,62 +14,41 @@
   var subForm = document.getElementById('navSubForm');
   var subOk = document.getElementById('navSubOk');
 
-  function closeBrowse(exceptWrap) {
-    browseWraps.forEach(function (wrap) {
-      if (exceptWrap && wrap === exceptWrap) return;
-      wrap.classList.remove('open');
-      var btn = wrap.querySelector('.nav-browse-btn');
-      if (btn) btn.setAttribute('aria-expanded', 'false');
-    });
+  function closeBrowse() {
+    if (browseWrap) browseWrap.classList.remove('open');
+    if (browseBtn) browseBtn.setAttribute('aria-expanded', 'false');
   }
-
-  function closeSub(exceptWrap) {
-    subWraps.forEach(function (wrap) {
-      if (exceptWrap && wrap === exceptWrap) return;
-      wrap.classList.remove('open');
-    });
+  function closeSub() {
+    if (subWrap) subWrap.classList.remove('open');
     if (subBtn) subBtn.setAttribute('aria-expanded', 'false');
   }
 
-  browseWraps.forEach(function (wrap) {
-    var btn = wrap.querySelector('.nav-browse-btn');
-    if (!btn) return;
-    btn.addEventListener('click', function (e) {
+  if (browseWrap && browseBtn) {
+    browseBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       closeSub();
-      var wasOpen = wrap.classList.contains('open');
-      closeBrowse();
-      if (!wasOpen) {
-        wrap.classList.add('open');
-        btn.setAttribute('aria-expanded', 'true');
-      }
+      var open = browseWrap.classList.toggle('open');
+      browseBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
-  });
+  }
 
-  subWraps.forEach(function (wrap) {
-    var btn = wrap.querySelector('#navSubBtn') || wrap.querySelector('.dh-btn-sub, .nav-subscribe-btn');
-    var dropdown = wrap.querySelector('.nav-subscribe-dropdown');
-    if (!btn || !dropdown) return;
-    btn.addEventListener('click', function (e) {
+  if (subWrap && subBtn && subDropdown) {
+    subBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       closeBrowse();
-      var wasOpen = wrap.classList.contains('open');
-      closeSub();
-      if (!wasOpen) {
-        wrap.classList.add('open');
-        btn.setAttribute('aria-expanded', 'true');
-        var input = wrap.querySelector('.nav-subscribe-input');
-        if (input) setTimeout(function () { input.focus(); }, 50);
-      }
+      var open = subWrap.classList.toggle('open');
+      subBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open && subInput) setTimeout(function () { subInput.focus(); }, 50);
     });
-    dropdown.addEventListener('click', function (e) { e.stopPropagation(); });
-  });
+    subDropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+  }
 
   document.addEventListener('click', function () { closeBrowse(); closeSub(); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeBrowse(); closeSub(); }
   });
 
+  // Subscribe form submission
   if (subSubmit && subInput && subErr && subForm && subOk) {
     function setSubErr(msg) {
       subErr.textContent = msg;
@@ -92,10 +73,6 @@
         .then(function () {
           subForm.style.display = 'none';
           subOk.style.display = 'block';
-          if (subBtn) {
-            subBtn.textContent = 'Subscribed ✓';
-            subBtn.classList.add('dh-btn-sub--done');
-          }
         })
         .catch(function () {
           subSubmit.disabled = false;
@@ -107,6 +84,7 @@
     subInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleSub(); });
   }
 
+  // ── Scroll cue: hide on first scroll, click to scroll to results ─────
   (function () {
     var cue = document.getElementById('scrollCue');
     if (!cue) return;
@@ -123,3 +101,4 @@
     }, { passive: true });
   })();
 })();
+
