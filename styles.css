@@ -5441,8 +5441,8 @@ tr:focus-within .story-text--table {
   flex-direction: column;
   min-height: 0;
 }
-.hn-refine-panel .score-grid,
-.hn-refine-panel .score-grid--refine {
+.hn-refine-panel:not(.hn-refine-sidebar) .score-grid,
+.hn-refine-panel:not(.hn-refine-sidebar) .score-grid--refine {
   grid-template-columns: 1fr 1fr;
   gap: 12px 16px;
   align-content: start;
@@ -5576,7 +5576,7 @@ tr:focus-within .story-text--table {
 }
 
 @media (max-width: 640px) {
-  .hn-refine-panel .score-grid {
+  .hn-refine-panel:not(.hn-refine-sidebar) .score-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -9272,20 +9272,21 @@ button.vcard-detail-btn:hover,
 }
 
 .hn-rankings-zone {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
+  width: 100%;
+  max-width: none;
   margin-top: -1px;
   background: linear-gradient(180deg, #0f1c2e 0%, #081018 100%);
   border-top: 1px solid rgba(142, 178, 226, 0.12);
 }
 
 /* Full-width two-column shell: refine sidebar | rankings */
-.hn-rankings-split {
+#rankingsZone > .hn-rankings-split {
   display: grid;
-  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
   align-items: stretch;
   min-height: calc(100vh - 56px);
   width: 100%;
+  max-width: none;
 }
 
 .hn-rankings-main {
@@ -9335,11 +9336,12 @@ button.vcard-detail-btn:hover,
   line-height: 1.5;
 }
 
-.hn-rankings-zone .hn-refine-sidebar .score-grid,
-.hn-rankings-zone .hn-refine-sidebar .score-grid--refine {
+#plannerSection.hn-refine-sidebar .score-grid,
+#plannerSection.hn-refine-sidebar .score-grid--refine {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  grid-template-columns: unset;
 }
 
 .hn-rankings-zone .hn-refine-sidebar .score-control {
@@ -9436,13 +9438,13 @@ button.vcard-detail-btn:hover,
 }
 
 @media (max-width: 1080px) {
-  .hn-rankings-split {
-    grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+  #rankingsZone > .hn-rankings-split {
+    grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
   }
 }
 
-@media (max-width: 900px) {
-  .hn-rankings-split {
+@media (max-width: 768px) {
+  #rankingsZone > .hn-rankings-split {
     grid-template-columns: 1fr;
     min-height: 0;
   }
