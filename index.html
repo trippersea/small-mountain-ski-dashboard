@@ -469,6 +469,11 @@
 <body class="handoff-homepage">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <a href="#compareSection" class="skip-to-content">Skip to mountain list</a>
+  <!-- Full-viewport backdrop — outside .container so page content stacks above it -->
+  <div class="dh-scene" aria-hidden="true">
+    <div class="dh-photo"></div>
+    <div class="dh-vignette"></div>
+  </div>
   <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
   <div id="sliderTooltip" class="slider-tooltip" role="tooltip"></div>
   <div id="scoreTooltip" hidden role="tooltip"></div>
@@ -547,11 +552,6 @@
   <div class="container">
 
     <!-- ═══ HERO (design handoff) ═════════════════════════════════════════ -->
-    <div class="dh-scene" aria-hidden="true">
-      <div class="dh-photo"></div>
-      <div class="dh-vignette"></div>
-    </div>
-
     <section id="searchSection" class="dh-hero" aria-label="Find your mountain">
       <header class="dh-hero-nav">
         <a href="/" class="dh-brand" aria-label="WhereToSkiNext.com home">

@@ -27,12 +27,14 @@ body.handoff-homepage {
 }
 
 body.handoff-homepage .container {
+  position: relative;
+  z-index: 1;
   max-width: none;
   padding: 0;
 }
 
-/* Full-viewport photographic backdrop */
-.dh-scene {
+/* Full-viewport photographic backdrop (direct child of body) */
+body.handoff-homepage .dh-scene {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -71,6 +73,28 @@ body.handoff-homepage .container {
 }
 #searchSection.dh-hero::before {
   display: none;
+}
+
+/* Verdict card slot — reset any absolute positioning from legacy hero layouts */
+#searchSection.dh-hero #verdictSection {
+  position: static !important;
+  display: block !important;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  pointer-events: auto;
+  overflow: visible;
+}
+#searchSection.dh-hero #verdictCard {
+  width: 100%;
+}
+#searchSection.dh-hero .dh-ask,
+#searchSection.dh-hero .dh-card-wrap {
+  position: relative;
+  z-index: 2;
 }
 
 /* In-hero nav — spec §4: space-between, grouped right side, no flex spacer */
@@ -669,4 +693,51 @@ body.handoff-homepage > .top-nav { display: none; }
 /* Keep hero subscribe visible — global styles hide .nav-subscribe-wrap below 640px */
 body.handoff-homepage .dh-hero-nav .dh-subscribe-wrap {
   display: block;
+}
+
+/* ── Rankings / compare section (below hero) ───────────────────────────── */
+body.handoff-homepage #compareSection.compare-section-engine {
+  position: relative;
+  z-index: 1;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  background: var(--dh-bg-1);
+  overflow: hidden;
+}
+body.handoff-homepage #compareSection .compare-engine-head {
+  background: var(--dh-bg-1);
+}
+body.handoff-homepage #compareSection .compare-controls-strip {
+  background: var(--dh-bg-0);
+}
+body.handoff-homepage #compareSection .compare-table-shell {
+  background: var(--dh-bg-1);
+}
+body.handoff-homepage #compareSection .comparison-table thead th {
+  position: static;
+  top: auto;
+  background: var(--dh-bg-0);
+  color: var(--dh-ink-3);
+  border-bottom-color: var(--dh-line-soft);
+}
+body.handoff-homepage #compareSection .comparison-table tbody td {
+  color: var(--dh-ink-2);
+  border-bottom-color: var(--dh-line-soft);
+}
+body.handoff-homepage #compareSection .row-name {
+  color: var(--dh-ink);
+}
+body.handoff-homepage #compareSection .compare-engine-title {
+  color: var(--dh-ink);
+}
+body.handoff-homepage #compareSection .compare-engine-sub,
+body.handoff-homepage #compareSection #resultCount {
+  color: var(--dh-ink-3);
+}
+body.handoff-homepage #plannerSection.dh-filters-view {
+  position: relative;
+  z-index: 1;
 }

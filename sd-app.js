@@ -3104,10 +3104,7 @@ function renderHiddenGems(resorts) {
 
 // ─── Compare table ────────────────────────────────────────────────────────────
 function renderCompareTable(resorts) {
-  if (els.comparisonBody?.dataset?.prerendered === 'true') {
-    els.comparisonBody.innerHTML = '';
-    delete els.comparisonBody.dataset.prerendered;
-  }
+  if (!els.comparisonBody) return;
 
   // Stamp no-origin state on the table so CSS can annotate the Drive column header
   const _tableEl = document.getElementById('compareTable');
@@ -3164,12 +3161,14 @@ function renderCompareTable(resorts) {
   })();
   const _tableFreshSuffix = _tableAgoStr ? ` \u00b7 data as of ${_tableAgoStr}` : '';
 
-  if (q) {
-    els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${qRaw}"`;
-  } else if (noOriginDefault) {
-    els.resultCount.textContent = `${total} mountains · sorted by avg snowfall${_tableFreshSuffix}`;
-  } else {
-    els.resultCount.textContent = (state.tableViewAll ? `All ${total} mountains` : `Top 10 of ${total} mountains`) + _tableFreshSuffix;
+  if (els.resultCount) {
+    if (q) {
+      els.resultCount.textContent = `${displayed.length} result${displayed.length !== 1 ? 's' : ''} for "${qRaw}"`;
+    } else if (noOriginDefault) {
+      els.resultCount.textContent = `${total} mountains · sorted by avg snowfall${_tableFreshSuffix}`;
+    } else {
+      els.resultCount.textContent = (state.tableViewAll ? `All ${total} mountains` : `Top 10 of ${total} mountains`) + _tableFreshSuffix;
+    }
   }
   if (els.tableViewAllBtn) {
     els.tableViewAllBtn.textContent = (state.tableViewAll && !q) ? 'Show Top 10' : `View All ${total}`;
@@ -3190,6 +3189,7 @@ function renderCompareTable(resorts) {
     }
   });
 
+  let bodyHtml;
   if (displayed.length === 0) {
     const qActive = !!q;
     const title = qActive
@@ -3198,52 +3198,18 @@ function renderCompareTable(resorts) {
     const sub = qActive
       ? 'Try a shorter search, check spelling, or clear the search box. Filters still apply to what you see.'
       : 'Try widening distance, easing snow or price limits, or pick another pass.';
-    els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
-    els.comparisonBody.innerHTML = `
+    if (els.resultCount) {
+      els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
+    }
+    bodyHtml = `
       <tr><td colspan="7" class="compare-empty-state">
         <div class="ces-title">${title}</div>
         <div class="ces-sub">${sub}
           <button type="button" class="ces-reset-link" id="emptyStateReset">${qActive ? 'Clear search' : 'Clear all filters'}</button>
         </div>
       </td></tr>`;
-    document.getElementById('emptyStateReset')?.addEventListener('click', () => {
-      if (qActive && els.tableSearch) {
-        els.tableSearch.value = '';
-        state.tableSearch = '';
-        renderCompareTable(filteredResorts());
-      } else {
-        document.getElementById('resetFilters')?.click();
-      }
-    });
-    if (els.compareLocationHint) {
-      els.compareLocationHint.innerHTML = '';
-      els.compareLocationHint.hidden = true;
-    }
-    renderMobileCards([], { mode: 'empty', qActive, resortsLen: resorts.length });
-    return;
-  }
-
-  if (els.compareLocationHint) {
-    if (noOriginDefault) {
-      els.compareLocationHint.hidden = false;
-      els.compareLocationHint.innerHTML = `
-        <div class="compare-location-hint-inner">
-          <span class="compare-location-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.35 7-10a7 7 0 10-14 0c0 5.65 7 10 7 10z" stroke="currentColor" stroke-width="1.75"/><circle cx="12" cy="11" r="2.25" stroke="currentColor" stroke-width="1.75"/></svg></span>
-          <p class="compare-location-copy"><strong>Add your start point</strong> · we rank by live snow, drive time, and your pass using your location from the search bar above.</p>
-          <button type="button" class="compare-location-btn">Set location</button>
-        </div>`;
-      const _locBtn = els.compareLocationHint.querySelector('.compare-location-btn');
-      _locBtn?.addEventListener('click', () => {
-        document.getElementById('originInput')?.focus();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    } else {
-      els.compareLocationHint.innerHTML = '';
-      els.compareLocationHint.hidden = true;
-    }
-  }
-
-  els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }, idx) => {
+  } else {
+    bodyHtml = displayed.map(({ resort, breakdown, stormTotal, hist }, idx) => {
     const wx = state.weatherCache[resort.id]?.data;
     const crowd    = crowdForecast(resort, wx).label;
     const driveMins = getDriveMins(resort.id);
@@ -3304,7 +3270,48 @@ function renderCompareTable(resorts) {
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
       </tr>`;
-  }).join('');
+    }).join('');
+  }
+
+  if (els.compareLocationHint) {
+    if (displayed.length && noOriginDefault) {
+      els.compareLocationHint.hidden = false;
+      els.compareLocationHint.innerHTML = `
+        <div class="compare-location-hint-inner">
+          <span class="compare-location-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.35 7-10a7 7 0 10-14 0c0 5.65 7 10 7 10z" stroke="currentColor" stroke-width="1.75"/><circle cx="12" cy="11" r="2.25" stroke="currentColor" stroke-width="1.75"/></svg></span>
+          <p class="compare-location-copy"><strong>Add your start point</strong> · we rank by live snow, drive time, and your pass using your location from the search bar above.</p>
+          <button type="button" class="compare-location-btn">Set location</button>
+        </div>`;
+      const _locBtn = els.compareLocationHint.querySelector('.compare-location-btn');
+      _locBtn?.addEventListener('click', () => {
+        document.getElementById('originInput')?.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    } else {
+      els.compareLocationHint.innerHTML = '';
+      els.compareLocationHint.hidden = true;
+    }
+  }
+
+  if (els.comparisonBody.dataset.prerendered === 'true') {
+    delete els.comparisonBody.dataset.prerendered;
+  }
+  els.comparisonBody.innerHTML = bodyHtml;
+
+  if (displayed.length === 0) {
+    document.getElementById('emptyStateReset')?.addEventListener('click', () => {
+      const qActive = !!q;
+      if (qActive && els.tableSearch) {
+        els.tableSearch.value = '';
+        state.tableSearch = '';
+        renderCompareTable(filteredResorts());
+      } else {
+        document.getElementById('resetFilters')?.click();
+      }
+    });
+    renderMobileCards([], { mode: 'empty', qActive: !!q, resortsLen: resorts.length });
+    return;
+  }
 
   renderMobileCards(displayed);
 
@@ -4041,7 +4048,7 @@ function wireEvents() {
     });
   }
 
-  els.resetFilters.addEventListener('click', () => {
+  els.resetFilters?.addEventListener('click', () => {
     state.search = ''; state.passFilter = 'All'; state.stateFilter = 'All';
     state.sortBy = 'planner';
     state.nightOnly = false; state.priceRange = 0;
@@ -4061,8 +4068,8 @@ function wireEvents() {
     if (els.maxPriceFilter) els.maxPriceFilter.value = '0';
     if (els.heroPassSelect) els.heroPassSelect.value = 'All';
     if (els.heroSnowSelect) els.heroSnowSelect.value = '1';
-    els.sortBy.value = 'planner';
-    els.toggleNight.setAttribute('aria-pressed', 'false'); els.toggleNight.textContent = 'Off';
+    if (els.sortBy) els.sortBy.value = 'planner';
+    if (els.toggleNight) { els.toggleNight.setAttribute('aria-pressed', 'false'); els.toggleNight.textContent = 'Off'; }
     if (els.tableSearch) els.tableSearch.value = '';
     syncPlannerControls();
     pushUrlDebounced(); render();
@@ -4075,9 +4082,9 @@ function wireEvents() {
     els.tableViewAllBtn.addEventListener('click', () => { state.tableViewAll = !state.tableViewAll; renderCompareTable(filteredResorts()); });
   }
 
-  els.compareBtn.addEventListener('click', renderComparePanel);
-  els.clearCompare.addEventListener('click', () => { state.compareSet.clear(); els.comparePanel.classList.add('hidden'); renderCompareTray(); render(); });
-  els.closeCompare.addEventListener('click', () => els.comparePanel.classList.add('hidden'));
+  els.compareBtn?.addEventListener('click', renderComparePanel);
+  els.clearCompare?.addEventListener('click', () => { state.compareSet.clear(); els.comparePanel.classList.add('hidden'); renderCompareTray(); render(); });
+  els.closeCompare?.addEventListener('click', () => els.comparePanel.classList.add('hidden'));
 
   els.hnRefinePromptBtn?.addEventListener('click', () => {
     const panel = els.plannerSection;
@@ -4125,7 +4132,7 @@ function wireEvents() {
     });
   }
 
-  els.comparisonBody.addEventListener('click', e => {
+  els.comparisonBody?.addEventListener('click', e => {
     const row = e.target.closest('tr[data-id]');
     if (!row || e.target.closest('input, a, button, label')) return;
     state.selectedId = row.dataset.id;
@@ -4134,14 +4141,14 @@ function wireEvents() {
     renderDetail({ scroll: true });
     [...els.comparisonBody.querySelectorAll('tr')].forEach(r => r.classList.toggle('active-row', r.dataset.id === state.selectedId));
   });
-  els.comparisonBody.addEventListener('change', e => {
+  els.comparisonBody?.addEventListener('change', e => {
     const box = e.target.closest('input[data-compare]');
     if (!box) return;
     if (box.checked) state.compareSet.add(box.dataset.compare);
     else             state.compareSet.delete(box.dataset.compare);
     renderCompareTray();
   });
-  els.comparePills.addEventListener('click', e => {
+  els.comparePills?.addEventListener('click', e => {
     const btn = e.target.closest('[data-remove]');
     if (!btn) return;
     state.compareSet.delete(btn.dataset.remove);
@@ -4325,11 +4332,13 @@ function initialize() {
   if (hadUrlState) {
     if (els.passFilter)     els.passFilter.value = state.passFilter;
     setStateFilter(state.stateFilter);
-    els.sortBy.value        = state.sortBy;
+    if (els.sortBy)         els.sortBy.value = state.sortBy;
     const _hfSync = document.getElementById('howFarFilter'); if (_hfSync) _hfSync.value = String(state.howFar);
     if (els.maxPriceFilter) els.maxPriceFilter.value = String(state.priceRange);
-    els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
-    els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
+    if (els.toggleNight) {
+      els.toggleNight.setAttribute('aria-pressed', String(state.nightOnly));
+      els.toggleNight.textContent = state.nightOnly ? '✓ On' : 'Off';
+    }
   }
 
   syncPlannerControls();
@@ -4344,6 +4353,10 @@ function initialize() {
     driveTimesReady = false;
   }
   render();
+
+  if (isHandoffHero() && !(window.location.hash || '').replace(/^#/, '')) {
+    window.scrollTo(0, 0);
+  }
 
   if (state.origin) loadDriveTimes();
 
