@@ -863,6 +863,7 @@ const els = {
   heroSnowSelect:      $('heroSnowSelect'),
   hnRefinePromptBtn:   null,
   plannerSeeVerdictBtn: $('plannerSeeVerdictBtn'),
+  plannerRefineToggleBtn: $('plannerRefineToggleBtn'),
   scrollCue:           $('scrollCue'),
 };
 
@@ -1827,8 +1828,19 @@ function commitPlannerPriorityChange(key, btn) {
   else { debouncedRender(); pulseRankingsTable(); }
 }
 
+function setPlannerRefineOpen(open) {
+  const section = els.plannerSection;
+  const btn = els.plannerRefineToggleBtn;
+  if (!section || !btn) return;
+  section.classList.toggle('hn-refine-panel--collapsed', !open);
+  section.classList.toggle('hn-refine-panel--open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  btn.textContent = open ? 'Close filters' : 'Show filters';
+}
+
 function scrollToRankingsRefine() {
   const target = document.getElementById('rankingsZone') || document.getElementById('compareSection');
+  setPlannerRefineOpen(true);
   target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -3838,6 +3850,11 @@ function wireEvents() {
   });
 
   if (els.plannerDetails) els.plannerDetails.hidden = false;
+
+  els.plannerRefineToggleBtn?.addEventListener('click', () => {
+    const isOpen = els.plannerSection?.classList.contains('hn-refine-panel--collapsed');
+    setPlannerRefineOpen(isOpen);
+  });
 
   const _filterToggleBtn = document.getElementById('filterToggleBtn');
   const _filterPanel     = document.getElementById('filterPanel');

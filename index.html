@@ -735,16 +735,14 @@
     <!-- ═══ RUNNER-UPS ══════════════════════════════════════════════════════ -->
     </div><!-- /.hn-results-region -->
 
-  </div><!-- /container (hero + results) -->
-
-    <!-- ═══ RANKINGS FLOW (refine left · rankings right) — full viewport width ═ -->
+    <!-- ═══ RANKINGS FLOW (refine + live table) ═══════════════════════════ -->
     <div class="hn-rankings-zone" id="rankingsZone">
-    <div class="hn-rankings-split">
-    <aside id="plannerSection" class="hn-refine-panel hn-refine-inline hn-refine-sidebar" aria-label="Refine results">
+    <section id="plannerSection" class="hn-refine-panel hn-refine-inline hn-refine-panel--open" aria-label="Refine results">
       <div class="planner-col-header">
         <div class="planner-header-top">
           <div class="planner-main-title">Refine your results<span id="plannerFromLabel"></span></div>
           <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" hidden>Edit location</button>
+          <button type="button" id="plannerRefineToggleBtn" class="planner-refine-toggle-btn" aria-expanded="true" aria-controls="plannerDetails">Close filters</button>
         </div>
         <p class="planner-subtitle">Change a filter and the ranking updates instantly. Your top pick stays <strong>above</strong> &mdash; tap <strong>See top pick</strong> when you want to jump back up.</p>
       </div>
@@ -826,9 +824,8 @@
         <button type="button" class="planner-see-verdict-btn" id="plannerSeeVerdictBtn" aria-describedby="plannerSeeVerdictHint">See top pick &uarr;</button>
         <p id="plannerSeeVerdictHint" class="planner-see-verdict-hint">Scrolls to your updated pick at the top.</p>
       </div>
-    </aside>
+    </section>
 
-    <div class="hn-rankings-main">
     <!-- ═══ COMPARE TABLE ═══════════════════════════════════════════════════ -->
     <section id="compareSection" class="compare-section-engine hn-rankings-table">
       <div class="compare-engine-head">
@@ -6924,11 +6921,7 @@
       <div id="mobileCardGrid" class="mobile-card-grid" aria-label="Mountain cards"></div>
       <p class="price-disclaimer compare-price-note">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
     </section>
-    </div><!-- /.hn-rankings-main -->
-    </div><!-- /.hn-rankings-split -->
     </div><!-- /.hn-rankings-zone -->
-
-  <div class="container">
 
     <div id="compareTray" class="compare-tray hidden">
       <div class="compare-tray-inner">
