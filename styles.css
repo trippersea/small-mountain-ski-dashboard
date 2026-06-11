@@ -9253,3 +9253,120 @@ button.vcard-detail-btn:hover,
 .hn-editorial-ai--hero .hn-editorial-ai-tog:hover {
   color: rgba(240, 246, 252, 0.82);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOMEPAGE — hero → refine → rankings flow
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Soft handoff from hero photo into rankings band */
+#searchSection.hn-hero-split::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 72px;
+  pointer-events: none;
+  z-index: 4;
+  background: linear-gradient(to bottom, transparent 0%, rgba(15, 28, 46, 0.55) 55%, #0f1c2e 100%);
+}
+
+.hn-rankings-zone {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-top: -1px;
+  background: linear-gradient(180deg, #0f1c2e 0%, #081018 100%);
+  border-top: 1px solid rgba(142, 178, 226, 0.12);
+}
+
+.hn-rankings-zone .hn-refine-inline {
+  max-width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 22px 12px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.hn-rankings-zone .hn-refine-inline .planner-col-header {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.hn-rankings-zone .hn-refine-inline .planner-main-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: left;
+}
+
+.hn-rankings-zone .hn-refine-inline .planner-subtitle {
+  text-align: left;
+  max-width: 62ch;
+  margin: 8px 0 0;
+}
+
+.hn-rankings-zone .hn-refine-inline .planner-refine-footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.hn-rankings-zone #compareSection.hn-rankings-table {
+  max-width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.hn-rankings-zone #compareSection .compare-engine-head {
+  padding-top: 8px;
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
+.hn-rankings-zone #compareSection .compare-controls-strip,
+.hn-rankings-zone #compareSection .active-filters,
+.hn-rankings-zone #compareSection .compare-location-hint,
+.hn-rankings-zone #compareSection .compare-table-shell,
+.hn-rankings-zone #compareSection .compare-price-note {
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
+.hn-rankings-zone #compareSection .compare-filter-panel.filter-panel {
+  margin-left: 22px;
+  margin-right: 22px;
+}
+
+/* Brief highlight when filters re-rank the table */
+.hn-rankings-zone #compareSection.hn-rankings-table--pulse .compare-table-shell {
+  animation: hn-rankings-pulse 0.45s ease;
+}
+@keyframes hn-rankings-pulse {
+  0% { background: rgba(69, 162, 255, 0.08); }
+  100% { background: transparent; }
+}
+
+@media (max-width: 640px) {
+  .hn-rankings-zone .hn-refine-inline,
+  .hn-rankings-zone #compareSection.hn-rankings-table {
+    max-width: calc(100% - 16px);
+  }
+  .hn-rankings-zone .hn-refine-inline {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .hn-rankings-zone #compareSection .compare-engine-head,
+  .hn-rankings-zone #compareSection .compare-controls-strip,
+  .hn-rankings-zone #compareSection .compare-table-shell,
+  .hn-rankings-zone #compareSection .compare-price-note {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

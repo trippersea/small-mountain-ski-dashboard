@@ -861,7 +861,7 @@ const els = {
   toast:               $('toast'),
   heroPassSelect:      $('heroPassSelect'),
   heroSnowSelect:      $('heroSnowSelect'),
-  hnRefinePromptBtn:   $('hnRefinePromptBtn'),
+  hnRefinePromptBtn:   null,
   plannerSeeVerdictBtn: $('plannerSeeVerdictBtn'),
   scrollCue:           $('scrollCue'),
 };
@@ -1821,9 +1821,34 @@ function commitPlannerPriorityChange(key, btn) {
   if (key === 'howfar') {
     const savedScroll = window.scrollY;
     render();
+    pulseRankingsTable();
     requestAnimationFrame(() => window.scrollTo({ top: savedScroll, behavior: 'instant' }));
   }
-  else { debouncedRender(); }
+  else { debouncedRender(); pulseRankingsTable(); }
+}
+
+function scrollToRankingsRefine() {
+  const target = (els.plannerSection && !els.plannerSection.hidden)
+    ? els.plannerSection
+    : document.getElementById('compareSection');
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function syncRankingsFlowVisibility() {
+  const zone = document.getElementById('rankingsZone');
+  if (zone) zone.hidden = false;
+  if (els.plannerSection) els.plannerSection.hidden = false;
+}
+
+let _rankingsPulseTimer = null;
+function pulseRankingsTable() {
+  const table = document.getElementById('compareSection');
+  if (!table) return;
+  table.classList.remove('hn-rankings-table--pulse');
+  void table.offsetWidth;
+  table.classList.add('hn-rankings-table--pulse');
+  clearTimeout(_rankingsPulseTimer);
+  _rankingsPulseTimer = setTimeout(() => table.classList.remove('hn-rankings-table--pulse'), 480);
 }
 
 function scrollToBestMatchFromFilters(source) {
@@ -2172,10 +2197,9 @@ function updateHeroVerdictEmptyState() {
 
 function renderVerdict(resorts) {
   if (!els.verdictSection || !els.verdictCard) return;
-  const refinePromptEl = document.getElementById('hnRefinePrompt');
+  syncRankingsFlowVisibility();
   const splitHero = document.getElementById('searchSection')?.classList.contains('hn-hero-split');
   if (!state.origin) {
-    if (refinePromptEl) refinePromptEl.hidden = true;
     els.verdictSection.classList.add('hn-verdict-pre-location');
     if (splitHero) {
       els.verdictSection.classList.remove('hn-verdict-collapsed');
@@ -2205,7 +2229,6 @@ function renderVerdict(resorts) {
   syncWeekendLodgingStrip(v);
   const _hnSectionEarly = document.getElementById('hnRunnerUpSection');
   if (!v) {
-    if (refinePromptEl) refinePromptEl.hidden = true;
     document.getElementById('hnConditionsGuidance')?.remove();
     if (_hnSectionEarly) _hnSectionEarly.hidden = true;
     const filtersTightenEmpty = resorts.length === 0 && (
@@ -2614,21 +2637,6 @@ function renderVerdict(resorts) {
     trackResortView(trapEntry.resort.id, trapEntry.resort.name, 'trap_role_click', trapEntry.resort.passGroup || '');
     renderDetail({ scroll: true });
   });
-  if (refinePromptEl) {
-    refinePromptEl.hidden = false;
-    const isUrgent = tier === 'bad' || tier === 'marginal';
-      refinePromptEl.classList.toggle('hn-refine-prompt--urgent', isUrgent);
-      const titleEl = document.getElementById('hnRefinePromptTitle');
-      const subEl   = document.getElementById('hnRefinePromptSub');
-      if (isUrgent) {
-        const g = verdictRefineGuidanceCopy();
-        if (titleEl) titleEl.textContent = 'Want a stronger match?';
-        if (subEl)   subEl.textContent   = `${g.detail}.`;
-      } else {
-        if (titleEl) titleEl.textContent = 'Not seeing the right mountain?';
-        if (subEl)   subEl.textContent   = 'Adjust snow, crowds, ticket price or distance to find a better match.';
-      }
-  }
   injectVerdictWriteup(v);
   injectConditionsBadge(resort.id, 'verdictConditionsSlot');
 
@@ -3801,6 +3809,7 @@ function wireEvents() {
       syncPlannerControls();
       pushUrlDebounced();
       debouncedRender();
+      pulseRankingsTable();
     });
   }
 
@@ -3886,12 +3895,10 @@ function wireEvents() {
     commitPlannerPriorityChange(key, btn);
   });
 
-  els.hnRefinePromptBtn?.addEventListener('click', () => {
-    const panel = els.plannerSection;
-    if (!panel) return;
-    panel.hidden = false;
-    syncPlannerControls();
-    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+  els.hnRefinePromptBtn?.addEventListener('click', () => scrollToRankingsRefine());
+
+  document.getElementById('verdictCard')?.addEventListener('click', e => {
+    if (e.target.closest('#verdictRefineGuidanceBtn')) scrollToRankingsRefine();
   });
 
   els.plannerSeeVerdictBtn?.addEventListener('click', () => scrollToBestMatchFromFilters('refine_footer'));
@@ -3901,7 +3908,7 @@ function wireEvents() {
       state.passPreference = btn.dataset.pass;
       state.passFilter = btn.dataset.pass === 'any' ? 'All' : btn.dataset.pass;
       trackFilterEvent('planner_pass', btn.textContent.trim() || btn.dataset.pass || '');
-      savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender();
+      savePlannerState(); syncPlannerControls(); pushUrlDebounced(); debouncedRender(); pulseRankingsTable();
     });
   });
 
@@ -4140,6 +4147,7 @@ function initialize() {
 
   syncPlannerControls();
   syncVerdictVisibility();
+  syncRankingsFlowVisibility();
   wireEvents();
   wireHeroSentenceDay();
   syncSkiDayToTripMode(state.howFar);
@@ -4162,7 +4170,7 @@ function initialize() {
       run.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollToRankingsRefine();
   });
 
   const resortParam = new URLSearchParams(window.location.search).get('resort');
@@ -4305,7 +4313,7 @@ function initialize() {
   // ── Scroll cue: wire click + auto-hide on first scroll ──────────────────
   if (els.scrollCue) {
     els.scrollCue.addEventListener('click', () => {
-      document.getElementById('compareSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToRankingsRefine();
       els.scrollCue.classList.add('hidden');
     });
     window.addEventListener('scroll', () => {

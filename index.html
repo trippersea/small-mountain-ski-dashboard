@@ -715,16 +715,6 @@
 
     <!-- ═══ RESULTS & DISCOVERY (unified region) ═══════════════════════════ -->
     <div class="hn-results-region">
-    <div class="hn-refine-prompt" id="hnRefinePrompt" hidden>
-      <div class="hn-refine-prompt-text">
-        <strong id="hnRefinePromptTitle">Not seeing the right mountain?</strong>
-        <span id="hnRefinePromptSub">Adjust snow, crowds, ticket price or distance to find a better match.</span>
-      </div>
-      <button type="button" class="hn-refine-prompt-btn" id="hnRefinePromptBtn">
-        Refine results &darr;
-      </button>
-    </div>
-
     <!-- ═══ BOOKING STRIP ══════════════════════════════════════════════════ -->
     <div id="hnBookingStrip" class="hn-booking-strip hn-results-panel" hidden>
       <div class="hn-booking-left">
@@ -745,14 +735,15 @@
     <!-- ═══ RUNNER-UPS ══════════════════════════════════════════════════════ -->
     </div><!-- /.hn-results-region -->
 
-    <!-- ═══ REFINE PANEL ════════════════════════════════════════════════════ -->
-    <section id="plannerSection" class="card panel hn-refine-panel" hidden aria-label="Refine results">
+    <!-- ═══ RANKINGS FLOW (refine + live table) ═══════════════════════════ -->
+    <div class="hn-rankings-zone" id="rankingsZone">
+    <section id="plannerSection" class="hn-refine-panel hn-refine-inline" aria-label="Refine results">
       <div class="planner-col-header">
         <div class="planner-header-top">
           <div class="planner-main-title">Refine your results<span id="plannerFromLabel"></span></div>
           <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" hidden>Edit location</button>
         </div>
-        <p class="planner-subtitle">Change a filter and we will reshuffle the list. Your top pick stays <strong>above</strong> &mdash; tap <strong>See top pick</strong> when you want to jump back up.</p>
+        <p class="planner-subtitle">Change a filter and the ranking updates instantly. Your top pick stays <strong>above</strong> &mdash; tap <strong>See top pick</strong> when you want to jump back up.</p>
       </div>
       <div id="plannerDetails" class="planner-details">
         <div class="score-grid score-grid--refine">
@@ -835,7 +826,7 @@
     </section>
 
     <!-- ═══ COMPARE TABLE ═══════════════════════════════════════════════════ -->
-    <section id="compareSection" class="compare-section-engine">
+    <section id="compareSection" class="compare-section-engine hn-rankings-table">
       <div class="compare-engine-head">
         <div class="compare-engine-head-main">
           <p class="compare-engine-eyebrow">Live rankings</p>
@@ -6929,6 +6920,7 @@
       <div id="mobileCardGrid" class="mobile-card-grid" aria-label="Mountain cards"></div>
       <p class="price-disclaimer compare-price-note">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
     </section>
+    </div><!-- /.hn-rankings-zone -->
 
     <div id="compareTray" class="compare-tray hidden">
       <div class="compare-tray-inner">
