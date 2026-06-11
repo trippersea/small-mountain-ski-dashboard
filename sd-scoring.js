@@ -128,18 +128,65 @@ function windScoreIndex(wind) {
 
 // ─── Holiday calendar ─────────────────────────────────────────────────────────
 // Returns 0–1 holiday factor for a given Date object.
-// 1.0 = peak holiday week, 0.7 = major holiday weekend, 0.4 = minor
+// 1.0 = peak holiday week, 0.7 = major holiday weekend, 0.4 = sustained minor
+//
+// AUDIT FIX · Jun 2026:
+//  1. MLK / Presidents / Thanksgiving now computed from their actual floating
+//     dates (nth weekday of month) instead of fixed day-of-month bands, so the
+//     windows stay exact in every season.
+//  2. Spring break added. March was previously invisible to the crowd model,
+//     but staggered school vacations (roughly Mar 1–28) run destination
+//     Saturdays at holiday-adjacent levels and put real midweek family traffic
+//     on the hill. 0.4 ≈ a persistent minor-holiday level: a mid-March Saturday
+//     lands between a plain Saturday and a Christmas-week Saturday, which
+//     matches observed lift-line behavior.
+
+/** Day-of-month for the nth `dow` (0=Sun..6=Sat) of a month (1–12). */
+function _nthWeekdayOfMonth(year, month, dow, n) {
+  const firstDow = new Date(year, month - 1, 1).getDay();
+  return 1 + ((dow - firstDow + 7) % 7) + (n - 1) * 7;
+}
+
 function _holidayFactor(date) {
+  const year  = date.getFullYear();
   const month = date.getMonth() + 1;
   const day   = date.getDate();
   const dow   = date.getDay();
-  if (month === 12 && day >= 23)             return 1.0; // Christmas week
-  if (month === 1  && day <= 4)              return 1.0; // New Year's week (school break runs through ~Jan 4)
-  if (month === 2  && day >= 15 && day <= 23) return 1.0; // Presidents Week
-  if (month === 1  && day >= 13 && day <= 21 && (dow === 6 || dow <= 1)) return 0.7; // MLK weekend (Sat-Mon; Saturday is the peak day)
-  if (month === 11 && day >= 22 && day <= 30) return 0.7; // Thanksgiving
-  if (month === 10 && day >= 6  && day <= 14 && (dow === 6 || dow <= 1)) return 0.4; // Columbus Day weekend (Sat-Mon)
-  if (month === 11 && day >= 10 && day <= 12) return 0.4; // Veterans Day
+
+  // Christmas + New Year's school break
+  if (month === 12 && day >= 23) return 1.0;
+  if (month === 1  && day <= 4)  return 1.0;
+
+  // MLK weekend: Sat–Mon ending on the 3rd Monday of January
+  if (month === 1) {
+    const mlk = _nthWeekdayOfMonth(year, 1, 1, 3);
+    if (day >= mlk - 2 && day <= mlk) return 0.7;
+  }
+
+  // Presidents / February vacation week: Saturday before the 3rd Monday of
+  // February through the following Sunday (NE school break week drives this).
+  if (month === 2) {
+    const pres = _nthWeekdayOfMonth(year, 2, 1, 3);
+    if (day >= pres - 2 && day <= pres + 6) return 1.0;
+  }
+
+  // Spring break: staggered school vacations, ~Mar 1–28. Persistent demand
+  // bump on top of the normal day-of-week pattern (incl. midweek families).
+  if (month === 3 && day <= 28) return 0.4;
+
+  // Thanksgiving: Wednesday before through Sunday after the 4th Thursday
+  if (month === 11) {
+    const tg = _nthWeekdayOfMonth(year, 11, 4, 4);
+    if (day >= tg - 1 && day <= tg + 3) return 0.7;
+    if (day >= 10 && day <= 12) return 0.4; // Veterans Day (fixed Nov 11)
+  }
+
+  // Columbus Day weekend: Sat–Mon ending on the 2nd Monday of October
+  if (month === 10) {
+    const col = _nthWeekdayOfMonth(year, 10, 1, 2);
+    if (day >= col - 2 && day <= col && (dow === 6 || dow <= 1)) return 0.4;
+  }
+
   return 0;
 }
 
@@ -187,7 +234,37 @@ function _bluebirdFactor(wx) {
 // no longer get capacity relief — large lifts attract crowds, not absorb them.
 // Depends on: METRO_GRAVITY and LIFT_CAPACITY_TIERS lookup tables loaded before
 // this file in HTML via metro_gravity_final.js and lift_capacity_tiers_final.js
+//
+// AUDIT FIX · Jun 2026: memoized. Role selection (sleeper/trap comparators,
+// obviousBigMountainReference) recomputed the same resort's crowd score many
+// times per render. The memo guarantees every code path in one paint cycle
+// sees an identical crowd object, and is cleared by repaintMainUI (sd-app.js)
+// whenever new weather/history data lands or state changes trigger a repaint.
+// Key covers the inputs that can change between repaints without a repaint
+// trigger of their own: ski day, weekday-trip preset, wx availability, and
+// origin (which only affects `confidence`).
+let _crowdMemo = new Map();
+function resetCrowdForecastMemo() {
+  _crowdMemo = new Map();
+}
+
+function _crowdMemoKey(resort, wx) {
+  const day = (state.targetDate instanceof Date) ? state.targetDate.toDateString() : 'today';
+  return resort.id + '|' + (wx ? '1' : '0') + '|' + day + '|'
+    + (state.skiDayPreset || '') + '|' + (state.origin ? '1' : '0');
+}
+
 function crowdForecast(resort, wx = null) {
+  const key = _crowdMemoKey(resort, wx);
+  const hit = _crowdMemo.get(key);
+  if (hit) return hit;
+  if (_crowdMemo.size > 1200) _crowdMemo.clear(); // bound growth across day/preset changes
+  const out = _computeCrowdForecast(resort, wx);
+  _crowdMemo.set(key, out);
+  return out;
+}
+
+function _computeCrowdForecast(resort, wx = null) {
 
   // ── Step A: Base structural demand ────────────────────────────────────────
   const rawMG  = (typeof METRO_GRAVITY !== 'undefined' ? METRO_GRAVITY[resort.id] : null) ?? 500;
@@ -280,6 +357,9 @@ function crowdForecast(resort, wx = null) {
   else                              reasons.push('Midweek. Lighter traffic');
   if (holidayF >= 1.0)              reasons.push('Holiday week. Expect peak crowds');
   else if (holidayF >= 0.7)         reasons.push('Holiday weekend. Busy');
+  else if (holidayF >= 0.4 && (targetDate.getMonth() + 1) === 3)
+                                    reasons.push('Spring break. Vacation traffic, midweek too');
+  else if (holidayF >= 0.4)         reasons.push('Holiday timing. Extra family traffic');
   if (powderF >= 0.7)               reasons.push('Fresh snow. High demand');
   else if (powderF >= 0.4)          reasons.push('Recent snow drawing extra traffic');
   if (rainF > 0)                    reasons.push('Wet forecast. Lighter crowds');

@@ -173,6 +173,12 @@ const METRO_GRAVITY = {
   'ski-brule': 214,
 
   // ── MOUNTAIN ──
+  // AUDIT FIX · Jun 2026: six tail values (Bridger 22, Red Lodge 1, Snow King 67,
+  // Discovery 74, Ski Apache 81, Targhee 121) were within-region normalization
+  // artifacts. crowdForecast consumes these values on a single national scale
+  // (metroG = raw/1000, 40% of base demand), so near-zero values made real
+  // local markets read as permanently Quiet -- e.g. Bridger on a powder Saturday.
+  // Re-anchored against in-region comparables; see inline notes on each line.
   'jackson-hole-mountain-resort': 991,
   'breckenridge': 968,
   'vail': 945,
@@ -224,12 +230,12 @@ const METRO_GRAVITY = {
   'red-river-ski-area': 200,
   'howelsen-hill': 174,
   'beaver-mountain-ut': 171,
-  'grand-targhee-resort': 121,
-  'ski-apache': 81,
-  'discovery-ski-area': 74,
-  'snow-king-mountain': 67,
-  'bridger-bowl': 22,
-  'red-lodge-mountain': 1,
+  'grand-targhee-resort': 240,  // FIXED Jun 2026 (was 121): remote Driggs access, but a real destination powder draw + JHMR storm-day overflow. Peer of Brundage/Wolf Creek (249).
+  'ski-apache': 300,  // FIXED Jun 2026 (was 81): monopoly on the El Paso (870k) + West Texas + southern NM market. Holiday weeks are mobbed. Sits above Angel Fire (219).
+  'discovery-ski-area': 180,  // FIXED Jun 2026 (was 74): Butte/Anaconda local base. Peer of Lost Trail (180), not near-zero.
+  'snow-king-mountain': 160,  // FIXED Jun 2026 (was 67): Jackson town hill with night skiing + tourism spillover, deep JHMR shadow. Peer of Arctic Valley (150).
+  'bridger-bowl': 290,  // FIXED Jun 2026 (was 22): Bozeman (~230k, fastest-growing MT metro) community hill 20 min from town. Famously packed powder Saturdays. Peer band: Snowbowl 260 / Bogus 283.
+  'red-lodge-mountain': 245,  // FIXED Jun 2026 (was 1): Billings' (~190k) closest real mountain at ~1h. Peer of Kelly Canyon (240).
 
   // ── WEST ──
   'mammoth-mountain': 945,

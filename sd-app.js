@@ -215,6 +215,8 @@ function buildCrowdExplainerHtml(crowd) {
     'Recent snow':     'recent snow',
     'Clear, calm day': 'clear day draws crowds',
     'Wet forecast':    'wet forecast',
+    'Spring break':    'spring break traffic',
+    'Holiday timing':  'holiday traffic',
     'Epic pass':       'Epic pass network',
     'Ikon pass':       'Ikon pass network',
     'Small hill':      'limited lift capacity',
@@ -237,10 +239,21 @@ function buildCrowdExplainerHtml(crowd) {
     ? `${factorsStr.charAt(0).toUpperCase()}${factorsStr.slice(1)}. ${tip}`
     : tip;
 
+  // Confidence chip · AUDIT FIX Jun 2026: crowdForecast has always computed a
+  // confidence level (High = forecast + origin, Medium = one of the two, Low =
+  // neither) but it only surfaced in the detail panel. Showing it here sets
+  // honest expectations: "Busy · High confidence" reads very differently from
+  // a bare "Busy", and a Low-confidence call protects trust when we're wrong.
+  const confLevel = String(crowd.confidence || '').toLowerCase();
+  const confChip = crowd.confidence
+    ? `<span class="crowd-expl-conf crowd-expl-conf--${esc(confLevel)}">${esc(crowd.confidence)} confidence</span>`
+    : '';
+
   return `<div class="vcard-crowd-explainer ${levelCls}">
     <div class="crowd-expl-header">
       <span class="crowd-expl-tag">Crowd outlook</span>
       <span class="crowd-expl-level">${esc(crowd.label)} crowds</span>
+      ${confChip}
     </div>
     <p class="crowd-expl-body">${esc(summary)}</p>
   </div>`;
@@ -295,6 +308,8 @@ function buildCrowdReadDetail(crowd) {
     'Recent snow': 'recent snow bump',
     'Clear, calm day': 'clear day draws crowds',
     'Wet forecast': 'wet forecast keeps some away',
+    'Spring break': 'spring break vacation traffic',
+    'Holiday timing': 'holiday family traffic',
     'Epic pass': 'on the Epic network',
     'Ikon pass': 'on the Ikon network',
     'Small hill': 'limited lift capacity',
@@ -1334,7 +1349,13 @@ async function fetchHistory(resort) {
 }
 
 async function ensureHistory(resorts) {
-  const limited = resorts.slice(0, 20);
+  // AUDIT FIX · Jun 2026: cap raised 20 → 80 to match the planner candidate
+  // pool (MAX in plannerCandidates). At 20, the day-after-storm crowd bump
+  // (_powderFactor's recentF) silently applied to only a subset of the
+  // comparison pool: two mountains with identical 14" storms could show
+  // different crowd labels purely on history fetch order. Results are cached
+  // 24h in sessionStorage, so the wider fetch is a one-time cost per day.
+  const limited = resorts.slice(0, 80);
   const queue   = limited.filter(r => !historyCache.has(r.id));
   await Promise.all(Array.from({ length: 4 }, async () => {
     while (queue.length) {
@@ -3676,6 +3697,10 @@ function shareVerdict(resort, verdictData) {
 
 // ─── Render pipeline ──────────────────────────────────────────────────────────
 function repaintMainUI(resorts) {
+  // New weather/history may have landed since the last paint; clear the
+  // crowdForecast memo so every panel in this cycle sees fresh, identical
+  // crowd objects (see sd-scoring.js · resetCrowdForecastMemo).
+  if (typeof resetCrowdForecastMemo === 'function') resetCrowdForecastMemo();
   renderSummaryCards(resorts);
   renderActiveFilters();
   renderHiddenGems(resorts);
@@ -3694,7 +3719,7 @@ async function renderAsyncPanels(resorts, gen) {
   await ensureWeather(candidates);
   if (gen !== _renderGen) return;
   repaintMainUI(resorts);
-  ensureHistory(candidates.slice(0, 20)).then(() => {
+  ensureHistory(candidates).then(() => { // full planner pool; ensureHistory caps at 80
     if (gen !== _renderGen) return;
     repaintMainUI(filteredResorts());
   });
