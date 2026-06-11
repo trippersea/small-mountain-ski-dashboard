@@ -9279,45 +9279,124 @@ button.vcard-detail-btn:hover,
   border-top: 1px solid rgba(142, 178, 226, 0.12);
 }
 
-.hn-rankings-zone .hn-refine-inline {
-  max-width: min(1120px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 28px 22px 12px;
+/* Full-width two-column shell: refine sidebar | rankings */
+.hn-rankings-split {
+  display: grid;
+  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+  align-items: stretch;
+  min-height: calc(100vh - 56px);
+  width: 100%;
+}
+
+.hn-rankings-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Left: vertical refine sidebar ─────────────────────────────────────── */
+.hn-rankings-zone .hn-refine-sidebar {
+  position: sticky;
+  top: 56px;
+  align-self: start;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 28px 22px 32px;
   border: none;
+  border-right: 1px solid rgba(142, 178, 226, 0.14);
   border-radius: 0;
   box-shadow: none;
-  background: transparent;
+  background: rgba(8, 16, 28, 0.55);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(142, 178, 226, 0.35) transparent;
 }
 
-.hn-rankings-zone .hn-refine-inline .planner-col-header {
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+.hn-rankings-zone .hn-refine-sidebar .planner-col-header {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.hn-rankings-zone .hn-refine-inline .planner-main-title {
-  font-size: 1.25rem;
+.hn-rankings-zone .hn-refine-sidebar .planner-main-title {
+  font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-align: left;
+  line-height: 1.25;
 }
 
-.hn-rankings-zone .hn-refine-inline .planner-subtitle {
+.hn-rankings-zone .hn-refine-sidebar .planner-subtitle {
   text-align: left;
-  max-width: 62ch;
-  margin: 8px 0 0;
+  max-width: none;
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-.hn-rankings-zone .hn-refine-inline .planner-refine-footer {
-  border-top-color: rgba(255, 255, 255, 0.08);
-  padding-top: 16px;
-  margin-top: 16px;
+.hn-rankings-zone .hn-refine-sidebar .score-grid,
+.hn-rankings-zone .hn-refine-sidebar .score-grid--refine {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.hn-rankings-zone #compareSection.hn-rankings-table {
-  max-width: min(1120px, calc(100% - 32px));
-  margin: 0 auto;
+.hn-rankings-zone .hn-refine-sidebar .score-control {
+  padding: 12px 14px 11px;
+}
+
+.hn-rankings-zone .hn-refine-sidebar .score-control-label {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.hn-rankings-zone .hn-refine-sidebar .priority-btns {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.hn-rankings-zone .hn-refine-sidebar .priority-btn {
   width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 10px;
+  white-space: normal;
+  font-size: 12px;
+}
+
+.hn-rankings-zone .hn-refine-sidebar .slider-hint {
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+.hn-rankings-zone .hn-refine-sidebar .planner-refine-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 16px;
+  margin-top: 18px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.hn-rankings-zone .hn-refine-sidebar .planner-see-verdict-btn {
+  width: 100%;
+  text-align: center;
+}
+
+.hn-rankings-zone .hn-refine-sidebar .planner-see-verdict-hint {
+  min-width: 0;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* ── Right: rankings table (uses remaining width) ─────────────────────── */
+.hn-rankings-zone #compareSection.hn-rankings-table {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   border: none;
   border-radius: 0;
   box-shadow: none;
@@ -9325,9 +9404,7 @@ button.vcard-detail-btn:hover,
 }
 
 .hn-rankings-zone #compareSection .compare-engine-head {
-  padding-top: 8px;
-  padding-left: 22px;
-  padding-right: 22px;
+  padding: 24px 28px 18px;
 }
 
 .hn-rankings-zone #compareSection .compare-controls-strip,
@@ -9335,13 +9412,18 @@ button.vcard-detail-btn:hover,
 .hn-rankings-zone #compareSection .compare-location-hint,
 .hn-rankings-zone #compareSection .compare-table-shell,
 .hn-rankings-zone #compareSection .compare-price-note {
-  padding-left: 22px;
-  padding-right: 22px;
+  padding-left: 28px;
+  padding-right: 28px;
 }
 
 .hn-rankings-zone #compareSection .compare-filter-panel.filter-panel {
-  margin-left: 22px;
-  margin-right: 22px;
+  margin-left: 28px;
+  margin-right: 28px;
+}
+
+.hn-rankings-zone #compareSection .mobile-card-grid {
+  padding-left: 28px;
+  padding-right: 28px;
 }
 
 /* Brief highlight when filters re-rank the table */
@@ -9353,19 +9435,58 @@ button.vcard-detail-btn:hover,
   100% { background: transparent; }
 }
 
-@media (max-width: 640px) {
-  .hn-rankings-zone .hn-refine-inline,
-  .hn-rankings-zone #compareSection.hn-rankings-table {
-    max-width: calc(100% - 16px);
+@media (max-width: 1080px) {
+  .hn-rankings-split {
+    grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
   }
-  .hn-rankings-zone .hn-refine-inline {
+}
+
+@media (max-width: 900px) {
+  .hn-rankings-split {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .hn-rankings-zone .hn-refine-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: none;
+    border-bottom: 1px solid rgba(142, 178, 226, 0.14);
+    padding: 24px 20px 20px;
+  }
+  .hn-rankings-zone .hn-refine-sidebar .priority-btns {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .hn-rankings-zone .hn-refine-sidebar .priority-btn {
+    width: auto;
+    flex: 1 1 auto;
+    text-align: center;
+  }
+  .hn-rankings-zone #compareSection .compare-engine-head,
+  .hn-rankings-zone #compareSection .compare-controls-strip,
+  .hn-rankings-zone #compareSection .compare-table-shell,
+  .hn-rankings-zone #compareSection .compare-price-note,
+  .hn-rankings-zone #compareSection .mobile-card-grid {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .hn-rankings-zone #compareSection .compare-filter-panel.filter-panel {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hn-rankings-zone .hn-refine-sidebar {
     padding-left: 16px;
     padding-right: 16px;
   }
   .hn-rankings-zone #compareSection .compare-engine-head,
   .hn-rankings-zone #compareSection .compare-controls-strip,
   .hn-rankings-zone #compareSection .compare-table-shell,
-  .hn-rankings-zone #compareSection .compare-price-note {
+  .hn-rankings-zone #compareSection .compare-price-note,
+  .hn-rankings-zone #compareSection .mobile-card-grid {
     padding-left: 16px;
     padding-right: 16px;
   }

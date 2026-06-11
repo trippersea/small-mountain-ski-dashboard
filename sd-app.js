@@ -1828,9 +1828,7 @@ function commitPlannerPriorityChange(key, btn) {
 }
 
 function scrollToRankingsRefine() {
-  const target = (els.plannerSection && !els.plannerSection.hidden)
-    ? els.plannerSection
-    : document.getElementById('compareSection');
+  const target = document.getElementById('rankingsZone') || document.getElementById('compareSection');
   target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 

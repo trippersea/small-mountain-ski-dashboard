@@ -735,9 +735,10 @@
     <!-- ═══ RUNNER-UPS ══════════════════════════════════════════════════════ -->
     </div><!-- /.hn-results-region -->
 
-    <!-- ═══ RANKINGS FLOW (refine + live table) ═══════════════════════════ -->
+    <!-- ═══ RANKINGS FLOW (refine left · rankings right) ═══════════════════ -->
     <div class="hn-rankings-zone" id="rankingsZone">
-    <section id="plannerSection" class="hn-refine-panel hn-refine-inline" aria-label="Refine results">
+    <div class="hn-rankings-split">
+    <aside id="plannerSection" class="hn-refine-panel hn-refine-inline hn-refine-sidebar" aria-label="Refine results">
       <div class="planner-col-header">
         <div class="planner-header-top">
           <div class="planner-main-title">Refine your results<span id="plannerFromLabel"></span></div>
@@ -823,8 +824,9 @@
         <button type="button" class="planner-see-verdict-btn" id="plannerSeeVerdictBtn" aria-describedby="plannerSeeVerdictHint">See top pick &uarr;</button>
         <p id="plannerSeeVerdictHint" class="planner-see-verdict-hint">Scrolls to your updated pick at the top.</p>
       </div>
-    </section>
+    </aside>
 
+    <div class="hn-rankings-main">
     <!-- ═══ COMPARE TABLE ═══════════════════════════════════════════════════ -->
     <section id="compareSection" class="compare-section-engine hn-rankings-table">
       <div class="compare-engine-head">
@@ -6920,6 +6922,8 @@
       <div id="mobileCardGrid" class="mobile-card-grid" aria-label="Mountain cards"></div>
       <p class="price-disclaimer compare-price-note">*Prices vary by date, demand, age, and promotions. Confirm final pricing with the mountain.</p>
     </section>
+    </div><!-- /.hn-rankings-main -->
+    </div><!-- /.hn-rankings-split -->
     </div><!-- /.hn-rankings-zone -->
 
     <div id="compareTray" class="compare-tray hidden">
