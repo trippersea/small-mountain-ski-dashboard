@@ -30,6 +30,7 @@
 
     --good: oklch(0.82 0.13 158);
     --warn: oklch(0.83 0.11 78);
+    --bad: oklch(0.70 0.15 28);
 
     --sans: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, sans-serif;
     --serif: "Spectral", Georgia, "Times New Roman", serif;
@@ -67,11 +68,12 @@
   /* ====== Nav ====== */
   header.nav{
     position: relative; z-index: 3;
-    display: flex; align-items: center; gap: 40px;
+    display: flex; align-items: center; justify-content: space-between; gap: 40px;
     padding: 20px 40px;
     border-bottom: 1px solid var(--line-soft);
     backdrop-filter: blur(2px);
   }
+  .nav-right{ display:flex; align-items:center; gap: 30px; }
   .brand{ display:flex; align-items:center; gap: 12px; }
   .brand .mark{
     width: 30px; height: 30px; flex: none;
@@ -82,21 +84,21 @@
   .brand .name .tld{ color: var(--ink-3); font-weight: 700; }
   .brand .name .next{ color: var(--ice); }
   .brand .tag{ font-size: 12px; color: var(--ink-3); margin-top: 4px; letter-spacing: .01em; }
-  nav.links{ display:flex; align-items:center; gap: 30px; margin-left: 6px; }
+  nav.links{ display:flex; align-items:center; gap: 30px; }
   nav.links a{
     color: var(--ink-2); text-decoration: none; font-size: 15px; font-weight: 500;
     display:flex; align-items:center; gap: 6px; transition: color .15s;
   }
   nav.links a:hover{ color: var(--ink); }
   nav.links a .caret{ font-size: 10px; opacity: .7; }
-  nav .spacer{ flex: 1; }
   .btn-sub{
-    color: var(--ink); font-size: 15px; font-weight: 600; text-decoration:none;
-    padding: 9px 18px; border-radius: 999px; border: 1px solid var(--ice-deep);
+    color: var(--ink); font-family: var(--sans); font-size: 15px; font-weight: 600; text-decoration:none;
+    padding: 9px 18px; border-radius: 999px; border: 1px solid var(--ice-deep); cursor: pointer;
     background: var(--ice-ghost); transition: background .15s, border-color .15s;
-    display:flex; align-items:center; gap:7px;
+    display:flex; align-items:center; gap:7px; white-space: nowrap;
   }
   .btn-sub:hover{ background: oklch(0.66 0.115 232 / 0.28); }
+  .btn-sub.done{ background: oklch(0.82 0.13 158 / 0.18); border-color: oklch(0.82 0.13 158 / 0.5); color: var(--good); }
 
   /* ====== Layout ====== */
   main{
@@ -214,23 +216,17 @@
   }
   .verdict b{ color: var(--ink); font-weight: 700; }
 
-  /* stat tiles replace stacked paragraphs */
-  .stats{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 22px 0 4px;
-    border: 1px solid var(--line-soft); border-radius: var(--r); overflow: hidden;
-    background: var(--line-soft); }
-  .stat{ background: oklch(0.20 0.024 250 / 0.85); padding: 15px 16px; }
-  .stat .k{ font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
-  .stat .v{ font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); line-height: 1; }
-  .stat .v.good{ color: var(--good); }
-  .stat .meta{ font-size: 12px; color: var(--ink-3); margin-top: 6px; }
-
-  .heads{
-    display:flex; gap: 11px; align-items: flex-start;
-    font-size: 13.5px; line-height: 1.4; color: var(--ink-2);
-    margin: 18px 2px 2px;
-  }
-  .heads .ic{ color: var(--warn); flex:none; margin-top: 1px; }
-  .heads .ic svg{ width:16px; height:16px; display:block; }
+  /* Option A — the read: labeled signal rows, no icons */
+  .read{ margin-top: 20px; }
+  .read .rrow{ display:grid; grid-template-columns: 108px 1fr; gap: 18px; align-items: baseline; padding: 15px 0; }
+  .read .rrow + .rrow{ border-top: 1px solid var(--line-soft); }
+  .read .rname{ font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .read .rbody{ min-width: 0; }
+  .read .rverdict{ font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.25; }
+  .read .rverdict.good{ color: var(--good); }
+  .read .rverdict.warn{ color: var(--warn); }
+  .read .rverdict.bad{ color: var(--bad); }
+  .read .rdetail{ font-size: 13.5px; color: var(--ink-2); margin-top: 5px; line-height: 1.45; }
 
   .cta{
     width:100%; margin-top: 22px; padding: 17px 24px;
@@ -298,8 +294,6 @@
     header.nav{ padding: 16px 20px; }
     main{ padding-left: 20px; padding-right: 20px; }
     h2.peak{ font-size: 32px; }
-    .stats{ grid-template-columns: 1fr 1fr; }
-    .stats .stat:last-child{ grid-column: 1 / -1; }
   }
 </style>
 </head>
@@ -318,14 +312,15 @@
         <span class="name">WhereToSki<span class="next">Next</span><span class="tld">.com</span></span>
       </span>
     </div>
-    <nav class="links">
-      <a href="#">Browse <span class="caret">▾</span></a>
-      <a href="#">About</a>
-      <a href="#">Stories</a>
-      <a href="#">Pass Guides</a>
-    </nav>
-    <span class="spacer"></span>
-    <a class="btn-sub" href="#">Subscribe</a>
+    <div class="nav-right">
+      <nav class="links">
+        <a href="#">Browse <span class="caret">▾</span></a>
+        <a href="#">About</a>
+        <a href="#">Stories</a>
+        <a href="#">Pass Guides</a>
+      </nav>
+      <button class="btn-sub" id="subBtn" type="button">Subscribe</button>
+    </div>
   </header>
 
   <main>
@@ -394,29 +389,30 @@
       <h2 class="peak">Cannon Mountain</h2>
       <div class="peak-loc">Franconia Notch, New Hampshire · Epic + Indy</div>
 
-      <p class="verdict">The best mix of <b>fresh snow, open terrain, and low crowds</b> within your day-trip range today.</p>
+      <p class="verdict"><b>Best mix of fresh snow and low crowds</b> within your day-trip range today.</p>
 
-      <div class="stats">
-        <div class="stat">
-          <div class="k">Snow</div>
-          <div class="v">4" fresh</div>
-          <div class="meta">Groomers holding</div>
+      <div class="read">
+        <div class="rrow">
+          <span class="rname">Snow</span>
+          <div class="rbody">
+            <div class="rverdict good">4&quot; fresh, groomers holding</div>
+            <div class="rdetail">Wind-buffed up top — soft edges, fast lines all morning.</div>
+          </div>
         </div>
-        <div class="stat">
-          <div class="k">Drive</div>
-          <div class="v">2h 47m</div>
-          <div class="meta">vs 3h+ alts</div>
+        <div class="rrow">
+          <span class="rname">Crowds</span>
+          <div class="rbody">
+            <div class="rverdict good">Quiet — wide open</div>
+            <div class="rdetail">Midweek and off the Epic/Ikon network. Walk-on lifts.</div>
+          </div>
         </div>
-        <div class="stat">
-          <div class="k">Crowds</div>
-          <div class="v good">Quiet</div>
-          <div class="meta">Midweek, wide open</div>
+        <div class="rrow">
+          <span class="rname">Game plan</span>
+          <div class="rbody">
+            <div class="rverdict warn">Rain late — keep it short</div>
+            <div class="rdetail">Snow stays fast but turns wet by mid-afternoon. Ski the morning.</div>
+          </div>
         </div>
-      </div>
-
-      <div class="heads">
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></span>
-        <span><b style="color:var(--ink)">Heads up:</b> rain in the mix late — snow stays fast but wet. Keep the day short.</span>
       </div>
 
       <button class="cta">
@@ -495,6 +491,13 @@
     }, 700);
   }
   document.getElementById('updateBtn').addEventListener('click', flashUpdate);
+
+  // Subscribe button — gives visible feedback (wire to your real subscribe flow in production)
+  const subBtn = document.getElementById('subBtn');
+  subBtn.addEventListener('click', ()=>{
+    const on = subBtn.classList.toggle('done');
+    subBtn.textContent = on ? 'Subscribed ✓' : 'Subscribe';
+  });
 </script>
 </body>
 </html>

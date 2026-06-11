@@ -246,6 +246,220 @@ function buildCrowdExplainerHtml(crowd) {
   </div>`;
 }
 
+/** Ranked pool for verdict runner-ups (same shape as computeVerdict). */
+function buildVerdictRankedList(resorts) {
+  const pool = state.origin ? resorts.filter(r => resortMatchesDriveTier(r.id)) : resorts;
+  const withWx = pool.filter(r => state.weatherCache[r.id]?.data);
+  const w = normalizedWeights();
+  const fi = targetForecastIndex();
+  return withWx.map(r => ({
+    resort: r,
+    wx: state.weatherCache[r.id].data,
+    breakdown: plannerScoreBreakdown(r, state.weatherCache[r.id].data, fi, w),
+  })).sort((a, b) => b.breakdown.score - a.breakdown.score);
+}
+
+function resortPeakLocLine(resort) {
+  const place = resort.region ? `${resort.region}, ${resort.state}` : resort.state;
+  const pass = resort.passGroup === 'Independent' ? 'Independent' : resort.passGroup;
+  return `${place} · ${pass}`;
+}
+
+function crowdReadTier(label) {
+  if (label === 'Quiet') return 'good';
+  if (label === 'Moderate') return 'warn';
+  return 'bad';
+}
+
+function crowdReadVerdict(label) {
+  if (label === 'Quiet') return 'Quiet — wide open';
+  if (label === 'Moderate') return 'Moderate — arrive early';
+  if (label === 'Busy') return 'Busy — expect lines';
+  return 'Packed — peak capacity';
+}
+
+function buildCrowdReadDetail(crowd) {
+  if (!crowd?.reasons?.length) {
+    if (crowd?.label === 'Quiet') return 'Off-peak timing and manageable lift traffic.';
+    if (crowd?.label === 'Moderate') return 'Manageable if you arrive early.';
+    return 'Expect lift lines at peak hours.';
+  }
+  const SHORT = {
+    Saturday: 'weekend traffic',
+    Sunday: 'weekend traffic',
+    Friday: 'Friday crowds',
+    Midweek: 'midweek timing helps',
+    'Holiday week': 'holiday week',
+    'Holiday weekend': 'holiday weekend',
+    'Fresh snow': 'fresh snow draws skiers',
+    'Recent snow': 'recent snow bump',
+    'Clear, calm day': 'clear day draws crowds',
+    'Wet forecast': 'wet forecast keeps some away',
+    'Epic pass': 'on the Epic network',
+    'Ikon pass': 'on the Ikon network',
+    'Small hill': 'limited lift capacity',
+  };
+  const shorts = crowd.reasons.map(r => {
+    for (const prefix in SHORT) {
+      if (r.startsWith(prefix)) return SHORT[prefix];
+    }
+    return r.split(/\s*\u2014\s*/)[0].toLowerCase();
+  });
+  const factors = shorts.slice(0, 2).join(' and ');
+  if (crowd.label === 'Quiet') return factors ? `${factors.charAt(0).toUpperCase()}${factors.slice(1)}. Walk-on lifts likely.` : 'Walk-on lifts likely.';
+  if (crowd.label === 'Moderate') return factors ? `${factors.charAt(0).toUpperCase()}${factors.slice(1)}. Get there early.` : 'Get there early for the best experience.';
+  return factors ? `${factors.charAt(0).toUpperCase()}${factors.slice(1)}. Plan around peak lifts.` : 'Plan around peak lift hours.';
+}
+
+function buildSnowReadRow(vd, breakdown) {
+  const { tier, tomorrowIn, stormTotal, histTotal, detail, subPoints } = vd;
+  const snowTier = tier === 'bad' ? 'bad' : tier === 'marginal' ? 'warn' : 'good';
+  let verdict;
+  if (tomorrowIn >= 4) verdict = `${tomorrowIn.toFixed(0)}" fresh, powder day`;
+  else if (tomorrowIn >= 1) verdict = `${tomorrowIn.toFixed(1)}" fresh, groomers holding`;
+  else if (stormTotal >= 2) verdict = `${stormTotal.toFixed(1)}" in window, base building`;
+  else if (histTotal !== null && histTotal >= 6) verdict = `${histTotal}" recent snow, groomers holding`;
+  else if (stormTotal >= 0.5) verdict = 'Light refresh, groomed base';
+  else if (tier === 'bad') verdict = 'Rough snow day';
+  else verdict = 'Thin cover, groomed lines best';
+
+  const snowSub = (subPoints || []).find(p => /groom|snow|temp|wind|powder|base/i.test(p));
+  const rowDetail = snowSub || detail || 'Check the morning report for surface conditions.';
+  return { verdict, detail: rowDetail, tier: snowTier };
+}
+
+function buildGamePlanReadRow(vd, wx) {
+  const { tier, subPoints, rainLikely, detail, resort } = vd;
+  const fi = targetForecastIndex();
+  const fc = wx?.forecast?.[fi] || {};
+  const wind = fc.wind ?? 0;
+  const baseLo = fc.lo ?? 30;
+  const sLo = resort && typeof resortSummitTempF === 'function'
+    ? (resortSummitTempF(resort, baseLo) ?? baseLo)
+    : baseLo;
+  const warmCaution = sLo > 28 && !rainLikely;
+  const severeWind = wind > 35;
+
+  let verdict;
+  let rowTier;
+  if (rainLikely) {
+    verdict = 'Rain late — keep it short';
+    rowTier = 'bad';
+  } else if (severeWind) {
+    verdict = 'High wind — check lifts';
+    rowTier = 'bad';
+  } else if (warmCaution || tier === 'marginal') {
+    verdict = 'Get out early';
+    rowTier = 'warn';
+  } else if (tier === 'bad') {
+    verdict = 'Probably skip today';
+    rowTier = 'bad';
+  } else {
+    verdict = 'Full day on the mountain';
+    rowTier = 'good';
+  }
+
+  const timingSub = (subPoints || []).find(p => /early|morning|afternoon|wet|rain|wind|short/i.test(p));
+  let rowDetail = timingSub || detail;
+  if (rainLikely && !timingSub) rowDetail = 'Snow stays fast but turns wet by mid-afternoon. Ski the morning.';
+  else if (warmCaution && !timingSub) rowDetail = 'Surfaces soften as temps climb. Morning laps are best.';
+  else if (severeWind && !timingSub) rowDetail = 'Wind may hold lifts or limit upper mountain. Have a backup plan.';
+  else if (!rowDetail) rowDetail = tier === 'great' ? 'Conditions should hold most of the day.' : 'Plan around the best window.';
+
+  return { verdict, detail: rowDetail, tier: rowTier };
+}
+
+function renderVerdictReadRow(label, row) {
+  if (!row) return '';
+  return `<div class="rrow">
+    <span class="rname">${esc(label)}</span>
+    <div class="rbody">
+      <div class="rverdict ${esc(row.tier)}">${esc(row.verdict)}</div>
+      <div class="rdetail">${esc(row.detail)}</div>
+    </div>
+  </div>`;
+}
+
+function buildVerdictReadHtml(resort, wx, breakdown, vd, crowd) {
+  const vdWithResort = { ...vd, resort };
+  const snow = buildSnowReadRow(vd, breakdown);
+  const crowds = {
+    verdict: crowdReadVerdict(crowd.label),
+    detail: buildCrowdReadDetail(crowd),
+    tier: crowdReadTier(crowd.label),
+  };
+  const plan = buildGamePlanReadRow(vdWithResort, wx);
+  return `<div class="read">
+    ${renderVerdictReadRow('Snow', snow)}
+    ${renderVerdictReadRow('Crowds', crowds)}
+    ${renderVerdictReadRow('Game plan', plan)}
+  </div>`;
+}
+
+function splitVerdictSummary(prose, tier, driveText) {
+  if (prose) {
+    const withinIdx = prose.indexOf(' within');
+    if (withinIdx > 8) {
+      return { bold: prose.slice(0, withinIdx).trim(), rest: prose.slice(withinIdx) };
+    }
+    const dot = prose.indexOf('. ');
+    if (dot > 8 && dot < 70) {
+      return { bold: prose.slice(0, dot), rest: prose.slice(dot + 1).trim() };
+    }
+    return { bold: prose, rest: '' };
+  }
+  const trip = state.howFar === 0 ? 'day-trip range' : 'drive window';
+  if (tier === 'great' || tier === 'good') {
+    return { bold: 'Best mix of snow and crowds', rest: `within your ${trip} today.` };
+  }
+  if (tier === 'marginal') {
+    return { bold: 'Best option in range', rest: `if you keep expectations in check${driveText ? ` · ${driveText}` : ''}.` };
+  }
+  return { bold: 'Tough day in range', rest: 'consider waiting for better conditions or a closer backup.' };
+}
+
+function buildRunnerUpBeatLine(pickResort, pickEntry, runnerEntry) {
+  const r = runnerEntry.resort;
+  const rName = typeof stripResortSuffix === 'function' ? stripResortSuffix(r.name) : r.name;
+  const pickName = typeof stripResortSuffix === 'function' ? stripResortSuffix(pickResort.name) : pickResort.name;
+  const rCrowd = crowdForecast(r, runnerEntry.wx);
+  const pickCrowd = crowdForecast(pickResort, state.weatherCache[pickResort.id]?.data);
+  const rDrive = getDriveMins(r.id);
+  const pickDrive = getDriveMins(pickResort.id);
+
+  let reason = 'another option worth knowing about';
+  if (pickEntry && typeof closeCallEdgeReason === 'function' && pickEntry.breakdown && runnerEntry.breakdown) {
+    const edge = closeCallEdgeReason(pickEntry, runnerEntry);
+    reason = `close, but ${pickName} wins on ${edge}`;
+  } else if (rCrowd.score > pickCrowd.score + 8) {
+    reason = 'similar snow, but heavier crowds expected';
+    if (rDrive != null && pickDrive != null && rDrive > pickDrive + 15) reason += ' and a longer drive';
+  } else if (rDrive != null && pickDrive != null && rDrive > pickDrive + 25) {
+    reason = 'decent option, but a longer drive';
+  } else if (rDrive != null && pickDrive != null && rDrive < pickDrive - 20) {
+    reason = 'closest option, but a weaker forecast today';
+  }
+
+  return `<b>${esc(rName)}</b> — ${esc(reason)}.`;
+}
+
+function buildVerdictAlternativesHtml(ranked, pickResort, pickEntry) {
+  if (!ranked?.length) return '';
+  const pool = (typeof filterRunnerUpCandidates === 'function' ? filterRunnerUpCandidates(ranked) : ranked)
+    .filter(e => e?.resort?.id && e.resort.id !== pickResort.id)
+    .slice(0, 2);
+  if (!pool.length) return '';
+  return pool.map(entry => {
+    const cf = crowdForecast(entry.resort, entry.wx);
+    const drive = formatDrive(entry.resort.id);
+    const crowdShort = crowdUtilityShort(cf.label);
+    return `<div class="runner">
+      <div class="rl">${buildRunnerUpBeatLine(pickResort, pickEntry, entry)}</div>
+      <div class="rt">${esc(drive)}<br>${esc(crowdShort)}</div>
+    </div>`;
+  }).join('');
+}
+
 function driveUtilitySegment(resortId) {
   const mins = getDriveMins(resortId);
   if (mins == null) return 'Add a start point for drive time';
@@ -2319,127 +2533,38 @@ function renderVerdict(resorts) {
 
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
   const _fromCity = _cityEw || 'your location';
-  const _utilityDrive  = driveUtilitySegment(resort.id);
-  const _driveMins = getDriveMins(resort.id);
-  const _pickLabel = (typeof WTSN_ROLE !== 'undefined' && WTSN_ROLE.LABELS?.PICK) || 'Top Pick';
-  const _eyebrowTier = _pickLabel;
-  const _eyebrowMain = esc(`${_eyebrowTier} • From ${_fromCity}`);
-  const _driveEyebrowHtml = state.origin && _driveMins != null
-    ? `<span class="vcard-eyebrow-drive">${esc(_utilityDrive)}</span>`
-    : '';
-  const _eyebrow = `<span class="vcard-eyebrow-main">${_eyebrowMain}</span>${_driveEyebrowHtml}`;
-  const _bookName = resort.name.replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
-
-  const scoreNum = breakdown ? Math.round(breakdown.score) : 0;
-  const showVerdictGuidance = tier === 'bad'
-    || tier === 'marginal'
-    || (breakdown && scoreNum < 48 && tier !== 'great');
   const _wxVerdict = state.weatherCache[resort.id]?.data;
-  const _narrative = getMountainNarrative(buildNarrativeMountainPayload(resort, _wxVerdict));
-  const _pureGoldCls = _narrative.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
   const _crowd   = crowdForecast(resort, _wxVerdict);
-  const crowdLbl = _crowd.label;
+  const _vdFull  = (_wxVerdict && breakdown) ? verdictFromBreakdown(resort, _wxVerdict, breakdown) : { tier, detail, subPoints, tomorrowIn, stormTotal, histTotal, rainLikely: false };
 
-  const zipNudgeHtml = !state.origin
-    ? `<p class="vcard-zip-nudge">Enter your <strong>ZIP code</strong> or city above, then <strong>Find My Mountain</strong>. Once we know where you are leaving from, this swaps to a real mountain with drive time.</p>`
-    : '';
-
-  const verdictBdAttr = breakdown?.components ? (() => {
-    const c = breakdown.components;
-    const bd = JSON.stringify({
-      snow:       +c.snow.toFixed(1),
-      skiability: +c.skiability.toFixed(1),
-      fit:        +c.fit.toFixed(1),
-      drive:      +c.drive.toFixed(1),
-      value:      +c.value.toFixed(1),
-      crowd:      +c.crowd.toFixed(1),
-    });
-    const pickQa = [
-      `data-top-pick-eligible="${breakdown.topPickEligible === true ? '1' : '0'}"`,
-      `data-top-pick-reason="${esc(breakdown.topPickEligibilityReason || '')}"`,
-      v.topPickIsFallback ? 'data-top-pick-fallback="1"' : '',
-    ].filter(Boolean).join(' ');
-    return `data-bd="${btoa(bd)}" ${pickQa}`;
-  })() : '';
-
-  const verdictBadgeText = tier === 'great' ? 'Go: strong forecast'
-    : tier === 'good'    ? 'Go: good forecast'
-    : tier === 'marginal'? 'Worth checking: fair forecast'
-    : 'Skip: rough forecast';
-
-  const verdictBadgeCls = tier === 'great' ? 'vb-verdict-badge--go'
-    : tier === 'good'   ? 'vb-verdict-badge--go'
-    : tier === 'marginal'? 'vb-verdict-badge--maybe'
-    : 'vb-verdict-badge--skip';
-
-  const _fitWord = fitLabel(scoreNum);
-  const primaryBtn = `<button type="button" class="vcard-book-btn" id="verdictDetailBtn">See full forecast</button>`;
-  const secondaryBtn = `<div class="vcard-secondary-actions" role="group" aria-label="More options">
-    <button type="button" class="vcard-detail-btn vcard-compare-btn" id="verdictSeeAllRunnersBtn">Compare Mountains</button>
-    <span class="vcard-action-divider" aria-hidden="true">|</span>
-    <button type="button" class="vcard-detail-btn vcard-rankings-btn" id="verdictViewAllRankingsBtn">View all rankings</button>
-  </div>`;
-  const shareBtn = `<button type="button" class="vcard-share-btn vcard-share-btn--icon" id="verdictShareBtn" aria-label="Share this pick" title="Share this pick"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2"/></svg></button>`;
-  const actionRow = `<div class="vcard-action-row">${secondaryBtn}${shareBtn}</div>`;
-
-  const _isHeroDock = !!document.querySelector('.hn-hero-verdict-dock');
-  const _dockHeroCls = _isHeroDock ? ' vcard-hero-dash--dock' : '';
-  const _vcardHeroLightCls = ''; // Always dark · never light mode
-  const _verdictPhotoStyle = resortPhotoStyle(resort, 'linear-gradient(180deg,rgba(8,16,28,.18) 0%,rgba(8,16,28,.62) 50%,rgba(8,16,28,.94) 100%)');
-  const _heroDashStyleAttr = _verdictPhotoStyle ? ` style="${_verdictPhotoStyle}"` : '';
-
-  // ── Forecast freshness: day being shown + how recently data was fetched ───────
   const _cacheTs   = state.weatherCache[resort.id]?.ts;
   const _agoStr    = _cacheTs ? (() => {
     const mins = Math.round((Date.now() - _cacheTs) / 60000);
     if (mins < 2)  return 'just now';
     if (mins < 60) return `${mins}m ago`;
     return `${Math.round(mins / 60)}h ago`;
-  })() : null;
+  })() : 'just now';
   const _forecastDayStr = (() => {
     const d = state.targetDate instanceof Date
       ? state.targetDate
       : dayValToDate(state.skiDayPreset || smartDefaultWhenVal());
-    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   })();
-  const _freshnessHtml = _agoStr
-    ? `<div class="vcard-freshness vcard-freshness--quiet">Showing ${esc(_forecastDayStr)} forecast \u00b7 updated ${esc(_agoStr)}</div>`
-    : '';
-
-  const _histChipHtml = (histTotal !== null && histTotal > 0)
-    ? `<div class="vcard-hist-row"><span class="vcard-hist-chip">${histTotal}" in the last 7 days</span></div>`
-    : '';
 
   const _whyPickLabels = (typeof buildWhyThisPickReasons === 'function')
     ? buildWhyThisPickReasons(resorts, tier, resort.id, localEntry?.resort?.id ?? null)
     : ['Best fit for your filters', 'Closest decent option', 'Manageable crowds'];
-  // Filter out crowd-related labels · the crowd explainer block already covers that
   const _whyPickFiltered = _whyPickLabels.filter(t => !/crowd/i.test(t));
-  // Why-this-pick now renders as one prose sentence next to the verdict, not as
-  // pills below the card. The pills read like a database printout; one sentence
-  // sounds like a skier explaining the pick. Logic / scoring is unchanged ·
-  // see buildWhyThisPickReasons in why-this-pick.js.
   const _whyPickProseText = (typeof buildWhyThisPickProse === 'function')
     ? buildWhyThisPickProse(_whyPickFiltered)
     : '';
-  const _whyPickProseHtml = _whyPickProseText
-    ? `<p class="vcard-why-prose">${esc(_whyPickProseText)}</p>`
-    : '';
-
-  // ── Crowd Explainer: visible block with reasons, replaces hidden tooltip ────
-  const _crowdExplainerHtml = buildCrowdExplainerHtml(_crowd);
-
-  const _verdictPhrase = topPickVerdictPhrase(tier, scoreNum);
-  const _storyOneLine  = cardStoryOneLine(_narrative.story);
-  const _overNearbyCallout = (typeof buildVerdictOverNearbyCallout === 'function')
-    ? buildVerdictOverNearbyCallout(resorts, resort.id, [], localEntry?.resort?.id ?? null)
-    : null;
-  const _decisionCalloutHtml = _overNearbyCallout
-    ? `<p class="vcard-decision-callout" role="note">${esc(_overNearbyCallout)}</p>`
-    : '';
-  const _closeCallHtml = v.closeCallCopy
-    ? `<p class="vcard-close-call" role="note">${esc(v.closeCallCopy)}</p>`
-    : '';
+  const _summary = splitVerdictSummary(_whyPickProseText, tier, driveText);
+  const _readHtml = buildVerdictReadHtml(resort, _wxVerdict, breakdown, _vdFull, _crowd);
+  const _ranked = buildVerdictRankedList(resorts);
+  const _pickEntry = roles?.pick ?? null;
+  const _alternativesHtml = buildVerdictAlternativesHtml(_ranked, resort, _pickEntry);
+  const _peakLoc = resortPeakLocLine(resort);
+  const _rankDrive = driveText || '—';
 
   // ── Role cards: LOCAL / SLEEPER / TRAP (grouped under “Other smart calls”) ──
   const localCardHtml = localEntry ? (() => {
@@ -2543,42 +2668,67 @@ function renderVerdict(resorts) {
       </section>`
     : '';
 
-  const primaryActionsHtml = `<div class="vcard-actions vcard-actions-dash vcard-actions-dash--primary">
-          ${primaryBtn}
-          ${_freshnessHtml}
-        </div>`;
-  const tableActionsHtml = `<div class="vcard-actions vcard-actions-dash vcard-actions-dash--table">
-          ${actionRow}
-        </div>`;
+  const _closeCallNote = v.closeCallCopy
+    ? `<p class="vcard-close-call" role="note">${esc(v.closeCallCopy)}</p>`
+    : '';
 
   els.verdictCard.innerHTML = `
-    <div class="vcard vcard--dash vcard--rail vcard--pick-compact vcard--tier-${tier}${_vcardHeroLightCls}${_pureGoldCls}"
+    <div class="vcard vcard--handoff vcard--tier-${tier}"
       data-role-pick="${esc(resort.id)}"
       data-role-local="${localEntry?.resort?.id ? esc(localEntry.resort.id) : ''}"
       data-role-sleeper="${sleeperEntry?.resort?.id ? esc(sleeperEntry.resort.id) : ''}"
       data-role-trap="${trapEntry?.resort?.id ? esc(trapEntry.resort.id) : ''}">
-      <div class="vcard-hero-dash${_dockHeroCls}"${_heroDashStyleAttr}>
-        <div class="vcard-top-pill vcard-eyebrow">${_eyebrow}</div>
-        ${zipNudgeHtml}
-        <button type="button" class="vcard-name-dash vcard-name-dash--pick" id="verdictPickBtn" data-role-pick="${esc(resort.id)}">${esc(resort.name)}</button>
-        ${_decisionCalloutHtml}
-        ${_closeCallHtml}
-        <p class="vcard-verdict-line">${esc(_verdictPhrase)}</p>
-        ${pickCrowdWarningHtml}
-        <p class="vcard-story-one">${esc(_storyOneLine)}</p>
-        ${_whyPickProseHtml}
-        <div id="verdictWriteupSlot" class="vcard-writeup vcard-writeup--dash vcard-writeup--loading" hidden></div>
-        <p class="vcard-fallback-copy" id="verdictFallbackCopy" hidden></p>
-        ${_histChipHtml}
-        ${_crowdExplainerHtml}
+      <div class="vcard-card-top">
+        <span class="badge-live"><span class="live-dot" aria-hidden="true"></span> Live · today's pick</span>
+        <span class="updated" id="verdictUpdatedAt">Updated ${esc(_agoStr)}</span>
       </div>
-      <div class="vcard-body vcard-body-dash">
-        <div id="verdictConditionsSlot" class="verdict-conditions-slot" hidden></div>
-        ${primaryActionsHtml}
-        ${otherSmartCallsHtml}
-        ${tableActionsHtml}
+
+      <div class="rank">Top pick · ${esc(_rankDrive)} from ${esc(_fromCity)}</div>
+      <h2 class="vcard-peak">
+        <button type="button" class="vcard-peak-btn" id="verdictPickBtn" data-role-pick="${esc(resort.id)}">${esc(resort.name)}</button>
+      </h2>
+      <div class="vcard-peak-loc">${esc(_peakLoc)}</div>
+
+      <p class="vcard-verdict-sentence"><b>${esc(_summary.bold)}</b>${_summary.rest ? ` ${esc(_summary.rest)}` : ''}</p>
+      ${pickCrowdWarningHtml}
+      ${_closeCallNote}
+      ${_readHtml}
+
+      <button type="button" class="vcard-cta" id="verdictDetailBtn">See full forecast
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <div class="vcard-divider"></div>
+
+      <div class="vcard-secondary">
+        <button type="button" class="vcard-why" id="verdictWhyBtn" aria-expanded="false"${_alternativesHtml ? '' : ' disabled'}>
+          Why this beat the alternatives
+          <span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></span>
+        </button>
+        <div class="vcard-seclinks" role="group" aria-label="More actions">
+          <button type="button" class="vcard-seclink" id="verdictSeeAllRunnersBtn">Compare</button>
+          <button type="button" class="vcard-seclink" id="verdictViewAllRankingsBtn">All rankings</button>
+          <button type="button" class="vcard-seclink vcard-seclink--icon" id="verdictShareBtn" aria-label="Share this pick" title="Share this pick">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+        </div>
       </div>
-       </div>`;
+
+      <div class="vcard-why-body" id="verdictWhyBody"${_alternativesHtml ? '' : ' hidden'}>
+        <div>${_alternativesHtml}</div>
+      </div>
+
+      ${otherSmartCallsHtml}
+
+      <div class="vcard-card-foot">
+        <span class="vcard-trust">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>
+          Rankings never sponsored
+        </span>
+        <span class="sep" aria-hidden="true"></span>
+        <span>Forecast for ${esc(_forecastDayStr)}</span>
+      </div>
+    </div>`;
 
   if (document.getElementById('searchSection')?.classList.contains('hn-hero-split')) {
     const _dock = document.querySelector('.hn-hero-verdict-dock');
@@ -2590,11 +2740,14 @@ function renderVerdict(resorts) {
     }
   }
 
-  const _fb = document.getElementById('verdictFallbackCopy');
-  if (_fb) {
-    _fb.textContent = [headline, detail, ...subPoints].filter(Boolean).join(' ');
-    _fb.setAttribute('hidden', '');
-  }
+  $('verdictWhyBtn')?.addEventListener('click', () => {
+    const btn = $('verdictWhyBtn');
+    const body = $('verdictWhyBody');
+    if (!btn || !body || btn.disabled) return;
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    body.classList.toggle('open', !open);
+  });
 
   $('verdictPickBtn')?.addEventListener('click', () => {
     state.selectedFromRole = 'pick';
@@ -2647,8 +2800,6 @@ function renderVerdict(resorts) {
     trackResortView(trapEntry.resort.id, trapEntry.resort.name, 'trap_role_click', trapEntry.resort.passGroup || '');
     renderDetail({ scroll: true });
   });
-  injectVerdictWriteup(v);
-  injectConditionsBadge(resort.id, 'verdictConditionsSlot');
 
   if (isWtsnQaMode()) {
     console.info('[WTSN roles]', {
