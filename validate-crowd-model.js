@@ -153,5 +153,76 @@ const dayKeyed = vm.runInContext(`(() => {
 })()`, sandbox);
 check('Memo key responds to targetDate change without reset (stale-gate guard)', dayKeyed === true);
 
+
+// ════════ 6. SCORING FIXES (pass-aware value, drive curve, drive-tier gate) ════════
+console.log('\n═══ 6. Pass-aware value scoring ═══');
+function vIdx(id, passFilter) {
+  sandbox.state.passFilter = passFilter;
+  sandbox.__r = byId[id];
+  return vm.runInContext('valueIndex(__r)', sandbox);
+}
+const stoweEpic   = vIdx('stowe-mountain-resort', 'Epic');   // Epic resort, Epic filter
+const stoweAll    = vIdx('stowe-mountain-resort', 'All');    // no filter -> price curve
+const bromleyEpic = vIdx('bromley-mountain', 'Epic');        // Independent resort, Epic filter
+const jayIndy     = vIdx('jay-peak', 'Indy');                // Indy resort, Indy filter
+const wachIndep   = vIdx('wachusett-mountain-ski-area', 'Independent'); // Independent is NOT a pass
+console.log(`  Stowe/Epic filter: ${stoweEpic} · Stowe/no filter: ${stoweAll.toFixed(3)} · Bromley/Epic filter: ${bromleyEpic.toFixed(3)}`);
+console.log(`  Jay Peak/Indy filter: ${jayIndy} · Wachusett/Independent filter: ${wachIndep.toFixed(3)}`);
+check('Epic match = full credit (1.0)', stoweEpic === 1.0);
+check('Indy match = partial credit (0.85)', jayIndy === 0.85);
+check('No filter = price curve unchanged', Math.abs(stoweAll - (329 - 189) / (329 - 40)) < 1e-9);
+check('Non-covered resort under a pass filter stays on price curve', Math.abs(bromleyEpic - (329 - 104) / (329 - 40)) < 1e-9);
+check("'Independent' filter is not coverage (price curve applies)", wachIndep < 1.0 && Math.abs(wachIndep - (329 - 86) / (329 - 40)) < 1e-9);
+sandbox.state.passFilter = 'All';
+
+// preferenceReasons: no walk-up price take on covered mountains
+sandbox.state.passFilter = 'Epic';
+sandbox.state.weights = { snow: 1, crowd: 1, value: 10, drive: 0 };
+sandbox.state.targetDate = null;
+vm.runInContext('resetCrowdForecastMemo()', sandbox);
+sandbox.__r = byId['stowe-mountain-resort'];
+sandbox.__wx = bluebirdWx;
+const stoweReasons = vm.runInContext('preferenceReasons(__r, __wx, null)', sandbox);
+console.log('  Stowe reasons (Epic filter, value=10): ' + JSON.stringify(stoweReasons));
+check('Covered mountain: no "$X walk-up" value line', !stoweReasons.some(r => /walk-up\./.test(r) && r.startsWith('$')));
+check('Covered mountain: "Covered on your Epic pass" present', stoweReasons.some(r => r.includes('Covered on your Epic pass')));
+sandbox.state.passFilter = 'All';
+sandbox.state.weights = { snow: 1, crowd: 1, value: 0, drive: 0 };
+
+console.log('\n═══ 7. Drive score curve continuity ═══');
+const d = m => vm.runInContext(`driveScoreIndex(${m})`, sandbox);
+console.log(`  d(0)=${d(0)} d(59)=${d(59).toFixed(4)} d(60)=${d(60)} d(61)=${d(61).toFixed(4)} d(120)=${d(120)} d(180)=${d(180).toFixed(3)} d(240)=${d(240).toFixed(3)}`);
+check('No cliff at 60 min (gap < 0.005)', Math.abs(d(60) - d(61)) < 0.005, `gap ${(d(60) - d(61)).toFixed(4)}`);
+check('Boundary joins: 120/180/240 continuous', Math.abs(d(120) - d(121)) < 0.005 && Math.abs(d(180) - d(181)) < 0.005 && Math.abs(d(240) - d(241)) < 0.005);
+let mono = true;
+for (let m = 0; m < 400; m++) if (d(m + 1) > d(m) + 1e-9) mono = false;
+check('Monotonically decreasing 0–400 min', mono);
+check('Anchor values: 60min=0.85, 120min=0.70', d(60) === 0.85 && Math.abs(d(120) - 0.70) < 1e-9);
+
+console.log('\n═══ 8. Drive-tier gate for unknown drive times ═══');
+// Load sd-filters with minimal shims; getDriveMins returns null via sandbox override
+vm.runInContext(`
+  var HOW_FAR_TIERS = [
+    { label: 'Day Trip', floor: 0, cap: 180 },
+    { label: 'Extended', floor: 180, cap: 360 },
+    { label: 'All', floor: 0, cap: Infinity },
+  ];
+  var els = {}; var esc = s => String(s); var PRICE_RANGES = [];
+  var STATE_FILTER_LABELS = {}; var tableSort = { col: 'planner', dir: 'desc' };
+  var crowdPreferenceAllows = () => true; var tomorrowForecast = () => null;
+  var getDriveMins_real = getDriveMins;
+  getDriveMins = id => null; // simulate: estimates not yet landed
+`, sandbox);
+vm.runInContext(fs.readFileSync('sd-filters.js', 'utf8'), sandbox, { filename: 'sd-filters.js' });
+sandbox.state.origin = { lat: 42.0, lon: -71.0, label: 'Taunton, MA' };
+sandbox.state.howFar = 0;
+const dayTrip = vm.runInContext(`resortMatchesDriveTier('alyeska-resort')`, sandbox);
+sandbox.state.howFar = 2;
+const anyDist = vm.runInContext(`resortMatchesDriveTier('alyeska-resort')`, sandbox);
+console.log(`  unknown drive · Day Trip: ${dayTrip} · Any distance: ${anyDist}`);
+check('Unknown drive excluded from Day Trip', dayTrip === false);
+check('Unknown drive still passes Any distance', anyDist === true);
+sandbox.state.origin = null; sandbox.state.howFar = 0;
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures ? 1 : 0);

@@ -18,7 +18,8 @@ let _ensureWeatherPromise = null;
 let _ensureWeatherScope = '';
 
 // Scoring constants fetched from /api/weights at startup · never shipped in client JS.
-// W is null until loadWeights() resolves. All scoring code gates on this.
+// W is set synchronously by loadWeights() before initialize() runs (see boot
+// lines at the bottom of this file). All scoring code reads it.
 let W = null;
 // Phase-1 weather set (the "near" batch) so the verdict can be stable.
 let weatherPhase1Ids     = [];
@@ -4247,30 +4248,28 @@ function wireEvents() {
 
 // ─── Initialize ───────────────────────────────────────────────────────────────
 
-// ─── Weights loader ───────────────────────────────────────────────────────────
-// Fetches scoring constants from /api/weights before the app boots.
-// Falls back to hardcoded values if the endpoint is unavailable so the app
-// never breaks · the fallback contains the same values as the endpoint.
-async function loadWeights() {
-  try {
-    const res = await fetch('/api/weights');
-    if (!res.ok) throw new Error('weights fetch failed');
-    W = await res.json();
-    // Refresh state.weights now that W is available
-    state.weights = loadSavedWeights();
-  } catch (e) {
-    console.warn('[WTSN] Using fallback weights', e);
-    W = {
-      SCORING: {
-        VERTICAL_CEILING: 3500, ACRES_CEILING: 4500, LONGEST_RUN_CEILING: 5.0,
-        SNOW_SCALE: 8, SNOW_AVG_MAX: 669, SNOW_FORECAST_WEIGHT: 0.95,
-        SNOW_RELIABILITY_WEIGHT: 0.05, DRIVE_SCALE: 300, DRIVE_DEFAULT: 0.5,
-        PRICE_MAX: 329, PRICE_MIN: 40, CROWD_SCALE: 85,
-      },
-      SCORE_WEIGHTS: { snow: 0.30, skiability: 0.20, fit: 0.15, value: 0.10, crowd: 0.10, drive: 0.15 },
-      DEFAULT_WEIGHTS: { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 },
-    };
-  }
+// ─── Scoring constants ──────────────────────────────────────────────────────
+// AUDIT FIX · Jun 2026: /api/weights was removed. The endpoint existed to keep
+// these constants out of shipped client JS, but the fallback below shipped
+// them anyway, so every page load paid a failed fetch and a console warning
+// for zero real protection. Constants now load synchronously.
+// Removed with it (all dead config — nothing in the codebase read them):
+//   SCORE_WEIGHTS — normalizedWeights() in sd-scoring.js derives the real
+//     weights from the user's priority buttons and never read this object.
+//   SNOW_FORECAST_WEIGHT, SNOW_RELIABILITY_WEIGHT, DRIVE_SCALE, CROWD_SCALE —
+//     unreferenced in sd-scoring.js, sd-app.js, and sd-filters.js.
+// DEFAULT_WEIGHTS stays: loadSavedWeights(), serializeState(), and the
+// weights-reset handler all read it.
+function loadWeights() {
+  W = {
+    SCORING: {
+      VERTICAL_CEILING: 3500, ACRES_CEILING: 4500, LONGEST_RUN_CEILING: 5.0,
+      SNOW_SCALE: 8, SNOW_AVG_MAX: 669, DRIVE_DEFAULT: 0.5,
+      PRICE_MAX: 329, PRICE_MIN: 40,
+    },
+    DEFAULT_WEIGHTS: { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 },
+  };
+  state.weights = loadSavedWeights();
 }
 
 function syncVerdictVisibility() {
@@ -4544,4 +4543,5 @@ function updateHeroHeadline() {
   el.innerHTML = 'Find the best mountain<br /><span class="hn-editorial-headline-sub">for your next <span class="hn-editorial-headline-brand">ski day</span>.</span>';
 }
 
-loadWeights().then(() => initialize());
+loadWeights();
+initialize();

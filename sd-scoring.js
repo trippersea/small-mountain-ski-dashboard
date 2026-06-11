@@ -1191,11 +1191,16 @@ function mountainFitIndex(resort) {
 }
 
 // ─── Drive score index ────────────────────────────────────────────────────────
+// AUDIT FIX · Jun 2026: the old curve was flat 0.85 through 60 min, then
+// jumped to 0.80 at minute 61 — a 5-point cliff with no real-world meaning
+// (a 59-min and a 62-min mountain could show a visible score gap). The curve
+// is now continuous everywhere: 0.90 at the driveway, 0.85 at 1h, 0.70 at 2h,
+// 0.55 at 3h, 0.40 at 4h, 0.25 floor. Segment boundaries all join exactly.
 function driveScoreIndex(driveMins) {
   const drive = safeNum(driveMins, null);
   if (drive === null) return W.SCORING.DRIVE_DEFAULT;
-  if (drive <= 60)  return 0.85;
-  if (drive <= 120) return 0.80 - ((drive - 60)  / 60) * 0.10;
+  if (drive <= 60)  return 0.90 - (drive / 60) * 0.05;
+  if (drive <= 120) return 0.85 - ((drive - 60)  / 60) * 0.15;
   if (drive <= 180) return 0.70 - ((drive - 120) / 60) * 0.15;
   if (drive <= 240) return 0.55 - ((drive - 180) / 60) * 0.15;
   return Math.max(0.25, 0.40 - ((drive - 240) / 60) * 0.05);
@@ -1213,7 +1218,28 @@ function priceIndex(resort) {
   ));
 }
 
+// ─── Pass coverage (for value scoring) ────────────────────────────────────────
+// AUDIT FIX · Jun 2026: a passholder filtering their own pass was still scored
+// on walk-up price — Stowe ($189) read as terrible value next to Bromley ($104)
+// for an Epic holder whose marginal cost at Stowe is $0. When the user's pass
+// filter matches the resort's pass group, value now reads as covered:
+//   Epic / Ikon → 1.0 (unlimited at covered resorts)
+//   Indy        → 0.85 (typically 2 days per mountain; a 3rd day is walk-up,
+//                 so the credit is strong but not total)
+// 'Independent' as a filter is not a pass — it means walk-up skiing — so the
+// full price curve still applies there. Non-matching resorts are unchanged.
+const INDY_PASS_VALUE_CREDIT = 0.85;
+
+function passCoversResort(resort) {
+  const pf = state.passFilter;
+  if (!resort || !pf || pf === 'All' || pf === 'Independent') return false;
+  return resort.passGroup === pf;
+}
+
 function valueIndex(resort) {
+  if (passCoversResort(resort)) {
+    return resort.passGroup === 'Indy' ? INDY_PASS_VALUE_CREDIT : 1.0;
+  }
   return priceIndex(resort);
 }
 
@@ -1579,7 +1605,10 @@ function preferenceReasons(resort, wx, breakdown) {
   }
 
   // ── Value ─────────────────────────────────────────────────────────────────
-  if (valuePref >= 5) {
+  // Pass-covered mountains skip the walk-up price take — the pass-match reason
+  // above already says "Covered on your X pass", and "$189 walk-up. Pricey"
+  // next to it reads like the site is arguing with itself.
+  if (valuePref >= 5 && !passCoversResort(resort)) {
     if (resort.price <= 85)       reasons.push(`$${resort.price} walk-up. Easy on the wallet`);
     else if (resort.price <= 125) reasons.push(`$${resort.price} walk-up. Reasonable`);
     else                          reasons.push(`$${resort.price} walk-up. Pricey for how you filtered`);

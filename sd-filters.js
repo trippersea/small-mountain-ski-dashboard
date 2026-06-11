@@ -10,7 +10,12 @@ function resortMatchesDriveTier(resortId) {
   const cap   = tier?.cap   ?? 180;
   const floor = tier?.floor ?? 0;
   const mins  = getDriveMins(resortId);
-  if (mins === null) return true;
+  // AUDIT FIX · Jun 2026: with an origin set, a resort with no drive estimate
+  // no longer passes a tiered filter (Day Trip / Extended). null used to mean
+  // "let it through", which could transiently show a 6-hour mountain in a
+  // day-trip list before haversine estimates landed. Unknown drive only passes
+  // the untiered "All / Any distance" mode (cap === Infinity).
+  if (mins === null) return (tier?.cap ?? 180) === Infinity;
   if (cap < Infinity && mins > cap) return false;
   if (floor > 0 && mins <= floor) return false;
   return true;
