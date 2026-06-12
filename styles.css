@@ -9276,11 +9276,31 @@ button.vcard-detail-btn:hover,
 }
 
 .hn-rankings-zone {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-top: -1px;
-  background: linear-gradient(180deg, #0f1c2e 0%, #081018 100%);
-  border-top: 1px solid rgba(142, 178, 226, 0.12);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-top: none;
+}
+
+.hn-rankings-zone .hws-section {
+  max-width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 20px 22px 4px;
+}
+
+.hn-rankings-zone .hws {
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.hn-rankings-zone .hws-body {
+  border-top: none;
+}
+
+.hn-rankings-zone .hn-refine-panel.hn-refine-inline {
+  border-top: none;
 }
 
 .hn-rankings-zone .hn-refine-inline {
@@ -9296,7 +9316,7 @@ button.vcard-detail-btn:hover,
 .hn-rankings-zone .hn-refine-inline .planner-col-header {
   margin-bottom: 16px;
   padding-bottom: 14px;
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: transparent;
 }
 
 .hn-rankings-zone .hn-refine-inline .planner-header-top {
@@ -9317,9 +9337,24 @@ button.vcard-detail-btn:hover,
 }
 
 .hn-rankings-zone .hn-refine-inline .planner-refine-footer {
-  border-top-color: rgba(255, 255, 255, 0.08);
+  border-top-color: transparent;
   padding-top: 16px;
   margin-top: 16px;
+}
+
+/* Seamless rankings flow — no light-blue divider bars */
+.hn-rankings-zone #compareSection .compare-engine-head,
+.hn-rankings-zone #compareSection .compare-controls-strip,
+.hn-rankings-zone #compareSection .compare-filter-panel.filter-panel,
+.hn-rankings-zone #compareSection .compare-table-scroll.table-wrap {
+  border-bottom: none;
+  border-top: none;
+}
+.hn-rankings-zone #compareSection .comparison-table thead th {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+.hn-rankings-zone #compareSection .comparison-table td {
+  border-bottom-color: rgba(255, 255, 255, 0.04);
 }
 
 .planner-refine-toggle-btn {
@@ -9407,10 +9442,12 @@ button.vcard-detail-btn:hover,
 }
 
 @media (max-width: 640px) {
+  .hn-rankings-zone .hws-section,
   .hn-rankings-zone .hn-refine-inline,
   .hn-rankings-zone #compareSection.hn-rankings-table {
     max-width: calc(100% - 16px);
   }
+  .hn-rankings-zone .hws-section,
   .hn-rankings-zone .hn-refine-inline {
     padding-left: 16px;
     padding-right: 16px;

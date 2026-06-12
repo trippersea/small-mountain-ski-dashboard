@@ -735,14 +735,31 @@
     <!-- ═══ RUNNER-UPS ══════════════════════════════════════════════════════ -->
     </div><!-- /.hn-results-region -->
 
-    <!-- ═══ RANKINGS FLOW (refine + live table) ═══════════════════════════ -->
+    <!-- ═══ RANKINGS FLOW (under the hood + refine + live table) ═════════ -->
     <div class="hn-rankings-zone" id="rankingsZone">
-    <section id="plannerSection" class="hn-refine-panel hn-refine-inline hn-refine-panel--open" aria-label="Refine results">
+    <!-- ═══ HOW WE SCORE ════════════════════════════════════════════════════ -->
+    <section class="hws-section" aria-label="How the scoring works">
+      <details class="hws">
+        <summary class="hws-summary">
+          <span class="hws-kicker">Under the hood</span>
+          <span class="hws-title">How we score 300 mountains</span>
+          <span class="hws-toggle" aria-hidden="true"></span>
+        </summary>
+        <div class="hws-body">
+          <p>Every mountain gets one score for your exact ski day, built from six things: <strong>snow</strong> (the forecast for your day, plus how reliably this mountain gets it), <strong>skiability</strong> (temps and wind, because 10 degrees with a 30 mph gust is not the same ski day), <strong>terrain fit</strong> (vertical, acreage, and trails against what you said you want), <strong>drive</strong> (real road time from your start point), <strong>value</strong> (walk-up price, unless your pass covers the mountain, in which case price stops counting against a place you ski free), and <strong>crowds</strong>.</p>
+          <p>The crowd number is a prediction of crowd pressure, not a turnstile count. We model who each mountain draws (nearby metros, pass network, destination pull), how each day of the week and the holiday calendar loads it, what fresh snow and clear-sky days do to demand, and how well its lifts and parking absorb a rush. The confidence tag on the crowd card is honest about the inputs: High means we have both a forecast and your location, Low means we are working with less.</p>
+          <p>Your priority buttons genuinely change the math, not just the sort order. Forecasts refresh through the day, drive times come from real routing, and the score moves when the inputs do.</p>
+          <p class="hws-integrity">One thing never changes: no mountain can pay to rank higher. Sponsors are labeled, and the score is the score.</p>
+        </div>
+      </details>
+    </section>
+
+    <section id="plannerSection" class="hn-refine-panel hn-refine-inline hn-refine-panel--collapsed" aria-label="Refine results">
       <div class="planner-col-header">
         <div class="planner-header-top">
           <div class="planner-main-title">Refine your results<span id="plannerFromLabel"></span></div>
           <button id="plannerEditLocation" class="planner-edit-btn" aria-label="Edit location" hidden>Edit location</button>
-          <button type="button" id="plannerRefineToggleBtn" class="planner-refine-toggle-btn" aria-expanded="true" aria-controls="plannerDetails">Close filters</button>
+          <button type="button" id="plannerRefineToggleBtn" class="planner-refine-toggle-btn" aria-expanded="false" aria-controls="plannerDetails">Show filters</button>
         </div>
         <p class="planner-subtitle">Change a filter and the ranking updates instantly. Your top pick stays <strong>above</strong> &mdash; tap <strong>See top pick</strong> when you want to jump back up.</p>
       </div>
@@ -824,23 +841,6 @@
         <button type="button" class="planner-see-verdict-btn" id="plannerSeeVerdictBtn" aria-describedby="plannerSeeVerdictHint">See top pick &uarr;</button>
         <p id="plannerSeeVerdictHint" class="planner-see-verdict-hint">Scrolls to your updated pick at the top.</p>
       </div>
-    </section>
-
-    <!-- ═══ HOW WE SCORE ════════════════════════════════════════════════════ -->
-    <section class="hws-section" aria-label="How the scoring works">
-      <details class="hws">
-        <summary class="hws-summary">
-          <span class="hws-kicker">Under the hood</span>
-          <span class="hws-title">How we score 300 mountains</span>
-          <span class="hws-toggle" aria-hidden="true"></span>
-        </summary>
-        <div class="hws-body">
-          <p>Every mountain gets one score for your exact ski day, built from six things: <strong>snow</strong> (the forecast for your day, plus how reliably this mountain gets it), <strong>skiability</strong> (temps and wind, because 10 degrees with a 30 mph gust is not the same ski day), <strong>terrain fit</strong> (vertical, acreage, and trails against what you said you want), <strong>drive</strong> (real road time from your start point), <strong>value</strong> (walk-up price, unless your pass covers the mountain, in which case price stops counting against a place you ski free), and <strong>crowds</strong>.</p>
-          <p>The crowd number is a prediction of crowd pressure, not a turnstile count. We model who each mountain draws (nearby metros, pass network, destination pull), how each day of the week and the holiday calendar loads it, what fresh snow and clear-sky days do to demand, and how well its lifts and parking absorb a rush. The confidence tag on the crowd card is honest about the inputs: High means we have both a forecast and your location, Low means we are working with less.</p>
-          <p>Your priority buttons genuinely change the math, not just the sort order. Forecasts refresh through the day, drive times come from real routing, and the score moves when the inputs do.</p>
-          <p class="hws-integrity">One thing never changes: no mountain can pay to rank higher. Sponsors are labeled, and the score is the score.</p>
-        </div>
-      </details>
     </section>
 
     <!-- ═══ COMPARE TABLE ═══════════════════════════════════════════════════ -->
