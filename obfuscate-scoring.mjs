@@ -23,7 +23,12 @@ try {
   process.exit(0); // non-fatal: build continues without obfuscation
 }
 
-const TARGETS = ['sd-scoring.js', 'sd-app.js'];
+// crowd-structural.js added Jun 2026: it now holds the structural half of the
+// crowd model (demand base, capacity amplifier, squash), extracted so the
+// static mountain-page generator uses identical math. It must be scrambled in
+// the deployed bundle like the rest of the scoring code. The generator runs
+// locally against readable source, so this build-time step never affects it.
+const TARGETS = ['sd-scoring.js', 'sd-app.js', 'crowd-structural.js'];
 
 const OPTIONS = {
   compact: true,

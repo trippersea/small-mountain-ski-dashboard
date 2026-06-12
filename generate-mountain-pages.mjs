@@ -79,6 +79,45 @@ function loadResorts() {
   return resorts;
 }
 
+// ─── Load crowd model tables + shared structural module ───────────────────────
+// crowd-structural.js is the weather-independent half of the live crowd model
+// (sd-scoring.js delegates to the same file), so the calendars baked into
+// these pages use IDENTICAL math to the homepage tool. validate-crowd-model.js
+// asserts parity across all 300 resorts. If any file is missing, pages still
+// generate, just without the crowd calendar section.
+function loadCrowdStructural() {
+  const files = {
+    mg: 'metro_gravity_final.js',
+    lt: 'lift_capacity_tiers_final.js',
+    cs: 'crowd-structural.js',
+  };
+  for (const f of Object.values(files)) {
+    if (!fs.existsSync(path.join(__dirname, f))) {
+      console.warn(`Note: ${f} not found. Crowd calendars will be skipped.`);
+      return null;
+    }
+  }
+  try {
+    const ctx = {};
+    vm.runInNewContext(
+      fs.readFileSync(path.join(__dirname, files.mg), 'utf8') +
+      '\nglobalThis.__MG = METRO_GRAVITY;', ctx);
+    vm.runInNewContext(
+      fs.readFileSync(path.join(__dirname, files.lt), 'utf8') +
+      '\nglobalThis.__LT = LIFT_CAPACITY_TIERS;', ctx);
+    vm.runInNewContext(fs.readFileSync(path.join(__dirname, files.cs), 'utf8'), ctx);
+    if (!ctx.WTSN_CROWD_STRUCT || !ctx.__MG || !ctx.__LT) throw new Error('module/table missing after eval');
+    return {
+      struct: ctx.WTSN_CROWD_STRUCT,
+      tables: { METRO_GRAVITY: ctx.__MG, LIFT_CAPACITY_TIERS: ctx.__LT },
+    };
+  } catch (e) {
+    console.warn('Warning: could not load crowd model files:', e.message);
+    return null;
+  }
+}
+const CROWD = loadCrowdStructural();
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function esc(s) {
   return String(s)
@@ -859,6 +898,98 @@ const EDITORIAL_CSS = `
     </style>`;
 
 // ─── Generate HTML for one mountain page ──────────────────────────────────────
+// ─── Typical crowd calendar (from the shared structural model) ────────────────
+// Five day profiles with neutral weather. The takeaway sentence is assembled
+// from the actual labels, with phrasing variants picked deterministically per
+// resort id so 300 pages do not read like one template.
+
+function crowdCellClass(label) {
+  return { Quiet: 'quiet', Moderate: 'moderate', Busy: 'busy', Avoid: 'avoid' }[label] || 'moderate';
+}
+
+function pickVariant(resortId, variants) {
+  let h = 0;
+  const s = String(resortId);
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return variants[h % variants.length];
+}
+
+function crowdTakeaway(resort, cal) {
+  const by = Object.fromEntries(cal.map(c => [c.key, c]));
+  const sat = by.saturday, mid = by.midweek, hol = by.holiday;
+  const short = resort.name.replace(/\s+(Resort|Mountain Resort|Ski Area|Ski Resort)$/i, '');
+
+  let core;
+  if ((sat.label === 'Busy' || sat.label === 'Avoid') && mid.label === 'Quiet') {
+    core = pickVariant(resort.id, [
+      `Saturdays load up here. Midweek is a different mountain, same snow.`,
+      `${short} is a busy-Saturday hill. Ski it on a Tuesday and you will wonder where everyone went.`,
+      `Weekends draw a real crowd. The midweek skier gets the place mostly to themselves.`,
+    ]);
+  } else if ((sat.label === 'Busy' || sat.label === 'Avoid') && mid.label !== 'Quiet') {
+    core = pickVariant(resort.id, [
+      `There is no secret quiet day at a mountain this popular, but midweek still beats any Saturday.`,
+      `${short} draws people every day of the week. Midweek just softens it.`,
+      `Expect company whenever you come. Midweek trims the lines without erasing them.`,
+    ]);
+  } else if (sat.label === 'Moderate' && mid.label === 'Quiet') {
+    core = pickVariant(resort.id, [
+      `Saturdays stay manageable here, and midweek is properly quiet.`,
+      `Even peak Saturdays rarely get out of hand. Midweek you can lap without thinking about it.`,
+      `Weekend crowds exist but behave. Midweek is close to private.`,
+    ]);
+  } else {
+    core = pickVariant(resort.id, [
+      `Crowds are rarely the story here, even on a Saturday.`,
+      `Lift lines are not the thing that will decide your day at ${short}.`,
+      `This is one of the easier mountains to ski on a whim. Most days are uncrowded.`,
+    ]);
+  }
+
+  let holNote = '';
+  if (hol.label === 'Avoid') {
+    holNote = ' ' + pickVariant(resort.id + 'h', [
+      `Holiday weeks are the exception. Plan around Christmas and Presidents week if you can.`,
+      `The one caveat is holiday weeks, which push this place to its limits.`,
+    ]);
+  } else if (hol.label === 'Busy' && sat.label !== 'Busy' && sat.label !== 'Avoid') {
+    holNote = ' ' + pickVariant(resort.id + 'h', [
+      `Holiday weeks are the busiest it gets.`,
+      `Christmas and Presidents weeks are the only times it really fills in.`,
+    ]);
+  }
+  return core + holNote;
+}
+
+function crowdCalendarSection(resort, liveScoreUrl) {
+  if (!CROWD) return '';
+  let cal;
+  try {
+    cal = CROWD.struct.typicalCrowdCalendar(resort, CROWD.tables);
+  } catch (e) {
+    return '';
+  }
+  if (!Array.isArray(cal) || cal.some(c => !c || !Number.isFinite(c.score))) return '';
+
+  const cells = cal.map(c => `
+        <div class="sr-crowdcal-cell sr-crowdcal-cell--${crowdCellClass(c.label)}">
+          <span class="sr-crowdcal-day">${esc(c.kind)}</span>
+          <span class="sr-crowdcal-bar" aria-hidden="true"><span class="sr-crowdcal-fill" style="width:${Math.max(8, Math.min(100, c.score))}%"></span></span>
+          <span class="sr-crowdcal-label">${esc(c.label)}</span>
+        </div>`).join('');
+
+  return `
+    <section class="sr-crowdcal" aria-labelledby="crowdcal-h">
+      <h2 class="sr-crowdcal-title" id="crowdcal-h">When ${esc(resort.name)} gets crowded</h2>
+      <p class="sr-crowdcal-sub">Our model predicts crowd pressure for a typical week here: who this mountain draws, how its lifts absorb a rush, and how each day loads it. It is a prediction, not a turnstile count. Snow in the forecast pushes any of these days up.</p>
+      <div class="sr-crowdcal-grid">${cells}
+      </div>
+      <p class="sr-crowdcal-take">${esc(crowdTakeaway(resort, cal))}</p>
+      <a class="sr-crowdcal-cta" href="${esc(liveScoreUrl)}">Get the crowd forecast for your exact ski day</a>
+    </section>
+`;
+}
+
 function generateMountainPage(resort, allResorts) {
   const stateName  = stateFullName(resort.state);
   const stateSlug  = slugifyState(resort.state);
@@ -1205,6 +1336,7 @@ ${editorial ? EDITORIAL_CSS : ''}
       </div>
     </div>
 
+    ${crowdCalendarSection(resort, liveScoreUrl)}
     <section class="sr-matcher" aria-labelledby="matcher-h">
       <h2 class="sr-matcher-title" id="matcher-h">Is ${esc(resort.name)} right for you?</h2>
       <p class="sr-matcher-sub">Tap your level and pass. We will give a straight answer and a next step in the main ranking tool.</p>

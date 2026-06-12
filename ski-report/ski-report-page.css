@@ -892,3 +892,95 @@ body.pass-page-body.ski-report-page .site-footer a {
 body.pass-page-body.ski-report-page .site-footer a:hover {
   color: var(--accent, #2b6de9);
 }
+
+/* ── Typical crowd calendar (generate-mountain-pages.mjs · crowd-structural.js) ── */
+.sr-crowdcal {
+  margin: 28px 0;
+  padding: clamp(20px, 3.5vw, 28px);
+  border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.2));
+  border-radius: var(--pp-radius, 22px);
+  background: rgba(255, 255, 255, 0.03);
+}
+.sr-crowdcal-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pp-text, #f0f6fc);
+  margin: 0 0 6px;
+}
+.sr-crowdcal-sub {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+  margin: 0 0 18px;
+  max-width: 62em;
+}
+.sr-crowdcal-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.sr-crowdcal-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 14px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.2));
+  background: rgba(0, 0, 0, 0.18);
+}
+.sr-crowdcal-day {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pp-text-faint, rgba(240, 246, 252, 0.52));
+}
+.sr-crowdcal-bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.sr-crowdcal-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--sr-crowd-clr, #5aaddc);
+}
+.sr-crowdcal-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sr-crowd-clr, #5aaddc);
+}
+.sr-crowdcal-cell--quiet    { --sr-crowd-clr: #22b38a; }
+.sr-crowdcal-cell--moderate { --sr-crowd-clr: #5aaddc; }
+.sr-crowdcal-cell--busy     { --sr-crowd-clr: #c27803; }
+.sr-crowdcal-cell--avoid    { --sr-crowd-clr: #ef4444; }
+.sr-crowdcal-take {
+  margin: 16px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--pp-text, #f0f6fc);
+}
+.sr-crowdcal-cta {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent, #2b6de9);
+  text-decoration: none;
+}
+.sr-crowdcal-cta:hover {
+  text-decoration: underline;
+}
+@media (max-width: 720px) {
+  .sr-crowdcal-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .sr-crowdcal-cell:last-child {
+    grid-column: 1 / -1;
+  }
+}

@@ -127,67 +127,14 @@ function windScoreIndex(wind) {
 }
 
 // ─── Holiday calendar ─────────────────────────────────────────────────────────
-// Returns 0–1 holiday factor for a given Date object.
-// 1.0 = peak holiday week, 0.7 = major holiday weekend, 0.4 = sustained minor
-//
-// AUDIT FIX · Jun 2026:
-//  1. MLK / Presidents / Thanksgiving now computed from their actual floating
-//     dates (nth weekday of month) instead of fixed day-of-month bands, so the
-//     windows stay exact in every season.
-//  2. Spring break added. March was previously invisible to the crowd model,
-//     but staggered school vacations (roughly Mar 1–28) run destination
-//     Saturdays at holiday-adjacent levels and put real midweek family traffic
-//     on the hill. 0.4 ≈ a persistent minor-holiday level: a mid-March Saturday
-//     lands between a plain Saturday and a Christmas-week Saturday, which
-//     matches observed lift-line behavior.
-
-/** Day-of-month for the nth `dow` (0=Sun..6=Sat) of a month (1–12). */
-function _nthWeekdayOfMonth(year, month, dow, n) {
-  const firstDow = new Date(year, month - 1, 1).getDay();
-  return 1 + ((dow - firstDow + 7) % 7) + (n - 1) * 7;
-}
-
+// REFACTORED · Jun 2026: the calendar (floating MLK/Presidents/Thanksgiving,
+// spring break) now lives in crowd-structural.js (WTSN_CROWD_STRUCT), the
+// shared weather-independent half of the crowd model, so the static mountain
+// page crowd calendars and this live engine can never drift apart. This alias
+// keeps existing call sites working. crowd-structural.js is a hard dependency
+// loaded before this file in index.html, same as METRO_GRAVITY.
 function _holidayFactor(date) {
-  const year  = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day   = date.getDate();
-  const dow   = date.getDay();
-
-  // Christmas + New Year's school break
-  if (month === 12 && day >= 23) return 1.0;
-  if (month === 1  && day <= 4)  return 1.0;
-
-  // MLK weekend: Sat–Mon ending on the 3rd Monday of January
-  if (month === 1) {
-    const mlk = _nthWeekdayOfMonth(year, 1, 1, 3);
-    if (day >= mlk - 2 && day <= mlk) return 0.7;
-  }
-
-  // Presidents / February vacation week: Saturday before the 3rd Monday of
-  // February through the following Sunday (NE school break week drives this).
-  if (month === 2) {
-    const pres = _nthWeekdayOfMonth(year, 2, 1, 3);
-    if (day >= pres - 2 && day <= pres + 6) return 1.0;
-  }
-
-  // Spring break: staggered school vacations, ~Mar 1–28. Persistent demand
-  // bump on top of the normal day-of-week pattern (incl. midweek families).
-  if (month === 3 && day <= 28) return 0.4;
-
-  // Thanksgiving: Wednesday before through Sunday after the 4th Thursday
-  if (month === 11) {
-    const tg = _nthWeekdayOfMonth(year, 11, 4, 4);
-    if (day >= tg - 1 && day <= tg + 3) return 0.7;
-    if (day >= 10 && day <= 12) return 0.4; // Veterans Day (fixed Nov 11)
-  }
-
-  // Columbus Day weekend: Sat–Mon ending on the 2nd Monday of October
-  if (month === 10) {
-    const col = _nthWeekdayOfMonth(year, 10, 1, 2);
-    if (day >= col - 2 && day <= col && (dow === 6 || dow <= 1)) return 0.4;
-  }
-
-  return 0;
+  return WTSN_CROWD_STRUCT.holidayFactor(date);
 }
 
 // ─── Powder carry-forward factor ─────────────────────────────────────────────
@@ -232,8 +179,10 @@ function _bluebirdFactor(wx) {
 //                     Bousquet Saturday bluebird → MODERATE (51)
 // Destination fix: Tier 4-5 Ikon/Epic resorts with metroGravity > 750
 // no longer get capacity relief — large lifts attract crowds, not absorb them.
-// Depends on: METRO_GRAVITY and LIFT_CAPACITY_TIERS lookup tables loaded before
-// this file in HTML via metro_gravity_final.js and lift_capacity_tiers_final.js
+// Depends on: METRO_GRAVITY and LIFT_CAPACITY_TIERS lookup tables AND the
+// WTSN_CROWD_STRUCT shared module (crowd-structural.js), all loaded before
+// this file in index.html. The structural half of the model lives there so
+// the static mountain-page crowd calendars use the identical math.
 //
 // AUDIT FIX · Jun 2026: memoized. Role selection (sleeper/trap comparators,
 // obviousBigMountainReference) recomputed the same resort's crowd score many
@@ -266,33 +215,19 @@ function crowdForecast(resort, wx = null) {
 
 function _computeCrowdForecast(resort, wx = null) {
 
-  // ── Step A: Base structural demand ────────────────────────────────────────
-  const rawMG  = (typeof METRO_GRAVITY !== 'undefined' ? METRO_GRAVITY[resort.id] : null) ?? 500;
-  const metroG = rawMG / 1000;
-
-  const passScore = (resort.passGroup === 'Epic' || resort.passGroup === 'Ikon') ? 0.85
-                  : resort.passGroup === 'Indy' ? 0.45
-                  : 0.30;
-
-  const destPull = Math.min(1, (resort.vertical / 3000) * 0.6 + (resort.acres / 1500) * 0.4);
-
-  const resortAttr = Math.min(1,
-    Math.min(1, resort.vertical / 3000) * 0.50 +
-    (resort.terrainPark ? 0.20 : 0) +
-    (resort.night       ? 0.15 : 0) +
-    0.15
-  );
-
-  // Weights: metroGravity 40%, passScore 25%, destPull 20%, resortAttractors 15%
-  const Dbase = 0.40*metroG + 0.25*passScore + 0.20*destPull + 0.15*resortAttr;
+  // ── Step A: Base structural demand (shared · crowd-structural.js) ─────────
+  // metroGravity 40% · passScore 25% · destPull 20% · resortAttractors 15%
+  const demand = WTSN_CROWD_STRUCT.structuralDemand(resort);
+  const Dbase  = demand.Dbase;
+  const rawMG  = demand.rawMG;
 
   // ── Step B: Day-specific multipliers ──────────────────────────────────────
   // Use target ski date (state.targetDate) if set, else today
   const targetDate = (state.targetDate instanceof Date) ? state.targetDate : new Date();
   const dow        = targetDate.getDay();
-  const weekendF   = dow === 6 ? 1.0 : dow === 0 ? 0.7 : dow === 5 ? 0.3 : 0;
-  const holidayF   = _holidayFactor(targetDate);
-  const Mday       = 1 + 0.35*weekendF + 0.45*holidayF;
+  const weekendF   = WTSN_CROWD_STRUCT.weekendFactorForDow(dow);
+  const holidayF   = WTSN_CROWD_STRUCT.holidayFactor(targetDate);
+  const Mday       = WTSN_CROWD_STRUCT.dayMultiplier(weekendF, holidayF);
 
   const wxAvail  = !!wx;
   const powderF  = wxAvail ? _powderFactor(resort, wx) : 0;
@@ -308,36 +243,13 @@ function _computeCrowdForecast(resort, wx = null) {
   }
   const Mweather = 1 + 0.40*wxPowder + 0.15*wxBlue - 0.25*rainF;
 
-  // Soft clamp: tanh preserves differentiation at the top end
-  const Draw = Dbase * Mday * Mweather;
-  const D    = Math.tanh(Draw / 1.5);
-
-  // ── Step C: Capacity amplifier ────────────────────────────────────────────
-  const rawTier  = (typeof LIFT_CAPACITY_TIERS !== 'undefined' ? LIFT_CAPACITY_TIERS[resort.id] : null) ?? 3;
-  let   liftInv  = (5 - rawTier) / (5 - 1); // linear: tier5=0, tier1=1
-
-  // Destination resort fix: when a high-gravity resort sits on a major pass
-  // network, large capacity acts as a crowd funnel, not a relief valve.
-  // Without this, Tier 5 Ikon/Epic destinations (Loon, Stowe, Killington)
-  // score Moderate on Saturday bluebirds when they should score Busy.
-  if (rawMG > 750 && passScore >= 0.80) {
-    if (rawTier === 5)      liftInv = 0.45;
-    else if (rawTier === 4) liftInv = 0.55;
-  }
-
-  const parkingC = resort.acres < 100 ? 0.75 : resort.acres < 300 ? 0.55 : 0.40;
-  const terrainC = rawTier <= 2 ? 0.65 : rawTier <= 3 ? 0.50 : 0.35;
-  const A        = 0.45*liftInv + 0.35*parkingC + 0.20*terrainC;
-
-  // ── Final score: logistic squash (alpha=3.5, beta=1.5, center=0.40) ───────
-  const logitIn = 3.5*(D - 0.40) + 1.5*(A - 0.5);
-  const score   = Math.max(5, Math.min(100, Math.round(100 / (1 + Math.exp(-logitIn)))));
-
-  // ── Labels ────────────────────────────────────────────────────────────────
-  const label = score >= 80 ? 'Avoid'
-              : score >= 65 ? 'Busy'
-              : score >= 45 ? 'Moderate'
-              :               'Quiet';
+  // ── Step C + squash (shared · crowd-structural.js) ────────────────────────
+  // Capacity amplifier (with the destination-funnel fix for Tier 4-5 Epic/Ikon
+  // resorts above 750 gravity), then tanh soft clamp + logistic.
+  const cap     = WTSN_CROWD_STRUCT.capacityAmplifier(resort, demand);
+  const rawTier = cap.rawTier;
+  const score   = WTSN_CROWD_STRUCT.crowdScoreFrom(Dbase * Mday * Mweather, cap.A);
+  const label   = WTSN_CROWD_STRUCT.crowdLabel(score);
 
   // ── Confidence ────────────────────────────────────────────────────────────
   const confidence = (wxAvail && state.origin) ? 'High'

@@ -34,6 +34,14 @@ function activeFilters() {
     filters.push(`State: ${esc(stLab)}`);
   }
   if (state.nightOnly)            filters.push('Night only');
+  // AUDIT FIX · Jun 2026: snow target and crowd preference are hard gates in
+  // filteredResorts() but had no pill, so the table could shrink to a handful
+  // of rows with nothing on screen explaining why. Now every active gate is
+  // visible. Thresholds mirror snowPreferenceTarget / crowdPreferenceAllows.
+  const snowT = (typeof snowPreferenceTarget === 'function') ? snowPreferenceTarget() : 0;
+  if (snowT > 0)                  filters.push(`Snow: ${snowT}"+ on your ski day`);
+  if (state.weights.crowd >= 10)      filters.push('Crowds: quiet days only');
+  else if (state.weights.crowd >= 5)  filters.push('Crowds: skipping the busiest');
   return filters;
 }
 

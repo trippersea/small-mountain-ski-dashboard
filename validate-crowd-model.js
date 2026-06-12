@@ -32,6 +32,7 @@ function load(file) {
 load('resorts.js');
 load('lift_capacity_tiers_final.js');
 load('metro_gravity_final.js');
+load('crowd-structural.js');
 load('sd-scoring.js');
 
 const RESORTS = vm.runInContext('RESORTS', sandbox); // const in vm = lexical, not a sandbox prop
@@ -223,6 +224,35 @@ console.log(`  unknown drive · Day Trip: ${dayTrip} · Any distance: ${anyDist}
 check('Unknown drive excluded from Day Trip', dayTrip === false);
 check('Unknown drive still passes Any distance', anyDist === true);
 sandbox.state.origin = null; sandbox.state.howFar = 0;
+
+// ════════ 9. STRUCTURAL MODULE PARITY + STATIC CALENDARS ════════
+console.log('\n═══ 9. Shared module parity: static calendar == live model (neutral wx) ═══');
+// A non-holiday Saturday with no weather loaded must produce the IDENTICAL
+// score from the live engine and from typicalCrowdScore('saturday').
+let parityOk = true; let parityChecked = 0;
+for (const r of RESORTS) {
+  sandbox.state.targetDate = new Date('2026-02-07T12:00:00'); // plain Saturday
+  sandbox.state.skiDayPreset = null;
+  vm.runInContext('resetCrowdForecastMemo()', sandbox);
+  sandbox.__r = r;
+  const live = vm.runInContext('crowdForecast(__r, null)', sandbox);
+  const stat = vm.runInContext("WTSN_CROWD_STRUCT.typicalCrowdScore(__r, 'saturday')", sandbox);
+  parityChecked++;
+  if (live.score !== stat.score || live.label !== stat.label) {
+    parityOk = false;
+    console.log('  MISMATCH ' + r.id + ': live ' + live.score + ' vs static ' + stat.score);
+    if (parityChecked > 5) break;
+  }
+}
+check('Live engine == static calendar for ALL ' + parityChecked + ' resorts (Saturday, neutral wx)', parityOk);
+
+const kCal = vm.runInContext("(() => { __r = RESORTS.find(r => r.id === 'killington-resort'); return WTSN_CROWD_STRUCT.typicalCrowdCalendar(__r); })()", sandbox);
+console.log('  Killington calendar: ' + kCal.map(c => c.kind + ' ' + c.score + ' ' + c.label).join(' · '));
+check('Killington calendar is monotonic midweek→holiday', kCal[0].score < kCal[1].score && kCal[1].score < kCal[3].score && kCal[3].score < kCal[2].score && kCal[2].score < kCal[4].score);
+check('Killington Saturday reads Busy, holiday weeks Avoid-adjacent', kCal[2].label === 'Busy' && kCal[4].score >= 75);
+const bCal = vm.runInContext("(() => { __r = RESORTS.find(r => r.id === 'bousquet-ski-area'); return WTSN_CROWD_STRUCT.typicalCrowdCalendar(__r); })()", sandbox);
+console.log('  Bousquet calendar:   ' + bCal.map(c => c.kind + ' ' + c.score + ' ' + c.label).join(' · '));
+check('Bousquet midweek reads Quiet', bCal[0].label === 'Quiet');
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures ? 1 : 0);

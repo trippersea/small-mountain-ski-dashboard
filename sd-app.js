@@ -3189,9 +3189,22 @@ function renderCompareTable(resorts) {
     const title = qActive
       ? `No mountains match "${esc(qRaw)}"`
       : (resorts.length === 0 ? 'No mountains match your current filters' : 'No rows to show');
+    // AUDIT FIX · Jun 2026: the snow target and crowd preference are hard
+    // gates in filteredResorts() but used to be invisible here. When they are
+    // what emptied the table, say so by name — "0 mountains" with no
+    // explanation reads like a bug, not a tight filter.
+    const constraintBits = [];
+    const snowT = (typeof snowPreferenceTarget === 'function') ? snowPreferenceTarget() : 0;
+    if (snowT > 0) constraintBits.push('your ' + snowT + '"+ snow target');
+    if (state.weights.crowd >= 10) constraintBits.push('the quiet-days-only crowd limit');
+    else if (state.weights.crowd >= 5) constraintBits.push('your crowd limit');
     const sub = qActive
       ? 'Try a shorter search, check spelling, or clear the search box. Filters still apply to what you see.'
-      : 'Try widening distance, easing snow or price limits, or pick another pass.';
+      : (constraintBits.length
+        ? 'Nothing in range clears ' + constraintBits.join(' and ') + ' today. Ease '
+          + (constraintBits.length > 1 ? 'one of them' : 'it')
+          + ', widen the drive, or try another ski day.'
+        : 'Try widening distance, easing snow or price limits, or pick another pass.');
     els.resultCount.textContent = qActive ? `0 results for "${qRaw}"` : (resorts.length === 0 ? '0 mountains' : '0 in this view');
     els.comparisonBody.innerHTML = `
       <tr><td colspan="7" class="compare-empty-state">
@@ -4511,28 +4524,38 @@ function initialize() {
     }, { once: true, passive: true });
   }
 
-  // ── Silent auto-geolocation on first visit ──────────────────────────────
-  // If no saved/URL origin, quietly ask the browser for location.
-  // User sees a real scored result immediately instead of the empty state.
-  // If denied or unavailable we fail silently · the improved empty state handles it.
-  if (!state.origin && navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      async function(pos) {
-        if (state.origin) return; // user set manually while we waited · don't override
-        state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location' };
-        els.originInput.value = 'Your location';
-        els.locationStatus.textContent = '✓ Using your location';
-        els.locationStatus.classList.remove('hero-location-status--error');
-        trackEvent('location_set', { location_label: 'GPS', method: 'auto' });
-        if (isRememberChecked()) saveOrigin(state.origin);
+  // ── Silent approximate location on first visit ──────────────────────────
+  // AUDIT FIX · Jun 2026: this used to call navigator.geolocation on page
+  // load, which fires a browser permission dialog with no user gesture. Those
+  // get denied at very high rates and sour the first impression. /api/geo
+  // returns IP-derived, city-level coordinates from Vercel's edge headers
+  // with zero prompts, so every first-time visitor gets a real scored verdict
+  // immediately. City-level is plenty for "what's within a day trip", and the
+  // GPS button still gives street-level precision on request. The approximate
+  // origin is deliberately NOT persisted: a fresh visit re-resolves, so a
+  // traveler always starts from where they actually are.
+  if (!state.origin) {
+    fetch('/api/geo')
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(async function(geo) {
+        if (!geo || !geo.located) return;
+        if (state.origin) return; // user set a location while we waited · don't override
+        const label = geo.city
+          ? 'Near ' + geo.city + (geo.region && geo.country === 'US' ? ', ' + geo.region : '')
+          : 'Near you';
+        state.origin = { lat: geo.lat, lon: geo.lon, label: label, approx: true };
+        if (els.originInput) els.originInput.value = label;
+        if (els.locationStatus) {
+          els.locationStatus.textContent = '✓ ' + label + ' (approximate). Use the location button for exact.';
+          els.locationStatus.classList.remove('hero-location-status--error');
+        }
+        trackEvent('location_set', { location_label: 'IP', method: 'auto_geo' });
         updatePlannerOriginLabel();
         syncVerdictVisibility();
         render();
         await loadDriveTimes();
-      },
-      function() { /* silently fail · improved empty state guides the user */ },
-      { timeout: 8000, maximumAge: 600000 }
-    );
+      })
+      .catch(function() { /* silently fail · the empty state guides the user */ });
   }
 }
 
