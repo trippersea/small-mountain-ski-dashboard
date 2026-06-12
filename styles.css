@@ -9278,9 +9278,11 @@ button.vcard-detail-btn:hover,
 .hn-rankings-zone {
   width: 100%;
   margin: 0;
-  padding: 0;
-  background: transparent;
+  padding: 0 0 28px;
+  background: linear-gradient(180deg, #0f1c2e 0%, #081018 100%);
   border-top: none;
+  border-radius: 18px;
+  overflow: hidden;
 }
 
 .hn-rankings-zone .hws-section {
