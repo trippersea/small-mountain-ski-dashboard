@@ -9130,13 +9130,40 @@ button.vcard-detail-btn:hover,
 /* ── Table rows ─────────────────────────────────────────────────────────── */
 #compareSection .comparison-table tbody tr {
   border-bottom-color: rgba(255, 255, 255, 0.04);
+  /* Cancel light-theme hover inset bar + transitions bleeding from base .comparison-table rules */
+  box-shadow: none;
+  transition: background 0.12s ease;
 }
 #compareSection .comparison-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+  cursor: pointer;
+}
+#compareSection .comparison-table tbody tr:hover td {
+  background: transparent;
 }
 #compareSection .comparison-table tbody td {
   color: rgba(240, 246, 252, 0.72);
   border-bottom-color: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+  transition: color 0.12s ease;
+}
+/* Pure Gold rows — one row-level highlight, not per-cell bars / light flashes */
+#compareSection tr.bluebird-glow {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.14) 0%, transparent 58%);
+}
+#compareSection tr.bluebird-glow td {
+  box-shadow: none !important;
+  background: transparent !important;
+}
+#compareSection tr.bluebird-glow:hover {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.22) 0%, rgba(255, 255, 255, 0.04) 58%);
+}
+#compareSection tr.bluebird-glow:hover td {
+  background: transparent !important;
+}
+#compareSection tr.bluebird-glow.active-row {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.18) 0%, rgba(43, 109, 233, 0.1) 58%);
 }
 
 /* ── This weekend column — narrative + vibe (readable on dark blue) ───── */
@@ -9194,6 +9221,10 @@ button.vcard-detail-btn:hover,
 }
 #compareSection .comparison-table tbody tr.sponsored-row:hover {
   background: linear-gradient(90deg, rgba(43, 109, 233, 0.26) 0%, rgba(43, 109, 233, 0.1) 55%, rgba(255, 255, 255, 0.04) 100%);
+  box-shadow: none;
+}
+#compareSection .comparison-table tbody tr.sponsored-row:hover td {
+  background: transparent;
 }
 #compareSection .table-featured-pill {
   color: #e0f2fe;
@@ -9228,6 +9259,10 @@ button.vcard-detail-btn:hover,
 }
 #compareSection .comparison-table tbody tr.active-row:hover {
   background: rgba(43, 109, 233, 0.18);
+  box-shadow: inset 3px 0 0 0 #45a2ff;
+}
+#compareSection .comparison-table tbody tr.active-row:hover td {
+  background: transparent;
 }
 
 /* ── Location hint / empty states ──────────────────────────────────────── */
