@@ -10017,8 +10017,9 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   margin-top: 16px;
 }
 
-.hn-verdict-card-root .vcard--handoff .vcard-why-body > div {
+.hn-verdict-card-root .vcard--handoff .vcard-why-body-inner {
   overflow: hidden;
+  min-height: 0;
 }
 
 .hn-verdict-card-root .vcard--handoff .runner {
@@ -10250,6 +10251,5 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   line-height: 1.5;
   color: rgba(220, 232, 246, 0.66);
   margin: 0 0 12px;
-  max-width: 42ch;
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-why-subtitle { color: #5a7080; }
