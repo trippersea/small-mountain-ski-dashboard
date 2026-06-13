@@ -10243,3 +10243,13 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
 @media (max-width: 600px) {
   .hws-summary { flex-wrap: wrap; gap: 6px 14px; }
 }
+
+/* Why-this-is-the-pick subtitle (audit · Jun 2026) */
+.vcard-why-subtitle {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(220, 232, 246, 0.66);
+  margin: 0 0 12px;
+  max-width: 42ch;
+}
+.hn-hero-verdict-dock .vcard--hero-light .vcard-why-subtitle { color: #5a7080; }

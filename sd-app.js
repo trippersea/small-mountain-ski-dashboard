@@ -426,7 +426,7 @@ function splitVerdictSummary(prose, tier, driveText) {
   }
   const trip = state.howFar === 0 ? 'day-trip range' : 'drive window';
   if (tier === 'great' || tier === 'good') {
-    return { bold: 'Best mix of snow and crowds', rest: `within your ${trip} today.` };
+    return { bold: 'Best mix of snow and crowds', rest: `within your ${trip} for your ski day.` };
   }
   if (tier === 'marginal') {
     return { bold: 'Best option in range', rest: `if you keep expectations in check${driveText ? ` · ${driveText}` : ''}.` };
@@ -474,6 +474,18 @@ function buildVerdictAlternativesHtml(ranked, pickResort, pickEntry) {
       <div class="rt">${esc(drive)}<br>${esc(crowdShort)}</div>
     </div>`;
   }).join('');
+}
+
+/** Ids of the mountains named in "Why this is the pick" (the 2 closest runners-up).
+ *  Used to keep those mountains from reappearing in the options section below. */
+function verdictAlternativeIds(ranked, pickResort) {
+  const out = new Set();
+  if (!ranked?.length) return out;
+  const pool = (typeof filterRunnerUpCandidates === 'function' ? filterRunnerUpCandidates(ranked) : ranked)
+    .filter(e => e?.resort?.id && e.resort.id !== pickResort.id)
+    .slice(0, 2);
+  pool.forEach(e => out.add(e.resort.id));
+  return out;
 }
 
 function driveUtilitySegment(resortId) {
@@ -2585,11 +2597,18 @@ function renderVerdict(resorts) {
   const _ranked = buildVerdictRankedList(resorts);
   const _pickEntry = roles?.pick ?? null;
   const _alternativesHtml = buildVerdictAlternativesHtml(_ranked, resort, _pickEntry);
+  // COPY/LOGIC FIX · Jun 2026: collect the mountains named in "Why this is the
+  // pick" so they cannot reappear below as a nearby/discovery option. Showing
+  // Black Mountain as both "the pick beat it" and "an option you hadn't
+  // thought of" read as a duplicate and undercut the section's purpose.
+  const _whyNamedIds = (typeof verdictAlternativeIds === 'function')
+    ? verdictAlternativeIds(_ranked, resort)
+    : new Set();
   const _peakLoc = resortPeakLocLine(resort);
   const _rankDrive = driveText || '—';
 
   // ── Role cards: LOCAL / SLEEPER / TRAP (grouped under “Other smart calls”) ──
-  const localCardHtml = localEntry ? (() => {
+  const localCardHtml = (localEntry && !_whyNamedIds.has(localEntry.resort.id)) ? (() => {
     const _lWx = localEntry.wx;
     const _lCrowd = crowdForecast(localEntry.resort, _lWx);
     const _lCopy = typeof localRoleExplanation === 'function'
@@ -2622,7 +2641,7 @@ function renderVerdict(resorts) {
     });
   })() : '';
 
-  const sleeperCardHtml = sleeperEntry ? (() => {
+  const sleeperCardHtml = (sleeperEntry && !_whyNamedIds.has(sleeperEntry.resort.id)) ? (() => {
     const _sWx = sleeperEntry.wx;
     const _sCrowd = crowdForecast(sleeperEntry.resort, _sWx);
     const _sRef = sleeperEntry.refResortId
@@ -2650,7 +2669,7 @@ function renderVerdict(resorts) {
     });
   })() : '';
 
-  const trapCardHtml = (trapEntry && typeof trapQualifiesForCrowdWatch === 'function' && trapQualifiesForCrowdWatch(trapEntry)) ? (() => {
+  const trapCardHtml = (trapEntry && !_whyNamedIds.has(trapEntry.resort.id) && typeof trapQualifiesForCrowdWatch === 'function' && trapQualifiesForCrowdWatch(trapEntry)) ? (() => {
     const _tWx = trapEntry.wx;
     const _tCrowdLabel = trapEntry.crowdLabel || crowdForecast(trapEntry.resort, _tWx)?.label;
     const _tCopy = typeof trapRoleExplanation === 'function'
@@ -2678,14 +2697,15 @@ function renderVerdict(resorts) {
   const roleCardParts = [sleeperCardHtml, localCardHtml, trapCardHtml].filter(Boolean);
   const roleCount = roleCardParts.length;
   const roleCardsInner = roleCardParts.join('');
-  const _solidOptionEmptyHtml = !sleeperEntry && roleCount > 0
-    ? `<p class="vcard-solid-option-empty">No strong second opinion today. The Top Pick already has the best mix of snow, terrain, drive time, and crowd risk.</p>`
-    : '';
+  // COPY FIX · Jun 2026: the "No strong second opinion today" line exposed
+  // internal logic and confused readers. Removed. When no genuinely different
+  // option clears the bar, the section simply does not render. Silence reads
+  // as confidence in the Top Pick, not as a missing feature. "today" replaced
+  // with "your ski day" since the user is rarely skiing today.
   const otherSmartCallsHtml = roleCardsInner
     ? `<section class="vcard-other-smart-calls" aria-labelledby="verdictOtherSmartCallsHeading">
-        <h3 class="vcard-other-smart-calls-heading" id="verdictOtherSmartCallsHeading">More options for today</h3>
-        <p class="vcard-other-smart-calls-helper">Different ways to play the day depending on drive, crowds, and convenience.</p>
-        ${_solidOptionEmptyHtml}
+        <h3 class="vcard-other-smart-calls-heading" id="verdictOtherSmartCallsHeading">Other ways to play your ski day</h3>
+        <p class="vcard-other-smart-calls-helper">Not better picks, just different angles: a closer drive, a quieter hill, or a popular mountain to time carefully.</p>
         <div class="vcard-other-smart-calls-grid vcard-other-smart-calls-grid--count-${roleCount}">${roleCardsInner}</div>
       </section>`
     : '';
@@ -2724,7 +2744,7 @@ function renderVerdict(resorts) {
 
       <div class="vcard-secondary">
         <button type="button" class="vcard-why" id="verdictWhyBtn" aria-expanded="false"${_alternativesHtml ? '' : ' disabled'}>
-          Why this beat the alternatives
+          Why this is the pick
           <span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></span>
         </button>
         <div class="vcard-seclinks" role="group" aria-label="More actions">
@@ -2737,6 +2757,7 @@ function renderVerdict(resorts) {
       </div>
 
       <div class="vcard-why-body" id="verdictWhyBody"${_alternativesHtml ? '' : ' hidden'}>
+        <p class="vcard-why-subtitle">The closest calls from your full rankings. The Top Pick edged these out on the overall match for your ski day.</p>
         <div>${_alternativesHtml}</div>
       </div>
 

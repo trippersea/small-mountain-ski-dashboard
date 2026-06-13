@@ -415,7 +415,7 @@ function findTopPickRunnerUp(ranked, pickEntry) {
 
 /** Plain-language edge for close-call Top Pick copy (derived from score breakdown). */
 function closeCallEdgeReason(pickEntry, runnerEntry) {
-  if (!pickEntry?.breakdown || !runnerEntry?.breakdown) return 'the overall score edge today';
+  if (!pickEntry?.breakdown || !runnerEntry?.breakdown) return 'the overall edge for your ski day';
   const pn = pickEntry.breakdown.normalized || {};
   const rn = runnerEntry.breakdown.normalized || {};
   const edges = [];
@@ -426,7 +426,7 @@ function closeCallEdgeReason(pickEntry, runnerEntry) {
   if ((pn.drive ?? 0) - (rn.drive ?? 0) >= 0.05) edges.push({ w: 5, text: 'a shorter drive' });
   if ((pn.value ?? 0) - (rn.value ?? 0) >= 0.05) edges.push({ w: 6, text: 'better value' });
   edges.sort((a, b) => a.w - b.w);
-  return edges[0]?.text || 'the overall score edge today';
+  return edges[0]?.text || 'the overall edge for your ski day';
 }
 
 /**
@@ -557,14 +557,14 @@ function pickLocalFallbackFromRanked(ranked, pickEntry, usedIds) {
 /** User-facing copy for the LOCAL / Worth a Look fallback slot. */
 function localRoleExplanation(localEntry, pickResort) {
   if (localEntry?.roleVariant === 'another_smart_play') {
-    return 'No true nearby option stands out today, but this mountain is still worth a look.';
+    return 'No standout nearby option, but this mountain is still worth a look.';
   }
   const pickShort = (pickResort?.name || 'the top pick')
     .replace(/\s+(Resort|Mountain|Ski\s+Area|Ski\s+Resort|Ski|Area)$/i, '').trim();
   if (localEntry?.tier === 'marginal') {
     return `Quick local turns if you don't want the drive to ${pickShort}. Fair conditions, mostly about convenience.`;
   }
-  return 'Closest is not always best, but this is the nearby option that makes the most sense today.';
+  return 'Closest is not always best, but this is the nearby option that makes the most sense for your ski day.';
 }
 
 function localRoleLabel(localEntry) {
@@ -819,9 +819,9 @@ function sleeperRoleExplanation(sleeperEntry, pickResort, refResort) {
     return `Not the obvious pick, but the day sets up well here. Fair conditions with less lift-line pressure than ${refShort}.`;
   }
   if (refResort?.id && refResort.id !== pickResort?.id) {
-    return `Not the obvious pick, but it has a real case today. Lighter crowds than ${refShort} with a similar forecast window.`;
+    return `Not the obvious pick, but it has a real case for your ski day. Lighter crowds than ${refShort} with a similar forecast window.`;
   }
-  return 'Not the obvious pick, but it has a real case today.';
+  return 'Not the obvious pick, but it has a real case for your ski day.';
 }
 
 const TRAP_QUALITY_MIN_SUIT = 40;
@@ -947,7 +947,9 @@ function pickCrowdWarningCopy() {
 
 /** User-facing copy for the TRAP (Crowd Watch) role card. */
 function trapRoleExplanation(trapEntry) {
-  return 'Great mountain, risky timing. Expect more people here than the score alone might suggest.';
+  // COPY FIX · Jun 2026: framed as the popular-but-packed heads-up the Crowd
+  // Watch role is meant to be, not a vague "risky timing" warning.
+  return 'A mountain everyone piles into. Skis great, but expect a crowd. Go early or save it for a quieter day.';
 }
 
 /**
