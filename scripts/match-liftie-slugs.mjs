@@ -86,7 +86,7 @@ async function fetchLiftieResorts() {
       'Referer': 'https://liftie.info/',
     },
     {
-      'User-Agent': 'WhereToSkiNext/1.0 (contact@wheretoskinext.com)',
+      'User-Agent': 'WhereToSkiNext/1.0 (wheretoskinext@gmail.com)',
       'Accept': 'application/json',
     },
     {

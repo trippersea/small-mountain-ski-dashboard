@@ -30,7 +30,7 @@ const OUT_DIR  = path.join(__dirname, 'output');
 const OUT_FILE = path.join(OUT_DIR, 'nws-station-lookup.json');
 const DELAY_MS = 350; // NWS rate limit is generous but be a good citizen
 
-const USER_AGENT = 'WhereToSkiNext/1.0 (contact@wheretoskinext.com)';
+const USER_AGENT = 'WhereToSkiNext/1.0 (wheretoskinext@gmail.com)';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
