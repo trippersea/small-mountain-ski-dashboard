@@ -9903,6 +9903,14 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   line-height: 1.45;
 }
 
+.hn-verdict-card-root .vcard--handoff .read .rconf {
+  margin-top: 8px;
+}
+
+.hn-verdict-card-root .vcard--handoff .read .rconf .crowd-expl-conf {
+  font-size: 10px;
+}
+
 .hn-verdict-card-root .vcard--handoff .vcard-cta {
   width: 100%;
   margin-top: 22px;
