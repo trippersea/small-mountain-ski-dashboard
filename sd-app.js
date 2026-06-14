@@ -2755,6 +2755,7 @@ function renderVerdict(resorts) {
           </button>
         </div>
       </div>
+      ${(otherSmartCallsHtml || _alternativesHtml) ? '<p class="vcard-more-below" role="note">Scroll for close calls &amp; other ways to play your day</p>' : ''}
 
       <div class="vcard-why-body" id="verdictWhyBody"${_alternativesHtml ? '' : ' hidden'}>
         <div class="vcard-why-body-inner">
