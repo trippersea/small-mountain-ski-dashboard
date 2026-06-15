@@ -387,16 +387,11 @@ function buildGamePlanReadRow(vd, wx) {
 
 function renderVerdictReadRow(label, row) {
   if (!row) return '';
-  const confLevel = row.confidence ? String(row.confidence).toLowerCase() : '';
-  const confHtml = row.confidence
-    ? `<div class="rconf"><span class="crowd-expl-conf crowd-expl-conf--${esc(confLevel)}">${esc(row.confidence)} confidence</span></div>`
-    : '';
   return `<div class="rrow">
     <span class="rname">${esc(label)}</span>
     <div class="rbody">
       <div class="rverdict ${esc(row.tier)}">${esc(row.verdict)}</div>
       <div class="rdetail">${esc(row.detail)}</div>
-      ${confHtml}
     </div>
   </div>`;
 }
@@ -408,7 +403,6 @@ function buildVerdictReadHtml(resort, wx, breakdown, vd, crowd) {
     verdict: crowdReadVerdict(crowd.label),
     detail: buildCrowdReadDetail(crowd),
     tier: crowdReadTier(crowd.label),
-    confidence: crowd.confidence || null,
   };
   const plan = buildGamePlanReadRow(vdWithResort, wx);
   return `<div class="read">
@@ -2569,6 +2563,27 @@ function renderVerdict(resorts) {
     : '';
   saveCompareSession(vWithRoles, resorts);
   trackRecommendation(resort.id, resort.name);
+
+  // ── Feedback loop · record this pick so we can ask "how packed was it?" on a
+  // later visit, after the ski day has passed. Captures what the crowd model
+  // predicted so the eventual report validates the prediction. See
+  // crowd-feedback.js. Guarded: only when a real ski day is set, never blocks.
+  if (window.WTSN_FEEDBACK && state.targetDate instanceof Date) {
+    const _pickWx = state.weatherCache[resort.id]?.data;
+    const _pickCrowd = (typeof crowdForecast === 'function') ? crowdForecast(resort, _pickWx) : null;
+    const _skiDayMs = new Date(
+      state.targetDate.getFullYear(), state.targetDate.getMonth(), state.targetDate.getDate()
+    ).getTime();
+    WTSN_FEEDBACK.recordPick({
+      resortId:       resort.id,
+      resortName:     resort.name,
+      skiDayMs:       _skiDayMs,
+      predictedLabel: _pickCrowd?.label || '',
+      predictedScore: _pickCrowd?.score != null ? _pickCrowd.score : null,
+    });
+    state._lastPickForIntent = { resortId: resort.id, skiDayMs: _skiDayMs };
+  }
+
   document.getElementById('hnConditionsGuidance')?.remove();
 
   const _cityEw   = state.origin?.label ? state.origin.label.replace(/,.*$/, '').trim() : null;
@@ -2746,6 +2761,19 @@ function renderVerdict(resorts) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
 
+      <!-- Feedback loop: lightweight intent tap. Captures whether the user is
+           actually going (validates the recommendation, and tells us which
+           mountain to ask them about later). One row, dismissible, no blocking. -->
+      <div class="vcard-intent" id="verdictIntent" role="group" aria-label="Are you going here?">
+        <span class="vcard-intent-q">Going with this?</span>
+        <div class="vcard-intent-opts">
+          <button type="button" class="vcard-intent-opt" data-intent="going">Yes</button>
+          <button type="button" class="vcard-intent-opt" data-intent="maybe">Still looking</button>
+          <button type="button" class="vcard-intent-opt" data-intent="no">Not feeling it</button>
+        </div>
+        <span class="vcard-intent-thanks" hidden>Got it.</span>
+      </div>
+
       <div class="vcard-divider"></div>
 
       <div class="vcard-secondary">
@@ -2761,13 +2789,10 @@ function renderVerdict(resorts) {
           </button>
         </div>
       </div>
-      ${(otherSmartCallsHtml || _alternativesHtml) ? '<p class="vcard-more-below" role="note">Scroll for close calls &amp; other ways to play your day</p>' : ''}
 
       <div class="vcard-why-body" id="verdictWhyBody"${_alternativesHtml ? '' : ' hidden'}>
-        <div class="vcard-why-body-inner">
-          <p class="vcard-why-subtitle">The closest calls from your full rankings. The Top Pick edged these out on the overall match for your ski day.</p>
-          <div>${_alternativesHtml}</div>
-        </div>
+        <p class="vcard-why-subtitle">The closest calls from your full rankings. The Top Pick edged these out on the overall match for your ski day.</p>
+        <div>${_alternativesHtml}</div>
       </div>
 
       ${otherSmartCallsHtml}
@@ -2812,6 +2837,29 @@ function renderVerdict(resorts) {
     state.selectedId = resort.id;
     trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || '');
     renderDetail({ scroll: true });
+  });
+  // Feedback loop: intent tap. Records going/maybe/no against the pick we just
+  // logged, so the later crowd-report prompt prioritizes mountains the user
+  // actually committed to (most trustworthy reports). See crowd-feedback.js.
+  $('verdictIntent')?.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('[data-intent]');
+    if (!btn) return;
+    const choice = btn.getAttribute('data-intent');
+    try {
+      if (window.WTSN_FEEDBACK && state._lastPickForIntent) {
+        WTSN_FEEDBACK.recordIntent(state._lastPickForIntent.resortId, state._lastPickForIntent.skiDayMs, choice);
+      }
+    } catch (e) {}
+    trackEvent('verdict_intent', { choice: choice, resort: resort.id });
+    const strip = $('verdictIntent');
+    if (strip) {
+      const opts = strip.querySelector('.vcard-intent-opts');
+      const q = strip.querySelector('.vcard-intent-q');
+      const th = strip.querySelector('.vcard-intent-thanks');
+      if (opts) opts.hidden = true;
+      if (q) q.hidden = true;
+      if (th) th.hidden = false;
+    }
   });
   $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
     saveCompareSession(vWithRoles, resorts);
@@ -4598,3 +4646,13 @@ function updateHeroHeadline() {
 
 loadWeights();
 initialize();
+
+// Feedback loop: on load, surface the one-tap "how packed was it?" prompt if a
+// past ski day's pick is now due. Renders nothing for first-timers (no pending
+// pick), so it never clutters a new visitor. See crowd-feedback.js.
+try {
+  if (window.WTSN_FEEDBACK) {
+    const _cfbMount = document.getElementById('crowdFeedbackPrompt');
+    if (_cfbMount) WTSN_FEEDBACK.renderPendingPrompt(_cfbMount, esc);
+  }
+} catch (e) {}

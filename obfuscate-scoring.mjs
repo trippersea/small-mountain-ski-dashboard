@@ -28,7 +28,7 @@ try {
 // static mountain-page generator uses identical math. It must be scrambled in
 // the deployed bundle like the rest of the scoring code. The generator runs
 // locally against readable source, so this build-time step never affects it.
-const TARGETS = ['sd-scoring.js', 'sd-app.js', 'crowd-structural.js'];
+const TARGETS = ['sd-scoring.js', 'sd-app.js', 'crowd-structural.js', 'crowd-feedback.js'];
 
 const OPTIONS = {
   compact: true,

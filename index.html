@@ -608,7 +608,7 @@
                 <div class="hero-v2__pill-label">Trip</div>
                 <div class="hero-v2__pills" id="heroV2TripPills">
                   <button type="button" class="hero-v2__pill is-active" data-trip="0">Day trip</button>
-                  <button type="button" class="hero-v2__pill" data-trip="1" aria-label="Extended drive (3 hours or more)"><span class="hero-v2__pill-short" aria-hidden="true">3h+ drive</span><span class="hero-v2__pill-long">Extended drive (3h+)</span></button>
+                  <button type="button" class="hero-v2__pill" data-trip="1">Extended drive (3h+)</button>
                   <button type="button" class="hero-v2__pill" data-trip="2">Any distance</button>
                 </div>
               </div>
@@ -697,6 +697,7 @@
 
             <!-- Live verdict: renderVerdict() writes here -->
             <section id="verdictSection" class="verdict-section hn-verdict-pre-location" aria-label="Top mountain pick">
+              <div id="crowdFeedbackPrompt" class="cfb-mount" hidden></div>
               <div id="verdictCard" class="hn-verdict-card-root"></div>
             </section>
 
@@ -6974,6 +6975,7 @@
   <script defer src="lift_capacity_tiers_final.js"></script>
   <script defer src="metro_gravity_final.js"></script>
   <script defer src="crowd-structural.js"></script>
+  <script defer src="crowd-feedback.js"></script>
   <script defer src="recommendation-roles.js"></script>
   <script defer src="sd-scoring.js"></script>
   <script defer src="sd-filters.js"></script>
