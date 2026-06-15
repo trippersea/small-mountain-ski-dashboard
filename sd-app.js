@@ -2587,7 +2587,6 @@ function renderVerdict(resorts) {
       predictedLabel: _pickCrowd?.label || '',
       predictedScore: _pickCrowd?.score != null ? _pickCrowd.score : null,
     });
-    state._lastPickForIntent = { resortId: resort.id, skiDayMs: _skiDayMs };
   }
 
   document.getElementById('hnConditionsGuidance')?.remove();
@@ -2767,19 +2766,6 @@ function renderVerdict(resorts) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
 
-      <!-- Feedback loop: lightweight intent tap. Captures whether the user is
-           actually going (validates the recommendation, and tells us which
-           mountain to ask them about later). One row, dismissible, no blocking. -->
-      <div class="vcard-intent" id="verdictIntent" role="group" aria-label="Are you going here?">
-        <span class="vcard-intent-q">Going with this?</span>
-        <div class="vcard-intent-opts">
-          <button type="button" class="vcard-intent-opt" data-intent="going">Yes</button>
-          <button type="button" class="vcard-intent-opt" data-intent="maybe">Still looking</button>
-          <button type="button" class="vcard-intent-opt" data-intent="no">Not feeling it</button>
-        </div>
-        <span class="vcard-intent-thanks" hidden>Got it.</span>
-      </div>
-
       <div class="vcard-divider"></div>
 
       <div class="vcard-secondary">
@@ -2846,29 +2832,6 @@ function renderVerdict(resorts) {
     state.selectedId = resort.id;
     trackResortView(resort.id, resort.name, 'verdict_conditions_click', resort.passGroup || '');
     renderDetail({ scroll: true });
-  });
-  // Feedback loop: intent tap. Records going/maybe/no against the pick we just
-  // logged, so the later crowd-report prompt prioritizes mountains the user
-  // actually committed to (most trustworthy reports). See crowd-feedback.js.
-  $('verdictIntent')?.addEventListener('click', (ev) => {
-    const btn = ev.target.closest('[data-intent]');
-    if (!btn) return;
-    const choice = btn.getAttribute('data-intent');
-    try {
-      if (window.WTSN_FEEDBACK && state._lastPickForIntent) {
-        WTSN_FEEDBACK.recordIntent(state._lastPickForIntent.resortId, state._lastPickForIntent.skiDayMs, choice);
-      }
-    } catch (e) {}
-    trackEvent('verdict_intent', { choice: choice, resort: resort.id });
-    const strip = $('verdictIntent');
-    if (strip) {
-      const opts = strip.querySelector('.vcard-intent-opts');
-      const q = strip.querySelector('.vcard-intent-q');
-      const th = strip.querySelector('.vcard-intent-thanks');
-      if (opts) opts.hidden = true;
-      if (q) q.hidden = true;
-      if (th) th.hidden = false;
-    }
   });
   $('verdictSeeAllRunnersBtn')?.addEventListener('click', () => {
     saveCompareSession(vWithRoles, resorts);

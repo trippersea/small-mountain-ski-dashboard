@@ -10521,44 +10521,6 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
 .hn-hero-verdict-dock .vcard--hero-light ~ .cfb-prompt,
 .hn-verdict-card-root .vcard--hero-light .cfb-prompt { /* no-op guard */ }
 
-/* Intent tap inside the card */
-.vcard-intent {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  margin: 12px 0 0;
-}
-.vcard-intent-q {
-  font-family: "Inter", system-ui, sans-serif;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: rgba(240, 246, 252, 0.62);
-}
-.vcard-intent-opts { display: flex; flex-wrap: wrap; gap: 6px; }
-.vcard-intent-opt {
-  min-height: 32px;
-  padding: 5px 11px;
-  border: 1px solid rgba(142, 178, 226, 0.28);
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(240, 246, 252, 0.80);
-  font-family: "Inter", system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.14s, border-color 0.14s, color 0.14s;
-}
-.vcard-intent-opt:hover { background: rgba(43, 109, 233, 0.18); border-color: rgba(90, 173, 220, 0.5); color: #fff; }
-.vcard-intent-thanks {
-  font-family: "Inter", system-ui, sans-serif;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: rgba(167, 243, 208, 0.9);
-}
-.hn-hero-verdict-dock .vcard--hero-light .vcard-intent-q { color: #64748b; }
-.hn-hero-verdict-dock .vcard--hero-light .vcard-intent-opt { border-color: #dde3ea; color: #44505f; }
-.hn-hero-verdict-dock .vcard--hero-light .vcard-intent-opt:hover { background: #eef4ff; border-color: #93c5fd; color: #1a2030; }
 .hn-hero-verdict-dock .vcard--hero-light .cfb-prompt { background: #eef4ff; border-color: #bcd4ec; }
 .hn-hero-verdict-dock .vcard--hero-light .cfb-q { color: #1a2030; }
 .hn-hero-verdict-dock .vcard--hero-light .cfb-q strong { color: #0f1c2e; }
