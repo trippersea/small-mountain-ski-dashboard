@@ -122,13 +122,14 @@ module.exports = async function handler(req, res) {
   ].filter(Boolean).join(' · ')).join('\n');
 
   const prompt =
-    "You're a witty, opinionated New England ski expert helping someone choose where to ski. " +
+    "You're a witty, opinionated ski trip advisor helping someone choose where to ski among US mountains. " +
     "Here are the mountains being compared:\n\n" + resortList + "\n\n" +
     "In 3-4 punchy sentences: pick ONE clear winner and explain why using the actual stats. " +
     "Be specific. Name the numbers that clinch it. Have personality, don't be bland. " +
     "Never use em dashes (—) or en dashes (–) as punctuation. Use periods or commas only. " +
     "End with one sentence on who the runner-up is best suited for. " +
-    "Sign off as 'SkiNE AI 🤖'";
+    "Do not use emoji. Do not mention New England, SkiNE, or any regional brand. " +
+    "If you sign off, use only: — WhereToSkiNext";
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {

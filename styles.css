@@ -1874,7 +1874,7 @@ tr:focus-within .story-text--table {
   }
   #compareSection .mobile-card-grid {
     padding: 0 16px 16px;
-    background: #fff;
+    background: transparent;
   }
 }
 
@@ -2604,7 +2604,7 @@ tr:focus-within .story-text--table {
   overflow: hidden;
 }
 .compare-ai-box::before {
-  content: 'AI pick';
+  content: 'Compare insight';
   position: absolute;
   top: 12px; right: 16px;
   font-size: 10px;
@@ -9297,6 +9297,78 @@ button.vcard-detail-btn:hover,
   color: rgba(240, 246, 252, 0.52);
   border-color: rgba(142, 178, 226, 0.2);
   background: rgba(69, 162, 255, 0.08);
+}
+
+/* ── Mobile ranking cards — match dark compare table ───────────────────── */
+#compareSection .mobile-card-grid {
+  background: transparent;
+  gap: 10px;
+}
+#compareSection .mob-location-nudge {
+  background: rgba(69, 162, 255, 0.1);
+  border-color: rgba(142, 178, 226, 0.25);
+  color: rgba(240, 246, 252, 0.78);
+}
+#compareSection .mob-location-nudge button {
+  background: #45a2ff;
+  color: #f0f6fc;
+}
+#compareSection .mob-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(142, 178, 226, 0.22);
+  box-shadow: none;
+  color: rgba(240, 246, 252, 0.88);
+}
+#compareSection .mob-card:hover,
+#compareSection .mob-card:focus {
+  border-color: rgba(69, 162, 255, 0.55);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+#compareSection .mob-card-selected {
+  border-color: #45a2ff;
+  background: rgba(43, 109, 233, 0.14);
+}
+#compareSection .mob-card-name {
+  color: #f0f6fc;
+}
+#compareSection .mob-card-conditions {
+  color: rgba(240, 246, 252, 0.92);
+}
+#compareSection .mob-card-drive {
+  color: rgba(240, 246, 252, 0.52);
+}
+#compareSection .mob-card-meta {
+  color: rgba(240, 246, 252, 0.45);
+}
+#compareSection .mob-compare-label {
+  color: rgba(240, 246, 252, 0.45);
+}
+#compareSection .mob-card-detail-btn {
+  background: #45a2ff;
+  color: #f0f6fc;
+}
+#compareSection .mob-website-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(142, 178, 226, 0.25);
+  color: rgba(240, 246, 252, 0.78);
+}
+#compareSection .mob-website-btn:hover {
+  background: rgba(69, 162, 255, 0.12);
+  border-color: #45a2ff;
+  color: #45a2ff;
+}
+#compareSection .mob-grid-empty {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(142, 178, 226, 0.25);
+}
+#compareSection .mob-grid-empty-title {
+  color: #f0f6fc;
+}
+#compareSection .mob-grid-empty-sub {
+  color: rgba(240, 246, 252, 0.52);
+}
+#compareSection .mob-featured-hint {
+  color: rgba(240, 246, 252, 0.45);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
