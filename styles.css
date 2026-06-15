@@ -8162,6 +8162,7 @@ button.vcard-detail-btn:hover,
   z-index: 1;
   display: grid;
   grid-template-columns: 0.92fr 1.08fr;
+  align-items: start;
   max-width: 1480px;
   margin: 0 auto;
   min-height: min(560px, 88vh);
@@ -8169,8 +8170,8 @@ button.vcard-detail-btn:hover,
 #searchSection.hero-v2 .hero-v2__left {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: clamp(32px, 5vw, 72px) clamp(28px, 4.6vw, 56px);
+  justify-content: flex-start;
+  padding: clamp(22px, 4vw, 40px) clamp(28px, 4.6vw, 56px) clamp(28px, 5vw, 48px);
   background: transparent;
   backdrop-filter: none;
   position: relative;
@@ -8683,7 +8684,14 @@ button.vcard-detail-btn:hover,
 
 @media (max-width: 960px) {
   #searchSection.hero-v2 .hero-v2__grid { grid-template-columns: 1fr; }
-  #searchSection.hero-v2 .hero-v2__right { justify-content: flex-start; }
+  /* Mobile: Top Pick above the form */
+  #searchSection.hero-v2 .hero-v2__right { order: 1; justify-content: flex-start; }
+  #searchSection.hero-v2 .hero-v2__left { order: 2; }
+  #searchSection.hero-v2,
+  #searchSection.hero-v2 .hero-v2__grid,
+  #searchSection.hn-hero-split {
+    min-height: 0;
+  }
   #searchSection.hero-v2 .hero-v2__stats { grid-template-columns: 1fr; }
   #searchSection.hero-v2 .hero-v2__runnerups-grid { grid-template-columns: 1fr; }
 }
@@ -9895,6 +9903,14 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   line-height: 1.45;
 }
 
+.hn-verdict-card-root .vcard--handoff .read .rconf {
+  margin-top: 8px;
+}
+
+.hn-verdict-card-root .vcard--handoff .read .rconf .crowd-expl-conf {
+  font-size: 10px;
+}
+
 .hn-verdict-card-root .vcard--handoff .vcard-cta {
   width: 100%;
   margin-top: 22px;
@@ -10253,6 +10269,187 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   max-width: 42ch;
 }
 .hn-hero-verdict-dock .vcard--hero-light .vcard-why-subtitle { color: #5a7080; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE LAYOUT — Phase 2 (360–430px phones, ≤768px rankings)
+   Desktop layout unchanged above 960px hero / 768px table breakpoints.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.hero-v2__pill-short { display: none; }
+@media (max-width: 430px) {
+  .hero-v2__pill-long { display: none; }
+  .hero-v2__pill-short { display: inline; }
+}
+
+@media (max-width: 430px) {
+  #searchSection.hero-v2 .hero-v2__left {
+    padding: 24px 16px 20px;
+  }
+  #searchSection.hero-v2 .hero-v2__right {
+    padding: 20px 16px 22px;
+  }
+  #searchSection.hero-v2 .hero-v2__eyebrow {
+    margin-bottom: 12px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+  #searchSection.hero-v2 .hero-v2__headline {
+    font-size: clamp(34px, 9vw, 42px);
+    margin-bottom: 10px;
+    line-height: 1.02;
+  }
+  #searchSection.hero-v2 .hero-v2__support {
+    margin-bottom: 18px;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  #searchSection.hero-v2 .hero-v2__pill-row {
+    margin-top: 10px;
+  }
+  #searchSection.hero-v2 .hero-v2__cta-row {
+    margin-top: 10px;
+  }
+  #searchSection.hero-v2 .hero-v2__defaults {
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  #searchSection.hero-v2 .hero-v2__pill,
+  #searchSection.hero-v2 .hero-v2__mini-pill {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  #searchSection.hero-v2 .hero-v2__link,
+  #searchSection.hero-v2 .hero-v2__change,
+  #searchSection.hero-v2 .hero-v2__summary-chip {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  #searchSection.hero-v2 .hero-v2__link {
+    padding: 10px 2px;
+  }
+  #searchSection.hero-v2 .hero-v2__change {
+    padding: 10px 8px;
+  }
+  #searchSection.hero-v2 .hn-verdict-empty-locate-btn {
+    min-height: 44px;
+    padding: 12px 1rem;
+  }
+
+  .hn-verdict-card-root .vcard--handoff .vcard-peak-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .hn-verdict-card-root .vcard--handoff .vcard-why,
+  .hn-verdict-card-root .vcard--handoff .vcard-seclink {
+    min-height: 44px;
+    padding: 10px 10px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 8px;
+  }
+  .hn-verdict-card-root .vcard--handoff .vcard-why:not(:disabled) {
+    background: oklch(0.24 0.022 250 / 0.45);
+    border: 1px solid var(--hn-line-soft);
+  }
+  .hn-verdict-card-root .vcard--handoff .vcard-seclink--icon {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+    justify-content: center;
+  }
+
+  .hn-verdict-card-root .vcard-more-below {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px dashed oklch(0.58 0.03 250 / 0.35);
+    background: oklch(0.24 0.022 250 / 0.35);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--hn-ink-2);
+    text-align: center;
+    line-height: 1.35;
+  }
+  .hn-verdict-card-root .vcard-more-below::after {
+    content: "↓";
+    font-size: 14px;
+    opacity: 0.75;
+  }
+
+  #compareSection .compare-search-input.table-search-input,
+  #compareSection .compare-view-all-btn.btn-secondary,
+  #compareSection .compare-filter-btn.filter-toggle-btn {
+    min-height: 44px;
+  }
+  .mob-compare-label {
+    min-height: 44px;
+    padding: 10px 0;
+  }
+  .mob-compare-label input {
+    width: 20px;
+    height: 20px;
+  }
+
+  .hn-rankings-zone {
+    display: flex;
+    flex-direction: column;
+  }
+  .hn-rankings-zone #compareSection.hn-rankings-table { order: 1; }
+  .hn-rankings-zone .hn-refine-inline { order: 2; }
+  .hn-rankings-zone .hws-section {
+    order: 3;
+    margin-top: 4px;
+    padding-top: 8px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hn-verdict-card-root .vcard--handoff .vcard-card-top {
+    margin-bottom: 14px;
+  }
+  .hn-verdict-card-root .vcard--handoff .vcard-verdict-sentence {
+    margin-top: 12px;
+    font-size: 16px;
+  }
+  .hn-verdict-card-root .vcard--handoff .read {
+    margin-top: 14px;
+  }
+  .hn-verdict-card-root .vcard--handoff .read .rrow {
+    padding: 11px 0;
+    gap: 10px;
+  }
+  .hn-verdict-card-root .vcard--handoff .read .rverdict {
+    font-size: 15px;
+  }
+  .hn-verdict-card-root .vcard--handoff .vcard-cta {
+    margin-top: 16px;
+    padding: 14px 18px;
+  }
+  .hn-verdict-card-root .vcard--handoff .vcard-divider {
+    margin: 16px 0 12px;
+  }
+  .hn-verdict-card-root .vcard--handoff .vcard-other-smart-calls {
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+  .hn-verdict-card-root .vcard--handoff .vcard-card-foot {
+    margin-top: 14px;
+  }
+}
+
+@media (min-width: 769px) {
+  .hn-verdict-card-root .vcard-more-below { display: none; }
+}
 
 /* ── Crowd feedback loop (crowd-feedback.js) ─────────────────────────────── */
 /* Ambient "how packed was it?" prompt above the verdict, and the intent tap   */

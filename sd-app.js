@@ -387,11 +387,16 @@ function buildGamePlanReadRow(vd, wx) {
 
 function renderVerdictReadRow(label, row) {
   if (!row) return '';
+  const confLevel = row.confidence ? String(row.confidence).toLowerCase() : '';
+  const confHtml = row.confidence
+    ? `<div class="rconf"><span class="crowd-expl-conf crowd-expl-conf--${esc(confLevel)}">${esc(row.confidence)} confidence</span></div>`
+    : '';
   return `<div class="rrow">
     <span class="rname">${esc(label)}</span>
     <div class="rbody">
       <div class="rverdict ${esc(row.tier)}">${esc(row.verdict)}</div>
       <div class="rdetail">${esc(row.detail)}</div>
+      ${confHtml}
     </div>
   </div>`;
 }
@@ -403,6 +408,7 @@ function buildVerdictReadHtml(resort, wx, breakdown, vd, crowd) {
     verdict: crowdReadVerdict(crowd.label),
     detail: buildCrowdReadDetail(crowd),
     tier: crowdReadTier(crowd.label),
+    confidence: crowd.confidence || null,
   };
   const plan = buildGamePlanReadRow(vdWithResort, wx);
   return `<div class="read">
@@ -2789,6 +2795,7 @@ function renderVerdict(resorts) {
           </button>
         </div>
       </div>
+      ${(otherSmartCallsHtml || _alternativesHtml) ? '<p class="vcard-more-below" role="note">Scroll for close calls &amp; other ways to play your day</p>' : ''}
 
       <div class="vcard-why-body" id="verdictWhyBody"${_alternativesHtml ? '' : ' hidden'}>
         <p class="vcard-why-subtitle">The closest calls from your full rankings. The Top Pick edged these out on the overall match for your ski day.</p>
