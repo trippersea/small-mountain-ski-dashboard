@@ -2795,11 +2795,13 @@ function renderVerdict(resorts) {
           </button>
         </div>
       </div>
-      ${(otherSmartCallsHtml || _alternativesHtml) ? '<p class="vcard-more-below" role="note">Scroll for close calls &amp; other ways to play your day</p>' : ''}
+      ${otherSmartCallsHtml ? '<p class="vcard-more-below" role="note">More ways to play your ski day below</p>' : ''}
 
       <div class="vcard-why-body" id="verdictWhyBody"${_alternativesHtml ? '' : ' hidden'}>
-        <p class="vcard-why-subtitle">The closest calls from your full rankings. The Top Pick edged these out on the overall match for your ski day.</p>
-        <div>${_alternativesHtml}</div>
+        <div class="vcard-why-body-inner">
+          <p class="vcard-why-subtitle">The closest calls from your full rankings. The Top Pick edged these out on the overall match for your ski day.</p>
+          <div>${_alternativesHtml}</div>
+        </div>
       </div>
 
       ${otherSmartCallsHtml}
