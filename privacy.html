@@ -165,7 +165,7 @@
     <p class="last-updated">Last updated: June 2026</p>
 
     <h2>The short version</h2>
-    <p>WhereToSkiNext.com doesn't sell your data and doesn't require an account. If you sign up for the newsletter, your email goes to Beehiiv (our email platform). If you use the AI assistant or filters, anonymous usage events are logged to help improve the site. Location data is used only to calculate drive times and is never stored on our servers unless you explicitly share a link. We use Google Analytics for aggregate traffic data. That's the whole picture.</p>
+    <p>WhereToSkiNext.com doesn't sell your data and doesn't require an account. If you sign up for the newsletter, your email goes to Beehiiv (our email platform). If you use the AI assistant or filters, anonymous usage events are logged to help improve the site. Your precise location (the coordinates used to calculate drive times) is never stored on our servers. A coarse label like "Boston, MA" is saved with anonymous analytics if you use location features, and your full settings are encoded into a share link only if you create one. We use Google Analytics for aggregate traffic data. That's the whole picture.</p>
 
     <h2>What we collect and why</h2>
     <div class="table-wrap">
@@ -181,13 +181,13 @@
           </tr>
           <tr>
             <td><strong>Location (ZIP, city, or GPS)</strong></td>
-            <td>Converted to coordinates to calculate drive times and rank nearby mountains. Not logged on our servers. GPS requires your explicit browser permission.</td>
+            <td>Converted to coordinates to calculate drive times and rank nearby mountains. Your precise coordinates are not logged on our servers. A coarse label (city/region) may be stored with anonymous analytics, as noted in the next column. GPS requires your explicit browser permission.</td>
             <td>Your browser only. Saved to <code>localStorage</code> if you check "Remember this location" — you can clear it any time. A coarse origin label (e.g. "Boston, MA") is included in anonymous analytics events if you use location-based features.</td>
           </tr>
           <tr>
             <td><strong>Filter preferences</strong></td>
-            <td>Restores your settings on your next visit for convenience.</td>
-            <td>Your browser's <code>localStorage</code> only.</td>
+            <td>Your saved settings restore on your next visit for convenience. Separately, when you change a filter we log that change as an anonymous usage event (see the row below) to understand which filters people use.</td>
+            <td>Your saved settings live in your browser's <code>localStorage</code> only. The anonymous record of a filter <em>change</em> (the filter type and value, tied to a random session ID) is stored in our analytics database (Supabase), with no name or email attached.</td>
           </tr>
           <tr>
             <td><strong>Weather &amp; snowfall data</strong></td>
@@ -197,7 +197,7 @@
           <tr>
             <td><strong>Anonymous usage events</strong></td>
             <td>We log filter changes, resort recommendation clicks, AI assistant queries, and crowd feedback (whether a mountain we recommended turned out quiet or crowded on your ski day) to understand how the site is used and to improve our crowd predictions. Events are tied to a random session ID, not to your identity. Crowd feedback is optional: if you dismiss the prompt, nothing is sent.</td>
-            <td>Our analytics database (Supabase). Events include the action type, selected filters, resort IDs, a coarse origin label if location is set, the text of AI assistant queries, and crowd feedback (the mountain, the ski day, what we predicted, and your quiet/about right/packed answer). No name, email, or account data is linked to these events.</td>
+            <td>Our analytics database (Supabase). Events include the action type, your selected filters (pass, trip distance, priority, ski day), the resort IDs and names involved, a coarse origin label if location is set, the text of AI assistant queries, and crowd feedback (the mountain, the ski day, what we predicted, and your quiet/about right/packed answer). All of this is public mountain data or your own filter choices. No name, email, IP address, precise coordinates, or account data is linked to these events, which are tied only to a random session ID.</td>
           </tr>
           <tr>
             <td><strong>Page analytics</strong></td>
