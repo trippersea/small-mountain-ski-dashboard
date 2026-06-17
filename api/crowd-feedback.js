@@ -6,7 +6,7 @@
  *                               predicted_label, predicted_score, intent }
  * Body (type 'crowd_report'): { type, resort_id, resort_name, ski_day,
  *                               predicted_label, predicted_score, intent, report }
- * Plus session_id + anon_id on both.
+ * Plus session_id on both.
  *
  * This is the ground-truth channel for the crowd model. Each crowd_report row
  * pairs what we predicted (label + score) against what a real skier saw, so
@@ -48,7 +48,6 @@ function parseBody(raw) {
     predicted_score: predictedScore,
     intent:          cleanStr(raw.intent, 10),
     session_id:      cleanStr(raw.session_id, 64),
-    anon_id:         cleanStr(raw.anon_id, 64),
   };
 
   if (type === 'intent') {
@@ -108,7 +107,6 @@ module.exports = async function handler(req, res) {
       intent:          rec.intent || null,
       report:          rec.report || null,
       session_id:      rec.session_id || null,
-      anon_id:         rec.anon_id || null,
     };
     const resp = await fetch(`${url}/rest/v1/crowd_feedback`, {
       method: 'POST',

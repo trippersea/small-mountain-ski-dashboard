@@ -162,7 +162,7 @@
     <div class="eyebrow">Privacy Policy</div>
     <h1>Your data stays yours.</h1>
     <p class="lead">WhereToSkiNext.com doesn't sell your data, doesn't require an account, and stores as little as possible — most of it never leaves your browser.</p>
-    <p class="last-updated">Last updated: May 2026</p>
+    <p class="last-updated">Last updated: June 2026</p>
 
     <h2>The short version</h2>
     <p>WhereToSkiNext.com doesn't sell your data and doesn't require an account. If you sign up for the newsletter, your email goes to Beehiiv (our email platform). If you use the AI assistant or filters, anonymous usage events are logged to help improve the site. Location data is used only to calculate drive times and is never stored on our servers unless you explicitly share a link. We use Google Analytics for aggregate traffic data. That's the whole picture.</p>
@@ -196,8 +196,8 @@
           </tr>
           <tr>
             <td><strong>Anonymous usage events</strong></td>
-            <td>We log filter changes, resort recommendation clicks, and AI assistant queries to understand how the site is used and improve it. Events are tied to a random session ID, not to your identity.</td>
-            <td>Our analytics database (Supabase). Events include the action type, selected filters, resort IDs, a coarse origin label if location is set, and the text of AI assistant queries. No name, email, or account data is linked to these events.</td>
+            <td>We log filter changes, resort recommendation clicks, AI assistant queries, and crowd feedback (whether a mountain we recommended turned out quiet or crowded on your ski day) to understand how the site is used and to improve our crowd predictions. Events are tied to a random session ID, not to your identity. Crowd feedback is optional: if you dismiss the prompt, nothing is sent.</td>
+            <td>Our analytics database (Supabase). Events include the action type, selected filters, resort IDs, a coarse origin label if location is set, the text of AI assistant queries, and crowd feedback (the mountain, the ski day, what we predicted, and your quiet/about right/packed answer). No name, email, or account data is linked to these events.</td>
           </tr>
           <tr>
             <td><strong>Page analytics</strong></td>
@@ -250,7 +250,7 @@
           <tr>
             <td><strong>Supabase</strong><br /><a href="https://supabase.com/privacy" target="_blank" rel="noopener">supabase.com/privacy</a></td>
             <td>Analytics event logging</td>
-            <td>Anonymous usage events: filter changes, recommendation clicks, AI assistant queries, and a coarse origin label if location is set. Events are linked to a random session ID only — no name or email.</td>
+            <td>Anonymous usage events: filter changes, recommendation clicks, AI assistant queries, crowd feedback, and a coarse origin label if location is set. Events are linked to a random session ID only, no name or email.</td>
           </tr>
           <tr>
             <td><strong>Google Analytics &amp; GTM</strong><br /><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com</a></td>
@@ -282,6 +282,7 @@
           <tr><td><code>ski-ski-days</code></td><td>localStorage</td><td>Your typical ski days per season setting</td></tr>
           <tr><td><code>ski-wx-cache-v2</code></td><td>sessionStorage</td><td>Cached weather forecast data for the current session</td></tr>
           <tr><td><code>ski-hist-cache</code></td><td>sessionStorage</td><td>Cached historical snowfall data for the current session</td></tr>
+          <tr><td><code>wtsn_feedback_v1</code></td><td>localStorage</td><td>Mountains we recommended to you and your crowd feedback, so we can ask "how packed was it?" on a later visit. Anonymous, stored only in your browser.</td></tr>
         </tbody>
       </table>
     </div>
@@ -295,6 +296,7 @@
 
     <h2>Changes to this policy</h2>
     <p>If we make material changes to how we handle data, we'll update the "Last updated" date at the top of this page. We won't start collecting personal data without updating this policy first.</p>
+    <p><strong>June 2026:</strong> Added the crowd feedback prompt, which asks on a later visit whether a mountain we recommended turned out quiet or crowded. It is anonymous, optional, and tied only to a random session ID.</p>
 
     <p class="contact-note">Questions about this policy?<br />Reach us at <a href="mailto:wheretoskinext@gmail.com">wheretoskinext@gmail.com</a></p>
   </main>

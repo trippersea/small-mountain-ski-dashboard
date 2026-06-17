@@ -69,16 +69,6 @@
     } catch (e) { return 'unknown'; }
   }
 
-  /** Anonymous, stable-per-browser id so repeated reports can be loosely grouped
-   *  without any login. Not PII; just a random string persisted locally. */
-  function _anonId() {
-    try {
-      var id = localStorage.getItem('wtsn_anon');
-      if (!id) { id = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('wtsn_anon', id); }
-      return id;
-    } catch (e) { return 'unknown'; }
-  }
-
   function _prune(arr, now) {
     return arr.filter(function (e) {
       if (!e || !e.skiDayMs) return false;
@@ -188,7 +178,6 @@
   function _post(body) {
     try {
       body.session_id = _sessionId();
-      body.anon_id    = _anonId();
       fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
