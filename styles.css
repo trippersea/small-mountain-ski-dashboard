@@ -9929,11 +9929,13 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   line-height: 1.45;
 }
 
-.hn-verdict-card-root .vcard--handoff .read {
+.hn-verdict-card-root .vcard--handoff .read,
+#detailSection .detail-read-block .read {
   margin-top: 20px;
 }
 
-.hn-verdict-card-root .vcard--handoff .read .rrow {
+.hn-verdict-card-root .vcard--handoff .read .rrow,
+#detailSection .detail-read-block .read .rrow {
   display: grid;
   grid-template-columns: 108px 1fr;
   gap: 18px;
@@ -9941,11 +9943,17 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   padding: 15px 0;
 }
 
-.hn-verdict-card-root .vcard--handoff .read .rrow + .rrow {
+.hn-verdict-card-root .vcard--handoff .read .rrow + .rrow,
+#detailSection .detail-read-block .read .rrow + .rrow {
   border-top: 1px solid var(--hn-line-soft);
 }
 
-.hn-verdict-card-root .vcard--handoff .read .rname {
+#detailSection .detail-read-block .read .rrow + .rrow {
+  border-top-color: var(--border);
+}
+
+.hn-verdict-card-root .vcard--handoff .read .rname,
+#detailSection .detail-read-block .read .rname {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -9953,34 +9961,67 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   color: var(--hn-ink-3);
 }
 
-.hn-verdict-card-root .vcard--handoff .read .rbody {
+.hn-verdict-card-root .vcard--handoff .read .rbody,
+#detailSection .detail-read-block .read .rbody {
   min-width: 0;
 }
 
-.hn-verdict-card-root .vcard--handoff .read .rverdict {
+.hn-verdict-card-root .vcard--handoff .read .rverdict,
+#detailSection .detail-read-block .read .rverdict {
   font-size: 16px;
   font-weight: 700;
   color: var(--hn-ink);
   line-height: 1.25;
 }
 
-.hn-verdict-card-root .vcard--handoff .read .rverdict.good { color: var(--hn-good); }
-.hn-verdict-card-root .vcard--handoff .read .rverdict.warn { color: var(--hn-warn); }
-.hn-verdict-card-root .vcard--handoff .read .rverdict.bad { color: var(--hn-bad); }
+.hn-verdict-card-root .vcard--handoff .read .rverdict.good,
+#detailSection .detail-read-block .read .rverdict.good { color: var(--hn-good); }
+.hn-verdict-card-root .vcard--handoff .read .rverdict.warn,
+#detailSection .detail-read-block .read .rverdict.warn { color: var(--hn-warn); }
+.hn-verdict-card-root .vcard--handoff .read .rverdict.bad,
+#detailSection .detail-read-block .read .rverdict.bad { color: var(--hn-bad); }
 
-.hn-verdict-card-root .vcard--handoff .read .rdetail {
+#detailSection .detail-read-block .read .rverdict.good { color: #4ade80; }
+#detailSection .detail-read-block .read .rverdict.warn { color: #fbbf24; }
+#detailSection .detail-read-block .read .rverdict.bad { color: #f87171; }
+
+.hn-verdict-card-root .vcard--handoff .read .rdetail,
+#detailSection .detail-read-block .read .rdetail {
   font-size: 13.5px;
   color: var(--hn-ink-2);
   margin-top: 5px;
   line-height: 1.45;
 }
 
-.hn-verdict-card-root .vcard--handoff .read .rconf {
+#detailSection .detail-read-block .read .rname {
+  color: var(--muted);
+}
+
+#detailSection .detail-read-block .read .rverdict {
+  color: var(--text);
+}
+
+#detailSection .detail-read-block .read .rdetail {
+  color: var(--text-body);
+}
+
+.hn-verdict-card-root .vcard--handoff .read .rconf,
+#detailSection .detail-read-block .read .rconf {
   margin-top: 8px;
 }
 
-.hn-verdict-card-root .vcard--handoff .read .rconf .crowd-expl-conf {
+.hn-verdict-card-root .vcard--handoff .read .rconf .crowd-expl-conf,
+#detailSection .detail-read-block .read .rconf .crowd-expl-conf {
   font-size: 10px;
+}
+
+#detailSection .detail-read-block .read {
+  margin-top: 0;
+}
+
+#detailSection .detail-body-block.detail-read-block {
+  padding-top: 18px;
+  padding-bottom: 18px;
 }
 
 .hn-verdict-card-root .vcard--handoff .vcard-cta {
@@ -10215,7 +10256,8 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   .hn-verdict-card-root .vcard--handoff .vcard-peak {
     font-size: 32px;
   }
-  .hn-verdict-card-root .vcard--handoff .read .rrow {
+  .hn-verdict-card-root .vcard--handoff .read .rrow,
+  #detailSection .detail-read-block .read .rrow {
     grid-template-columns: 88px 1fr;
     gap: 12px;
   }
@@ -10504,11 +10546,13 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
   .hn-verdict-card-root .vcard--handoff .read {
     margin-top: 14px;
   }
-  .hn-verdict-card-root .vcard--handoff .read .rrow {
+  .hn-verdict-card-root .vcard--handoff .read .rrow,
+  #detailSection .detail-read-block .read .rrow {
     padding: 11px 0;
     gap: 10px;
   }
-  .hn-verdict-card-root .vcard--handoff .read .rverdict {
+  .hn-verdict-card-root .vcard--handoff .read .rverdict,
+  #detailSection .detail-read-block .read .rverdict {
     font-size: 15px;
   }
   .hn-verdict-card-root .vcard--handoff .vcard-cta {

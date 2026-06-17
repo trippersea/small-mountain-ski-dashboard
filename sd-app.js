@@ -418,6 +418,29 @@ function buildVerdictReadHtml(resort, wx, breakdown, vd, crowd) {
   </div>`;
 }
 
+function readRowPillClass(tier, kind = 'default') {
+  if (kind === 'crowd') {
+    return tier === 'good' ? 'vcard-dash-pill--crowd-low' : tier === 'warn' ? 'vcard-dash-pill--crowd-mod' : 'vcard-dash-pill--crowd-high';
+  }
+  return tier === 'good' ? 'vcard-dash-pill--cond-good' : tier === 'warn' ? 'vcard-dash-pill--cond-warn' : 'vcard-dash-pill--cond-bad';
+}
+
+/** Hero pills on See full forecast — same verdict strings as the Top Pick read rows */
+function buildDetailReadPills(vd, breakdown, crowd, wx, resort, skis, detailBdAttr) {
+  if (!vd || !wx) return '';
+  const snow = buildSnowReadRow(vd, breakdown);
+  const crowds = { verdict: crowdReadVerdict(crowd.label), tier: crowdReadTier(crowd.label) };
+  const plan = buildGamePlanReadRow({ ...vd, resort }, wx);
+  const fitPill = skis
+    ? `<span class="dhr-fit-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Fit score ${skis.skiScore} · tap for breakdown"><span class="dhr-fit-pill-dot" aria-hidden="true"></span><span class="dhr-fit-pill-num">${skis.skiScore}</span></span>`
+    : '';
+  return `
+    <span class="vcard-dash-pill ${readRowPillClass(snow.tier)}">${esc(snow.verdict)}</span>
+    <span class="vcard-dash-pill ${readRowPillClass(crowds.tier, 'crowd')}">${esc(crowds.verdict)}</span>
+    <span class="vcard-dash-pill ${readRowPillClass(plan.tier)}">${esc(plan.verdict)}</span>
+    ${fitPill}`;
+}
+
 function splitVerdictSummary(prose, tier, driveText) {
   if (prose) {
     const withinIdx = prose.indexOf(' within');
@@ -3458,8 +3481,7 @@ function renderDetail({ scroll = false } = {}) {
   const tb    = resort.terrainBreakdown;
 
   const forecast = wx?.forecast || [];
-  const fi       = targetForecastIndex();
-  const stormTotal = forecast.reduce((s, f) => s + (f.snow || 0), 0);
+
   const hist  = historyCache.get(resort.id);
   const reportSlug = resort.id;
   const sponsor = getSponsor(resort.id);
@@ -3490,44 +3512,13 @@ function renderDetail({ scroll = false } = {}) {
     dhrDrivePart,
   ].filter(Boolean).join(' · ');
 
-  const dhrSnowPillText = typeof stormTotal === 'number' && stormTotal >= 0.5
-    ? `${stormTotal.toFixed(0)}" forecast`
-    : (forecast[fi] && typeof forecast[fi].snow === 'number' && forecast[fi].snow >= 0.5)
-    ? `${forecast[fi].snow.toFixed(0)}" forecast`
-    : 'Dry forecast';
-
-  const dhrCrowdPill = crowd.label === 'Quiet'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-low">Crowd forecast: Light</span>'
-    : crowd.label === 'Avoid'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Crowd forecast: Packed</span>'
-    : crowd.label === 'Busy'
-    ? '<span class="vcard-dash-pill vcard-dash-pill--crowd-high">Crowd forecast: Busy</span>'
-    : '<span class="vcard-dash-pill vcard-dash-pill--crowd-mod">Crowd forecast: Moderate</span>';
-
-  const dhrTierPillClass = vd
-    ? ({ great: 'vcard-dash-pill--cond-great', good: 'vcard-dash-pill--cond-good', marginal: 'vcard-dash-pill--cond-warn', bad: 'vcard-dash-pill--cond-bad' }[vd.tier] || 'vcard-dash-pill--cond-good')
-    : '';
-  const dhrCondPill = vd ? `<span class="vcard-dash-pill ${dhrTierPillClass}">${esc(vd.label)}</span>` : '';
-
   const dhrVerdictHtml = vd
-    ? esc(vd.detail) + (vd.subPoints && vd.subPoints.length ? ' ' + vd.subPoints.map(p => esc(p)).join(' ') : '')
+    ? esc(vd.detail)
     : wx
     ? esc('Forecast-driven pick for this mountain.')
     : esc('Loading forecast…');
 
-  const dhrFitPill = skis
-    ? `<span class="dhr-fit-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Fit score ${skis.skiScore} · tap for breakdown"><span class="dhr-fit-pill-dot" aria-hidden="true"></span><span class="dhr-fit-pill-num">${skis.skiScore}</span></span>`
-    : '';
-
-  const detailWatchSentence = !vd
-    ? 'Forecasts can shift inside 24 hours · peek out the window before you commit.'
-    : vd.rainLikely
-    ? 'Rain is likely at this elevation · expect wet, sloppy snow.'
-    : vd.tier === 'bad' && !vd.rainLikely
-    ? 'Very little new snow in the forecast · you are mostly skiing whatever is already on the hill.'
-    : resort.price >= 175
-    ? 'Ticket is on the steep side · worth it if the day delivers.'
-    : 'Forecasts can shift inside 24 hours · peek out the window before you commit.';
+  const dhrReadPills = buildDetailReadPills(vd, bd, crowd, wx, resort, skis, detailBdAttr);
 
   const whyProseHtml = (wx && bd)
     ? preferenceReasons(resort, wx, bd)
@@ -3538,16 +3529,9 @@ function renderDetail({ scroll = false } = {}) {
       .join(' ')
     : esc('Still pulling forecast data · check back in a moment.');
 
-  const decisionProseHtml = (wx && vd)
-    ? esc(vd.detail) + ' Watch: ' + esc(detailWatchSentence)
-    : wx
-    ? esc('Once the forecast loads, we will spell out the conditions call here.')
-    : esc('Loading…');
-
-  const crowdFootText = crowd.reasons.length
-    ? `${crowdUtilityShort(crowd.label)} · ${crowd.reasons.slice(0, 3).join(' · ')}`
-    : `${crowdUtilityShort(crowd.label)} outlook · ${crowd.confidence} confidence`;
-  const crowdFootHtml = esc(crowdFootText);
+  const detailReadHtml = (wx && vd && bd)
+    ? buildVerdictReadHtml(resort, wx, bd, vd, crowd)
+    : '';
 
   // PATCH 4: Use resort-specific photo in detail panel hero
   const _detailPhotoStyle = resortPhotoStyle(resort, 'linear-gradient(180deg, rgba(10, 20, 35, 0.52) 0%, rgba(10, 20, 35, 0.78) 100%)');
@@ -3569,10 +3553,7 @@ ${_roleBannerHtml}
     ${sponsor?.tagline ? `<p class="dhr-tagline">${esc(sponsor.tagline)}</p>` : ''}
     <p class="dhr-verdict">${dhrVerdictHtml}</p>
     <div class="vcard-dash-pills">
-      ${dhrCondPill}
-      ${wx ? `<span class="vcard-dash-pill">${esc(dhrSnowPillText)}</span>` : ''}
-      ${dhrCrowdPill}
-      ${dhrFitPill}
+      ${dhrReadPills}
     </div>
     <div class="dhr-actions">
       <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See full report →</a>
@@ -3588,10 +3569,7 @@ ${_roleBannerHtml}
       <p class="detail-why-prose">${whyProseHtml}</p>
     </div>
 
-    <div class="detail-body-block">
-      <p class="detail-decision-prose">${decisionProseHtml}</p>
-      <p class="detail-crowd-foot">${crowdFootHtml}</p>
-    </div>
+    ${detailReadHtml ? `<div class="detail-body-block detail-read-block">${detailReadHtml}</div>` : ''}
 
     <div class="detail-body-block">
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
