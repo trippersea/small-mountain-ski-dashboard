@@ -418,29 +418,6 @@ function buildVerdictReadHtml(resort, wx, breakdown, vd, crowd) {
   </div>`;
 }
 
-function readRowPillClass(tier, kind = 'default') {
-  if (kind === 'crowd') {
-    return tier === 'good' ? 'vcard-dash-pill--crowd-low' : tier === 'warn' ? 'vcard-dash-pill--crowd-mod' : 'vcard-dash-pill--crowd-high';
-  }
-  return tier === 'good' ? 'vcard-dash-pill--cond-good' : tier === 'warn' ? 'vcard-dash-pill--cond-warn' : 'vcard-dash-pill--cond-bad';
-}
-
-/** Hero pills on See full forecast — same verdict strings as the Top Pick read rows */
-function buildDetailReadPills(vd, breakdown, crowd, wx, resort, skis, detailBdAttr) {
-  if (!vd || !wx) return '';
-  const snow = buildSnowReadRow(vd, breakdown);
-  const crowds = { verdict: crowdReadVerdict(crowd.label), tier: crowdReadTier(crowd.label) };
-  const plan = buildGamePlanReadRow({ ...vd, resort }, wx);
-  const fitPill = skis
-    ? `<span class="dhr-fit-pill score-badge--tip" ${detailBdAttr} tabindex="0" aria-label="Fit score ${skis.skiScore} · tap for breakdown"><span class="dhr-fit-pill-dot" aria-hidden="true"></span><span class="dhr-fit-pill-num">${skis.skiScore}</span></span>`
-    : '';
-  return `
-    <span class="vcard-dash-pill ${readRowPillClass(snow.tier)}">${esc(snow.verdict)}</span>
-    <span class="vcard-dash-pill ${readRowPillClass(crowds.tier, 'crowd')}">${esc(crowds.verdict)}</span>
-    <span class="vcard-dash-pill ${readRowPillClass(plan.tier)}">${esc(plan.verdict)}</span>
-    ${fitPill}`;
-}
-
 function splitVerdictSummary(prose, tier, driveText) {
   if (prose) {
     const withinIdx = prose.indexOf(' within');
@@ -3465,18 +3442,6 @@ function renderDetail({ scroll = false } = {}) {
   const w    = normalizedWeights();
   const bd   = wx ? plannerScoreBreakdown(resort, wx, targetForecastIndex(), w) : null;
   const vd   = (wx && bd) ? verdictFromBreakdown(resort, wx, bd) : null;
-  const skis = bd ? {
-    ...bd,
-    skiScore: Math.round(bd.score),
-    factors: {
-      snow:       Math.round(bd.components.snow),
-      skiability: Math.round(bd.components.skiability),
-      fit:        Math.round(bd.components.fit),
-      drive:      Math.round(bd.components.drive),
-      value:      Math.round(bd.components.value),
-      crowd:      Math.round(bd.components.crowd),
-    },
-  } : null;
   const crowd = crowdForecast(resort, wx);
   const tb    = resort.terrainBreakdown;
 
@@ -3485,24 +3450,6 @@ function renderDetail({ scroll = false } = {}) {
   const hist  = historyCache.get(resort.id);
   const reportSlug = resort.id;
   const sponsor = getSponsor(resort.id);
-  const detailBdAttr = skis && bd ? (() => {
-    const f = skis.factors;
-    const factorsJson = JSON.stringify({
-      snow:       +f.snow.toFixed(1),
-      skiability: +f.skiability.toFixed(1),
-      fit:        +f.fit.toFixed(1),
-      drive:      +f.drive.toFixed(1),
-      value:      +f.value.toFixed(1),
-      crowd:      +f.crowd.toFixed(1),
-    });
-    const pickQa = [
-      `data-top-pick-eligible="${bd.topPickEligible === true ? '1' : '0'}"`,
-      `data-top-pick-reason="${esc(bd.topPickEligibilityReason || '')}"`,
-      `data-destination-class="${esc(bd.destinationClass || '')}"`,
-      `data-destination-suitability="${bd.destinationSuitabilityScore ?? ''}"`,
-    ].join(' ');
-    return `data-bd="${btoa(factorsJson)}" ${pickQa}`;
-  })() : '';
 
   const dhrDrivePart = getDriveMins(resort.id) ? `${formatDrive(resort.id)} away` : null;
   const dhrStatsLine = [
@@ -3517,8 +3464,6 @@ function renderDetail({ scroll = false } = {}) {
     : wx
     ? esc('Forecast-driven pick for this mountain.')
     : esc('Loading forecast…');
-
-  const dhrReadPills = buildDetailReadPills(vd, bd, crowd, wx, resort, skis, detailBdAttr);
 
   const whyProseHtml = (wx && bd)
     ? preferenceReasons(resort, wx, bd)
@@ -3552,11 +3497,8 @@ ${_roleBannerHtml}
     <p class="dhr-stats">${esc(dhrStatsLine)}</p>
     ${sponsor?.tagline ? `<p class="dhr-tagline">${esc(sponsor.tagline)}</p>` : ''}
     <p class="dhr-verdict">${dhrVerdictHtml}</p>
-    <div class="vcard-dash-pills">
-      ${dhrReadPills}
-    </div>
     <div class="dhr-actions">
-      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See full report →</a>
+      <a class="dhr-btn-primary" href="/ski-report/${esc(reportSlug)}/">See Mountain Details →</a>
       ${sponsor ? `<a class="dhr-book js-sponsor-link" href="${esc(sponsor.bookingUrl)}" target="_blank" rel="noopener sponsored" ${sponsorTrackAttrs(resort.name, 'detail_panel', resort.id, '')}>Book now →</a>` : ''}
       ${safeHttpUrl(resort.website) ? `<a class="dhr-btn-ghost" href="${esc(safeHttpUrl(resort.website))}" target="_blank" rel="noopener noreferrer">Visit website ↗</a>` : ''}
     </div>
