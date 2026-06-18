@@ -9397,16 +9397,44 @@ button.vcard-detail-btn:hover,
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* Soft handoff from hero photo into rankings band */
+/* Seam: .container gap exposes --bg-page (#d4e8f8); close it and cross-fade both images to --navy-deep */
+body:has(#searchSection.hero-v2) #searchSection.hero-v2.hn-hero-split {
+  margin-bottom: -18px;
+}
+body:has(#searchSection.hero-v2) #searchSection.hero-v2.hn-hero-split + .hn-results-region {
+  margin-bottom: -18px;
+}
 #searchSection.hn-hero-split::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 72px;
+  height: 140px;
+  background: linear-gradient(to bottom, transparent, var(--navy-deep));
   pointer-events: none;
-  z-index: 4;
-  background: linear-gradient(to bottom, transparent 0%, rgba(15, 28, 46, 0.4) 55%, transparent 100%);
+  z-index: 1;
+}
+.hn-rankings-backdrop::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 140px;
+  background: linear-gradient(to top, transparent, var(--navy-deep));
+  pointer-events: none;
+  z-index: 1;
+}
+body:has(#searchSection.hero-v2) #searchSection.hero-v2 .hero-v2__grid,
+body:has(#searchSection.hero-v2) #searchSection.hero-v2 .hero-v2__cta-row {
+  position: relative;
+  z-index: 2;
+}
+.hn-rankings-backdrop .hws-section,
+.hn-rankings-backdrop .hn-refine-inline {
+  position: relative;
+  z-index: 2;
 }
 
 .hn-rankings-backdrop {
