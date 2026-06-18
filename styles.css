@@ -9442,7 +9442,7 @@ body:has(#searchSection.hero-v2) #searchSection.hero-v2 .hero-v2__cta-row {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   background-color: #0b1b2b;
-  background-image: url("/black-mountain-bg.png");
+  background-image: url("/black-mountain-bg.png?v=2");
   background-size: cover;
   background-position: center 42%;
   background-repeat: no-repeat;
@@ -9455,7 +9455,7 @@ body:has(#searchSection.hero-v2) #searchSection.hero-v2 .hero-v2__cta-row {
   margin-left: calc(50% - 50vw);
   padding: 0 0 28px;
   background-color: #0b1b2b;
-  background-image: url("/saddleback-bg.png");
+  background-image: url("/saddleback-bg.png?v=2");
   background-size: cover;
   background-position: center 42%;
   background-repeat: no-repeat;
