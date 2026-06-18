@@ -9413,7 +9413,7 @@ button.vcard-detail-btn:hover,
   position: relative;
   width: 100vw;
   margin-left: calc(50% - 50vw);
-  background-color: #0f1c2e;
+  background-color: #0b1b2b;
   background-image: url("/rankings-bg.png");
   background-size: cover;
   background-position: center 42%;
@@ -9424,10 +9424,12 @@ button.vcard-detail-btn:hover,
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    180deg,
-    rgba(15, 28, 46, 0.72) 0%,
-    rgba(15, 28, 46, 0.52) 50%,
-    rgba(15, 28, 46, 0.68) 100%
+    to right,
+    rgba(8, 18, 32, 0.82) 0%,
+    rgba(8, 18, 32, 0.76) 32%,
+    rgba(8, 18, 32, 0.48) 52%,
+    rgba(8, 18, 32, 0.12) 72%,
+    rgba(8, 18, 32, 0.02) 100%
   );
   pointer-events: none;
   z-index: 0;
