@@ -9563,10 +9563,6 @@ button.vcard-detail-btn:hover,
   max-width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
   width: 100%;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
 }
 
 .hn-rankings-zone #compareSection .compare-engine-head {
