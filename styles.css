@@ -8148,11 +8148,11 @@ button.vcard-detail-btn:hover,
   inset: 0;
   background: linear-gradient(
     to right,
-    rgba(8, 18, 32, 0.97) 0%,
-    rgba(8, 18, 32, 0.93) 32%,
-    rgba(8, 18, 32, 0.62) 52%,
-    rgba(8, 18, 32, 0.18) 72%,
-    rgba(8, 18, 32, 0.04) 100%
+    rgba(8, 18, 32, 0.82) 0%,
+    rgba(8, 18, 32, 0.76) 32%,
+    rgba(8, 18, 32, 0.48) 52%,
+    rgba(8, 18, 32, 0.12) 72%,
+    rgba(8, 18, 32, 0.02) 100%
   );
   pointer-events: none;
   z-index: 0;
