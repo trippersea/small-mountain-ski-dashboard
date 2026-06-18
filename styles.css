@@ -9406,39 +9406,43 @@ button.vcard-detail-btn:hover,
   height: 72px;
   pointer-events: none;
   z-index: 4;
-  background: linear-gradient(to bottom, transparent 0%, rgba(15, 28, 46, 0.55) 55%, #0f1c2e 100%);
+  background: linear-gradient(to bottom, transparent 0%, rgba(15, 28, 46, 0.4) 55%, transparent 100%);
 }
 
-.hn-rankings-zone {
+.hn-rankings-backdrop {
   position: relative;
-  width: 100%;
-  margin: 0;
-  padding: 0 0 28px;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   background-color: #0f1c2e;
   background-image: url("/rankings-bg.png");
   background-size: cover;
   background-position: center 42%;
   background-repeat: no-repeat;
-  border-top: none;
-  border-radius: 18px;
-  overflow: hidden;
 }
-.hn-rankings-zone::before {
+.hn-rankings-backdrop::before {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(8, 18, 32, 0.88) 0%,
-    rgba(8, 18, 32, 0.78) 45%,
-    rgba(8, 18, 32, 0.82) 100%
+    rgba(15, 28, 46, 0.72) 0%,
+    rgba(15, 28, 46, 0.52) 50%,
+    rgba(15, 28, 46, 0.68) 100%
   );
   pointer-events: none;
   z-index: 0;
 }
-.hn-rankings-zone > * {
+
+.hn-rankings-zone {
   position: relative;
   z-index: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 28px;
+  background: transparent;
+  border-top: none;
+  border-radius: 0;
+  overflow: visible;
 }
 
 .hn-rankings-zone .hws-section {
