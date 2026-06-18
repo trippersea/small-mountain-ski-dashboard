@@ -9490,37 +9490,35 @@ body:has(#searchSection.hero-v2) #searchSection.hero-v2 .hero-v2__cta-row {
 .hn-rankings-zone .hws-section {
   max-width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 20px 22px 4px;
+  padding: 20px 22px 0;
 }
 
-.hn-rankings-zone .hws {
-  border: none;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
+.hn-rankings-zone .hws,
+.hn-rankings-zone .hn-refine-inline {
+  border: 1px solid rgba(142, 178, 226, 0.22);
+  border-radius: 16px;
+  background: linear-gradient(165deg, rgba(12, 32, 58, 0.97) 0%, rgba(4, 12, 26, 0.99) 100%);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
 }
 
 .hn-rankings-zone .hws-body {
-  border-top: none;
+  border-top: 1px solid rgba(142, 178, 226, 0.15);
 }
 
 .hn-rankings-zone .hn-refine-panel.hn-refine-inline {
-  border-top: none;
+  border-top: 1px solid rgba(142, 178, 226, 0.22);
 }
 
 .hn-rankings-zone .hn-refine-inline {
   max-width: min(1120px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 28px 22px 12px;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
+  margin: 12px auto 16px;
+  padding: 24px 22px 16px;
 }
 
 .hn-rankings-zone .hn-refine-inline .planner-col-header {
   margin-bottom: 16px;
   padding-bottom: 14px;
-  border-bottom-color: transparent;
+  border-bottom: 1px solid rgba(142, 178, 226, 0.15);
 }
 
 .hn-rankings-zone .hn-refine-inline .planner-header-top {
@@ -9541,9 +9539,43 @@ body:has(#searchSection.hero-v2) #searchSection.hero-v2 .hero-v2__cta-row {
 }
 
 .hn-rankings-zone .hn-refine-inline .planner-refine-footer {
-  border-top-color: transparent;
+  border-top: 1px solid rgba(142, 178, 226, 0.15);
   padding-top: 16px;
   margin-top: 16px;
+}
+
+.hn-rankings-zone .hn-refine-panel .score-control {
+  background: rgba(6, 14, 28, 0.82);
+  border: 1px solid rgba(142, 178, 226, 0.18);
+}
+.hn-rankings-zone .hn-refine-panel .score-control-label {
+  color: rgba(240, 246, 252, 0.95);
+}
+.hn-rankings-zone .hn-refine-panel .priority-btn {
+  border-color: rgba(142, 178, 226, 0.3);
+  background: rgba(8, 18, 38, 0.65);
+  color: rgba(240, 246, 252, 0.84);
+}
+.hn-rankings-zone .hn-refine-panel .priority-btn:hover {
+  border-color: rgba(69, 162, 255, 0.55);
+  background: rgba(69, 162, 255, 0.12);
+  color: #93c5fd;
+}
+.hn-rankings-zone .hn-refine-panel .priority-btn.active {
+  background: #45a2ff;
+  border-color: #45a2ff;
+  color: #081018;
+  box-shadow: 0 0 0 2px rgba(69, 162, 255, 0.35);
+}
+.hn-rankings-zone .planner-refine-toggle-btn {
+  background: rgba(8, 18, 38, 0.75);
+  border-color: rgba(142, 178, 226, 0.35);
+  color: rgba(240, 246, 252, 0.9);
+}
+.hn-rankings-zone .planner-refine-toggle-btn:hover {
+  background: rgba(69, 162, 255, 0.14);
+  border-color: rgba(69, 162, 255, 0.55);
+  color: #93c5fd;
 }
 
 /* Seamless rankings flow — no light-blue divider bars */
