@@ -418,6 +418,26 @@ function buildVerdictReadHtml(resort, wx, breakdown, vd, crowd) {
   </div>`;
 }
 
+function buildTableConditionsHtml(resort, wx, breakdown, vd, crowd) {
+  if (!wx || !vd) {
+    return `<div class="read read--table"><div class="rrow"><div class="rbody"><div class="rdetail">Loading forecast…</div></div></div></div>`;
+  }
+  const vdWithResort = { ...vd, resort };
+  const snow = buildSnowReadRow(vd, breakdown);
+  const crowds = {
+    verdict: crowdReadVerdict(crowd.label),
+    detail: buildCrowdReadDetail(crowd),
+    tier: crowdReadTier(crowd.label),
+    confidence: crowd.confidence || null,
+  };
+  const plan = buildGamePlanReadRow(vdWithResort, wx);
+  return `<div class="read read--table">
+    ${renderVerdictReadRow('Snow', snow)}
+    ${renderVerdictReadRow('Crowds', crowds)}
+    ${renderVerdictReadRow('Game plan', plan)}
+  </div>`;
+}
+
 function splitVerdictSummary(prose, tier, driveText) {
   if (prose) {
     const withinIdx = prose.indexOf(' within');
@@ -3307,21 +3327,9 @@ function renderCompareTable(resorts) {
     const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
 
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
-    const _tabNarr = wx
-      ? getMountainNarrative(buildNarrativeMountainPayload(resort, wx))
-      : { vibe: 'Fair Enough', story: vd?.rainLikely
-        ? 'Rain likely, not worth the drive'
-        : (stormTotal !== null && stormTotal >= 6)
-        ? `${stormTotal.toFixed(0)}" incoming`
-        : (hist?.total != null && hist.total >= 6)
-        ? 'Good base, dry forecast'
-        : (stormTotal !== null && stormTotal >= 1)
-        ? `${stormTotal.toFixed(0)}" coming, mostly groomers`
-        : (stormTotal !== null)
-        ? 'Dry forecast, expect firm'
-        : 'Loading forecast…' };
-    const weekendLine = _tabNarr.story;
-    const _tabGoldCls = _tabNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
+    const _crowdFc = crowdForecast(resort, wx);
+    const conditionsHtml = buildTableConditionsHtml(resort, wx, breakdown, vd, _crowdFc);
+    const _tabGoldCls = vd?.tier === 'great' ? ' bluebird-glow' : '';
 
     const crowdWord = crowd === 'Quiet' ? 'Quiet'
                     : crowd === 'Busy'  ? 'Busy'
@@ -3356,7 +3364,7 @@ function renderCompareTable(resorts) {
           </div>
         </td>
         <td class="compare-drive ${driveCls}">${esc(formatDrive(resort.id))}</td>
-        <td class="compare-weekend"><span class="vibe-tag vibe-tag--mini vibe-tag--inline">${esc(_tabNarr.vibe)}</span><span class="story-text story-text--table" data-full="${esc(weekendLine)}">${esc(weekendLine)}</span></td>
+        <td class="compare-conditions">${conditionsHtml}</td>
         <td>${esc(resort.passGroup)}</td>
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
@@ -3608,21 +3616,9 @@ function renderMobileCards(decorated, emptyOpts) {
     const driveCls = driveMins == null ? '' : driveMins <= 90 ? 'compare-drive--near' : driveMins <= 150 ? 'compare-drive--mid' : 'compare-drive--far';
 
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
-    const _mobNarr = wx
-      ? getMountainNarrative(buildNarrativeMountainPayload(resort, wx))
-      : { vibe: 'Fair Enough', story: vd?.rainLikely
-        ? 'Rain likely, not worth the drive'
-        : (stormTotal !== null && stormTotal >= 6)
-        ? `${stormTotal.toFixed(0)}" incoming`
-        : (hist?.total != null && hist.total >= 6)
-        ? 'Good base, dry forecast'
-        : (stormTotal !== null && stormTotal >= 1)
-        ? `${stormTotal.toFixed(0)}" coming, mostly groomers`
-        : (stormTotal !== null)
-        ? 'Dry forecast, expect firm'
-        : 'Loading forecast…' };
-    const weekendLine = _mobNarr.story;
-    const _mobGoldCls = _mobNarr.vibe === 'Pure Gold' ? ' bluebird-glow' : '';
+    const _crowdFc = crowdForecast(resort, wx);
+    const conditionsHtml = buildTableConditionsHtml(resort, wx, breakdown, vd, _crowdFc);
+    const _mobGoldCls = vd?.tier === 'great' ? ' bluebird-glow' : '';
 
     const crowdWord = crowd === 'Quiet' ? 'Quiet' : crowd === 'Busy' ? 'Busy' : crowd === 'Avoid' ? 'Avoid' : 'Moderate';
     const _mobSp = getSponsor(resort.id);
@@ -3639,8 +3635,7 @@ function renderMobileCards(decorated, emptyOpts) {
         <span class="mob-chip mob-chip--pass" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
       </div>
       ${_mobPartnerBanner}
-      <div class="vibe-tag vibe-tag--mini">${esc(_mobNarr.vibe)}</div>
-      <p class="mob-card-conditions story-text">${esc(weekendLine)}</p>
+      <div class="mob-card-conditions">${conditionsHtml}</div>
       <p class="mob-card-drive ${driveCls}">${drive !== '—' ? `${esc(drive)} in the car` : 'Add your start location for drive time'}</p>
       <div class="mob-card-meta">
         <span class="mob-meta-state">${esc(resort.state)}</span>
