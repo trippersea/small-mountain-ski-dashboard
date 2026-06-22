@@ -131,8 +131,11 @@ body.stories-page-body .about-page-shell {
   line-height: 1.08;
   letter-spacing: -0.03em;
   font-weight: 700;
-  color: var(--ap-text);
+  color: #ffffff;
   text-wrap: balance;
+}
+.story-body h1 {
+  color: #ffffff;
 }
 .story-article-hero__meta {
   margin: 16px 0 0;
@@ -143,13 +146,12 @@ body.stories-page-body .about-page-shell {
 }
 .story-article-hero__dek {
   margin: 22px auto 0;
-  max-width: 38em;
+  max-width: 68ch;
   font-family: Inter, system-ui, sans-serif;
-  font-size: clamp(1.125rem, 2.1vw, 1.3125rem);
+  font-size: 1.1875rem;
   line-height: 1.65;
-  font-weight: 500;
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
+  font-weight: 400;
+  color: #e4e4e4;
   text-wrap: pretty;
 }
 
@@ -202,35 +204,35 @@ body.stories-page-body .about-page-shell {
   border-bottom: 1px solid var(--ap-border);
 }
 .story-article-body {
-  width: min(42rem, 100%);
+  width: min(68ch, 100%);
   margin: 0 auto;
 }
-.story-prose {
+.story-body,
+.story-body p {
   font-family: Inter, system-ui, sans-serif;
-  font-size: clamp(1.0625rem, 1.05rem + 0.35vw, 1.1875rem);
-  line-height: 1.72;
+  color: #e4e4e4;
   font-weight: 400;
-  letter-spacing: 0.01em;
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
+  font-size: 1.1875rem;
+  line-height: 1.65;
+  max-width: 68ch;
+  margin-left: auto;
+  margin-right: auto;
   text-align: left;
 }
-.story-prose p {
-  margin: 0 0 1.5em;
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
+.story-body p {
+  margin-bottom: 1.5em;
 }
-.story-prose p:last-child {
+.story-body p:last-child {
   margin-bottom: 0;
 }
-.story-prose a {
+.story-body a {
   color: var(--ap-accent);
   font-weight: 600;
   text-decoration: underline;
   text-decoration-color: rgba(43, 109, 233, 0.35);
   text-underline-offset: 3px;
 }
-.story-prose a:hover {
+.story-body a:hover {
   text-decoration-color: var(--ap-accent);
 }
 
@@ -317,9 +319,8 @@ body.stories-page-body .about-page-shell {
     padding-left: 20px;
     padding-right: 20px;
   }
-  .story-prose {
+  .story-body {
     font-size: 1.0625rem;
-    line-height: 1.68;
   }
   .story-outro {
     width: calc(100% - 32px);

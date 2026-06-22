@@ -242,7 +242,7 @@ const articleMain = `<main class="story-article-page">
 
   <div class="story-article-band">
     <article class="story-article-body">
-      <div class="story-prose">
+      <div class="story-body">
         <p>More and more resorts are phasing out their two-seaters in favor of high-speed quads and six-packs. From a business perspective, it makes sense: more vertical per hour, better ROI when pass holders want to rack up days, fewer complaints about lift lines. Nobody is wrong to want that. But for those of us who actually like skiing the mountain, not just cycling it, there is a cost. And we are starting to feel it.</p>
 
         <p>First the numbers. Your average fixed-grip double moves about 900 people per hour. A detachable quad? Nearly triple that. That solves the lift line, but it hands you a different problem: the same trails, now with three times the traffic on them. Faster lifts do not make the mountain bigger. They just make it busier. None of this means fast is bad. On the main arteries, moving people efficiently is exactly the point. But run that math across a whole mountain and the trails that used to stay untouched until noon are tracked out by mid-morning. That two-minute lift ride you love? Great. But now you are back at the bottom with a few hundred of your closest friends, five times an hour, and so is everyone else.</p>
