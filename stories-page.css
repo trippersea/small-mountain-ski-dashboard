@@ -147,8 +147,9 @@ body.stories-page-body .about-page-shell {
   font-family: Inter, system-ui, sans-serif;
   font-size: clamp(1.125rem, 2.1vw, 1.3125rem);
   line-height: 1.65;
-  font-weight: 400;
-  color: rgba(240, 246, 252, 0.94);
+  font-weight: 500;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
   text-wrap: pretty;
 }
 
@@ -197,7 +198,7 @@ body.stories-page-body .about-page-shell {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   padding: clamp(40px, 6vw, 72px) 24px clamp(48px, 7vw, 80px);
-  background: rgba(8, 22, 44, 0.45);
+  background: rgba(6, 16, 32, 0.82);
   border-bottom: 1px solid var(--ap-border);
 }
 .story-article-body {
@@ -210,11 +211,14 @@ body.stories-page-body .about-page-shell {
   line-height: 1.72;
   font-weight: 400;
   letter-spacing: 0.01em;
-  color: rgba(240, 246, 252, 0.94);
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
   text-align: left;
 }
 .story-prose p {
   margin: 0 0 1.5em;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
 }
 .story-prose p:last-child {
   margin-bottom: 0;
