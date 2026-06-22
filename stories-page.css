@@ -87,6 +87,9 @@ body.stories-page-body .about-page-shell {
 .story-article-page {
   width: 100%;
   padding-bottom: 64px;
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── Hero — full bleed, centered copy ────────────────────────────────────── */
@@ -141,11 +144,11 @@ body.stories-page-body .about-page-shell {
 .story-article-hero__dek {
   margin: 22px auto 0;
   max-width: 38em;
-  font-family: "Newsreader", Georgia, serif;
-  font-size: clamp(1.15rem, 2.2vw, 1.35rem);
-  line-height: 1.6;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1.125rem, 2.1vw, 1.3125rem);
+  line-height: 1.65;
   font-weight: 400;
-  color: rgba(240, 246, 252, 0.88);
+  color: rgba(240, 246, 252, 0.94);
   text-wrap: pretty;
 }
 
@@ -183,9 +186,10 @@ body.stories-page-body .about-page-shell {
 .story-stat__label {
   display: block;
   margin-top: 6px;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: var(--ap-text-faint);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(240, 246, 252, 0.72);
 }
 
 /* ── Article body — full-width band, centered prose column ───────────────── */
@@ -197,18 +201,20 @@ body.stories-page-body .about-page-shell {
   border-bottom: 1px solid var(--ap-border);
 }
 .story-article-body {
-  width: min(680px, 100%);
+  width: min(42rem, 100%);
   margin: 0 auto;
 }
 .story-prose {
-  font-family: "Newsreader", Georgia, serif;
-  font-size: clamp(1.0625rem, 1.6vw, 1.1875rem);
-  line-height: 1.78;
-  color: rgba(240, 246, 252, 0.82);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1.0625rem, 1.05rem + 0.35vw, 1.1875rem);
+  line-height: 1.72;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: rgba(240, 246, 252, 0.94);
   text-align: left;
 }
 .story-prose p {
-  margin: 0 0 1.35em;
+  margin: 0 0 1.5em;
 }
 .story-prose p:last-child {
   margin-bottom: 0;
@@ -237,11 +243,11 @@ body.stories-page-body .about-page-shell {
 .story-outro__text {
   margin: 0;
   font-family: "Newsreader", Georgia, serif;
-  font-size: clamp(1.25rem, 2.4vw, 1.5rem);
-  line-height: 1.55;
+  font-size: clamp(1.3125rem, 2.4vw, 1.5rem);
+  line-height: 1.58;
   font-weight: 600;
   font-style: italic;
-  color: var(--ap-text);
+  color: rgba(240, 246, 252, 0.96);
   text-wrap: pretty;
 }
 
@@ -263,9 +269,10 @@ body.stories-page-body .about-page-shell {
 .story-article-cta p {
   margin: 0;
   max-width: none;
-  font-size: 1rem;
-  line-height: 1.55;
-  color: var(--ap-text-dim);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: rgba(240, 246, 252, 0.82);
 }
 .story-article-cta strong {
   color: var(--ap-text);
@@ -305,6 +312,10 @@ body.stories-page-body .about-page-shell {
   .story-article-band {
     padding-left: 20px;
     padding-right: 20px;
+  }
+  .story-prose {
+    font-size: 1.0625rem;
+    line-height: 1.68;
   }
   .story-outro {
     width: calc(100% - 32px);
