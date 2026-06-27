@@ -4,10 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>How the WTSN Score Works | WhereToSkiNext.com</title>
-  <meta name="description" content="How WhereToSkiNext.com scores 300 US mountains. The WTSN Score blends live snow, conditions, crowds, drive time, pass, and price into one number from 0 to 100. Deterministic, transparent, and never for sale." />
+  <meta name="description" content="How WhereToSkiNext.com scores 300 US mountains. The WTSN Score blends snow, skiability, terrain fit, drive, value, and crowds into one number from 0 to 100. Live, personal, transparent, and never for sale." />
   <link rel="canonical" href="https://wheretoskinext.com/how-it-works" />
   <meta property="og:title" content="How the WTSN Score Works" />
-  <meta property="og:description" content="One transparent score from 0 to 100, built from live snow, crowds, drive time, and your pass. No mountain can pay to rank higher." />
+  <meta property="og:description" content="One transparent score from 0 to 100, built from snow, skiability, terrain fit, drive, value, and crowds for your exact ski day. No mountain can pay to rank higher." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://wheretoskinext.com/how-it-works" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +23,7 @@
         "name": "What is the WTSN Score?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The WTSN Score is a single number from 0 to 100 that rates how good a ski day a mountain is for the trip you described. It blends live snow, surface conditions, expected crowds, drive time from your start point, your pass, and ticket price into one figure. Higher means a better day for you, not a bigger mountain. The score is computed live for your settings, so two skiers searching from different towns or with different passes can see different scores for the same mountain on the same day."
+          "text": "The WTSN Score is a single number from 0 to 100 that rates how good a ski day a mountain is for the trip you described. It blends snow, skiability, terrain fit, drive, value, and crowds into one figure, weighted for the settings you picked. Higher means a better day for you, not a bigger mountain. The score is computed live for your exact ski day, so two skiers searching from different towns or with different passes can see different scores for the same mountain on the same day."
         }
       },
       {
@@ -47,7 +47,7 @@
         "name": "Why did a mountain's WTSN Score change?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The score moves with the live forecast and with your inputs. New snow, a warmer day, a busier weekend, a different start location, or a different pass filter will all shift the number. The model itself is deterministic, so the same inputs always produce the same score."
+          "text": "The score moves with the live forecast and with your inputs. New snow, a warmer day, a busier weekend, a different start location, a different pass filter, or a new priority setting will all shift the number. Forecasts refresh through the day and drive times come from real routing. The model itself is deterministic, so the same inputs always produce the same score."
         }
       },
       {
@@ -55,7 +55,7 @@
         "name": "How does the crowd forecast work?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The crowd read predicts crowd pressure rather than measuring live counts. It combines who tends to show up at a mountain (metro pull, pass network, the calendar, day of week, holidays) with how hard that demand turns into felt crowding given the mountain's lift and parking capacity. It is an honest forecast of how busy a place is likely to feel, not a live headcount."
+          "text": "The crowd read predicts crowd pressure rather than measuring live turnstile counts. It models who each mountain draws (nearby metros, pass network, destination pull), how each day of the week and the holiday calendar loads it, what fresh snow and clear-sky days do to demand, and how well its lifts and parking absorb a rush. The confidence tag on the crowd card reflects input quality: High means we have both a forecast and your location; Low means we are working with less."
         }
       }
     ]
@@ -153,18 +153,20 @@
     <h2>What the score is</h2>
     <p>Every mountain in a search gets a WTSN Score from 0 to 100. It is built live, for the trip you described, from the things that actually decide whether a day is worth it. A higher score means a better ski day for you on that day. It does not mean a bigger or more famous mountain.</p>
     <p>The score is personal to your search. Change your start town, your pass, how far you will drive, or how much snow you are chasing, and the number changes with you. That is the point. A great day for someone in Boston is not the same as a great day for someone in Burlington.</p>
-    <p>The model is deterministic. The same inputs always produce the same score. There is no randomness and no editor nudging a favorite up the list.</p>
-
     <h2>What it weighs</h2>
-    <p>Six things go into the score. We are open about what they are. We do not publish the exact recipe, because the weighting is the part competitors would copy, but the factors are no secret.</p>
+    <p>Every mountain gets one score for your exact ski day, built from six things. We are open about what they are. We do not publish the exact recipe, because the weighting is the part competitors would copy, but the factors are no secret.</p>
     <ul class="hiw-factors">
-      <li><span class="hiw-factor-name">Live snow.</span> New snow in your window and the storm building toward your ski day, measured against how much snow you said you wanted.</li>
-      <li><span class="hiw-factor-name">Conditions.</span> Temperature, wind, and how the surface is likely to ski. On a warm day this includes how much of the mountain stays above the rain line up high.</li>
-      <li><span class="hiw-factor-name">Crowds.</span> How busy the place is likely to feel, based on who tends to show up and how well the mountain's lifts and parking absorb them.</li>
-      <li><span class="hiw-factor-name">Drive time.</span> Real driving distance from your start point, weighted by how far you said you were willing to go.</li>
-      <li><span class="hiw-factor-name">Pass.</span> Whether the mountain is on the pass you carry, so you are not paying twice.</li>
-      <li><span class="hiw-factor-name">Price.</span> The walk-up ticket, for the days you are not on a pass.</li>
+      <li><span class="hiw-factor-name">Snow.</span> The forecast for your day, plus how reliably this mountain gets snow over a season, measured against how much you said you wanted.</li>
+      <li><span class="hiw-factor-name">Skiability.</span> Temps and wind, because ten degrees with a thirty mph gust is not the same ski day. On a warm day this includes how much of the mountain stays above the rain line up high.</li>
+      <li><span class="hiw-factor-name">Terrain fit.</span> Vertical, acreage, and trails against what you said you want. Size matters when it matches your trip, not as a blanket bigger-is-better rule.</li>
+      <li><span class="hiw-factor-name">Drive.</span> Real road time from your start point, weighted by how far you said you were willing to go.</li>
+      <li><span class="hiw-factor-name">Value.</span> Walk-up ticket price, unless your pass covers the mountain, in which case price stops counting against a place you ski free.</li>
+      <li><span class="hiw-factor-name">Crowds.</span> A forecast of crowd pressure, not a turnstile count. We model who each mountain draws, how the calendar and day of week load it, what fresh snow and clear-sky days do to demand, and how well lifts and parking absorb a rush.</li>
     </ul>
+    <p>The confidence tag on the crowd card is honest about the inputs: <strong>High</strong> means we have both a forecast and your location; <strong>Low</strong> means we are working with less.</p>
+
+    <h2>What moves the score</h2>
+    <p>Your priority buttons genuinely change the math, not just the sort order. Forecasts refresh through the day, drive times come from real routing, and the score moves when the inputs do. The model itself is deterministic: the same inputs always produce the same score. There is no randomness and no editor nudging a favorite up the list.</p>
 
     <h2>Why a small mountain can beat a big one</h2>
     <p>This is the part people push back on, so here is a worked example.</p>
@@ -184,7 +186,7 @@
       </div>
       <p class="hiw-note">Illustrative numbers for one day, not a live result. They flip the moment conditions do.</p>
     </div>
-    <p>On that day, for that skier, Black wins. It is closer, quieter, cheaper, and the snow is no worse. Sunapee is the bigger mountain, but the things that make a Saturday great for this person are drive, crowds, and price, and Black takes all three.</p>
+    <p>On that day, for that skier, Black wins. It is closer, quieter, cheaper, and the snow is no worse. Sunapee is the bigger mountain, but the things that make a Saturday great for this person are drive, crowds, and value, and Black takes all three.</p>
     <p>Now drop a foot of snow overnight, or put a skier who wants long vertical and a full mountain in the seat, and Sunapee jumps ahead. The bigger mountain holds more terrain and rewards a powder day. <strong>Nothing about the order is fixed.</strong> It tracks the day and the skier, which is the whole idea.</p>
 
     <h2>What the score will not do</h2>
@@ -192,7 +194,7 @@
       <p><strong>It is not for sale.</strong> No mountain can pay to rank higher. Advertising partners are always labeled, and their placement never touches their rank or their score.</p>
     </div>
     <div class="hiw-integrity">
-      <p><strong>It does not pretend to count heads.</strong> The crowd read is a forecast of crowd pressure, how busy a place is likely to feel, not a live measurement of how many people are there.</p>
+      <p><strong>It does not pretend to count heads.</strong> The crowd read is a forecast of crowd pressure — nearby metros, pass pull, destination draw, calendar load, and lift capacity — not a live measurement of how many people are there.</p>
     </div>
     <div class="hiw-integrity">
       <p><strong>It is not a universal mountain rating.</strong> The score is scored for your search. It answers what is best for your trip today, not which mountain is best in the abstract.</p>
@@ -202,7 +204,7 @@
     <h3>Can a small mountain really beat a big resort?</h3>
     <p>Yes, when the day favors it. Close, quiet, and cheap beats far, busy, and pricey when the snow is a wash. On a powder day the big mountain usually wins back the top.</p>
     <h3>Why did the score change since last time?</h3>
-    <p>The forecast moved, or your inputs did. New snow, a warmer day, a busier weekend, a new start town, or a different pass all shift the number. The model is fixed, the world is not.</p>
+    <p>The forecast moved, or your inputs did. New snow, a warmer day, a busier weekend, a new start town, a different pass, or a new priority setting all shift the number. The model is fixed, the world is not.</p>
     <h3>Does anyone pay for placement?</h3>
     <p>No. Ranking is decided only by the model. Partners are labeled and never ranked any differently for it.</p>
 
