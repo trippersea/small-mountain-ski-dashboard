@@ -425,9 +425,6 @@ function closeCallEdgeReason(pickEntry, runnerEntry) {
     if (r && r.text) return r.text;
   }
 
-  // Fallback: normalized sub-score deltas only. Lower thresholds than before and
-  // a guaranteed largest-delta return, so a genuinely close call still names a
-  // concrete reason instead of a circular phrase.
   const pn = pickEntry.breakdown.normalized || {};
   const rn = runnerEntry.breakdown.normalized || {};
   const edges = [

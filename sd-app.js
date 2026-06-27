@@ -418,7 +418,7 @@ function buildVerdictReadHtml(resort, wx, breakdown, vd, crowd) {
   </div>`;
 }
 
-function buildTableConditionsHtml(resort, wx, breakdown, vd, crowd, tiebreak) {
+function buildTableConditionsHtml(resort, wx, breakdown, vd, crowd) {
   if (!wx || !vd) {
     return `<div class="read read--table"><div class="rrow"><div class="rbody"><div class="rdetail">Loading forecast…</div></div></div></div>`;
   }
@@ -432,25 +432,13 @@ function buildTableConditionsHtml(resort, wx, breakdown, vd, crowd, tiebreak) {
   };
   const plan = buildGamePlanReadRow(vdWithResort, wx);
   return `<div class="read read--table">
-    ${renderTiebreakStrip(tiebreak)}
     ${renderVerdictReadRow('Snow', snow)}
     ${renderVerdictReadRow('Crowds', crowds)}
     ${renderVerdictReadRow('Game plan', plan)}
   </div>`;
 }
 
-/** Slim "why it ranks here" strip above the Snow / Crowds / Game plan rows.
- *  Backed by the shared tiebreaker engine so the gap and the reason agree. */
-function renderTiebreakStrip(tiebreak) {
-  if (!tiebreak || !tiebreak.line) return '';
-  const kicker = tiebreak.isLeader ? 'Why it wins' : 'Why it ranks here';
-  return `<div class="tiebreak${tiebreak.isLeader ? ' tiebreak--leader' : ''}">
-      <span class="tiebreak-k">${kicker}</span>
-      <span class="tiebreak-line">${esc(tiebreak.line)}</span>
-    </div>`;
-}
-
-/** Build tiebreaker facts for a list row (resort + breakdown + cached wx). */
+/** Facts for the WTSN Score reason one-liner (resort + breakdown + cached wx). */
 function rowTiebreakFacts(row) {
   if (typeof WTSN_TIEBREAK === 'undefined' || !row || !row.breakdown) return null;
   const wx = state.weatherCache[row.resort.id]?.data || null;
@@ -464,6 +452,33 @@ function rowTiebreakFacts(row) {
       crowdLabel: row.breakdown.crowdLabel,
     },
   );
+}
+
+/** WTSN Score number + mountain-centric reason one-liner for a list row. */
+function rowScoreMeta(row, idx, leaderFacts, runnerFacts) {
+  const scoreVal = (row && row.breakdown && Number.isFinite(row.breakdown.score))
+    ? Math.round(row.breakdown.score) : null;
+  let reason = '';
+  if (typeof WTSN_TIEBREAK !== 'undefined' && leaderFacts) {
+    if (idx === 0) {
+      reason = WTSN_TIEBREAK.leaderLine(leaderFacts, runnerFacts).line;
+    } else {
+      const rf = rowTiebreakFacts(row);
+      if (rf) reason = WTSN_TIEBREAK.rowLine(rf, leaderFacts).line;
+    }
+  }
+  return { scoreVal, reason, isLeader: idx === 0 };
+}
+
+/** WTSN Score column cell (number on top, reason one-liner beneath). */
+function renderScoreCell(meta) {
+  if (!meta || meta.scoreVal == null) {
+    return '<div class="wtsn-score-cell"><span class="wtsn-score wtsn-score--pending">..</span></div>';
+  }
+  return `<div class="wtsn-score-cell">
+      <span class="wtsn-score${meta.isLeader ? ' wtsn-score--leader' : ''}" title="WTSN Score for your search, 0 to 100">${meta.scoreVal}</span>
+      ${meta.reason ? `<span class="wtsn-score-reason">${esc(meta.reason)}</span>` : ''}
+    </div>`;
 }
 
 function splitVerdictSummary(prose, tier, driveText) {
@@ -3348,10 +3363,8 @@ function renderCompareTable(resorts) {
     }
   }
 
-  const _tbLeaderRow = displayed[0] || null;
-  const _tbRunnerRow = displayed[1] || null;
-  const _tbLeaderFacts = (typeof WTSN_TIEBREAK !== 'undefined' && _tbLeaderRow) ? rowTiebreakFacts(_tbLeaderRow) : null;
-  const _tbRunnerFacts = (typeof WTSN_TIEBREAK !== 'undefined' && _tbRunnerRow) ? rowTiebreakFacts(_tbRunnerRow) : null;
+  const _tbLeaderFacts = (typeof WTSN_TIEBREAK !== 'undefined' && displayed[0]) ? rowTiebreakFacts(displayed[0]) : null;
+  const _tbRunnerFacts = (typeof WTSN_TIEBREAK !== 'undefined' && displayed[1]) ? rowTiebreakFacts(displayed[1]) : null;
 
   els.comparisonBody.innerHTML = displayed.map(({ resort, breakdown, stormTotal, hist }, idx) => {
     const wx = state.weatherCache[resort.id]?.data;
@@ -3361,23 +3374,8 @@ function renderCompareTable(resorts) {
 
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
     const _crowdFc = crowdForecast(resort, wx);
-    let _tiebreak = null;
-    if (typeof WTSN_TIEBREAK !== 'undefined' && _tbLeaderFacts) {
-      if (idx === 0) {
-        _tiebreak = { line: WTSN_TIEBREAK.leaderLine(_tbLeaderFacts, _tbRunnerFacts).line, gap: 0, isLeader: true };
-      } else {
-        const _rf = WTSN_TIEBREAK.factsFromEntry(
-          { resort, breakdown, wx },
-          targetForecastIndex(),
-          { snowIn: Math.max(Number(stormTotal) || 0, Number(vd && vd.tomorrowIn) || 0), rainLikely: vd ? !!vd.rainLikely : null, crowdLabel: breakdown && breakdown.crowdLabel },
-        );
-        if (_rf) {
-          const _rl = WTSN_TIEBREAK.rowLine(_rf, _tbLeaderFacts);
-          _tiebreak = { line: _rl.line, gap: _rl.gap, isLeader: false };
-        }
-      }
-    }
-    const conditionsHtml = buildTableConditionsHtml(resort, wx, breakdown, vd, _crowdFc, _tiebreak);
+    const conditionsHtml = buildTableConditionsHtml(resort, wx, breakdown, vd, _crowdFc);
+    const _scoreMeta = rowScoreMeta({ resort, breakdown, stormTotal, hist }, idx, _tbLeaderFacts, _tbRunnerFacts);
     const _tabGoldCls = vd?.tier === 'great' ? ' bluebird-glow' : '';
 
     const crowdWord = crowd === 'Quiet' ? 'Quiet'
@@ -3401,10 +3399,7 @@ function renderCompareTable(resorts) {
     const _sp = getSponsor(resort.id);
     return `
       <tr class="${resort.id === state.selectedId ? 'active-row' : ''}${_sp ? ' sponsored-row' : ''}${_tabGoldCls}" data-id="${resort.id}">
-        <td class="compare-rank-cell">
-          <span class="compare-rank" aria-hidden="true">${idx + 1}</span>
-          ${_tiebreak ? `<span class="compare-rank-gap">${esc(WTSN_TIEBREAK.gapLabel(_tiebreak.gap, _tiebreak.isLeader))}</span>` : ''}
-        </td>
+        <td class="compare-rank-cell"><span class="compare-rank" aria-hidden="true">${idx + 1}</span></td>
         <td>
           <div class="table-mountain-cell">
             <div class="table-mountain-name-row">
@@ -3420,6 +3415,7 @@ function renderCompareTable(resorts) {
         <td>${esc(resort.passGroup)}</td>
         <td class="${crowdClass(crowd)}">${esc(crowdWord)}</td>
         <td>$${resort.price}</td>
+        <td class="compare-score-col">${renderScoreCell(_scoreMeta)}</td>
       </tr>`;
   }).join('');
 
@@ -3671,23 +3667,8 @@ function renderMobileCards(decorated, emptyOpts) {
 
     const vd = (wx && breakdown) ? verdictFromBreakdown(resort, wx, breakdown) : null;
     const _crowdFc = crowdForecast(resort, wx);
-    let _mTiebreak = null;
-    if (typeof WTSN_TIEBREAK !== 'undefined' && _mTbLeaderFacts) {
-      if (idx === 0) {
-        _mTiebreak = { line: WTSN_TIEBREAK.leaderLine(_mTbLeaderFacts, _mTbRunnerFacts).line, gap: 0, isLeader: true };
-      } else {
-        const _mrf = WTSN_TIEBREAK.factsFromEntry(
-          { resort, breakdown, wx },
-          targetForecastIndex(),
-          { snowIn: Math.max(Number(stormTotal) || 0, Number(vd && vd.tomorrowIn) || 0), rainLikely: vd ? !!vd.rainLikely : null, crowdLabel: breakdown && breakdown.crowdLabel },
-        );
-        if (_mrf) {
-          const _mrl = WTSN_TIEBREAK.rowLine(_mrf, _mTbLeaderFacts);
-          _mTiebreak = { line: _mrl.line, gap: _mrl.gap, isLeader: false };
-        }
-      }
-    }
-    const conditionsHtml = buildTableConditionsHtml(resort, wx, breakdown, vd, _crowdFc, _mTiebreak);
+    const conditionsHtml = buildTableConditionsHtml(resort, wx, breakdown, vd, _crowdFc);
+    const _mScoreMeta = rowScoreMeta({ resort, breakdown, stormTotal, hist }, idx, _mTbLeaderFacts, _mTbRunnerFacts);
     const _mobGoldCls = vd?.tier === 'great' ? ' bluebird-glow' : '';
 
     const crowdWord = crowd === 'Quiet' ? 'Quiet' : crowd === 'Busy' ? 'Busy' : crowd === 'Avoid' ? 'Avoid' : 'Moderate';
@@ -3702,10 +3683,11 @@ function renderMobileCards(decorated, emptyOpts) {
     return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}${_mobGoldCls}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
       <div class="mob-card-top">
         <div class="mob-card-name">${esc(resort.name)}</div>
-        ${_mTiebreak ? `<span class="mob-rank-gap">${esc(WTSN_TIEBREAK.gapLabel(_mTiebreak.gap, _mTiebreak.isLeader))}</span>` : ''}
+        ${_mScoreMeta && _mScoreMeta.scoreVal != null ? `<span class="mob-wtsn-score${_mScoreMeta.isLeader ? ' mob-wtsn-score--leader' : ''}" title="WTSN Score for your search">${_mScoreMeta.scoreVal}</span>` : ''}
         <span class="mob-chip mob-chip--pass" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
       </div>
       ${_mobPartnerBanner}
+      ${_mScoreMeta && _mScoreMeta.reason ? `<p class="mob-wtsn-reason">${esc(_mScoreMeta.reason)}</p>` : ''}
       <div class="mob-card-conditions">${conditionsHtml}</div>
       <p class="mob-card-drive ${driveCls}">${drive !== '—' ? `${esc(drive)} in the car` : 'Add your start location for drive time'}</p>
       <div class="mob-card-meta">

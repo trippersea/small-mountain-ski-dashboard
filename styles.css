@@ -10702,49 +10702,54 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
 .hn-hero-verdict-dock .vcard--hero-light .cfb-thanks { color: #0f7a52; }
 
 
-/* ── Ranking tiebreaker: score gap + "why it ranks here" line ─────────────────
-   Added with wtsn-tiebreaker.js. The gap makes a close call read as close; the
-   strip names the one concrete reason a mountain ranks where it does. */
-.compare-rank-cell { text-align: center; white-space: nowrap; vertical-align: top; }
-.compare-rank-gap {
-  display: block;
-  margin-top: 3px;
+/* ── WTSN Score column + mountain-centric reason (wtsn-tiebreaker.js) ─────────
+   The score gives the gap a scale; the one-liner names why the mountain ranks
+   where it does. Strip and "X back" removed in favor of this. */
+.compare-th-score { text-align: right; white-space: nowrap; }
+.compare-score-col { vertical-align: top; min-width: 132px; }
+.wtsn-score-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; text-align: right; }
+.wtsn-score {
   font-family: 'DM Mono', ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted, #7d8ca3);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text, #e7eef7);
+  font-variant-numeric: tabular-nums;
 }
-.tiebreak {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 7px 10px;
-  margin-bottom: 9px;
-  border-left: 2px solid var(--accent, #5aaddc);
-  background: rgba(90, 173, 220, 0.06);
-  border-radius: 0 6px 6px 0;
+.wtsn-score--leader { color: var(--ski-blue, #2b6de9); }
+.wtsn-score--pending { color: var(--muted, #7d8ca3); font-size: 18px; }
+.wtsn-score-reason {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted, #9fb0c4);
+  max-width: 220px;
 }
-.tiebreak--leader {
-  border-left-color: var(--ski-blue, #2b6de9);
-  background: rgba(43, 109, 233, 0.08);
-}
-.tiebreak-k {
+.compare-rankings-link { color: var(--accent, #5aaddc); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Mobile card: score badge + reason one-liner */
+.mob-wtsn-score {
   font-family: 'DM Mono', ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent, #5aaddc);
-}
-.tiebreak--leader .tiebreak-k { color: var(--ski-blue, #2b6de9); }
-.tiebreak-line { font-size: 13px; line-height: 1.35; color: var(--text, #e7eef7); }
-.mob-rank-gap {
-  font-family: 'DM Mono', ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted, #7d8ca3);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text, #e7eef7);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  padding: 4px 8px;
   margin-left: auto;
+  margin-right: 8px;
   align-self: center;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mob-wtsn-score--leader {
+  color: #fff;
+  background: var(--ski-blue, #2b6de9);
+  border-color: var(--ski-blue, #2b6de9);
+}
+.mob-wtsn-reason {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted, #9fb0c4);
 }
