@@ -10700,3 +10700,51 @@ body:has(#searchSection.hero-v2) .hn-rankings-zone #compareSection .compare-pric
 .hn-hero-verdict-dock .vcard--hero-light .cfb-opt:hover { background: #eef4ff; border-color: #93c5fd; }
 .hn-hero-verdict-dock .vcard--hero-light .cfb-dismiss { color: #94a3b8; }
 .hn-hero-verdict-dock .vcard--hero-light .cfb-thanks { color: #0f7a52; }
+
+
+/* ── Ranking tiebreaker: score gap + "why it ranks here" line ─────────────────
+   Added with wtsn-tiebreaker.js. The gap makes a close call read as close; the
+   strip names the one concrete reason a mountain ranks where it does. */
+.compare-rank-cell { text-align: center; white-space: nowrap; vertical-align: top; }
+.compare-rank-gap {
+  display: block;
+  margin-top: 3px;
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #7d8ca3);
+}
+.tiebreak {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  margin-bottom: 9px;
+  border-left: 2px solid var(--accent, #5aaddc);
+  background: rgba(90, 173, 220, 0.06);
+  border-radius: 0 6px 6px 0;
+}
+.tiebreak--leader {
+  border-left-color: var(--ski-blue, #2b6de9);
+  background: rgba(43, 109, 233, 0.08);
+}
+.tiebreak-k {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent, #5aaddc);
+}
+.tiebreak--leader .tiebreak-k { color: var(--ski-blue, #2b6de9); }
+.tiebreak-line { font-size: 13px; line-height: 1.35; color: var(--text, #e7eef7); }
+.mob-rank-gap {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #7d8ca3);
+  margin-left: auto;
+  align-self: center;
+  white-space: nowrap;
+}

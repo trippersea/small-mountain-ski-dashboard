@@ -413,20 +413,33 @@ function findTopPickRunnerUp(ranked, pickEntry) {
   return pool[0];
 }
 
-/** Plain-language edge for close-call Top Pick copy (derived from score breakdown). */
+/** Plain-language edge for close-call Top Pick copy. Delegates to the shared
+ *  tiebreaker engine (WTSN_TIEBREAK) so the homepage hero and the full ranking
+ *  list always name the same reason. The inline version below is a load-order
+ *  fallback and, unlike the old copy, never returns an empty "overall edge". */
 function closeCallEdgeReason(pickEntry, runnerEntry) {
-  if (!pickEntry?.breakdown || !runnerEntry?.breakdown) return 'the overall edge for your ski day';
+  if (!pickEntry?.breakdown || !runnerEntry?.breakdown) return 'a narrow overall edge';
+
+  if (typeof WTSN_TIEBREAK !== 'undefined' && WTSN_TIEBREAK.edgeReasonFromEntries) {
+    const r = WTSN_TIEBREAK.edgeReasonFromEntries(pickEntry, runnerEntry, targetForecastIndex());
+    if (r && r.text) return r.text;
+  }
+
+  // Fallback: normalized sub-score deltas only. Lower thresholds than before and
+  // a guaranteed largest-delta return, so a genuinely close call still names a
+  // concrete reason instead of a circular phrase.
   const pn = pickEntry.breakdown.normalized || {};
   const rn = runnerEntry.breakdown.normalized || {};
-  const edges = [];
-  if ((pn.snow ?? 0) - (rn.snow ?? 0) >= 0.08) edges.push({ w: 1, text: 'a better snow forecast' });
-  if ((pn.skiability ?? 0) - (rn.skiability ?? 0) >= 0.08) edges.push({ w: 2, text: 'calmer wind and temps' });
-  if ((pn.fit ?? 0) - (rn.fit ?? 0) >= 0.05) edges.push({ w: 3, text: 'better terrain fit' });
-  if ((pn.crowd ?? 0) - (rn.crowd ?? 0) >= 0.05) edges.push({ w: 4, text: 'a better crowd outlook' });
-  if ((pn.drive ?? 0) - (rn.drive ?? 0) >= 0.05) edges.push({ w: 5, text: 'a shorter drive' });
-  if ((pn.value ?? 0) - (rn.value ?? 0) >= 0.05) edges.push({ w: 6, text: 'better value' });
-  edges.sort((a, b) => a.w - b.w);
-  return edges[0]?.text || 'the overall edge for your ski day';
+  const edges = [
+    { d: (pn.snow ?? 0)       - (rn.snow ?? 0),       text: 'a better snow forecast' },
+    { d: (pn.skiability ?? 0) - (rn.skiability ?? 0), text: 'calmer wind and better temps up top' },
+    { d: (pn.fit ?? 0)        - (rn.fit ?? 0),        text: 'a better terrain fit' },
+    { d: (pn.crowd ?? 0)      - (rn.crowd ?? 0),      text: 'a lighter crowd outlook' },
+    { d: (pn.drive ?? 0)      - (rn.drive ?? 0),      text: 'a shorter drive' },
+    { d: (pn.value ?? 0)      - (rn.value ?? 0),      text: 'a better ticket price' },
+  ].filter(e => e.d >= 0.02).sort((a, b) => b.d - a.d);
+
+  return edges[0]?.text || 'a narrow overall edge';
 }
 
 /**
