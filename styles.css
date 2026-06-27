@@ -3374,7 +3374,6 @@ tr:focus-within .story-text--table {
   font-weight: 500;
   color: var(--muted);
   line-height: 1.45;
-  max-width: 52ch;
 }
 .compare-rankings-note {
   margin: 8px 0 0;
@@ -3382,7 +3381,6 @@ tr:focus-within .story-text--table {
   font-weight: 500;
   line-height: 1.5;
   color: var(--muted);
-  max-width: 56ch;
 }
 .compare-filter-btn.filter-toggle-btn {
   border-color: var(--border-mid);
