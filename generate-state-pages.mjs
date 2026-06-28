@@ -544,8 +544,11 @@ function generateStatePage(stateAbbr, resorts, otherStatesHtml) {
   <script src="/newsletter-band.js"></script>
 
   <footer class="site-footer">
-    <p>&copy; ${year} WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about">About</a> &middot; <a href="/privacy">Privacy Policy</a> &middot; <a href="/partners">Partners</a></p>
+    <p>&copy; ${year} WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
+    <p class="site-footer-affiliate">Some links on this site are affiliate links. If you book lodging through them we may earn a small commission at no extra cost to you. This never influences mountain scores or rankings.</p>
   </footer>
+
+  <script src="/nav.js"></script>
 
 </body>
 </html>`;

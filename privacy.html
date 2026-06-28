@@ -21,42 +21,16 @@
   <link rel="icon" href="/wtsn-favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&display=swap" rel="stylesheet" /></noscript>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="stylesheet" href="/styles.css" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body { font-family: 'Inter', 'DM Sans', system-ui, sans-serif; background: #f8f9fa; color: #111827; margin: 0; line-height: 1.6; }
-
-    /* ── Page layout ── */
-    .page { max-width: 760px; margin: 0 auto; padding: 56px 20px 80px; }
-    .eyebrow { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #2563eb; margin-bottom: 14px; }
-    h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; line-height: 1.1; letter-spacing: -.03em; margin: 0 0 10px; }
-    .lead { font-size: 18px; line-height: 1.65; color: #475569; margin: 0 0 8px; }
-    .last-updated { font-size: 13px; color: #94a3b8; margin-bottom: 48px; }
-    h2 { font-size: 20px; font-weight: 800; color: #111827; margin: 44px 0 12px; letter-spacing: -.02em; }
-    p { font-size: 15px; line-height: 1.75; color: #475569; margin: 0 0 16px; }
-
-    /* ── Tables ── */
-    .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; margin: 16px 0 32px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th { background: #f8fafc; text-align: left; padding: 10px 14px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #64748b; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
-    td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; color: #475569; vertical-align: top; line-height: 1.55; }
-    tr:last-child td { border-bottom: none; }
-    td strong { color: #111827; font-weight: 600; }
-    td code { font-family: 'DM Mono', monospace; font-size: 12px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; color: #111827; }
-    td a { color: #2563eb; }
-
-    .contact-note { margin-top: 40px; font-size: 14px; color: #94a3b8; }
-    .contact-note a { color: #2563eb; }
-
-    /* Footer: .site-footer from /styles.css */
-  </style>
+  <link rel="stylesheet" href="/about-page.css" />
+  <link rel="stylesheet" href="/static-content-page.css" />
   <link rel="stylesheet" href="/newsletter-band.css" />
   <link rel="stylesheet" href="/site-tokens-bridge.css" />
 </head>
-<body>
+<body class="about-page-body">
   <!-- GTM noscript -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MCCDNQGB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
@@ -158,17 +132,25 @@
     </div>
   </nav>
 
-<main class="page">
-    <div class="eyebrow">Privacy Policy</div>
-    <h1>Your data stays yours.</h1>
-    <p class="lead">WhereToSkiNext.com doesn't sell your data, doesn't require an account, and stores as little as possible — most of it never leaves your browser.</p>
-    <p class="last-updated">Last updated: June 2026</p>
+<main class="about-page-shell content-page-shell">
 
-    <h2>The short version</h2>
+    <header class="content-page-intro">
+      <p class="about-page-breadcrumb"><a href="/">Home</a> / Privacy</p>
+      <p class="about-page-eyebrow">Privacy Policy</p>
+      <h1 class="content-page-title">Your data stays yours.</h1>
+      <p class="content-page-lede">WhereToSkiNext.com doesn't sell your data, doesn't require an account, and stores as little as possible — most of it never leaves your browser.</p>
+      <p class="content-page-meta">Last updated: June 2026</p>
+    </header>
+
+    <section class="about-page-section" aria-labelledby="privacy-short-heading">
+    <h2 id="privacy-short-heading">The short version</h2>
     <p>WhereToSkiNext.com doesn't sell your data and doesn't require an account. If you sign up for the newsletter, your email goes to Beehiiv (our email platform). If you use the AI assistant or filters, anonymous usage events are logged to help improve the site. Your precise location (the coordinates used to calculate drive times) is never stored on our servers. A coarse label like "Boston, MA" is saved with anonymous analytics if you use location features, and your full settings are encoded into a share link only if you create one. We use Google Analytics for aggregate traffic data. That's the whole picture.</p>
 
-    <h2>What we collect and why</h2>
-    <div class="table-wrap">
+    </section>
+
+    <section class="about-page-section" aria-labelledby="privacy-collect-heading">
+    <h2 id="privacy-collect-heading">What we collect and why</h2>
+    <div class="content-table-wrap">
       <table>
         <thead>
           <tr><th>Data</th><th>How it's used</th><th>Where it's stored</th></tr>
@@ -209,9 +191,12 @@
     </div>
     <p>We do not collect your name, payment information, or any account credentials. There are no accounts. Email is only collected if you choose to subscribe to the newsletter.</p>
 
-    <h2>Third-party services the app contacts</h2>
+    </section>
+
+    <section class="about-page-section" aria-labelledby="privacy-third-party-heading">
+    <h2 id="privacy-third-party-heading">Third-party services the app contacts</h2>
     <p>When you use WhereToSkiNext.com, your browser makes requests to the following external services. We do not control their privacy practices and link to their policies where available.</p>
-    <div class="table-wrap">
+    <div class="content-table-wrap">
       <table>
         <thead>
           <tr><th>Service</th><th>Purpose</th><th>Data sent</th></tr>
@@ -259,7 +244,7 @@
           </tr>
           <tr>
             <td><strong>Google Fonts</strong><br /><a href="https://developers.google.com/fonts/faq/privacy" target="_blank" rel="noopener">developers.google.com</a></td>
-            <td>Loads the DM Sans typeface used on the site</td>
+            <td>Loads the Inter and Newsreader typefaces used on the site</td>
             <td>Your IP address and browser info are sent to Google's servers when the font files load.</td>
           </tr>
         </tbody>
@@ -267,10 +252,13 @@
     </div>
     <p><strong>Note on location data and OSRM:</strong> When you enter a ZIP code or city, your coordinates are sent to OSRM to calculate drive times. These requests go from your browser directly to OSRM's public routing server. We do not proxy, log, or store those requests on our end.</p>
 
-    <h2>Cookies and browser storage</h2>
+    </section>
+
+    <section class="about-page-section" aria-labelledby="privacy-cookies-heading">
+    <h2 id="privacy-cookies-heading">Cookies and browser storage</h2>
     <p>WhereToSkiNext.com itself does not set cookies. Google Analytics sets its own cookies (<code>_ga</code>, <code>_gid</code>, etc.) to distinguish unique visitors and sessions.</p>
     <p>WhereToSkiNext.com stores the following data in your browser:</p>
-    <div class="table-wrap">
+    <div class="content-table-wrap">
       <table>
         <thead>
           <tr><th>Key</th><th>Type</th><th>What it stores</th></tr>
@@ -288,23 +276,35 @@
     </div>
     <p>You can clear all of this at any time by clearing your browser's site data for wheretoskinext.com, or by resetting filters in the app.</p>
 
-    <h2>Shareable URLs</h2>
+    </section>
+
+    <section class="about-page-section" aria-labelledby="privacy-share-heading">
+    <h2 id="privacy-share-heading">Shareable URLs</h2>
     <p>When you click the "Share" button or share a resort report URL, your current filter settings — including your approximate coordinates and location label — are encoded into the URL. Anyone with that link will be able to see those settings. If you'd prefer not to share your location, clear the location field before copying a share link.</p>
 
-    <h2>Children's privacy</h2>
+    </section>
+
+    <section class="about-page-section" aria-labelledby="privacy-children-heading">
+    <h2 id="privacy-children-heading">Children's privacy</h2>
     <p>WhereToSkiNext.com is not directed at children under 13 and we do not knowingly collect any information from children. Because we don't collect personal information from any user, there is nothing to delete — but if you have concerns, contact us at the address below.</p>
 
-    <h2>Changes to this policy</h2>
+    </section>
+
+    <section class="about-page-section" aria-labelledby="privacy-changes-heading">
+    <h2 id="privacy-changes-heading">Changes to this policy</h2>
     <p>If we make material changes to how we handle data, we'll update the "Last updated" date at the top of this page. We won't start collecting personal data without updating this policy first.</p>
     <p><strong>June 2026:</strong> Added the crowd feedback prompt, which asks on a later visit whether a mountain we recommended turned out quiet or crowded. It is anonymous, optional, and tied only to a random session ID.</p>
 
-    <p class="contact-note">Questions about this policy?<br />Reach us at <a href="mailto:wheretoskinext@gmail.com">wheretoskinext@gmail.com</a></p>
+    <p class="content-contact-note">Questions about this policy?<br />Reach us at <a href="mailto:wheretoskinext@gmail.com">wheretoskinext@gmail.com</a></p>
+    </section>
+
   </main>
 
   <script src="/newsletter-band.js"></script>
 
 <footer class="site-footer">
-    <p>&copy; 2026 WhereToSkiNext.com &mdash; <a href="/">Find My Mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a></p>
+    <p>&copy; 2026 WhereToSkiNext.com &middot; <a href="/#searchSection">Find my mountain</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy Policy</a> &middot; <a href="/partners/">Partners</a> &middot; <a href="/ski-pass-comparison/">Pass Guides</a></p>
+    <p class="site-footer-affiliate">Some links on this site are affiliate links. If you book lodging through them we may earn a small commission at no extra cost to you. This never influences mountain scores or rankings.</p>
   </footer>
 
 <script>
