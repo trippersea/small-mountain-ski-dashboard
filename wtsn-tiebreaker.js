@@ -107,10 +107,14 @@
       return { key: checks[0].key, text: REASON_TEXT[checks[0].key] };
     }
     if (pick.normalized && rival.normalized) {
+      // Crowd is intentionally NOT in this fallback. The primary check above
+      // already cites crowd using the DISPLAYED crowd label; if it did not
+      // fire, the visible crowd reads do not favor the pick, so we must never
+      // resurrect a crowd edge from the scoring-time normalized value (that is
+      // exactly how "lighter crowd outlook" appeared while both read Quiet).
       var dims = [
         { key: 'snow',  d: (num(pick.normalized.snow) || 0)       - (num(rival.normalized.snow) || 0) },
         { key: 'ski',   d: (num(pick.normalized.skiability) || 0) - (num(rival.normalized.skiability) || 0) },
-        { key: 'crowd', d: (num(pick.normalized.crowd) || 0)      - (num(rival.normalized.crowd) || 0) },
         { key: 'drive', d: (num(pick.normalized.drive) || 0)      - (num(rival.normalized.drive) || 0) },
         { key: 'value', d: (num(pick.normalized.value) || 0)      - (num(rival.normalized.value) || 0) },
       ].filter(function (x) { return x.d >= 0.02; }).sort(function (a, b) { return b.d - a.d; });
