@@ -443,13 +443,17 @@ function rowTiebreakFacts(row) {
   if (typeof WTSN_TIEBREAK === 'undefined' || !row || !row.breakdown) return null;
   const wx = state.weatherCache[row.resort.id]?.data || null;
   const vd = (wx && row.breakdown) ? verdictFromBreakdown(row.resort, wx, row.breakdown) : null;
+  // Use the SAME crowd label the row displays (live crowdForecast), not the
+  // scoring-time breakdown label. Otherwise the reason can claim a crowd edge
+  // that the visible "Moderate / Quiet" column does not show.
+  const crowd = wx ? crowdForecast(row.resort, wx) : null;
   return WTSN_TIEBREAK.factsFromEntry(
     { resort: row.resort, breakdown: row.breakdown, wx },
     targetForecastIndex(),
     {
       snowIn: Math.max(Number(row.stormTotal) || 0, Number(vd && vd.tomorrowIn) || 0),
       rainLikely: vd ? !!vd.rainLikely : null,
-      crowdLabel: row.breakdown.crowdLabel,
+      crowdLabel: (crowd && crowd.label) || row.breakdown.crowdLabel,
     },
   );
 }

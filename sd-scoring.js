@@ -420,8 +420,18 @@ function findTopPickRunnerUp(ranked, pickEntry) {
 function closeCallEdgeReason(pickEntry, runnerEntry) {
   if (!pickEntry?.breakdown || !runnerEntry?.breakdown) return 'a narrow overall edge';
 
+  // Read crowd from the SAME label the UI shows (live crowdForecast), so the
+  // reason never claims a lighter crowd outlook when both read identically.
+  const pcl = crowdForecast(pickEntry.resort, pickEntry.wx)?.label;
+  const rcl = crowdForecast(runnerEntry.resort, runnerEntry.wx)?.label;
+  const crowdSame = !!pcl && !!rcl && pcl === rcl;
+
   if (typeof WTSN_TIEBREAK !== 'undefined' && WTSN_TIEBREAK.edgeReasonFromEntries) {
-    const r = WTSN_TIEBREAK.edgeReasonFromEntries(pickEntry, runnerEntry, targetForecastIndex());
+    const r = WTSN_TIEBREAK.edgeReasonFromEntries(
+      pickEntry, runnerEntry, targetForecastIndex(),
+      pcl ? { crowdLabel: pcl } : null,
+      rcl ? { crowdLabel: rcl } : null,
+    );
     if (r && r.text) return r.text;
   }
 
@@ -431,7 +441,7 @@ function closeCallEdgeReason(pickEntry, runnerEntry) {
     { d: (pn.snow ?? 0)       - (rn.snow ?? 0),       text: 'a better snow forecast' },
     { d: (pn.skiability ?? 0) - (rn.skiability ?? 0), text: 'calmer wind and better temps up top' },
     { d: (pn.fit ?? 0)        - (rn.fit ?? 0),        text: 'a better terrain fit' },
-    { d: (pn.crowd ?? 0)      - (rn.crowd ?? 0),      text: 'a lighter crowd outlook' },
+    ...(crowdSame ? [] : [{ d: (pn.crowd ?? 0) - (rn.crowd ?? 0), text: 'a lighter crowd outlook' }]),
     { d: (pn.drive ?? 0)      - (rn.drive ?? 0),      text: 'a shorter drive' },
     { d: (pn.value ?? 0)      - (rn.value ?? 0),      text: 'a better ticket price' },
   ].filter(e => e.d >= 0.02).sort((a, b) => b.d - a.d);
@@ -452,6 +462,10 @@ function buildCloseCallTopPickCopy(pickEntry, runnerEntry) {
   const pickName = stripResortSuffix(pickEntry.resort.name || 'This pick');
   const runnerName = stripResortSuffix(runnerEntry.resort.name || 'the runner-up');
   const reason = closeCallEdgeReason(pickEntry, runnerEntry);
+  const tied = Math.round(pickScore) === Math.round(runnerScore);
+  if (tied) {
+    return `This one is a coin flip. ${pickName} takes it over ${runnerName} on ${reason}.`;
+  }
   return `This one is close. ${pickName} edges out ${runnerName} today because of ${reason}.`;
 }
 

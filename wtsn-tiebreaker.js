@@ -138,7 +138,7 @@
       score: num(bd.score),
       driveMins: num(bd.drive) != null ? num(bd.drive) : (extra && num(extra.driveMins)),
       snowIn: snowIn,
-      crowdRank: crowdRankFromLabel(bd.crowdLabel || (extra && extra.crowdLabel)),
+      crowdRank: crowdRankFromLabel((extra && extra.crowdLabel) || bd.crowdLabel),
       price: num(r.price),
       vertical: num(r.vertical),
       trails: num(r.trails),
@@ -151,8 +151,8 @@
     };
   }
 
-  function edgeReasonFromEntries(pickEntry, rivalEntry, fi) {
-    var p = factsFromEntry(pickEntry, fi), rv = factsFromEntry(rivalEntry, fi);
+  function edgeReasonFromEntries(pickEntry, rivalEntry, fi, pickExtra, rivalExtra) {
+    var p = factsFromEntry(pickEntry, fi, pickExtra), rv = factsFromEntry(rivalEntry, fi, rivalExtra);
     if (!p || !rv) return null;
     return buildEdgeReason(p, rv);
   }
@@ -202,14 +202,24 @@
     return { gap: gap, line: line };
   }
 
-  /** Leader row line: name the runner-up it beat and why. */
+  /** Leader row line: name the runner-up it beat and why. When the two display
+   *  the same rounded score, it is a tie, so we say "dead heat", never "edges out". */
   function leaderLine(leader, rival) {
     if (!leader) return { gap: 0, line: '' };
     if (!rival) return { gap: 0, line: 'Your top match for these settings.' };
     var edge = buildEdgeReason(leader, rival);
+    var hasEdge = edge && edge.key !== 'narrow';
     var rivalShort = shortName(rival.name);
-    if (edge && edge.key !== 'narrow') return { gap: 0, line: 'Top match. Edges out ' + rivalShort + ' on ' + edge.text + '.' };
-    return { gap: 0, line: 'Top match. A close call over ' + rivalShort + '.' };
+    var lr = Math.round(num(leader.score)), rr = Math.round(num(rival.score));
+    var tied = Number.isFinite(lr) && Number.isFinite(rr) && lr === rr;
+    if (tied) {
+      return { gap: 0, line: hasEdge
+        ? 'Dead heat with ' + rivalShort + '. Gets the nod on ' + edge.text + '.'
+        : 'Dead heat with ' + rivalShort + '. Takes it on the overall tiebreak.' };
+    }
+    return { gap: scoreGap(leader.score, rival.score), line: hasEdge
+      ? 'Top match. Edges out ' + rivalShort + ' on ' + edge.text + '.'
+      : 'Top match. A close call over ' + rivalShort + '.' };
   }
 
   var api = {
