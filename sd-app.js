@@ -4301,6 +4301,17 @@ function loadWeights() {
       VERTICAL_CEILING: 3500, ACRES_CEILING: 4500, LONGEST_RUN_CEILING: 5.0,
       SNOW_SCALE: 8, SNOW_AVG_MAX: 669, DRIVE_DEFAULT: 0.5,
       PRICE_MAX: 329, PRICE_MIN: 40,
+      // Smooth snow response scale (replaces the old SNOW_SCALE hard cap). The
+      // snow index is now 1 - e^(-inches/SNOW_TAU): monotone, diminishing, never
+      // flat, so 15" always outscores 10".
+      SNOW_TAU: 8,
+      // Crowd penalty FLOOR by crowd preference (1 = Don't Mind, 5 = Prefer
+      // Quiet, 10 = Avoid Crowds). Crowds multiply the score by
+      // floor + (1 - floor) * crowdQuality, so a packed mountain keeps only
+      // `floor` of its quality and a quiet one keeps all of it. These are the
+      // calibration knobs: fit them against the crowd-feedback loop, do not
+      // hand-tune them to force a single matchup.
+      CROWD_PENALTY: { 1: 0.65, 5: 0.55, 10: 0.42 },
     },
     DEFAULT_WEIGHTS: { snow: 1, drive: 0, size: 0, value: 0, crowd: 1 },
   };

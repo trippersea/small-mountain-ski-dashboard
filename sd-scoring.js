@@ -1190,7 +1190,10 @@ function snowQualityIndex(resort, snowTotal, wx = null, forecastIndex = null) {
 
   let live;
   if (target === 0) {
-    live = Math.min(1, liveSnow / W.SCORING.SNOW_SCALE);
+    // Smooth saturating response (was a hard cap that scored 10" and 15"
+    // identically). 1 - e^(-x/TAU): monotone, diminishing returns, never flat,
+    // so more snow ALWAYS scores higher.
+    live = 1 - Math.exp(-Math.max(0, liveSnow) / W.SCORING.SNOW_TAU);
   } else if (liveSnow < target) {
     // Smooth the near-miss zone: a 5.9" day against a 6" target should not
     // score like a 2" day (the old cliff jumped 0.15 -> 0.8 across one tenth
@@ -1210,8 +1213,10 @@ function snowQualityIndex(resort, snowTotal, wx = null, forecastIndex = null) {
     // exceeding it climbs the rest of the way to 1.0 at the cap. Previously this
     // scored (liveSnow-target)/(cap-target), which gave ~0 for merely meeting the
     // target — so a 12" day at "Powder Day" priority scored near nothing.
-    const cap   = Math.max(target + 4, target === 12 ? 18 : W.SCORING.SNOW_SCALE + target);
-    const over  = Math.min(1, (liveSnow - target) / Math.max(1, cap - target));
+    // Exceeding the target climbs from the 0.8 anchor toward 1.0 on a smooth
+    // saturating curve, so a bigger storm always outscores a smaller one (the
+    // old hard cap tied everything past the cap).
+    const over = 1 - Math.exp(-Math.max(0, liveSnow - target) / W.SCORING.SNOW_TAU);
     live = 0.8 + 0.2 * over;
   }
 
@@ -1271,17 +1276,47 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
     drive:      driveScoreIndex(getDriveMins(resort.id)),
   };
 
+  // ── Non-compensatory aggregation: base quality x crowd penalty ───────────────
+  // The five quality factors combine additively into a base in [0,1]. Crowds are
+  // NOT additive: a great mountain on a zoo day is a degraded day, so crowds
+  // apply as a MULTIPLIER the rest of the score cannot compensate for. This is
+  // what lets a quieter mountain overtake a bigger one when the day warrants it,
+  // instead of size always winning. The penalty floor (W.SCORING.CROWD_PENALTY)
+  // is the calibration knob, to be fit against the crowd-feedback loop.
+  const qualityW = (w.snow || 0) + (w.skiability || 0) + (w.fit || 0) + (w.value || 0) + (w.drive || 0);
+  const qSum = qualityW > 0 ? qualityW : 1;
+  const wq = {
+    snow:       (w.snow       || 0) / qSum,
+    skiability: (w.skiability || 0) / qSum,
+    fit:        (w.fit        || 0) / qSum,
+    value:      (w.value      || 0) / qSum,
+    drive:      (w.drive      || 0) / qSum,
+  };
+  const baseQuality =
+      normalized.snow       * wq.snow +
+      normalized.skiability * wq.skiability +
+      normalized.fit        * wq.fit +
+      normalized.value      * wq.value +
+      normalized.drive      * wq.drive;            // [0,1]
+  const basePts = baseQuality * 100;
+
+  const crowdPref    = Number(state.weights?.crowd || 1);
+  const penaltyTable = (W.SCORING && W.SCORING.CROWD_PENALTY) || { 1: 0.65, 5: 0.55, 10: 0.42 };
+  const floor        = penaltyTable[crowdPref] || penaltyTable[1] || 0.65;
+  const crowdPenalty = floor + (1 - floor) * normalized.crowd;   // [floor, 1]
+
+  // Quality components are reported pre-penalty; the crowd term carries the
+  // (non-positive) penalty impact, so the six still sum exactly to score.
   const components = {
-    snow:       normalized.snow       * (w.snow       || 0) * 100,
-    skiability: normalized.skiability * (w.skiability || 0) * 100,
-    fit:        normalized.fit        * (w.fit        || 0) * 100,
-    value:      normalized.value      * (w.value      || 0) * 100,
-    crowd:      normalized.crowd      * (w.crowd      || 0) * 100,
-    drive:      normalized.drive      * (w.drive      || 0) * 100,
+    snow:       normalized.snow       * wq.snow       * 100,
+    skiability: normalized.skiability * wq.skiability * 100,
+    fit:        normalized.fit        * wq.fit        * 100,
+    value:      normalized.value      * wq.value      * 100,
+    drive:      normalized.drive      * wq.drive      * 100,
+    crowd:      basePts * (crowdPenalty - 1),   // <= 0: points crowds removed
   };
 
-  const score     = components.snow + components.skiability + components.fit +
-                    components.value + components.crowd + components.drive;
+  const score     = basePts * crowdPenalty;
   const baseScore = Math.round(score * 10) / 10;
   const identity = {
     destinationSuitabilityScore: destinationSuitabilityScore(resort),
@@ -1292,6 +1327,7 @@ function plannerScoreBreakdown(resort, weather, forecastIndex = null, w = null) 
   return {
     score: baseScore,
     baseScore,
+    crowdPenalty,
     passBonus: 0,
     snowTotal,
     drive:     getDriveMins(resort.id),
