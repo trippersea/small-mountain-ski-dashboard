@@ -206,24 +206,32 @@
     return { gap: gap, line: line };
   }
 
-  /** Leader row line: name the runner-up it beat and why. When the two display
-   *  the same rounded score, it is a tie, so we say "dead heat", never "edges out". */
+  /** Leader row line. Compares scores at the precision we DISPLAY (one decimal),
+   *  so two rows that merely round to the same whole number are not called a
+   *  tie. The ranking sort is pure score with no secondary tiebreaker, so we
+   *  never claim one: if the pick genuinely outscores the rival it "noses ahead
+   *  on the combined score" (now visible once the score shows a decimal); only a
+   *  real one-decimal tie is called dead even, and then we say take either. */
   function leaderLine(leader, rival) {
     if (!leader) return { gap: 0, line: '' };
     if (!rival) return { gap: 0, line: 'Your top match for these settings.' };
     var edge = buildEdgeReason(leader, rival);
     var hasEdge = edge && edge.key !== 'narrow';
     var rivalShort = shortName(rival.name);
-    var lr = Math.round(num(leader.score)), rr = Math.round(num(rival.score));
-    var tied = Number.isFinite(lr) && Number.isFinite(rr) && lr === rr;
-    if (tied) {
+    var ls = num(leader.score), rs = num(rival.score);
+    var l1 = ls == null ? null : Math.round(ls * 10) / 10;
+    var r1 = rs == null ? null : Math.round(rs * 10) / 10;
+    var trueTie = l1 != null && r1 != null && l1 === r1;
+    if (trueTie) {
+      // Identical to the tenth: order is arbitrary, so do not invent a reason.
       return { gap: 0, line: hasEdge
-        ? 'Dead heat with ' + rivalShort + '. Gets the nod on ' + edge.text + '.'
-        : 'Dead heat with ' + rivalShort + '. Takes it on the overall tiebreak.' };
+        ? 'Dead even with ' + rivalShort + '. Gets the nod on ' + edge.text + '.'
+        : 'Dead even with ' + rivalShort + '. Either one is a great call today.' };
     }
-    return { gap: scoreGap(leader.score, rival.score), line: hasEdge
-      ? 'Top match. Edges out ' + rivalShort + ' on ' + edge.text + '.'
-      : 'Top match. A close call over ' + rivalShort + '.' };
+    if (hasEdge) {
+      return { gap: scoreGap(ls, rs), line: 'Top match. Edges out ' + rivalShort + ' on ' + edge.text + '.' };
+    }
+    return { gap: scoreGap(ls, rs), line: 'Top match. Noses ahead of ' + rivalShort + ' on the combined score.' };
   }
 
   var api = {

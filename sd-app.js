@@ -461,7 +461,7 @@ function rowTiebreakFacts(row) {
 /** WTSN Score number + mountain-centric reason one-liner for a list row. */
 function rowScoreMeta(row, idx, leaderFacts, runnerFacts) {
   const scoreVal = (row && row.breakdown && Number.isFinite(row.breakdown.score))
-    ? Math.round(row.breakdown.score) : null;
+    ? Math.round(row.breakdown.score * 10) / 10 : null;
   let reason = '';
   if (typeof WTSN_TIEBREAK !== 'undefined' && leaderFacts) {
     if (idx === 0) {
@@ -480,7 +480,7 @@ function renderScoreCell(meta) {
     return '<div class="wtsn-score-cell"><span class="wtsn-score wtsn-score--pending">..</span></div>';
   }
   return `<div class="wtsn-score-cell">
-      <span class="wtsn-score${meta.isLeader ? ' wtsn-score--leader' : ''}" title="WTSN Score for your search, 0 to 100">${meta.scoreVal}</span>
+      <span class="wtsn-score${meta.isLeader ? ' wtsn-score--leader' : ''}" title="WTSN Score for your search, 0 to 100">${meta.scoreVal.toFixed(1)}</span>
       ${meta.reason ? `<span class="wtsn-score-reason">${esc(meta.reason)}</span>` : ''}
     </div>`;
 }
@@ -3687,7 +3687,7 @@ function renderMobileCards(decorated, emptyOpts) {
     return `<div class="mob-card${resort.id === state.selectedId ? ' mob-card-selected' : ''}${_mobSp ? ' mob-card-sponsored' : ''}${_mobGoldCls}" data-mob-id="${resort.id}" role="button" tabindex="0" aria-label="${esc(resort.name)}">
       <div class="mob-card-top">
         <div class="mob-card-name">${esc(resort.name)}</div>
-        ${_mScoreMeta && _mScoreMeta.scoreVal != null ? `<span class="mob-wtsn-score${_mScoreMeta.isLeader ? ' mob-wtsn-score--leader' : ''}" title="WTSN Score for your search">${_mScoreMeta.scoreVal}</span>` : ''}
+        ${_mScoreMeta && _mScoreMeta.scoreVal != null ? `<span class="mob-wtsn-score${_mScoreMeta.isLeader ? ' mob-wtsn-score--leader' : ''}" title="WTSN Score for your search">${_mScoreMeta.scoreVal.toFixed(1)}</span>` : ''}
         <span class="mob-chip mob-chip--pass" style="background:${passColor}22;color:${passColor};border-color:${passColor}44">${esc(resort.passGroup)}</span>
       </div>
       ${_mobPartnerBanner}
