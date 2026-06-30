@@ -1,32 +1,53 @@
-# WhereToSkiNext.com — Cursor Rules
-# Last updated: April 2026
+# WhereToSkiNext.com - Cursor Rules
+# Last updated: June 2026
 # Operator: Solo non-coder founder. Treat all suggestions accordingly.
 
 ---
 
 ## IDENTITY & PHILOSOPHY
 
-This is WhereToSkiNext.com — a personalized ski trip planning tool that helps skiers find
-the right resort based on their priorities. The core value proposition is a personalized
-scoring engine that ranks resorts differently for every user, unlike generic "Top 10" lists.
+This is WhereToSkiNext.com (WTSN) - a ski resort decision engine. It helps a skier find
+the best mountain for a SPECIFIC DAY based on live snow forecast, drive time, pass
+affiliation, crowd outlook, and ticket price. It returns ONE confident recommendation,
+not a generic ranked "Top 10" list. The scoring engine is the product.
+
+The engine assigns each resort one of four roles for the day:
+- Top Pick      - the single best call
+- Solid Option  - a strong alternative
+- Worth a Look  - a non-obvious mountain that is genuinely the better play
+- Crowd Watch   - good on paper, but the crowd outlook is a real risk
 
 Product philosophy (never violate these):
 - Ship over endless iteration. A working feature beats a perfect one.
-- Personalized scores over generic rankings. The algorithm is the product.
+- The scoring engine is the product. Determinism and transparency are the trust foundation.
+- Surface the genuinely better mountain, even when it is small or lesser known. The product
+  exists to beat the obvious-destination default, not reinforce it.
+- Editorial independence is the credibility basis. Ranking order is never for sale.
 - Scoped, minimal changes only. No unrequested refactors, rewrites, or "improvements."
 - Every edit should be explainable to a non-coder in plain English.
 
 ---
 
-## STACK — READ THIS FIRST BEFORE SUGGESTING ANYTHING
+## STACK - READ THIS FIRST BEFORE SUGGESTING ANYTHING
 
 - Vanilla HTML, CSS, and JavaScript only. No frameworks whatsoever.
-- Deployed on Vercel via GitHub Desktop (no CLI workflow).
-- Serverless functions live in /api/ and run as Vercel Edge/Node functions.
+- Deployed on Vercel (Hobby/Free plan) via GitHub Desktop. No CLI deploy workflow.
+- Serverless functions live in /api/ and run as Vercel functions.
 - Static pages are pre-generated via Node scripts (generate-mountain-pages.mjs,
-  generate-state-pages.mjs) — they are not server-rendered at request time.
-- No build step, no bundler, no npm for the frontend. Scripts are loaded via <script> tags.
-- Node.js is only used for the static generation scripts and /api/ serverless functions.
+  generate-state-pages.mjs, generate-city-pages.js). They are not server-rendered at
+  request time.
+- No frontend bundler and no framework build. The only build-time steps are the Node
+  generation scripts above and the scoring obfuscation script (obfuscate-scoring.mjs),
+  all run manually before a deploy. Scripts are loaded into pages via <script> tags.
+- Node.js is used only for the generation scripts, the obfuscation script, and /api/
+  serverless functions.
+
+Supporting services in the live stack:
+- Supabase    - analytics tables and the crowd feedback table (anon-key inserts, RLS on)
+- Beehiiv     - newsletter distribution (free plan: Send API is blocked, manual paste only)
+- Anthropic API - newsletter copy and resort content generation (copy only, never scoring)
+- Open-Meteo  - weather forecasts (non-commercial free tier)
+- OSRM        - drive times, served from a precomputed 35-cluster matrix with live fallback
 
 NEVER suggest:
 - React, Vue, Svelte, Angular, or any frontend framework
@@ -38,100 +59,138 @@ NEVER suggest:
 
 ---
 
-## KEY FILES — WHAT EACH ONE DOES
+## KEY FILES - WHAT EACH ONE DOES
 
 ### Core Application
-- sd-app.js         — Main application logic, UI rendering, questionnaire flow,
-                       Top Pick card rendering, "Also in the Running" card rendering.
-                       This is the largest and most sensitive file. Edit carefully.
+- sd-app.js              Main application logic, UI rendering, the day-input flow, and the
+                         rendering of all four role cards (Top Pick, Solid Option, Worth a
+                         Look, Crowd Watch). Largest and most sensitive file. Edit carefully.
 
-- sd-scoring.js     — Personalization scoring algorithm. Takes user-selected weights
-                       and scores each resort. The normalizedWeights() function is
-                       CRITICAL — it must always return dynamic weights derived from
-                       user input, never hardcoded fixed values. A previous bug where
-                       it returned fixed weights regardless of input was a major failure.
-                       Never touch normalizedWeights() without explicit instruction.
+- sd-scoring.js          The scoring engine. Computes base quality, applies the crowd
+                         penalty, and produces the final score each resort is ranked by.
+                         normalizedWeights() is CRITICAL: it must always return dynamic
+                         weights derived from input, never hardcoded fixed values. A past
+                         bug where it returned fixed weights regardless of input broke the
+                         whole engine. Never touch normalizedWeights() without explicit
+                         instruction.
 
-- sd-data.js        — Resort data loader. Uses vm.runInNewContext() to parse resort
-                       data files because JSON.parse() silently fails on JS object
-                       literal syntax. Do NOT change this parsing approach.
+- recommendation-roles.js  Assigns the four roles (Top Pick / Solid Option / Worth a Look /
+                         Crowd Watch) from computed scores. The "Worth a Look" obviousness
+                         test lives here: it must not surface obvious destinations. Role
+                         assignment reads from scores, never the other way around.
 
-- resorts-national.js — Raw resort dataset. Contains all resort entries with stats,
-                         pricing, coordinates, terrain data, etc. Data quality here
-                         directly affects recommendation quality.
+- sd-filters.js          Filter logic for the results set (pass, region, drive radius, etc).
 
-- featured-partners.js — Sponsor/partner integration. Controls Featured Partner
-                          placements. The business model depends on this file being
-                          clean and reliable.
+- sd-data.js             Resort data loader. Uses vm.runInNewContext() to parse resort data
+                         because JSON.parse() silently fails on JS object literal syntax.
+                         Do NOT change this parsing approach.
+
+- resorts.js             Raw resort dataset. All resort entries with stats, pricing,
+                         coordinates, terrain, pass affiliation, lift capacity tier, etc.
+                         Data quality here directly affects recommendation quality.
+                         (NOTE: if the live repo still names this resorts-national.js,
+                         that is the same file. Use whichever name the repo actually has.)
 
 ### Static Page Generation
-- generate-mountain-pages.mjs — Generates all 256 individual resort pages.
-                                  Run with Node.js when resort data changes.
-- generate-state-pages.mjs    — Generates all 34 state landing pages.
+- generate-mountain-pages.mjs  Generates one page per mountain (currently 300, across 37
+                               states). Run with Node when resort data changes.
+- generate-state-pages.mjs     Generates the state landing pages (currently 37).
+- generate-city-pages.js       Generates the "from <city>" drive-origin landing pages.
 
 ### Serverless Functions (/api/)
-- /api/subscribe.js — Beehiiv email subscription handler. Reads
-                       BEEHIIV_API_KEY and BEEHIIV_PUBLICATION_ID from
-                       Vercel environment variables. Never hardcode these.
+- /api/weights.js              Serves scoring weights to the frontend (paired with the
+                               obfuscation step). Treat as part of the scoring path.
+- /api/crowd-feedback.js       Writes user crowd feedback to the Supabase crowd_feedback
+                               table. This is the primary validation path for the crowd model.
+- /api/newsletter-generator.js Runs the full engine across all mountains and builds the
+                               weekly regional newsletter copy via the Anthropic API.
+- /api/geo.js                  Silent IP-derived location seeding for first-time origin.
+- /api/subscribe.js            Beehiiv email subscription handler. Reads BEEHIIV_API_KEY
+                               and BEEHIIV_PUBLICATION_ID from Vercel env. Never hardcode.
 
 ---
 
-## SCORING SYSTEM — NEVER BREAK THIS
+## SCORING SYSTEM - NEVER BREAK THIS
 
-The scoring system is the entire product. Two components must always stay in sync:
+The scoring system is the entire product. Three things must always hold.
 
-1. sd-scoring.js computes a normalized score (0–100) for each resort based on
-   user-selected priority weights across dimensions like snow quality, terrain variety,
-   value, family-friendliness, après ski, drive distance, etc.
+1. NON-COMPENSATORY ARCHITECTURE. The final score is base quality MULTIPLIED BY a crowd
+   penalty. Crowd is non-compensatory: a crowded day cannot be rescued by excellent snow or
+   any other factor. A big mountain losing to a smaller one on a crowded Saturday is the
+   CORRECT output, not a bug. The big mountain winning back a quiet midweek day is the proof
+   the model works. Do not "fix" this by letting other factors buy back a crowd penalty.
 
-2. sd-app.js uses those scores to:
-   - Designate the highest-scoring resort as the TOP PICK
-   - Designate the next 2–3 as "ALSO IN THE RUNNING"
-   - Render verdict labels (e.g., "Best Overall Value", "Top Snow Resort")
+2. THE CROWD MODEL PREDICTS, IT DOES NOT MEASURE. It reasons from stable structural inputs
+   (metro proximity / gravity, pass-network pull, destination draw, lift capacity tier) plus
+   logistic soft-clamping. It does NOT observe live lift lines. Never add copy or logic that
+   claims real-time crowd reactivity. The model forecasts crowd pressure.
 
-A critical past bug: the scoring label system in sd-app.js was disconnected from the
-actual numeric scores in sd-scoring.js, producing contradictory results (e.g., a resort
-labeled "Best Value" with a low value score). This has been fixed. Any future edit to
-scoring labels must reference actual computed score values, never hardcoded logic.
+3. SCORES DRIVE LABELS, NEVER THE REVERSE. sd-app.js and recommendation-roles.js must derive
+   every role and verdict label from actual computed scores. A past bug had labels
+   disconnected from scores (e.g. a "Worth a Look" surfacing an obvious destination, or a
+   verdict that contradicted the number). Any edit to roles or labels must reference real
+   computed values, never hardcoded logic.
 
 Rules:
-- Never add a new scoring dimension without wiring it into BOTH sd-scoring.js AND sd-app.js
-- Never change how normalizedWeights() aggregates user input without explicit instruction
-- Always check: does the Top Pick label match what the score actually says?
+- Never add a scoring dimension without wiring it into BOTH sd-scoring.js AND the consumers
+  (recommendation-roles.js and sd-app.js).
+- Never change how normalizedWeights() aggregates input without explicit instruction.
+- Always check: does the assigned role match what the score actually says?
+
+### AI MUST NEVER TOUCH THE SCORING PATH
+AI/LLM generation is used for COPY ONLY (newsletter text, resort page prose). It must never
+read from, write to, compute, or influence: sd-scoring.js, recommendation-roles.js,
+/api/weights.js, the crowd model, or role assignment in sd-app.js. Determinism and
+transparency are the product's trust foundation. If a request would route any generated or
+model-derived value into a score, role, or ranking position, STOP and flag it before writing
+any code.
 
 ---
 
 ## DATA INTEGRITY RULES
 
-- Resort coordinates must be accurate. Past bugs included resorts placed in wrong states.
+- Resort coordinates must be accurate. Past bugs placed resorts in the wrong state.
 - Pricing data should reflect actual lift ticket prices, not placeholder values.
-- Summit elevation, vertical drop, trail counts, and snowfall averages are factual fields —
-  do not generate or estimate these. Flag missing data instead.
-- When editing resorts-national.js, always preserve the existing object structure exactly.
-  Adding a new field to one resort means adding it (even if null) to all resorts for
-  consistency.
+- Summit elevation, vertical drop, trail counts, snowfall averages, and lift capacity are
+  factual fields. Do not generate or estimate these. Flag missing data instead.
+- When editing resorts.js, preserve the existing object structure exactly. Adding a field to
+  one resort means adding it (even if null) to every resort, for consistency.
+
+### Known data issue (not yet fixed)
+- A geographic sanity cap is NOT yet implemented. Late-season scores plus near-zero crowd can
+  push geographically nonsensical picks into a region (e.g. Eaglecrest, Alaska surfacing in
+  the West newsletter pick with absurd drive times). Until the cap exists, sanity-check any
+  region-level pick for geographic plausibility before shipping.
 
 ---
 
-## SEO ARCHITECTURE — DO NOT BREAK
+## SEO ARCHITECTURE - DO NOT BREAK
 
-The site has a deliberate SEO content structure built for organic discovery:
+The site has a deliberate SEO content structure built for organic discovery.
 
 Pages that exist and must stay intact:
-- 256 individual resort pages (e.g., /resorts/killington-vermont.html)
-- 34 state landing pages (e.g., /states/vermont.html)
-- City landing pages (e.g., /from/boston.html, /from/new-york.html)
-- Ski pass comparison hub (/passes/) + 5 regional comparison pages
+- One individual resort page per mountain (currently 300)
+- One state landing page per state (currently 37)
+- City / drive-origin landing pages (e.g. /from/boston.html, /from/new-york.html)
+- Ski pass comparison hub and regional comparison pages
 - robots.txt at root
-- sitemap.xml (must stay current — regenerate if new pages are added)
+- sitemap.xml (must stay current - regenerate if new pages are added)
 
 Canonical tag rules:
 - Every page must have <link rel="canonical"> pointing to its own non-www URL
 - The canonical domain is wheretoskinext.com (no www)
 - Never create a page without a canonical tag
 
-Navigation must be consistent across all page types. If you change the nav on one
-template, flag that it needs to propagate to all templates.
+Navigation must be consistent across all page types. If you change the nav on one template,
+flag that it needs to propagate to all templates.
+
+### On the horizon: GEO (generative engine optimization)
+Batch AI content generation grounded in per-mountain differentiating data, to make the
+300-mountain dataset citable by AI search engines. This is COPY generation only and is still
+governed by the "AI must never touch the scoring path" rule above. Note: generate-resort-
+content.js is the current AI-detection risk, because its helpers return only a few fixed
+strings per bracket and produce near-identical paragraphs across mountains. Per-mountain
+grounded generation is the intended fix.
 
 ---
 
@@ -141,26 +200,43 @@ template, flag that it needs to propagate to all templates.
   (loaded via GTM snippet in <head> and <body> on all pages)
 - GA4 Measurement ID: G-VK2Q3TTFEW
   (fired through GTM, not directly)
+- Supabase behavioral tables: recommendation_events, filter_events, resort_views,
+  crowd_feedback
 
 Rules:
 - Never remove or modify the GTM snippet
-- Never add a raw GA4 gtag.js script — all tracking goes through GTM
-- If adding a new user interaction worth tracking (button click, filter selection,
-  result view), add a dataLayer.push() event — do not call gtag() directly
+- Never add a raw GA4 gtag.js script. All tracking goes through GTM
+- For a new tracked interaction, add a dataLayer.push() event. Do not call gtag() directly
 
 ---
 
-## BUSINESS MODEL — CONTEXT FOR FEATURE DECISIONS
+## BUSINESS MODEL - CONTEXT FOR FEATURE DECISIONS
 
-The monetization strategy is Featured Partner sponsorships ($500/month flat fee,
-four placements per resort). Outreach to mountain GMs is ongoing with a planned
-June 2026 ask. Secondary revenue comes from affiliate links (Booking.com, ski.com).
+Two revenue lines, at different stages.
 
-Implications for feature work:
-- featured-partners.js controls sponsor placements — treat it as revenue-critical code
-- Affiliate deep-links on resort pages must be preserved when pages are regenerated
-- Never remove or de-prioritize Featured Partner card placements in the UI
-- The email list (via Beehiiv) is being built now for future newsletter sponsorship value
+1. PASS AFFILIATES (activating now). Epic via CJ Affiliate, Ikon, and Indy Pass. Affiliate
+   deep-links on pages must be preserved when pages regenerate. Pass sale season runs roughly
+   April through September, so this is the near-term revenue priority.
+
+2. FEATURED PARTNER SPONSORSHIPS (available, NOT yet implemented). The plan: improve the site
+   and grow traffic first, then sign a partner once there is real traction. When this is
+   built, it is a labeled SPONSORSHIP / DISPLAY line only.
+
+### THE RANKING FIREWALL - non-negotiable
+This is the core credibility rule. It overrides any monetization convenience.
+- A mountain can NEVER pay to rank higher, become Top Pick, change its role, or otherwise
+  alter ranking order. Ranking is output by the deterministic engine and is never for sale.
+- Featured Partner placements, when they exist, must be visually distinct, clearly labeled as
+  sponsored, and rendered OUTSIDE the scored recommendation set, so they cannot be mistaken
+  for an earned result.
+- featured-partners.js (when built) controls sponsor display ONLY. It must never read from,
+  write to, or influence sd-scoring.js, recommendation-roles.js, /api/weights.js, or role
+  assignment in sd-app.js.
+- If a feature request would let money touch ranking order in any way, STOP and flag it
+  clearly before writing any code. Do not implement it silently.
+
+Secondary / future: the Beehiiv email list is being built now for future newsletter
+sponsorship value.
 
 ---
 
@@ -168,11 +244,14 @@ Implications for feature work:
 
 All secrets live in Vercel Environment Variables. Never in source code.
 
-Current environment variables in use:
+Environment variables in use (confirm exact names against Vercel before referencing):
 - BEEHIIV_API_KEY
 - BEEHIIV_PUBLICATION_ID
+- ANTHROPIC_API_KEY            (newsletter and resort copy generation)
+- SUPABASE_URL                 (analytics and crowd feedback)
+- SUPABASE_ANON_KEY            (anon-key inserts, RLS enabled)
 
-If a feature requires a new third-party API, always:
+If a feature needs a new third-party API, always:
 1. Add the key to Vercel Environment Variables
 2. Call the API from /api/ (serverless), never from frontend JS
 3. Reference it as process.env.VARIABLE_NAME in the serverless function
@@ -181,56 +260,92 @@ If a feature requires a new third-party API, always:
 
 ## CHANGE MANAGEMENT RULES
 
-These rules exist because this codebase is maintained by a non-coder via AI tooling.
-Safety is more important than elegance.
+These rules exist because this codebase is maintained by a non-coder via AI tooling. Safety
+is more important than elegance.
 
-1. SCOPE LOCK — Only change what was explicitly asked. If you notice something else
-   that could be improved, mention it in a comment at the end of your response.
-   Do not fix it silently.
+1. SCOPE LOCK. Only change what was explicitly asked. If you notice something else worth
+   improving, mention it at the end. Do not fix it silently.
 
-2. NO SILENT REFACTORS — Never rename variables, reorganize file structure, or
-   change function signatures unless that was the explicit request.
+2. NO SILENT REFACTORS. Never rename variables, reorganize structure, or change function
+   signatures unless that was the explicit request.
 
-3. EXPLAIN THE DIFF — For any change to sd-scoring.js or sd-app.js, include a
-   plain-English explanation of exactly what changed and why, as if explaining to
-   someone who doesn't code.
+3. COMPLETE FILES ONLY. Deliver complete, deploy-ready files, never diffs or partial
+   snippets, unless explicitly asked. Files go straight from output into the repo via
+   GitHub Desktop. Syntax-check before delivering (node --check where applicable).
 
-4. FLAG BLAST RADIUS — If a change to one file requires changes in another file
-   to stay consistent, call this out explicitly before proceeding. Do not make the
-   secondary change silently.
+4. PRESERVE LINE ENDINGS. This is a Windows environment. Preserve CRLF line endings on every
+   file. Do not silently convert to LF.
 
-5. STATIC PAGE REGENERATION — If you edit resort data in resorts-national.js or
-   change the page templates, remind the operator to re-run the generation scripts:
+5. NO EM DASHES. Em dashes are banned everywhere, including code comments and generated copy.
+   Use a colon, a comma, or a hyphen instead.
+
+6. EXPLAIN THE DIFF. For any change to sd-scoring.js, recommendation-roles.js, or sd-app.js,
+   include a plain-English explanation of exactly what changed and why, written for someone
+   who does not code.
+
+7. FLAG BLAST RADIUS. If a change to one file requires a change in another to stay
+   consistent, call it out explicitly before proceeding. Do not make the secondary change
+   silently.
+
+8. STATIC PAGE REGENERATION. If you edit resort data in resorts.js or change a page template,
+   remind the operator to re-run the relevant generators:
      node generate-mountain-pages.mjs
      node generate-state-pages.mjs
-   and to redeploy via GitHub Desktop.
+     node generate-city-pages.js
+   and, if scoring files changed, to re-run obfuscate-scoring.mjs, then redeploy via
+   GitHub Desktop.
 
-6. TEST THE CRITICAL PATH — After any change to the scoring or UI flow, the operator
-   should manually test: load homepage → complete questionnaire → verify Top Pick
-   card shows a resort with a label that matches its actual highest score dimension.
+9. TEST THE CRITICAL PATH. After any scoring or UI change, the operator should manually test:
+   load homepage, enter a day, verify the Top Pick and the other three roles each show a
+   resort whose assigned role matches what its actual score says.
+
+---
+
+## DOMAIN AUTHORITY
+
+When a scoring result conflicts with the operator's on-the-ground knowledge (e.g. a small
+mountain outranking a major resort), FLAG it and ask before changing anything. Do not
+auto-calibrate the model around a single surprising result. Non-compensatory outputs that
+look surprising are often correct (see the scoring section). The operator decides whether a
+surprising result is a real bug or the model working as designed.
+
+---
+
+## CURRENT KNOWN ISSUES (open, not yet fixed)
+
+- Geographic sanity cap not implemented (Alaska / Eaglecrest surfacing in the West region).
+- Beehiiv free plan blocks the Send API, so the newsletter requires manual HTML paste into
+  Beehiiv's HTML Snippet block.
+- The crowd model has no empirical validation against measured lift-line data yet. The
+  Supabase crowd feedback loop is the primary validation path.
+- Mobile audit of the full rankings table (especially at 390px) not yet done.
 
 ---
 
 ## KNOWN PAST BUGS (never reintroduce these)
 
-- normalizedWeights() returning hardcoded fixed weights instead of user-input-derived
-  weights, making the personalization engine non-functional.
-- JSON.parse() failing silently on JS object literal syntax in data files. Fixed by
-  switching to vm.runInNewContext(). Do not revert this.
-- Two disconnected scoring systems in sd-scoring.js and sd-app.js producing
-  contradictory verdict labels. Fixed by unifying score references.
-- Resort coordinates placed in wrong states. Always verify lat/lng when adding
-  or editing resort entries.
-- www vs non-www canonical mismatch causing duplicate indexing issues in GSC.
-  All canonicals point to non-www. Vercel redirects www → non-www.
+- normalizedWeights() returning hardcoded fixed weights instead of input-derived weights,
+  making the engine non-functional.
+- JSON.parse() failing silently on JS object literal syntax in data files. Fixed by switching
+  to vm.runInNewContext(). Do not revert this.
+- Role / verdict labels disconnected from actual computed scores, producing contradictory
+  output. Fixed by unifying score references.
+- The "Worth a Look" role surfacing obvious destinations (Killington, Stowe, Loon, etc).
+  Fixed with the three-signal obviousness test (destinationClass, passGroup, metroGravity).
+- Resort coordinates placed in the wrong state. Always verify lat/lng when adding or editing.
+- www vs non-www canonical mismatch causing duplicate indexing. All canonicals are non-www.
+  Vercel redirects www to non-www.
 
 ---
 
 ## TONE & OUTPUT FORMAT FOR THIS OPERATOR
 
-- Lead with what the change does in plain English, then show the code
-- When showing diffs, use clear before/after blocks rather than unified diff syntax
-- If there are multiple valid approaches, present the tradeoffs briefly, then recommend one
-- Never use jargon without explaining it
-- If a requested change would break something else, say so immediately and clearly
-  before showing any code
+- Lead with what the change does in plain English, then show the complete file.
+- Deliver complete, deploy-ready files. No diffs, no snippets, unless explicitly asked.
+- All user-facing copy is skier-to-skier: short, direct, opinionated. No product-manager
+  language, no corporate framing. The about page and editorial pieces are the voice reference.
+- No em dashes, anywhere.
+- If there are multiple valid approaches, state the tradeoffs briefly, then recommend one.
+- Never use jargon without explaining it.
+- If a requested change would break something else, or would let money touch ranking, say so
+  immediately and clearly before showing any code.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ═══════════════════════════════════════════════════════════════════════════════
-// generate-mountain-pages.mjs  — UPDATED v2
+// generate-mountain-pages.mjs  UPDATED v2
 //
 // Changes from v1:
 //  1. Dark navy hero with live OpenMeteo snow fetch above the fold
@@ -10,7 +10,7 @@
 //  5. Trust signals: freshness date, "No account needed · Free forever"
 //
 // Usage:  node generate-mountain-pages.mjs
-// Output: ./ski-report/{resort-id}/index.html  — uses site-wide /styles.css
+// Output: ./ski-report/{resort-id}/index.html  uses site-wide /styles.css
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import fs   from 'fs';
@@ -38,34 +38,59 @@ const FEATURED_PARTNERS = loadFeaturedPartners();
 
 // ─── Load mountain editorial copy ─────────────────────────────────────────────
 function loadMountainEditorial() {
+  let handWrittenEntries = {};
+  let author = null;
+  let methodology = null;
+
   const editorialPath = path.join(__dirname, 'mountain-editorial.js');
-  if (!fs.existsSync(editorialPath)) {
+  if (fs.existsSync(editorialPath)) {
+    try {
+      const ctx = {};
+      const code = fs.readFileSync(editorialPath, 'utf8');
+      vm.runInNewContext(
+        code + '\nglobalThis.__editorial = MOUNTAIN_EDITORIAL;' +
+               '\nglobalThis.__author = typeof MOUNTAIN_EDITORIAL_AUTHOR !== "undefined" ? MOUNTAIN_EDITORIAL_AUTHOR : null;' +
+               '\nglobalThis.__methodology = typeof MOUNTAIN_EDITORIAL_METHODOLOGY !== "undefined" ? MOUNTAIN_EDITORIAL_METHODOLOGY : null;',
+        ctx
+      );
+      handWrittenEntries = ctx.__editorial || {};
+      author = ctx.__author || null;
+      methodology = ctx.__methodology || null;
+    } catch (e) {
+      console.warn('Warning: could not load mountain-editorial.js:', e.message);
+    }
+  } else {
     console.log('Note: mountain-editorial.js not found. All pages will use templated copy.');
-    return { entries: {}, author: null, methodology: null };
   }
-  try {
-    const ctx = {};
-    const code = fs.readFileSync(editorialPath, 'utf8');
-    vm.runInNewContext(
-      code + '\nglobalThis.__editorial = MOUNTAIN_EDITORIAL;' +
-             '\nglobalThis.__author = typeof MOUNTAIN_EDITORIAL_AUTHOR !== "undefined" ? MOUNTAIN_EDITORIAL_AUTHOR : null;' +
-             '\nglobalThis.__methodology = typeof MOUNTAIN_EDITORIAL_METHODOLOGY !== "undefined" ? MOUNTAIN_EDITORIAL_METHODOLOGY : null;',
-      ctx
-    );
-    return {
-      entries:     ctx.__editorial   || {},
-      author:      ctx.__author      || null,
-      methodology: ctx.__methodology || null
-    };
-  } catch (e) {
-    console.warn('Warning: could not load mountain-editorial.js:', e.message);
-    return { entries: {}, author: null, methodology: null };
+
+  let generatedEntries = {};
+  const generatedPath = path.join(__dirname, 'mountain-editorial-generated.js');
+  if (fs.existsSync(generatedPath)) {
+    try {
+      const ctx = {};
+      const code = fs.readFileSync(generatedPath, 'utf8');
+      vm.runInNewContext(code + '\nglobalThis.__generated = MOUNTAIN_EDITORIAL_GENERATED;', ctx);
+      generatedEntries = ctx.__generated || {};
+    } catch (e) {
+      console.warn('Warning: could not load mountain-editorial-generated.js:', e.message);
+    }
   }
+
+  // Generated entries: reviewed:true only. Hand-written always wins per id.
+  const reviewedGenerated = Object.fromEntries(
+    Object.entries(generatedEntries).filter(([, e]) => e && e.reviewed === true)
+  );
+  const entries = { ...reviewedGenerated, ...handWrittenEntries };
+
+  return { entries, author, methodology };
 }
 const _EDITORIAL = loadMountainEditorial();
 const MOUNTAIN_EDITORIAL = _EDITORIAL.entries;
 const EDITORIAL_AUTHOR   = _EDITORIAL.author;
 const EDITORIAL_METHODOLOGY = _EDITORIAL.methodology;
+
+const INTEGRITY_STAMP_GENERATED =
+  "This write-up was drafted from WhereToSkiNext's structured mountain data and reviewed by a human editor before publishing. Facts are sourced from the resort and the data sources listed above.";
 
 // ─── Load resort data ──────────────────────────────────────────────────────────
 import { createRequire } from 'module';
@@ -225,8 +250,8 @@ function nearbyResorts(resort, allResorts, limit = 4) {
     .map(x => x.r);
 }
 
-// ─── FAQ schema ───────────────────────────────────────────────────────────────
-function buildFAQSchema(resort, stateName) {
+// ─── FAQ items, schema, and visible section ───────────────────────────────────
+function buildFAQItems(resort, stateName) {
   const tb       = resort.terrainBreakdown || {};
   const begPct   = Math.round((tb.beginner || 0) * 100);
   const advPct   = Math.round((tb.advanced || 0) * 100);
@@ -234,22 +259,16 @@ function buildFAQSchema(resort, stateName) {
   const passName = { Epic: 'Epic Pass', Ikon: 'Ikon Pass', Indy: 'Indy Pass', Independent: 'no major pass' }[resort.passGroup] || 'no major pass';
   const isPass   = resort.passGroup !== 'Independent';
 
-  const skillFit = advPct >= 35
-    ? `${resort.name} skews toward experienced skiers — about ${advPct}% of the terrain is advanced or expert. Beginners will find some options but the mountain is best suited to intermediates and above.`
-    : begPct >= 35
-    ? `${resort.name} is beginner-friendly, with about ${begPct}% of trails suited to newer skiers. There is also plenty for intermediates, though advanced skiers may find the challenge limited.`
-    : `${resort.name} is well-suited to intermediate skiers — about ${intPct}% of the terrain falls in that range. There is something for most skill levels here.`;
-
   const peakMonths = resort.avgSnowfall >= 200 ? 'January through early March' : 'January and February';
   // "January and February" is plural, "January through early March" is a single range.
-  // Use "are" vs "is" accordingly so the FAQ doesn't read awkwardly.
+  // Use "are" vs "is" accordingly so the FAQ does not read awkwardly.
   const peakVerb   = peakMonths.includes(' and ') ? 'are' : 'is';
 
-  const questions = [
+  return [
     {
       q: `Is ${resort.name} on the ${isPass ? passName : 'Epic, Ikon, or Indy Pass'}?`,
       a: isPass
-        ? `Yes. ${resort.name} is ${aOrAn(passName)} ${passName} mountain. Pass holders can ski here as part of their pass benefits — check the current pass terms for any blackout dates or restrictions.`
+        ? `Yes. ${resort.name} is ${aOrAn(passName)} ${passName} mountain. Pass holders can ski here as part of their pass benefits. Check the current pass terms for any blackout dates or restrictions.`
         : `${resort.name} is an independent mountain and is not on the Epic Pass, Ikon Pass, or Indy Pass. Day tickets are available directly through the resort at approximately $${resort.price}.`,
     },
     {
@@ -261,7 +280,7 @@ function buildFAQSchema(resort, stateName) {
       a: begPct >= 35
         ? `Yes. About ${begPct}% of the terrain at ${resort.name} is rated for beginners, making it a solid choice for newer skiers and families with kids just learning.`
         : begPct >= 20
-        ? `${resort.name} has some beginner terrain — about ${begPct}% of trails — but the mountain generally skews toward intermediate and advanced skiers. Beginners will find options but may feel more comfortable at a mountain with a stronger beginner focus.`
+        ? `${resort.name} has some beginner terrain (about ${begPct}% of trails), but the mountain generally skews toward intermediate and advanced skiers. Beginners will find options but may feel more comfortable at a mountain with a stronger beginner focus.`
         : `${resort.name} is not an ideal mountain for beginners. Only about ${begPct}% of the terrain is beginner-rated, and the mountain skews toward more experienced skiers.`,
     },
     {
@@ -274,19 +293,37 @@ function buildFAQSchema(resort, stateName) {
     },
     {
       q: `When is the best time to ski ${resort.name}?`,
-      a: `${peakMonths} ${peakVerb} typically peak season at ${resort.name} when snowpack is deepest and conditions are most consistent. ${resort.avgSnowfall >= 150 ? 'December can be good if the season starts early.' : 'December is hit or miss — the base needs time to build.'} Midweek visits are almost always less crowded than weekends${isPass ? ', especially when pass holders fill the mountain on Saturdays and holidays' : ''}.`,
+      a: `${peakMonths} ${peakVerb} typically peak season at ${resort.name} when snowpack is deepest and conditions are most consistent. ${resort.avgSnowfall >= 150 ? 'December can be good if the season starts early.' : 'December is hit or miss. The base needs time to build.'} Midweek visits are almost always less crowded than weekends${isPass ? ', especially when pass holders fill the mountain on Saturdays and holidays' : ''}.`,
     },
   ];
+}
 
+function buildFAQSchema(resort, stateName) {
+  const items = buildFAQItems(resort, stateName);
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: questions.map(({ q, a }) => ({
+    mainEntity: items.map(({ q, a }) => ({
       '@type': 'Question',
       name: q,
       acceptedAnswer: { '@type': 'Answer', text: a },
     })),
   };
+}
+
+function renderFAQ(resort, stateName) {
+  const items = buildFAQItems(resort, stateName);
+  if (!items.length) return '';
+  const rows = items.map(({ q, a }) => `
+      <div class="sr-faq-item">
+        <h3 class="sr-faq-q">${esc(q)}</h3>
+        <p class="sr-faq-a">${esc(a)}</p>
+      </div>`).join('');
+  return `
+    <section class="sr-faq" aria-labelledby="sr-faq-h">
+      <h2 class="sr-faq-title" id="sr-faq-h">Common questions about ${esc(resort.name)}</h2>
+      ${rows}
+    </section>`;
 }
 
 // ─── JSON-LD schemas ──────────────────────────────────────────────────────────
@@ -356,14 +393,27 @@ function buildSchemas(resort, stateName, editorial) {
       about: { '@type': 'SportsActivityLocation', name: resort.name, url: canonUrl }
     };
 
-    if (EDITORIAL_AUTHOR) {
+    if (editorial.generated) {
+      article.author = {
+        '@type': 'Organization',
+        name: 'WhereToSkiNext.com',
+        url: 'https://wheretoskinext.com/',
+      };
+      if (EDITORIAL_AUTHOR) {
+        article.accountablePerson = {
+          '@type': 'Person',
+          name: EDITORIAL_AUTHOR.name,
+          ...(EDITORIAL_AUTHOR.title ? { jobTitle: EDITORIAL_AUTHOR.title } : {}),
+        };
+      }
+    } else if (EDITORIAL_AUTHOR) {
       article.author = {
         '@type': 'Person',
         name: EDITORIAL_AUTHOR.name,
         ...(EDITORIAL_AUTHOR.title ? { jobTitle: EDITORIAL_AUTHOR.title } : {}),
         ...(EDITORIAL_AUTHOR.bio   ? { description: EDITORIAL_AUTHOR.bio } : {})
       };
-      // accountablePerson is a separate E-E-A-T signal — it tells Google a
+      // accountablePerson is a separate E-E-A-T signal. It tells Google a
       // named human is responsible for this content, not a content farm.
       article.accountablePerson = article.author;
     }
@@ -609,17 +659,24 @@ function renderEditorial(resort, editorial, allResorts) {
     }
   }
 
-  const byline = EDITORIAL_AUTHOR
-    ? `
+  let byline = '';
+  if (editorial.generated && EDITORIAL_AUTHOR) {
+    byline = `
+      <div class="sr-ed-byline sr-ed-byline--generated">
+        <span class="sr-ed-byline-by">Written from WhereToSkiNext's mountain database and reviewed by ${esc(EDITORIAL_AUTHOR.name)}.</span>
+        ${editorial.lastUpdated ? `<span class="sr-ed-byline-date">Updated ${esc(formatEditorialDate(editorial.lastUpdated))}</span>` : ''}
+      </div>`;
+  } else if (EDITORIAL_AUTHOR) {
+    byline = `
       <div class="sr-ed-byline">
         <span class="sr-ed-byline-by">By ${esc(EDITORIAL_AUTHOR.name)}</span>
         ${EDITORIAL_AUTHOR.title ? `<span class="sr-ed-byline-title">${esc(EDITORIAL_AUTHOR.title)}</span>` : ''}
         ${editorial.lastUpdated ? `<span class="sr-ed-byline-date">Updated ${esc(formatEditorialDate(editorial.lastUpdated))}</span>` : ''}
-      </div>`
-    : '';
+      </div>`;
+  }
 
   // Methodology / sources disclosure. Appended to every editorial article.
-  // The duplicate boilerplate across pages is fine — it's a small fraction of
+  // The duplicate boilerplate across pages is fine. It is a small fraction of
   // each page's prose, and the transparency signal (named sources, honest
   // experience disclosure) is real E-E-A-T value Google rewards.
   const methodologyBlock = renderMethodology(editorial);
@@ -672,8 +729,11 @@ function renderMethodology(editorial) {
     }
   }
 
-  const stamp = m.integrityStamp
-    ? `<p class="sr-ed-method-stamp">${esc(m.integrityStamp)}</p>`
+  const stampText = editorial.generated
+    ? INTEGRITY_STAMP_GENERATED
+    : (m.integrityStamp || '');
+  const stamp = stampText
+    ? `<p class="sr-ed-method-stamp">${esc(stampText)}</p>`
     : '';
 
   return `
@@ -1194,7 +1254,7 @@ ${editorial ? EDITORIAL_CSS : ''}
             </div>
             <h1 class="sr-title">${esc(resort.name)} <span class="sr-title-state">${esc(resort.state)}</span></h1>
             <p class="sr-tagline">${esc(heroTagline)}</p>
-            <p class="sr-location-line">Base to summit ${resort.baseElevation.toLocaleString()}–${resort.summitElevation.toLocaleString()} ft · ${resort.vertical.toLocaleString()} ft vertical</p>
+            <p class="sr-location-line">Base to summit ${resort.baseElevation.toLocaleString()} to ${resort.summitElevation.toLocaleString()} ft · ${resort.vertical.toLocaleString()} ft vertical</p>
             <div class="sr-hero-cta">
               <a href="${esc(liveScoreUrl)}" class="sr-btn sr-btn--primary">See if this is your best pick</a>
               ${resort.website ? `<a href="${esc(resort.website)}" class="sr-btn sr-btn--ghost" target="_blank" rel="noopener noreferrer">Official ${esc(resort.name)} site</a>` : ``}
@@ -1337,6 +1397,7 @@ ${editorial ? EDITORIAL_CSS : ''}
     </div>
 
     ${crowdCalendarSection(resort, liveScoreUrl)}
+    ${renderFAQ(resort, stateName)}
     <section class="sr-matcher" aria-labelledby="matcher-h">
       <h2 class="sr-matcher-title" id="matcher-h">Is ${esc(resort.name)} right for you?</h2>
       <p class="sr-matcher-sub">Tap your level and pass. We will give a straight answer and a next step in the main ranking tool.</p>
@@ -1479,7 +1540,7 @@ function generateSitemap(resorts) {
   const states = [...new Set(resorts.map(r => r.state))];
   const today  = new Date().toISOString().split('T')[0];
   const skiNearSlugs = listSkiNearSlugs();
-  // ── Static content pages — add new pages here as you build them ──────────
+  // Static content pages. Add new pages here as you build them.
   const STATIC_PAGES = [
     { loc: 'https://wheretoskinext.com/ski-pass-comparison',            changefreq: 'monthly', priority: '0.9' },
     { loc: 'https://wheretoskinext.com/epic-vs-ikon-northeast',         changefreq: 'monthly', priority: '0.8' },

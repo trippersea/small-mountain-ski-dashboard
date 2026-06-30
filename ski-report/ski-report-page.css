@@ -984,3 +984,39 @@ body.pass-page-body.ski-report-page .site-footer a:hover {
     grid-column: 1 / -1;
   }
 }
+
+/* Visible FAQ (generate-mountain-pages.mjs · matches FAQPage JSON-LD) */
+.sr-faq {
+  margin: 28px 0;
+  padding: clamp(20px, 3.5vw, 28px);
+  border: 1px solid var(--pp-border, rgba(142, 178, 226, 0.2));
+  border-radius: var(--pp-radius, 22px);
+  background: rgba(255, 255, 255, 0.03);
+}
+.sr-faq-title {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pp-text, #f0f6fc);
+  margin: 0 0 16px;
+}
+.sr-faq-item {
+  padding: 14px 0;
+  border-top: 1px solid var(--pp-border, rgba(142, 178, 226, 0.2));
+}
+.sr-faq-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.sr-faq-q {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pp-text, #f0f6fc);
+  margin: 0 0 6px;
+}
+.sr-faq-a {
+  font-size: 14px;
+  color: var(--pp-text-dim, rgba(240, 246, 252, 0.78));
+  line-height: 1.7;
+  margin: 0;
+}
